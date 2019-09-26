@@ -18,7 +18,7 @@ class GenericAuth(IsAuthenticated):
 
         try:
             is_blacklisted = BlackListedToken.objects.get(
-                user=get_user_object(username="01718302633"),token=token)
+                user=get_user_object(username=username),token=token)
 
             if is_blacklisted:
                 return False

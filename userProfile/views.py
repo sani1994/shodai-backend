@@ -99,7 +99,7 @@ class UserProfileDetail(APIView):
 
     def get(self, request, pk, format=None):
         user_profile = self.get_object(request, pk)
-        serializer = UserProfileSerializer(product, data=request.data)
+        serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -281,9 +281,9 @@ class Login(APIView):
                 }, status=status.HTTP_401_UNAUTHORIZED)
 
 class Logout(APIView):
-
-    def post(request):
-        user = get_user_object(username=request.data['username'])
+    permission_classes = [GenericAuth]
+    def post(self,request):
+        user = get_user_object(username=request.user.username)
         try:
             BlackListedToken.objects.create(
                 token=request.headers['Authorization'].split(' ')[1],

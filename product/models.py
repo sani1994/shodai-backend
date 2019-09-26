@@ -3,17 +3,20 @@ from bases.models import BaseModel
 
 # Create your models here.
 
+
 class ShopCategory(BaseModel):
     type_of_shop = models.CharField(max_length=89)
 
     def __str__(self):
         return self.type_of_shop
 
+
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
 
     def __str__(self):
         return self.type_of_product
+
 
 class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny name)
     name = models.CharField(max_length=100)
@@ -22,6 +25,7 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
 
     def __str__(self):
         return self.name
+
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)

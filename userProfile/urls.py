@@ -1,8 +1,11 @@
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from userProfile import views
+from rest_framework_simplejwt import views as jwt_views
 
 urlpatterns = [
+    path('refresh/', jwt_views.TokenRefreshView.as_view(),
+         name='token_refresh'),
     path('userprofile/', views.UserProfileList.as_view()),
     path('userprofile/<int:pk>/', views.UserProfileDetail.as_view()),
     path('address/', views.AddressList.as_view()),
