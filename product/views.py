@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework.generics import get_object_or_404
 
 import product
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, ProductMetaSerializer
@@ -14,9 +15,10 @@ from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 class ProductList(APIView):
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
     ## list of Prodect
+
 
     def get(self, request, format=None):
         is_staff = request.user.is_staff
@@ -202,7 +204,7 @@ class ProductCategoryList(APIView):
     ## list of Prodect category
 
     def get(self, request, format=None):
-        is_staff = request.user.is_staff
+        # is_staff = request.user.is_staff
         product_catagory = ProductCategory.objects.all()
         # if is_staff:
         #     product = Product.objects.all()
@@ -219,24 +221,39 @@ class ProductCategoryList(APIView):
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
-        serializer = ProductCategorySerializer(product, many=True, context={'request': request})
+        # serializer = ProductCategorySerializer(product_catagory, many=True, context={'request': request}) // ago
+        serializer = ProductCategorySerializer(product_catagory, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = ProductCategorySerializer(data=request.data)
-        if request.user.is_staff:
+        # if request.user.is_staff:
+        #     if serializer.is_valid():
+        #         serializer.save(created_by=request.user)
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #
+        # else:
+        #     if request.user.user_type=='RT': # Retailer = RT
+        #         if serializer.is_valid():
+        #             serializer.save(created_by=request.user)
+        #             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if serializer:
             if serializer.is_valid():
-                serializer.save(created_by=request.user)
+                # serializer.save(created_by=request.user)
+                serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        else:
-            if request.user.user_type=='RT': # Retailer = RT
-                if serializer.is_valid():
-                    serializer.save(created_by=request.user)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
- 
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self,request,pk):
+        saved_type_of_product = get_object_or_404(ProductCategory.objects.all(),pk=pk)
+        update_product_category = request.data.get('type_of_product')
+        serializer = ProductCategorySerializer(instance=saved_type_of_product, data=update_product_category)
+        if serializer.is_valid():
+            serializer.save()
+        return Response ({'Success': 'Updated..!!'}, status=status.HTTP_200_OK)
+
 
 
 
@@ -284,7 +301,7 @@ class ProductCategoryDetail(APIView):
     def delete(self, request, pk, format=None):
         product_catagory = self.get_object(request, pk)
         if request.user.is_staff:
-            product.delete()
+            ProductCategory.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -374,7 +391,7 @@ class ShopCategoryDetail(APIView):
     
     def delete(self, request, pk, format=None):
         shop_catagory = self.get_object(request, pk)
-        if request.user==product_catagory.created_by or request.user.is_staff:
-            product.delete()
+        if request.user==ProductCategory.created_by or request.user.is_staff:
+            Product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         

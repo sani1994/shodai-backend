@@ -11,27 +11,26 @@ class ShopCategorySerializer(serializers.HyperlinkedModelSerializer):
     def update(self, instance, validated_data):
         instance.type_of_shop = validated_data.get('type_of_shop', instance.type_of_shop)
         return instance
-    
-    
+
     class Meta:
         model = ShopCategory
         fields = ['type_of_shop']
 
 
-class ProductCategorySerializer(serializers.HyperlinkedModelSerializer):
-    type_of_product= serializers.CharField(max_length=89)
-
-    def create(self, validated_data):
-        return ProductCategory(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.type_of_product = validated_data.get('type_of_product', instance.type_of_product)
-        return instance
-    
-    
-    class Meta:
-        model = ProductCategory
-        fields = [ 'type_of_product']
+# class ProductCategorySerializer(serializers.HyperlinkedModelSerializer):
+#     type_of_product= serializers.CharField(max_length=89)
+#
+#     def create(self, validated_data):
+#         return ProductCategory.objects.create(**validated_data)
+#
+#     def update(self, instance, validated_data):
+#         instance.type_of_product = validated_data.get('type_of_product', instance.type_of_product)
+#         return instance
+#
+#
+#     class Meta:
+#         model = ProductCategory
+#         fields = [ 'type_of_product']
 
 
 class ProductMetaSerializer(serializers.HyperlinkedModelSerializer):
@@ -86,3 +85,17 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Product
         fields = [ 'product_name', 'product_unit', 'product_price', 'product_meta']
+
+
+class ProductCategorySerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ProductCategory
+        fields = ['id','type_of_product']
+
+    def create(self,validated_data):
+        return ProductCategory.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.type_of_product = validated_data.get('type_of_product', instance.type_of_product)
+        instance.save()
+        return instance
