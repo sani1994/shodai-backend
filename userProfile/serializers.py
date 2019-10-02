@@ -7,7 +7,7 @@ from rest_framework import serializers
 from django.db.models import Q
 
 
-class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     CUSTOMER = 'CM'
     RETAILER = 'RT'
     PRODUCER = 'PD'
@@ -48,7 +48,7 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ['user_type', 'mobile_number', 'first_name', 'last_name', 'email', 'ref_code', 'pin_code', 'created_on', 'modified_on']
+        fields = ['id','user_type', 'mobile_number', 'first_name', 'last_name', 'email', 'ref_code', 'pin_code', 'created_on', 'modified_on']
         write_only_fields = ('password',)
 
     def create(self,validated_data):
@@ -71,20 +71,23 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
 
 
 
-class AddressSerializer(serializers.HyperlinkedModelSerializer):
-    road = serializers.CharField(max_length=30)
-    city = serializers.CharField(max_length=30)
-    district = serializers.CharField(max_length=30)
-    country = serializers.CharField(max_length=30)
-    zip_code = serializers.CharField(max_length=30)
-    user = serializers.HyperlinkedRelatedField(
-        many=True,
-        read_only=True,
-        view_name='user'
-    ) # foreignKey
+class AddressSerializer(serializers.ModelSerializer):
+    # road = serializers.CharField(max_length=30)
+    # city = serializers.CharField(max_length=30)
+    # district = serializers.CharField(max_length=30)
+    # country = serializers.CharField(max_length=30)
+    # zip_code = serializers.CharField(max_length=30)
+    # user = serializers.RelatedField(
+    #     many=True,
+    #     read_only=True,
+    #     # view_name='user'
+    # ) # foreignKey
+    user = serializers.CharField()
 
     def create(self, validated_data):
-        return Address(**validated_data)
+        user = validated_data.pop('user')
+        user_instance = UserProfile.objects.get(pk=user)
+        return Address.objects.create(**validated_data, user = user_instance)
 
     def update(self, instance, validated_data):
         instance.road = validated_data.get('road', instance.road)
@@ -93,6 +96,7 @@ class AddressSerializer(serializers.HyperlinkedModelSerializer):
         instance.country = validated_data.get('country', instance.country)
         instance.zip_code = validated_data.get('zip_code', instance.zip_code)
         instance.user = validated_data.get('user', instance.user)
+        instance.save()
         return instance
     
     

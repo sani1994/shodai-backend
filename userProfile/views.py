@@ -30,7 +30,7 @@ from datetime import datetime
 
 class UserProfileList(APIView):
     # permission_classes = (IsAuthenticated,)
-    permission_classes = [GenericAuth]
+    # permission_classes = [GenericAuth]
 
     ## list of UserProfile list
 
@@ -148,16 +148,18 @@ class AddressList(APIView):
 
     def post(self, request, format=None):
         serializer = AddressSerializer(data=request.data)
-        if request.user.is_staff:
-            if serializer.is_valid():
-                serializer.save(created_by=request.user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        else:
-            if request.user.user_type=='RT': # Retailer = RT
-                if serializer.is_valid():
-                    serializer.save(created_by=request.user)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # if request.user.is_staff:
+        #     if serializer.is_valid():
+        #         serializer.save(created_by=request.user)
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #
+        # else:
+        #     if request.user.user_type=='RT': # Retailer = RT
+        #         if serializer.is_valid():
+        #             serializer.save(created_by=request.user)
+        #             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
  
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -170,21 +172,23 @@ class AddressDetail(APIView):
     Retrieve, update and delete Orders
     """
     def get_object(self, request, pk):
-        is_staff = request.user.is_staff
+        # is_staff = request.user.is_staff
+        # try:
+        #     if is_staff:
+        #         return Address.objects.get(pk=pk)
+        #     else:
+        #         user_type = request.user.user_type
+        #         if user_type=='CM':  # Customer = CM
+        #             return Address.objects.get(pk=pk)
+        #         elif user_type=='RT': # Retailer = RT
+        #             return Address.objects.get(pk=pk)
+        #             # address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+        #         elif user_type== 'PD': # Producer = PD
+        #             return Address.objects.get(pk=pk)
+        #              # address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+        #         return Address.objects.get(pk=pk)
         try:
-            if is_staff:
-                return Address.objects.get(pk=pk)
-            else:
-                user_type = request.user.user_type
-                if user_type=='CM':  # Customer = CM
-                    return Address.objects.get(pk=pk)
-                elif user_type=='RT': # Retailer = RT
-                    return Address.objects.get(pk=pk)
-                    # address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                elif user_type== 'PD': # Producer = PD
-                    return Address.objects.get(pk=pk)
-                     # address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                return Address.objects.get(pk=pk)
+            return Address.objects.get(pk=pk)
         except Address.DoesNotExist:
             raise Http404
 
@@ -200,9 +204,11 @@ class AddressDetail(APIView):
         address = self.get_object(request, pk)
         serializer = AddressSerializer(address, data=request.data)
         if serializer.is_valid():
-            if request.user==address.created_by or request.user.is_staff:
-                serializer.save(modified_by=request.user)
-                return Response(serializer.data)
+            # if request.user==address.created_by or request.user.is_staff:
+            #     serializer.save(modified_by=request.user)
+            #     return Response(serializer.data)
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk, format=None):

@@ -110,9 +110,9 @@ class ProductDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk, format=None):
-        product = self.get_object(request, pk)
-        if request.user==product.created_by or request.user.is_staff:
-            product.delete()
+        product = self.get_object(request,pk)
+        # if request.user==product.created_by or request.user.is_staff:
+        product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -50,9 +50,7 @@ class Address(models.Model):
     district = models.CharField(max_length=30, blank=True, null=True)
     country = models.CharField(max_length=30, blank=True, null=True)
     zip_code = models.CharField(max_length=30, blank=True, null=True)
-    user = models.ForeignKey(UserProfile, models.SET_NULL,
-    blank=True,
-    null=True)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     def __str__(self):
         return "{}, {}, {}".format(self.road, self.city, self.district)
 
