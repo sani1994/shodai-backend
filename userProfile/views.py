@@ -55,18 +55,21 @@ class UserProfileList(APIView):
         serializer = UserProfileSerializer(user_profile, many=True, context={'request': request})
         return Response(serializer.data)
 
-    def post(self, request, format=None):   ## why post request for
+    def post(self, request, format=None):
         serializer = UserProfileSerializer(data=request.data)
-        if request.user.is_staff:
-            if serializer.is_valid():
-                serializer.save(created_by=request.user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # if request.user.is_staff:
+        #     if serializer.is_valid():
+        #         serializer.save(created_by=request.user)
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        else:
-            if request.user.user_type=='RT': # Retailer = RT
-                if serializer.is_valid():
-                    serializer.save(created_by=request.user)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # else:
+        #     if request.user.user_type=='RT': # Retailer = RT
+        #         if serializer.is_valid():
+        #             serializer.save(created_by=request.user)
+        #             return Response(serializer.data, status=status.HTTP_201_CREATED)
  
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -84,15 +87,15 @@ class UserProfileDetail(APIView):
             if is_staff:
                 return UserProfile.objects.get(pk=pk)
             else:
-                user_type = request.user.user_type
-                if user_type=='CM':  # Customer = CM
-                    return UserProfile.objects.get(pk=pk)
-                elif user_type=='RT': # Retailer = RT
-                    return UserProfile.objects.get(pk=pk)
-                    # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                elif user_type== 'PD': # Producer = PD
-                    return UserProfile.objects.get(pk=pk)
-                     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+                # user_type = request.user.user_type
+                # if user_type=='CM':  # Customer = CM
+                #     return UserProfile.objects.get(pk=pk)
+                # elif user_type=='RT': # Retailer = RT
+                #     return UserProfile.objects.get(pk=pk)
+                #     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+                # elif user_type== 'PD': # Producer = PD
+                #     return UserProfile.objects.get(pk=pk)
+                #      # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
                 return UserProfile.objects.get(pk=pk)
         except UserProfile.DoesNotExist:
             raise Http404
@@ -107,7 +110,7 @@ class UserProfileDetail(APIView):
 
     def put(self, request, pk, format=None):
         user_profile = self.get_object(request, pk)
-        serializer = UserProfileSerializer(product, data=request.data)
+        serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
             if request.user==UserProfile.created_by or request.user.is_staff:
                 serializer.save(modified_by=request.user)
@@ -116,8 +119,8 @@ class UserProfileDetail(APIView):
     
     def delete(self, request, pk, format=None):
         user_profile = self.get_object(request, pk)
-        if request.user==user_profile.created_by or request.user.is_staff:
-            user_profile.delete()
+        # if request.user==user_profile.created_by or request.user.is_staff:
+        user_profile.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

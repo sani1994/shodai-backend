@@ -10,12 +10,13 @@ from datetime import datetime
 from rest_framework import permissions
 
 # Create your views here.
+from sodai.utils.permission import GenericAuth
+
 
 class OrderList(APIView):
     # """ List of all order from customer
     #     """
-
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [GenericAuth]
     def get(self, request, format=None):
         is_staff = request.user.is_staff
         order = Order.objects.all()
@@ -30,8 +31,8 @@ class OrderList(APIView):
                 order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             elif user_type== 'PD': # Producer = PD
                 order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-            # elif user_type== 'SF': # Staff = SF
-            #     order = Order.objects.filter(created_by=request.user)
+            elif user_type== 'SF': # Staff = SF
+                order = Order.objects.filter(created_by=request.user)
             
         serializer = OrderSerializer(order, context={'request': request})
         return Response(serializer.data)
