@@ -60,9 +60,9 @@ class Otp(models.Model):
      mobile_number = models.CharField(max_length=11,unique=True)
      otp_code = models.CharField(max_length=10,blank=True,null=True)
      count = models.IntegerField(default=0,help_text='Number of otp sent')
-     logged = models.BooleanField(default=False,help_text='If otp verification got successful')
-     forgot = models.BooleanField(default=False,help_text='Only true if forgot password')
-     forgot_logged = models.BooleanField(default=False,help_text='Only true if otp  verified for forgot password')
+     # logged = models.BooleanField(default=False,help_text='If otp verification got successful')
+     # forgot = models.BooleanField(default=False,help_text='Only true if forgot password')
+     # forgot_logged = models.BooleanField(default=False,help_text='Only true if otp  verified for forgot password')
 
      def __str__(self):
          return str(self.mobile_number) + 'is sent' + str(self.otp_code)
