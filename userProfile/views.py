@@ -334,6 +334,8 @@ class OtpCode(APIView):
             mobile_number = str(mobile_number)
             obj = Otp.objects.filter(mobile_number__exact=mobile_number).first()
             if obj:
+                # obj.counter = 0
+                # obj.save()
                 if obj.count >5 :
                     return Response ({"Status": "Faild",
                                                 "details": "OTP sent 5 times. please contact with support"},status=status.HTTP_400_BAD_REQUEST)
@@ -345,13 +347,37 @@ class OtpCode(APIView):
                     return  Response({
                         "Status": "Success..!!",
                         "details": "Mobile number: " + str(obj.mobile_number)+ " Otp code: " + str(obj.otp_code)
-                    })
+                    },status=status.HTTP_200_OK)
             else:
                 key = otp_key(mobile_number)
-                obj.otp_code = key
-                obj.count = obj.count + 1
-                obj.save()
+                obj = Otp.objects.create(mobile_number=mobile_number,otp_code=key,count=1)
                 return Response({
                     "Status": "Success..!!",
                     "details": "Mobile number: " + str(obj.mobile_number) + " Otp code: " + str(obj.otp_code)
-                })
+                },status=status.HTTP_200_OK)
+
+
+class OtpVerify(APIView):
+
+    def post(self,request):
+        mobile_number = request.data['mobile_number']
+        code = request.data['otp_code']
+        obj = Otp.objects.filter(mobile_number__exact=mobile_number).first()
+        if obj:
+            if obj.otp_code == code:
+                obj.otp_code = 0
+                obj.count = 0
+                obj.save()
+                return Response({
+                    "status": "Varified..!!",
+                },status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "status": "Failed..!!",
+                },status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "status": "Invalide..!!",
+            }, status=status.HTTP_204_NO_CONTENT)
+
+
