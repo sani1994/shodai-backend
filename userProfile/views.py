@@ -326,25 +326,32 @@ def otp_key(number):
         return False
 
 
-class OTP(APIView):
+class OtpCode(APIView):
 
     def post(self,request):
         mobile_number = request.data['mobile_number']
         if mobile_number:
             mobile_number = str(mobile_number)
-            print(mobile_number)
-            try:
-                number = UserProfile.objects.get(mobile_number=mobile_number)
-                    # if number:
-                    # return Response({
-                    #     'status': False,
-                    #     'details': 'Phone Number already exist'
-                    # })
-            except UserProfile.DoesNotExist:
-                key = otp_key(mobile_number)
-                if key:
-                    return Response ({
-                        'OTP Key': key,
-                        'Status': 'Success...!!'
-
+            obj = Otp.objects.filter(mobile_number__exact=mobile_number).first()
+            if obj:
+                if obj.count >5 :
+                    return Response ({"Status": "Faild",
+                                                "details": "OTP sent 5 times. please contact with support"},status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    key = otp_key(mobile_number)
+                    obj.otp_code = key
+                    obj.count=obj.count+1
+                    obj.save()
+                    return  Response({
+                        "Status": "Success..!!",
+                        "details": "Mobile number: " + str(obj.mobile_number)+ " Otp code: " + str(obj.otp_code)
                     })
+            else:
+                key = otp_key(mobile_number)
+                obj.otp_code = key
+                obj.count = obj.count + 1
+                obj.save()
+                return Response({
+                    "Status": "Success..!!",
+                    "details": "Mobile number: " + str(obj.mobile_number) + " Otp code: " + str(obj.otp_code)
+                })
