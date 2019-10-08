@@ -30,25 +30,26 @@ from datetime import datetime
 
 class UserProfileList(APIView):
     # permission_classes = (IsAuthenticated,)
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     ## list of UserProfile list
 
     def get(self, request, format=None):
         is_staff = request.user.is_staff
         user_profile = UserProfile.objects.all()
-        # if is_staff:
-        #     product = Product.objects.all()
-        # else:
-        #     user_type = request.user.user_type
-        #     if user_type=='CM':  # Customer = CM
-        #         product = Product.objects.filter(created_by=request.user)
-        #     elif user_type=='RT': # Retailer = RT
-        #         product = Product.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+        if is_staff:
+            # user = UserProfile.objects.all()
+            return Response(user_profile)
+        else:
+            user_type = request.user.user_type
+            if user_type=='CM':  # Customer = CM
+                product = UserProfile.objects.filter(created_by=request.user)
+            elif user_type=='RT': # Retailer = RT
+                product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
 
 
-        #     elif user_type== 'PD': # Producer = PD
-        #         product = Product.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+            # elif user_type== 'PD': # Producer = PD
+            #     product = .objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
@@ -125,47 +126,55 @@ class UserProfileDetail(APIView):
 
 
 class AddressList(APIView):
-
+    permission_classes = [GenericAuth]
     ## list of Address
 
     def get(self, request, format=None):
         is_staff = request.user.is_staff
         address =Address.objects.all()
-        # if is_staff:
-        #     address = Address.objects.all()
-        # else:
-        #     user_type = request.user.user_type
-        #     if user_type=='CM':  # Customer = CM
-        #         address = Address.objects.filter(created_by=request.user)
-        #     elif user_type=='RT': # Retailer = RT
-        #         address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+        if is_staff:
+            # address = Address.objects.all()
+            serializer = AddressSerializer(data=address)
+            return  Response(serializer.data)
+        else:
+            user_type = request.user.user_type
+            if user_type=='CM':  # Customer = CM
+                address = Address.objects.filter(created_by=request.user)
+            # elif user_type=='RT': # Retailer = RT
+            #     address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
 
 
-        #     elif user_type== 'PD': # Producer = PD
-        #         address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+            # elif user_type== 'PD': # Producer = PD
+            #     address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     address = Address.objects.filter(created_by=request.user)
             
-        serializer = AddressSerializer(address, many=True, context={'request': request})
+            serializer = AddressSerializer(address, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = AddressSerializer(data=request.data)
-        # if request.user.is_staff:
-        #     if serializer.is_valid():
-        #         serializer.save(created_by=request.user)
-        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-        #
-        # else:
-        #     if request.user.user_type=='RT': # Retailer = RT
-        #         if serializer.is_valid():
-        #             serializer.save(created_by=request.user)
-        #             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = AddressSerializer(data=request.data,context={'request': request})
+        print(serializer)
         if serializer.is_valid():
-            serializer.save()
- 
+            print("serializer valid")
+            if request.user.is_staff:
+            # if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if request.user.user_type=='RT': # Retailer = RT
+                if serializer.is_valid():
+                    serializer.save(created_by=request.user)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # if serializer.is_valid():
+        #     serializer.save()
+        return Response({"baaal..!!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 
@@ -215,9 +224,11 @@ class AddressDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk, format=None):
-        address = self.get_object(request, pk)
-        if request.user==address.created_by or request.user.is_staff:
-            address.delete()
+        # address = self.get_object(request, pk)
+        address = Address.objects.all()
+        address.delete()
+        # if request.user==address.created_by or request.user.is_staff:
+        #     address.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -261,12 +272,10 @@ class Login(APIView):
         password = request.data['password']
         try:
             user = UserProfile.objects.get( mobile_number = mobile_number)
-            print(user)
         except UserProfile.DoesNotExist:
             return Response({'Error': "Invalid email/password"}, status="400")
 
         if user:
-            print(user.password)
             if user.check_password(password):
                 refresh = RefreshToken.for_user(user)
                 # UserProfile.objects.create()
@@ -318,7 +327,6 @@ class UserRegistration(CreateAPIView):
 
 
 def otp_key(number):
-    print("otp_key_func",number)
     if number:
         key = random.randint(999,9999)
         return key
