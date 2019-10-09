@@ -35,7 +35,7 @@ class UserProfileList(APIView):
     ## list of UserProfile list
 
     def get(self, request, format=None):
-        is_staff = request.user.is_staff
+        # is_staff = request.user.is_staff
         user_profile = UserProfile.objects.all()
         # if is_staff:
         #     # user = UserProfile.objects.all()
@@ -43,7 +43,7 @@ class UserProfileList(APIView):
         # else:
         user_type = request.user.user_type
         if user_type=='CM':  # Customer = CM
-            user_profile = UserProfile.objects.filter(user=request.user)
+            user_profile = UserProfile.objects.filter(id=request.user.id)
             serializer = UserProfileSerializer(user_profile, many=True, context={'request': request})
             return Response(serializer.data)
         # elif user_type=='RT': # Retailer = RT
@@ -313,6 +313,7 @@ class Login(APIView):
                 return JsonResponse({
                     "message": "success",
                     "status": True,
+                    "user id": user.id,
                     "username": user.username,
                     'refresh_token': str(refresh),
                     'access_token': str(refresh.access_token),
@@ -348,8 +349,8 @@ class Logout(APIView):
 
 
 class UserRegistration(CreateAPIView):
-    models = UserProfile
     permission_classes = (AllowAny,)
+    models = UserProfile
     serializer_class = UserRegistrationSerializer
 
 
