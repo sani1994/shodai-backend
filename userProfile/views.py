@@ -129,28 +129,46 @@ class AddressList(APIView):
     permission_classes = [GenericAuth]
     ## list of Address
 
-    def get(self, request, format=None):
-        is_staff = request.user.is_staff
-        address =Address.objects.all()
-        if is_staff:
-            # address = Address.objects.all()
-            serializer = AddressSerializer(data=address)
-            return  Response(serializer.data)
-        else:
+    # def get(self, request, format=None):   # previous get function
+    #     is_staff = request.user.is_staff
+    #     address =Address.objects.all()
+    #     if is_staff:
+    #         # address = Address.objects.all()
+    #         serializer = AddressSerializer(data=address)
+    #         return  Response(serializer.data)
+    #     else:
+    #         user_type = request.user.user_type
+    #         if user_type=='CM':  # Customer = CM
+    #             address = Address.objects.filter(user=request.user)
+    #         elif user_type=='RT': # Retailer = RT
+    #             address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+    #
+    #
+    #         elif user_type== 'PD': # Producer = PD
+    #             address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+    #         elif user_type== 'SF': # Staff = SF
+    #             address = Address.objects.filter(created_by=request.user)
+    #
+    #         serializer = AddressSerializer(address, many=True, context={'request': request})
+    #     return Response(serializer.data)
+
+    def get(self,request):
+        if request:
+            address = Address.objects.all()
             user_type = request.user.user_type
-            if user_type=='CM':  # Customer = CM
-                address = Address.objects.filter(created_by=request.user)
-            # elif user_type=='RT': # Retailer = RT
-            #     address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-
-
-            # elif user_type== 'PD': # Producer = PD
-            #     address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-            # elif user_type== 'SF': # Staff = SF
-            #     address = Address.objects.filter(created_by=request.user)
-            
-            serializer = AddressSerializer(address, many=True, context={'request': request})
-        return Response(serializer.data)
+            if address:
+                serializer = AddressSerializer(address,many=True)
+                # if serializer.is_valid():
+                if user_type == 'SF':
+                    return Response(serializer.data)
+                    # else:
+                    #     Response({"Status": "user not allowed"},status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({"Status": "Invalide serializer"},status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"Status": "No data to show"},status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response ({"Status": "Invalide request"}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
         serializer = AddressSerializer(data=request.data,context={'request': request})

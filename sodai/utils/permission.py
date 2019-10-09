@@ -8,9 +8,7 @@ from userProfile.models import BlackListedToken,UserProfile
 
 class GenericAuth(IsAuthenticated):
     def has_permission(self, request, view):
-        print(request)
         username = request.user
-        print(username)
         try:
             token = request.headers['Authorization'].split(' ')[1]
         except KeyError:
@@ -24,7 +22,6 @@ class GenericAuth(IsAuthenticated):
                 return False
 
         except BlackListedToken.DoesNotExist:
-            print("pass")
             pass
         return super().has_permission(request, view)
 

@@ -87,12 +87,15 @@ class AddressSerializer(serializers.ModelSerializer):
     #     read_only=True,
     #     # view_name='user'
     # ) # foreignKey
-    user = serializers.CharField()
+    # user = serializers.CharField()
+
 
     def create(self, validated_data):
-        user = validated_data.pop('user')
-        user_instance = UserProfile.objects.get(pk=user)
-        return Address.objects.create(**validated_data, user = user_instance)
+        user= self.context['request'].user.id
+        # user=validated_data.pop('user')
+        user_instance = UserProfile.objects.filter(id=user).first()
+        print("user instance: ",user_instance)
+        return Address.objects.create(**validated_data,user=user_instance)
 
     def update(self, instance, validated_data):
         instance.road = validated_data.get('road', instance.road)
@@ -107,7 +110,7 @@ class AddressSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Address
-        fields = [ 'road', 'city', 'district', 'country', 'zip_code', 'user']
+        fields = ['id','road', 'city', 'district', 'country', 'zip_code','user_id']
 
 
 class UserRegistrationSerializer(serializers.HyperlinkedModelSerializer):

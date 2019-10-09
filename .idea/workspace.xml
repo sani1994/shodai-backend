@@ -3,7 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sodai/utils/helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/utils/helper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sodai/utils/permission.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/utils/permission.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -103,8 +105,18 @@
       <workItem from="1570339955077" duration="1068000" />
       <workItem from="1570341832079" duration="4062000" />
       <workItem from="1570429325255" duration="1195000" />
-      <workItem from="1570475561562" duration="3992000" />
+      <workItem from="1570475561562" duration="4223000" />
+      <workItem from="1570519616830" duration="18231000" />
+      <workItem from="1570607804996" duration="3803000" />
     </task>
+    <task id="LOCAL-00001" summary="foreign key problem solved.">
+      <created>1570566273547</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1570566273547</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -122,5 +134,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="foreign key problem solved." />
+    <option name="LAST_COMMIT_MESSAGE" value="foreign key problem solved." />
   </component>
 </project>
