@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sodai/utils/helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/utils/helper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sodai/utils/permission.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/utils/permission.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -42,11 +41,16 @@
     </option>
   </component>
   <component name="ProjectId" id="1RevS4kd8SOcsHFl0goIJSu62W1" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
   </component>
@@ -63,28 +67,25 @@
     </option>
   </component>
   <component name="RunManager">
-    <configuration name="shodai-backend" type="Python.DjangoServer" factoryName="Django server">
+    <configuration name="manage" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="shodai-backend" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="DJANGO_SETTINGS_MODULE" value="sodai.settings" />
       </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="SDK_HOME" value="/usr/local/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="launchJavascriptDebuger" value="false" />
-      <option name="port" value="8000" />
-      <option name="host" value="" />
-      <option name="additionalOptions" value="" />
-      <option name="browserUrl" value="" />
-      <option name="runTestServer" value="false" />
-      <option name="runNoReload" value="false" />
-      <option name="useCustomRunCommand" value="false" />
-      <option name="customRunCommand" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/manage.py" />
+      <option name="PARAMETERS" value="runserver 127.0.0.1:3000" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
   </component>
@@ -108,6 +109,9 @@
       <workItem from="1570475561562" duration="4223000" />
       <workItem from="1570519616830" duration="18231000" />
       <workItem from="1570607804996" duration="3803000" />
+      <workItem from="1570618327101" duration="1868000" />
+      <workItem from="1570621938636" duration="463000" />
+      <workItem from="1570623335752" duration="62000" />
     </task>
     <task id="LOCAL-00001" summary="foreign key problem solved.">
       <created>1570566273547</created>
@@ -138,5 +142,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="foreign key problem solved." />
     <option name="LAST_COMMIT_MESSAGE" value="foreign key problem solved." />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/shodai_backend$shodai.coverage" NAME="shodai Coverage Results" MODIFIED="1570623337619" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

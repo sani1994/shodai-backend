@@ -30,31 +30,38 @@ from datetime import datetime
 
 class UserProfileList(APIView):
     # permission_classes = (IsAuthenticated,)
-    permission_classes = [GenericAuth]
+    # permission_classes = [GenericAuth]
 
     ## list of UserProfile list
 
     def get(self, request, format=None):
         is_staff = request.user.is_staff
         user_profile = UserProfile.objects.all()
-        if is_staff:
-            # user = UserProfile.objects.all()
-            return Response(user_profile)
+        # if is_staff:
+        #     # user = UserProfile.objects.all()
+        #     return Response(user_profile)
+        # else:
+        user_type = request.user.user_type
+        if user_type=='CM':  # Customer = CM
+            user_profile = UserProfile.objects.filter(user=request.user)
+            serializer = UserProfileSerializer(user_profile, many=True, context={'request': request})
+            return Response(serializer.data)
+        # elif user_type=='RT': # Retailer = RT
+        #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
         else:
-            user_type = request.user.user_type
-            if user_type=='CM':  # Customer = CM
-                product = UserProfile.objects.filter(created_by=request.user)
-            elif user_type=='RT': # Retailer = RT
-                product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+            if user_type == 'SF':
+                serializer = UserProfileSerializer(user_profile, many=True, context={'request': request})
+                return Response(serializer.data)
+
 
 
             # elif user_type== 'PD': # Producer = PD
             #     product = .objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
+        return Response ({"status": "Invalide request"},status=status.HTTP_400_BAD_REQUEST)
             
-        serializer = UserProfileSerializer(user_profile, many=True, context={'request': request})
-        return Response(serializer.data)
+
 
     def post(self, request, format=None):
         serializer = UserProfileSerializer(data=request.data)
@@ -79,43 +86,46 @@ class UserProfileList(APIView):
 
 
 class UserProfileDetail(APIView):
-    """
-    Retrieve, update and delete Orders
-    """
+    permission_classes = [GenericAuth]
+    # """
+    # Retrieve, update and delete Orders
+    # """
     def get_object(self, request, pk):
-        is_staff = request.user.is_staff
-        try:
-            if is_staff:
-                return UserProfile.objects.get(pk=pk)
-            else:
-                # user_type = request.user.user_type
-                # if user_type=='CM':  # Customer = CM
-                #     return UserProfile.objects.get(pk=pk)
-                # elif user_type=='RT': # Retailer = RT
-                #     return UserProfile.objects.get(pk=pk)
-                #     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                # elif user_type== 'PD': # Producer = PD
-                #     return UserProfile.objects.get(pk=pk)
-                #      # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                return UserProfile.objects.get(pk=pk)
-        except UserProfile.DoesNotExist:
-            raise Http404
+        # is_staff = request.user.is_staff
+        # try:
+        #     if is_staff:
+        #         return UserProfile.objects.get(pk=pk)
+        #     else:
+        #         # user_type = request.user.user_type
+        #         # if user_type=='CM':  # Customer = CM
+        #         #     return UserProfile.objects.get(pk=pk)
+        #         # elif user_type=='RT': # Retailer = RT
+        #         #     return UserProfile.objects.get(pk=pk)
+        #         #     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+        #         # elif user_type== 'PD': # Producer = PD
+        #         #     return UserProfile.objects.get(pk=pk)
+        #         #      # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+        #         return UserProfile.objects.get(pk=pk)
+        # except UserProfile.DoesNotExist:
+        #     raise Http404
+
+        user = UserProfile.objects.get(pk=pk)
+        return user
 
     def get(self, request, pk, format=None):
+        print("get request")
         user_profile = self.get_object(request, pk)
-        serializer = UserProfileSerializer(user_profile, data=request.data)
-        if serializer.is_valid():
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserProfileSerializer(user_profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 
     def put(self, request, pk, format=None):
         user_profile = self.get_object(request, pk)
         serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
-            if request.user==UserProfile.created_by or request.user.is_staff:
-                serializer.save(modified_by=request.user)
-                return Response(serializer.data)
+            # if request.user==UserProfile.created_by or request.user.is_staff:
+            serializer.save(modified_by=request.user)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk, format=None):
@@ -152,13 +162,12 @@ class AddressList(APIView):
     #         serializer = AddressSerializer(address, many=True, context={'request': request})
     #     return Response(serializer.data)
 
-    def get(self,request):
+    def get(self,request):    # new written by me
         if request:
             address = Address.objects.all()
             user_type = request.user.user_type
             if address:
                 serializer = AddressSerializer(address,many=True)
-                # if serializer.is_valid():
                 if user_type == 'SF':
                     return Response(serializer.data)
                     # else:
@@ -168,7 +177,7 @@ class AddressList(APIView):
             else:
                 return Response({"Status": "No data to show"},status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response ({"Status": "Invalide request"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response ({"Status": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
         serializer = AddressSerializer(data=request.data,context={'request': request})

@@ -7,7 +7,7 @@ urlpatterns = [
     path('refresh/', jwt_views.TokenRefreshView.as_view(),
          name='token_refresh'),
     path('userprofile/', views.UserProfileList.as_view()),
-    path('userprofile/<int:pk>', views.UserProfileDetail.as_view()),
+    path('userprofiledetails/<int:pk>', views.UserProfileDetail.as_view()),
     path('address/', views.AddressList.as_view()),
     path('address/<int:pk>/', views.AddressDetail.as_view()),
     path('login/',views.Login.as_view()),
