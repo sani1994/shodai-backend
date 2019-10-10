@@ -13,9 +13,13 @@ from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
+from sodai.utils.permission import GenericAuth
+
 
 class ProductList(APIView):
     # permission_classes = (IsAuthenticated,)
+
+    permission_classes = [GenericAuth]
 
     ## list of Prodect
 
@@ -67,7 +71,10 @@ class ProductDetail(APIView):
     """
     Retrieve, update and delete Orders
     """
-    def get_object(self, request, pk):
+
+    permission_classes = [GenericAuth]
+
+    def get_object(self, request, id):
         # is_staff = request.user.is_staff
         # try:
         #     if is_staff:
@@ -84,30 +91,37 @@ class ProductDetail(APIView):
         #              # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
         #         return Product.objects.get(pk=pk)
         try:
-            return Product.objects.get(pk=pk)
+            return Product.objects.filter(id=id).first()
         except Product.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
-        product = self.get_object(request, pk)
-        print(product)
-        serializer = ProductSerializer(product,data=product)
-        print(serializer)
-        if serializer.is_valid():
-            print((serializer.data))
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, id, format=None):
+
+        product = self.get_object(request, id)
+        if product:
+            serializer = ProductSerializer(product)
+            if serializer:
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Rontent not available"
+                },status=status.HTTP_204_NO_CONTENT)
     
 
-    def put(self, request, pk, format=None):
-        product = self.get_object(request, pk)
+    def put(self, request, id, format=None):
+        product = self.get_object(request, id)
         serializer = ProductSerializer(product, data=request.data)
         if serializer.is_valid():
             # if request.user==product.created_by or request.user.is_staff:
             #     serializer.save(modified_by=request.user)
             #     return Response(serializer.data)
             serializer.save()
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk, format=None):
         product = self.get_object(request,pk)
@@ -120,6 +134,7 @@ class ProductDetail(APIView):
 class ProductMetaList(APIView):
 
     ## list of Prodect Meta (original product name with comapny name)
+    permission_classes = [GenericAuth]
 
     def get(self, request, format=None):
         # is_staff = request.user.is_staff
@@ -168,7 +183,8 @@ class ProductMetaDetail(APIView):     # this mathod dont work because couldnt up
     """
     Retrieve, update and delete Orders
     """
-    def get_object(self, pk):
+    permission_classes = [GenericAuth]
+    def get_object(self,request, id):
         # is_staff = request.user.is_staff
         # try:
         #     if is_staff:
@@ -185,26 +201,30 @@ class ProductMetaDetail(APIView):     # this mathod dont work because couldnt up
         #              # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
         #         return ProductMeta.objects.get(pk=pk)
         try:
-            objectt= ProductMeta.objects.get(pk=pk)
+            objectt= ProductMeta.objects.filter(id=id).first()
             return objectt
         except ProductMeta.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
+    def get(self, request, id, format=None):
         # print(pk)
-        product_meta = self.get_object(pk)
-        serializer = ProductMetaSerializer(data=product_meta)
-        if serializer.is_valid():
-            print(serializer.data)
-            return Response(serializer.data)
-        return Response({" 'Status_code': 400  "}, status=status.HTTP_400_BAD_REQUEST)
+        product_meta = self.get_object(request,id)
+        if product_meta:
+            serializer = ProductMetaSerializer(product_meta)
+            if serializer:
+                return Response(serializer.data)
+            else:
+                return Response(serializer.error_messages,status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Rontent not available"
+                },status=status.HTTP_204_NO_CONTENT)
     
 
-    def put(self, request, pk, format=None):
-        product_meta = self.get_object(pk)
-        print(product_meta.data)
+    def put(self, request, id, format=None):
+        product_meta = self.get_object(request,id)
         serializer = ProductMetaSerializer(product_meta, data=request.data)
-        print(serializer)
         if serializer.is_valid():
             # if request.user==product_meta.created_by or request.user.is_staff:
             #     serializer.save(modified_by=request.user)
@@ -212,8 +232,8 @@ class ProductMetaDetail(APIView):     # this mathod dont work because couldnt up
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self, request, pk, format=None):
-        product_meta = self.get_object(pk)
+    def delete(self, request, id, format=None):
+        product_meta = self.get_object(request,id)
         # if request.user.is_staff:
         product_meta.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -269,13 +289,14 @@ class ProductCategoryList(APIView):
 
 
 class ProductCategoryDetail(APIView):
-    """
-    Retrieve, update and delete Orders
-    """
-    def get_object(self,pk):     # enable another peremeter "request" when to access user
+    permission_classes = [GenericAuth]
+
+    # """
+    # Retrieve, update and delete Orders
+    # """
+    def get_object(self,request,id):     # enable another peremeter "request" when to access user
         try:
-            object = ProductCategory.objects.get(pk=pk)
-            print(object)
+            object = ProductCategory.objects.filter(id=id).first()
             return object
         except ProductCategory.DoesNotExist:
             raise Http404
@@ -298,15 +319,22 @@ class ProductCategoryDetail(APIView):
         # except ProductCategory.DoesNotExist:
         #     raise Http404
 
-    def get(self, request, pk,format=None):
-        product_catagory = self.get_object(pk)
-        serializer = ProductCategorySerializer(data=product_catagory)
-        if serializer.is_valid():
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, id,format=None):
+        product_catagory = self.get_object(request,id)
+        if product_catagory:
+            serializer = ProductCategorySerializer(product_catagory)
+            if serializer:
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Rontent not available"
+            }, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self, request, pk, format=None):
-        product_catagory = self.get_object(pk)
+    def put(self, request, id, format=None):
+        product_catagory = self.get_object(request,id)
         serializer = ProductCategorySerializer(product_catagory, data=request.data)
         if serializer.is_valid():
             # if request.user==product_catagory.created_by or request.user.is_staff: enable when user will be avilable
@@ -315,8 +343,9 @@ class ProductCategoryDetail(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self,request, pk, format=None):
-        product_catagory = self.get_object(pk)
+
+    def delete(self,request, id, format=None):
+        product_catagory = self.get_object(request,id)
         print(product_catagory)
         # if request.user.is_staff:
         #     ProductCategory.delete()
@@ -326,6 +355,7 @@ class ProductCategoryDetail(APIView):
 
 
 class ShopCategoryList(APIView):
+    permission_classes = [GenericAuth]
 
     ## list of Shop category
 
@@ -351,7 +381,6 @@ class ShopCategoryList(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        print(request)
         serializer = ShopCategorySerializer(data=request.data)
         # if request.user.is_staff:
         #     if serializer.is_valid():
@@ -374,10 +403,12 @@ class ShopCategoryList(APIView):
 
 
 class ShopCategoryDetail(APIView):
+
+    permission_classes = [GenericAuth]
     """
     Retrieve, update and delete Orders
     """
-    def get_object(self, pk):
+    def get_object(self,request,id):
         # is_staff = request.user.is_staff
         try:
             # if is_staff:
@@ -393,36 +424,40 @@ class ShopCategoryDetail(APIView):
             #         return ShopCategory.objects.get(pk=pk)
             #          # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             #     return ShopCategory.objects.get(pk=pk)
-            object = ShopCategory.objects.get(pk=pk)
-            print(object)
+            object = ShopCategory.objects.filter(id=id).first
             return object
         except ShopCategory.DoesNotExist:
             raise Http404
 
-    def get(self,request,pk, format=None):
-        shop_catagory = self.get_object(pk)
-        print(shop_catagory)
-        serializer = ShopCategorySerializer(shop_catagory,data = shop_catagory)
-        if serializer.is_valid():
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    def get(self,request,id, format=None):
+        shop_catagory = self.get_object(request,id)
+        if shop_catagory:
+            serializer = ShopCategorySerializer(shop_catagory)
+            if serializer:
+                return Response(serializer.data)
+            else:
+                return Response(serializer.error_messages,status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Rontent not available"
+            }, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self, request, pk, format=None):
-        shop_catagory = self.get_object( pk)
+
+    def put(self, request, id, format=None):
+        shop_catagory = self.get_object( request,id)
         serializer = ShopCategorySerializer(shop_catagory, data=request.data)
         if serializer.is_valid():
             # if request.user==shop_catagory.created_by or request.user.is_staff:
             #     serializer.save(modified_by=request.user)
             #     return Response(serializer.data)
-            serializer.save()
+            serializer.save(modified_by=request.user)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self,request,pk, format=None):
-        shop_catagory = self.get_object( pk)
+    def delete(self,request,id, format=None):
+        shop_catagory = self.get_object(request,id)
         # if request.user==ProductCategory.created_by or request.user.is_staff:
         #     Product.delete()
         shop_catagory.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        

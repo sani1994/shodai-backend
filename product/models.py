@@ -13,6 +13,7 @@ class ShopCategory(BaseModel):
 
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
+    img = models.ImageField(upload_to='pictures', blank=True, null=True)
 
     def __str__(self):
         return self.type_of_product
@@ -20,8 +21,7 @@ class ProductCategory(BaseModel):
 
 class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny name)
     name = models.CharField(max_length=100)
-    # product_category = models.ForeignKey(ProductCategory, models.SET_NULL,blank=False,null=False)
-    # shop_category = models.ForeignKey(ShopCategory, models.SET_NULL,blank=False,null=False)
+    img = models.ImageField(upload_to="photos", blank=True, null=True)
     product_category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
     shop_category = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
 
@@ -31,6 +31,7 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
+    product_image = models.ImageField(upload_to="photos", blank=True, null=True)
     product_unit = models.CharField(max_length=3, blank=True, null=True)
     product_price = models.IntegerField(blank=True, null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
