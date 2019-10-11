@@ -313,7 +313,8 @@ class Login(APIView):
                 return JsonResponse({
                     "message": "success",
                     "status": True,
-                    "user id": user.id,
+                    "user_type":user.user_type,
+                    "user_id": user.id,
                     "username": user.username,
                     'refresh_token': str(refresh),
                     'access_token': str(refresh.access_token),

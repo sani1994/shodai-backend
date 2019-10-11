@@ -3,9 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -113,7 +111,8 @@
       <workItem from="1570618327101" duration="1868000" />
       <workItem from="1570621938636" duration="463000" />
       <workItem from="1570623335752" duration="62000" />
-      <workItem from="1570700517758" duration="13081000" />
+      <workItem from="1570700517758" duration="13469000" />
+      <workItem from="1570813634601" duration="910000" />
     </task>
     <task id="LOCAL-00001" summary="foreign key problem solved.">
       <created>1570566273547</created>
