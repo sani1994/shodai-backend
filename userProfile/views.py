@@ -30,7 +30,7 @@ from datetime import datetime
 
 class UserProfileList(APIView):
     # permission_classes = (IsAuthenticated,)
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     ## list of UserProfile list
 
@@ -59,7 +59,7 @@ class UserProfileList(APIView):
             #     product = .objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
-        return Response ({"status": "Invalide request"},status=status.HTTP_400_BAD_REQUEST)
+        return Response ({"status": "Invalid request"},status=status.HTTP_400_BAD_REQUEST)
             
 
 
@@ -90,7 +90,7 @@ class UserProfileDetail(APIView):
     # """
     # Retrieve, update and delete Orders
     # """
-    def get_object(self, request, pk):
+    def get_object(self, request, id):
         # is_staff = request.user.is_staff
         # try:
         #     if is_staff:
@@ -109,18 +109,17 @@ class UserProfileDetail(APIView):
         # except UserProfile.DoesNotExist:
         #     raise Http404
 
-        user = UserProfile.objects.get(pk=pk)
+        user = UserProfile.objects.filter(id=id).first()
         return user
 
-    def get(self, request, pk, format=None):
-        print("get request")
-        user_profile = self.get_object(request, pk)
+    def get(self, request, id, format=None):
+        user_profile = self.get_object(request, id)
         serializer = UserProfileSerializer(user_profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
-    def put(self, request, pk, format=None):
-        user_profile = self.get_object(request, pk)
+    def put(self, request, id, format=None):
+        user_profile = self.get_object(request, id)
         serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
             # if request.user==UserProfile.created_by or request.user.is_staff:
