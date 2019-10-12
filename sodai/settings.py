@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'producer',
     'retailer',
     'product',
+    'offer',
+
     'rest_framework',
     'rest_framework_simplejwt',
 ]
