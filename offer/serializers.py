@@ -14,3 +14,22 @@ class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         fields = '__all__'
+
+
+class OfferProductSerializer(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        product = self.context['product']
+        offer = self.context['offer']
+        instance.offer_product_balance = validated_data.get('offer_product_balance',instance.offer_product_balance)
+        instance.product = product
+        instance.offer = offer
+        instance.save()
+        return instance
+
+    class Meta:
+        model = OfferProduct
+        fields = '__all__'
+
+
+

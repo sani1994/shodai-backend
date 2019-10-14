@@ -35,7 +35,7 @@ class Product(BaseModel):
     product_image = models.ImageField(upload_to='pictures/product/%Y/%m/%d/', blank=True, null=True)
     product_unit = models.CharField(max_length=3, blank=True, null=True)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
-    product_offer_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True)
+    # product_offer_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
 
     def __str__(self):

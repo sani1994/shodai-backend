@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from offer.models import Offer,OfferProduct
-from offer.serializers import OfferSerializer
+from offer.serializers import OfferSerializer,OfferProductSerializer
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -89,8 +89,38 @@ class OfferDetails(APIView):
             else:
                 return Response({
                     "Status": "No content",
-                    "details": "Rontent not available"
+                    "details": "Content not available"
                 }, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
+
+class OfferProductList(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        queryset = OfferProduct.objects.all()
+        if queryset:
+            serializer = OfferProductSerializer(queryset)
+            if serializer:
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Invalide serializer"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
+    def post(self,request):
+        # if request.user.user_type== 'RT' and  request:
+            print(request.user.user_type)
+            serializer = OfferProductSerializer(data= request.data)
+            if serializer.is_valid():
+                serializer.save(created_by=request.user)
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors)
+            # else:
+            #     return Response({"status": "Unauthorized request or No content"}, status=status.HTTP_403_FORBIDDEN)
