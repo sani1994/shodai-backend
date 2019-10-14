@@ -49,4 +49,48 @@ class OfferDetails(APIView):
         return Offer.objects.filter(id = id).first()
 
     def get(self,request,id):
+        obj = self.get_object(id)
+        if obj:
+            serializer = OfferSerializer(obj)
+            if serializer:
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Invalide serializer"},status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Rontent not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
+    def put(self,request,id):
+        if request.user.user_type == 'SF':
+            obj = self.get_object(id)
+            if obj:
+                serializer = OfferSerializer(obj,data=request.data)
+                if serializer.is_valid():
+                    serializer.save(modified_by = request.user)
+                    return Response(serializer.data,status= status.HTTP_200_OK)
+                else:
+                    return Response({"status": "Invalide serializer"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({
+                    "Status": "No content",
+                    "details": "Rontent not available"
+                }, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+    def delete(self,request,id):
+        if request.user.user_type == 'SF':
+            obj =  self.get_object(id)
+            if obj:
+                obj.delete()
+                return Response ({"status": "Delete successful..!!"},status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "Status": "No content",
+                    "details": "Rontent not available"
+                }, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
