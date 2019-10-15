@@ -10,6 +10,7 @@ class OfferSerializer(serializers.ModelSerializer):
         instance.offer_details = validated_data.get('offer_details',instance.offer_details)
         # instance.modified_by = validated_data.pop('user')
         instance.save()
+        return instance
 
     class Meta:
         model = Offer

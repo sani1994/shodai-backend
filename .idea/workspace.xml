@@ -2,17 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/media/pictures/product/2019/10/15/chicken.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/pictures/product/2019/10/15/chicken.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/pictures/product/2019/10/15/chicken_ZY6wWXb.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/pictures/productcategory/dry-food-packaging-sprouts-750x437.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/pictures/productmeta/meat.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/offer/2019/10/15/7-Best-Online-Grocery-Stores-in-India.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sodai/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sodai/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/offer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/offer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

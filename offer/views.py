@@ -16,7 +16,6 @@ class OfferList(APIView):
 
     def get(self,request):
         queryset = Offer.objects.all()
-        print(queryset)
         if queryset:
             serializer = OfferSerializer(queryset,many=True)
             if serializer:
