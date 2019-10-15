@@ -20,6 +20,7 @@ class Offer(BaseModel):
 class OfferProduct(BaseModel):
     offer = models.ForeignKey(Offer,on_delete=models.CASCADE) # offr foreign key relation
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    offer_price = models.DecimalField(max_digits=5,decimal_places=2,blank=True,null=True)
     offer_product_balance = models.DecimalField(max_digits=5,decimal_places=1,blank=True,null=True)
 
     def __str__(self):
