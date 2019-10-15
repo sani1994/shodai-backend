@@ -4,7 +4,9 @@ from order import views
 
 urlpatterns = [
     path('order/', views.OrderList.as_view()),
-    path('order/<int:pk>/', views.OrderDetail.as_view()),
+    path('order/<int:id>/', views.OrderDetail.as_view()),
+    path('orderproduct/',views.OrderProductList.as_view()),
+    path('orderproduct/<int:id>/',views.OrderProductDetail.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

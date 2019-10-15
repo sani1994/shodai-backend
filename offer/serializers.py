@@ -20,9 +20,12 @@ class OfferSerializer(serializers.ModelSerializer):
 class OfferProductSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
-        product = self.context['product']
-        offer = self.context['offer']
-        instance.offer_product_balance = validated_data.get('offer_product_balance',instance.offer_product_balance)
+        # product = self.context['product']
+        # offer = self.context['offer']
+        product = self.validated_data.pop('product')
+        offer = self.validated_data.pop('offer')
+        instance.offer_product_balance = self.validated_data.get('offer_product_balance',instance.offer_product_balance)
+        instance.offer_price =  self.validated_data.get('offer_price',instance.offer_price)
         instance.product = product
         instance.offer = offer
         instance.save()

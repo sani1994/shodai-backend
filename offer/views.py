@@ -123,3 +123,51 @@ class OfferProductList(APIView):
                 return Response(serializer.errors)
             # else:
             #     return Response({"status": "Unauthorized request or No content"}, status=status.HTTP_403_FORBIDDEN)
+
+
+class OfferProductDetail(APIView):
+
+    def get_offerproduct_obj(self,id):
+        obj = OfferProduct.objects.filter(id=id).first()
+        return  obj
+
+    def get(self,request,id):
+        obj = self.get_offerproduct_obj(id)
+        if obj:
+            serializer = OfferProductSerializer(obj)
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Invalide serializer"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
+    def put(self,request,id):
+        obj = self.get_offerproduct_obj(id)
+        if obj:
+            serializer = OfferProductSerializer(obj,data=request.data)
+            if serializer.is_valid():
+                serializer.save(modified_by = request.user)
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self,request,id):
+        obj = self.get_offerproduct_obj(id)
+        if obj:
+            obj.delete()
+            return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
