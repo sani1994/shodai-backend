@@ -67,6 +67,7 @@ class ProductMetaSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    product_image = serializers.representation
     product_meta = serializers.CharField()
 
     def create(self, validated_data):
@@ -93,3 +94,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [ 'id','product_name', 'product_image', 'product_unit', 'product_price','product_meta']
 
+    def get_product_image(self,obj):
+        if obj.product_image:
+            print(obj.product_image)
+            return obj.product_image.url

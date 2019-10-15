@@ -8,7 +8,7 @@ from product.models import Product
 class Offer(BaseModel):
     # put reailer as foreign key
     offer_name = models.CharField(max_length=100,blank=False,null=False)
-    offer_img = models.ImageField(upload_to='static/pictures/offer/%Y/%m/%d',blank=False,null=False)
+    offer_img = models.ImageField(upload_to='pictures/offer/%Y/%m/%d',blank=False,null=False)
     offer_details = models.CharField(max_length=500,blank=True,null=True)
     offer_ends_in = models.DateTimeField(blank=True,null=True)
     offer_starts_in = models.DateTimeField(blank=True,null=True)

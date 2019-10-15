@@ -13,7 +13,7 @@ class ShopCategory(BaseModel):
 
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
-    img = models.ImageField(upload_to='static/pictures/productcategory/', blank=True, null=True)
+    img = models.ImageField(upload_to='pictures/productcategory/', blank=True, null=True)
 
     def __str__(self):
         return self.type_of_product
@@ -21,7 +21,7 @@ class ProductCategory(BaseModel):
 
 class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny name)
     name = models.CharField(max_length=100)
-    img = models.ImageField(upload_to="static/pictures/productmeta/", blank=True, null=True)
+    img = models.ImageField(upload_to="pictures/productmeta/", blank=True, null=True)
     product_category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
     shop_category = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
 
@@ -32,7 +32,7 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
 class Product(BaseModel):
     # put retailer as foreign key
     product_name = models.CharField(max_length=100, blank=True, null=True)
-    product_image = models.ImageField(upload_to='static/pictures/product/%Y/%m/%d/', blank=True, null=True)
+    product_image = models.ImageField(upload_to='pictures/product/%Y/%m/%d/', blank=True, null=True)
     product_unit = models.CharField(max_length=3, blank=True, null=True)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
     # product_offer_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True)
