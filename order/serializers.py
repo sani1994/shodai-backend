@@ -110,15 +110,30 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderProductSerializer(serializers.ModelSerializer):
 
     def update(self,instance,validated_data):
-        order = self.validated_data.pop('order')
         product = self.validated_data.pop('product')
+        order = self.validated_data.pop('order')
 
         instance.orderproduct_qty = self.validated_data.get('orderproduct_qty',instance.orderproduct_qty)
-        instance.order = order
         instance.product = product
+        instance.order = instance.order
         instance.save()
         return instance
 
     class Meta:
         model = OrderProduct
+        fields = '__all__'
+
+
+class VatSerializer(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        product_meta = self.validated_data.pop('product_meta')
+
+        instance.vat_amount =  self.validated_data.get('vat_amount',instance.vat_amount)
+        instance.product_meta = product_meta
+        instance.save()
+        return instance
+
+    class Meta:
+        model = Vat
         fields = '__all__'

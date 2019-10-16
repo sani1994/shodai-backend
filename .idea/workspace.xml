@@ -2,32 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/offer/migrations/0005_auto_20191015_0939.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order/migrations/0005_auto_20191015_0939.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order/migrations/0006_orderproduct_orderproduct_qty.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0008_auto_20191015_0939.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/2019/10/10/51304288_2257682554276330_5552805136432103424_o.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_B25ofXV.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_CseO4xL.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_HRJeZxM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_HfAOP4f.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_KLHJOB1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_gSTHicm.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_wLRusbZ.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_wtjWN63.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_yd3wTK9.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pictures/offer/2019/10/14/Screenshot_2019-09-30_at_1.05.34_PM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/models.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

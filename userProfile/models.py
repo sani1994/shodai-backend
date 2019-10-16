@@ -18,10 +18,12 @@ class UserProfile(AbstractUser):
         (STAFF, 'Staff')
     ]
     user_type = models.CharField(max_length=30, choices=USER_TYPES_CHOICES, default=CUSTOMER)
-    mobile_number = models.CharField(max_length=15, blank=True, null=True)
+    user_image = models.ImageField(upload_to='user/%Y/%m/%d',blank=True,null=True)
+    mobile_number = models.CharField(max_length=15, blank=True, null=True,unique=True)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True,unique=True)
+    user_NID = models.CharField(max_length=100,blank=False,null=True,unique=True)
 
     # token = models.CharField(max_length=100,blank=True,null=True)
     ref_code = models.CharField(max_length=10, blank=True, null=True)

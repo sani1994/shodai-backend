@@ -36,7 +36,7 @@ class Order(BaseModel):
         (BIDDING, 'Biding'),
     ]
     order_type = models.CharField(max_length=20,choices=ORDER_TYPES,default=FIXED_PRICE)
-    contact_number = models.IntegerField(max_length=15,null=True,blank=True)
+    contact_number = models.IntegerField(null=True,blank=True)
 
     def __str__(self):
         return self.delivery_place
@@ -49,10 +49,9 @@ class OrderProduct(BaseModel):
     orderproduct_qty = models.FloatField(default=1)
 
 class Vat(BaseModel):
-    product_meta = models.ForeignKey(ProductMeta, models.SET_NULL,blank=True,null=True)
-    vat_amount = models.FloatField(blank=True,null=True)
+    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False)
+    vat_amount = models.FloatField(default=0,blank=False,null=False)
     
-
 
 
 

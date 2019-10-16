@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from order.serializers import OrderSerializer,OrderProductSerializer
+from order.serializers import OrderSerializer,OrderProductSerializer,VatSerializer
 from order.models import OrderProduct, Order, Vat
 
 from django.http import Http404
@@ -217,7 +217,70 @@ class OrderProductDetail(APIView):
 
     def delete(self,request,id):
         obj = self.get_orderproduct_obj(id)
-        print(obj)
+        if obj:
+            obj.delete()
+            return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class VatList(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        queryset = Vat.objects.all()
+        if queryset:
+            serializer = VatSerializer(queryset,many=True)
+            if serializer:
+                return Response (serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+    def post(self,request):
+        serializer = VatSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(created_by = request.user)
+            return Response (serializer.data,status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VatDetail(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get_vat_object(self,id):
+        obj = Vat.objects.filter(id=id).first()
+        return obj
+
+    def get(self,request,id):
+        obj = self.get_vat_object(id)
+        if obj:
+            serializer =  VatSerializer(obj)
+            if serializer:
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+    def put(self,request,id):
+        obj = self.get_vat_object(id)
+        if obj:
+            serializer = VatSerializer(obj,data=request.data)
+            if serializer.is_valid():
+                serializer.save(modified_by = request.user)
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self,requst,id):
+        obj = self.get_vat_object(id)
         if obj:
             obj.delete()
             return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
