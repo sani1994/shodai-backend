@@ -1,4 +1,4 @@
-from retailer.models import Retailer, Account
+from retailer.models import  Retailer,Account
 from rest_framework import serializers
 
 
@@ -27,12 +27,12 @@ class RetailerSerializer(serializers.HyperlinkedModelSerializer):
         instance.retailer_email = validated_data.get('retailer_email', instance.retailer_email)
         instance.retailer_website = validated_data.get('retailer_website', instance.retailer_website)
         return instance
-    
-    # def get_retailer_logo(self, retailer):
-    #     request = self.context.get('request')
-    #     retailer_logo = retailer.retailer_logo.url
-    #     return request.build_absolute_uri(retailer_logo)
-    
+
+    def get_retailer_logo(self, retailer):
+        request = self.context.get('request')
+        retailer_logo = retailer.retailer_logo.url
+        return request.build_absolute_uri(retailer_logo)
+
     class Meta:
         model = Retailer
         fields = ['user', 'address', 'retailer_logo', 'retailer_email', 'retailer_website']
@@ -59,8 +59,8 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
         instance.account_no = validated_data.get('account_no', instance.account_no)
         instance.account_name = validated_data.get('account_name', instance.account_name)
         return instance
-    
+
     class Meta:
         model = Account
         fields = [ 'retailer_id', 'bank_name ', 'account_no', 'account_name']
-
+#

@@ -20,9 +20,22 @@ class Account(BaseModel):
     retailer_id = models.ForeignKey(Retailer, models.SET_NULL,
     blank=True,
     null=True)
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
     bank_name = models.CharField(max_length=50, blank=True, null=True)
     account_no = models.IntegerField(blank=True, null=True)
     account_name = models.CharField(max_length=50, blank=True, null=True)
+
+
+class Shop(BaseModel):
+        user = models.OneToOneField(UserProfile,on_delete=models.CASCADE)
+        shop_name = models.CharField(max_length= 100,null=False,blank=False)
+        shop_lat = models.FloatField(null=True,blank=True)
+        shop_long = models.FloatField(null=True,blank=True)
+        shop_address = models.CharField(max_length=100,blank=True,null=True)
+        shop_image= models.ImageField(upload_to='retailer/shop/%Y/%m/%d',null=True,blank=True)
+        shop_licence= models.CharField(max_length=200,blank=True,null=True) #trade licence
+
+
 
 
 

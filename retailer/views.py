@@ -32,7 +32,7 @@ class RetailerList(APIView):
         #         product = Product.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
-            
+
         serializer = RetailerSerializer(retailer, context={'request': request})
         return Response(serializer.data)
 
@@ -48,7 +48,7 @@ class RetailerList(APIView):
                 if serializer.is_valid():
                     serializer.save(created_by=request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
- 
+
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -84,7 +84,7 @@ class RetailerDetail(APIView):
         if serializer.is_valid():
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 
     def put(self, request, pk, format=None):
         retailer = self.get_object(request, pk)
@@ -94,12 +94,12 @@ class RetailerDetail(APIView):
                 serializer.save(modified_by=request.user)
                 return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk, format=None):
         retailer = self.get_object(request, pk)
         if request.user.is_staff:
             retailer.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -124,7 +124,7 @@ class AccountList(APIView):
         #         account = Account.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
-            
+
         serializer = AccountSerializer(account, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -140,7 +140,7 @@ class AccountList(APIView):
                 if serializer.is_valid():
                     serializer.save(created_by=request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
- 
+
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -176,7 +176,7 @@ class AccountDetail(APIView):
         if serializer.is_valid():
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 
     def put(self, request, pk, format=None):
         account = self.get_object(request, pk)
@@ -186,12 +186,12 @@ class AccountDetail(APIView):
                 serializer.save(modified_by=request.user)
                 return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk, format=None):
         account= self.get_object(request, pk)
         if request.user.is_staff:
             account.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 

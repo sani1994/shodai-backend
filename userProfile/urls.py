@@ -14,7 +14,8 @@ urlpatterns = [
     path('logout/',views.Logout.as_view()),
     path('registration/',views.UserRegistration.as_view()),
     path('otp/',views.OtpCode.as_view()),
-    path('otpverify/',views.OtpVerify.as_view())
+    path('otpverify/',views.OtpVerify.as_view()),
+    path('retailerregistration/',views.RetailerRegistration.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

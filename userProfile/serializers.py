@@ -137,3 +137,8 @@ class UserRegistrationSerializer(serializers.HyperlinkedModelSerializer):
         fields= ('user_type','mobile_number','first_name','last_name','email','password')
 
 
+class RetailerRegistrationSreializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserProfile
+        fields = ('id','user_type','user_image','mobile_number','first_name','last_name','email','user_NID')

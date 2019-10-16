@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import GenericAuth
-from userProfile.serializers import UserProfileSerializer, AddressSerializer,UserRegistrationSerializer
+from userProfile.serializers import UserProfileSerializer, AddressSerializer,UserRegistrationSerializer,RetailerRegistrationSreializer
 
 from userProfile.models import UserProfile, Address, BlackListedToken
 
@@ -415,5 +415,19 @@ class OtpVerify(APIView):
             return Response({
                 "status": "Invalide..!!",
             }, status=status.HTTP_204_NO_CONTENT)
+
+
+class RetailerRegistration(APIView):
+
+    def post(self,request):
+        if request.data:
+            serializer = RetailerRegistrationSreializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return  Response(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
