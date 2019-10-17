@@ -27,7 +27,7 @@ class Order(BaseModel):
         (ORDER_CANCELLED, 'Order Cancelled'),
     ]
     order_status = models.CharField(max_length=100, choices=ORDER_STATUS, default=ORDERED)
-    home_delivery = models.BooleanField(default=True)
+    home_delivery = models.BooleanField(default=True,null=False,blank=False)
 
     FIXED_PRICE = 'FP'
     BIDDING = 'BD'
@@ -46,7 +46,8 @@ class Order(BaseModel):
 class OrderProduct(BaseModel):
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
     order = models.ForeignKey(Order,on_delete=models.CASCADE)
-    orderproduct_qty = models.FloatField(default=1)
+    order_product_price = models.FloatField(blank=False,null=False,default=0)  # product may belong to offer do the price
+    order_product_qty = models.FloatField(default=1)
 
 class Vat(BaseModel):
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False)

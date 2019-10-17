@@ -111,6 +111,12 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self,request):
+        if request.data['contact_number'] == '':
+            print(request.user.mobile_number)
+            request.POST._mutable =True
+            request.data['contact_number'] = request.user.mobile_number
+            request.POST._mutable = False
+
         serializer = OrderSerializer(data=request.data,context={'request': request})
         if serializer.is_valid():
             serializer.save(user = request.user,created_by = request.user)
@@ -141,9 +147,9 @@ class OrderDetail(APIView):
     def put(self,request,id):
         obj = self.get_order_object(id)
         if obj:
-            serializer = OrderSerializer(obj,data=request.data,context={'request': request.data})
+            serializer = OrderSerializer(obj,data=request.data,context={'request': request})
             if serializer.is_valid():
-                serializer.save(modified_by= request.user)
+                serializer.save()
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

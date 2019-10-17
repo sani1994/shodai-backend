@@ -2,16 +2,32 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/order/migrations/0008_auto_20191016_1215.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/userProfile/migrations/0009_auto_20191016_1215.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/userProfile/migrations/0010_auto_20191016_1304.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/userProfile/migrations/0011_auto_20191016_1304.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/offer/2019/10/17/offer.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/2019/10/17/dal.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/2019/10/17/rice.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/dal.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/rice.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/dal.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/rice.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/user/2019/10/17/51304288_2257682554276330_5552805136432103424_o.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/user/2019/10/17/51304288_2257682554276330_5552805136432103424_o_1DlzHrd.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/user/2019/10/17/51304288_2257682554276330_5552805136432103424_o_ULXuHQU.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order/migrations/0009_auto_20191017_0622.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/retailer/migrations/0004_auto_20191017_1002.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/retailer/migrations/0005_auto_20191017_1256.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/retailer/migrations/0006_auto_20191017_1257.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/offer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/retailer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/retailer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/retailer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/userProfile/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />

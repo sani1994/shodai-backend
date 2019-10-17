@@ -138,7 +138,28 @@ class UserRegistrationSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class RetailerRegistrationSreializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+
+        if not validated_data:
+            return Response({'Error': "Invalid Data"})
+        user = UserProfile.objects.create(
+            user_type= validated_data['user_type'],
+            mobile_number = validated_data['mobile_number'],
+            username = validated_data['mobile_number'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            email=validated_data['email'],
+            user_image=validated_data['user_image'],
+            user_NID=validated_data['user_NID'],
+        )
+        if user:
+            user.set_password(validated_data['password'])
+            user.save()
+        return user
 
     class Meta:
         model = UserProfile
-        fields = ('id','user_type','user_image','mobile_number','first_name','last_name','email','user_NID')
+        fields = ('id','user_type','user_image','mobile_number','first_name','last_name','email','user_NID','password')

@@ -91,6 +91,7 @@ from rest_framework import serializers
 
 class OrderSerializer(serializers.ModelSerializer):
 
+
     def update(self,instance,validated_data):
         user = self.context['request'].user
 
@@ -99,6 +100,7 @@ class OrderSerializer(serializers.ModelSerializer):
         instance.order_status = validated_data.get('order_status',instance.order_status)
         instance.home_delivery = validated_data.get('home_delivery',instance.home_delivery)
         instance.user = user
+        instance.modified_by = user
         instance.save()
         return instance
 
@@ -115,7 +117,7 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
         instance.orderproduct_qty = self.validated_data.get('orderproduct_qty',instance.orderproduct_qty)
         instance.product = product
-        instance.order = instance.order
+        instance.order = order
         instance.save()
         return instance
 

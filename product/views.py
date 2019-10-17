@@ -58,8 +58,8 @@ class ProductList(APIView):
         #             serializer.save(created_by=request.user)
         #             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if serializer.is_valid():
-            serializer.save()
-            return Response(status.HTTP_202_ACCEPTED)
+            serializer.save(created_by=request.user)
+            return Response(serializer.data,status.HTTP_202_ACCEPTED)
  
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -354,7 +354,7 @@ class ProductCategoryDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ShopCategoryList(APIView):
+class ShopCategoryList(APIView):        # shop_category must be in unique formate to make the connection with shop model of retailer
     permission_classes = [GenericAuth]
 
     ## list of Shop category
@@ -387,8 +387,8 @@ class ShopCategoryList(APIView):
         #         serializer.save(created_by=request.user)
         #         return Response(serializer.data, status=status.HTTP_201_CREATED)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'success':'success'},status=status.HTTP_202_ACCEPTED)
+            serializer.save(created_by=request.user)
+            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
 
         # else:
         #     if request.user.user_type=='RT': # Retailer = RT

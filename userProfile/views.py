@@ -421,7 +421,7 @@ class RetailerRegistration(APIView):
 
     def post(self,request):
         if request.data:
-            serializer = RetailerRegistrationSreializer(data=request.data)
+            serializer = RetailerRegistrationSreializer(data=request.data,context={'request':request})
             if serializer.is_valid():
                 serializer.save()
                 return  Response(serializer.data,status=status.HTTP_200_OK)
