@@ -112,12 +112,12 @@ class OrderList(APIView):
 
     def post(self,request):
         if request.data['contact_number'] == '':
-            print(request.user.mobile_number)
             request.POST._mutable =True
             request.data['contact_number'] = request.user.mobile_number
             request.POST._mutable = False
 
         serializer = OrderSerializer(data=request.data,context={'request': request})
+        print(serializer)
         if serializer.is_valid():
             serializer.save(user = request.user,created_by = request.user)
             return Response(serializer.data,status=status.HTTP_200_OK)

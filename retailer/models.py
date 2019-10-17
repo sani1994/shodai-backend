@@ -27,7 +27,7 @@ class Account(BaseModel):
 
 
 class Shop(BaseModel):
-    user = models.OneToOneField(UserProfile,on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     shop_name = models.CharField(max_length= 100,null=False,blank=False)
     shop_lat = models.FloatField(null=True,blank=True)
     shop_long = models.FloatField(null=True,blank=True)

@@ -289,8 +289,3 @@ class ShopDetail(APIView):
         else:
             return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-
-
-
-
-
