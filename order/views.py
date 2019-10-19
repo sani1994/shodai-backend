@@ -110,13 +110,12 @@ class OrderList(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def post(self,request):
+    def post(self,request,*args,**kwargs):
         if request.data['contact_number'] == '':
             request.POST._mutable =True
             request.data['contact_number'] = request.user.mobile_number
             request.POST._mutable = False
-
-        serializer = OrderSerializer(data=request.data,context={'request': request})
+        serializer = OrderSerializer(data=request.data,many=isinstance(request.data,list),context={'request': request})
         print(serializer)
         if serializer.is_valid():
             serializer.save(user = request.user,created_by = request.user)

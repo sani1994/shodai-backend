@@ -1,6 +1,7 @@
 from django.db import models
 from userProfile.models import UserProfile
 from userProfile.models import Address
+from order.models import Order,OrderProduct
 from bases.models import BaseModel
 # Create your models here.
 
@@ -20,9 +21,9 @@ class Account(BaseModel):
     # retailer_id = models.ForeignKey(Retailer, models.SET_NULL,
     # blank=True,
     # null=True)
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     bank_name = models.CharField(max_length=50, blank=True, null=True)
-    account_no = models.IntegerField(blank=True, null=True)
+    account_no = models.CharField(max_length=100,blank=True, null=True)
     account_name = models.CharField(max_length=50, blank=True, null=True)
 
 
@@ -35,6 +36,16 @@ class Shop(BaseModel):
     shop_image= models.ImageField(upload_to='retailer/shop/%Y/%m/%d',null=True,blank=True)
     shop_licence= models.CharField(max_length=200,blank=True,null=True,unique=True) #trade licence
     shop_website = models.CharField(max_length=100,blank=True,null=True)
+
+    def __str__(self):
+        return self.shop_name
+
+
+class AcceptedOrder(BaseModel):
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
+    oder = models.ForeignKey(Order,on_delete=models.CASCADE)
+    order_product = models.ForeignKey(OrderProduct,on_delete=models.CASCADE,null=True)
+
 
 
 
