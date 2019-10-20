@@ -28,7 +28,7 @@ class OfferList(APIView):
     def post(self,request):
         if request.user.user_type == 'SF':
             if request.data:
-                serilaizer = OfferSerializer(data=request.data)
+                serilaizer = OfferSerializer(data=request.data,context={'request':request})
                 if serilaizer.is_valid():
                     serilaizer.save(created_by = request.user)
                     return Response (serilaizer.data,status=status.HTTP_201_CREATED)

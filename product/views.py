@@ -42,7 +42,7 @@ class ProductList(APIView):
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
-        serializer = ProductSerializer(product, many=True, context={'request': request})
+        serializer = ProductSerializer(product, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
@@ -154,12 +154,12 @@ class ProductMetaList(APIView):
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
-        serializer = ProductMetaSerializer(product_meta, many=True, context={'request': request})
+        serializer = ProductMetaSerializer(product_meta, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
+
         serializer = ProductMetaSerializer(data=request.data)
-        print("input serializer: ",serializer)
         # if request.user.is_staff:
         #     if serializer.is_valid():
         #         serializer.save(created_by=request.user)
@@ -171,8 +171,8 @@ class ProductMetaList(APIView):
         #             serializer.save(created_by=request.user)
         #             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            serializer.save(created_by=request.user)
+            return Response(serializer.data,status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -201,8 +201,8 @@ class ProductMetaDetail(APIView):     # this mathod dont work because couldnt up
         #              # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
         #         return ProductMeta.objects.get(pk=pk)
         try:
-            objectt= ProductMeta.objects.filter(id=id).first()
-            return objectt
+            obj= ProductMeta.objects.filter(id=id).first()
+            return obj
         except ProductMeta.DoesNotExist:
             raise Http404
 
@@ -212,7 +212,7 @@ class ProductMetaDetail(APIView):     # this mathod dont work because couldnt up
         if product_meta:
             serializer = ProductMetaSerializer(product_meta)
             if serializer:
-                return Response(serializer.data)
+                return Response(serializer.data,status=status.HTTP_200_OK)
             else:
                 return Response(serializer.error_messages,status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -228,7 +228,7 @@ class ProductMetaDetail(APIView):     # this mathod dont work because couldnt up
         if serializer.is_valid():
             # if request.user==product_meta.created_by or request.user.is_staff:
             #     serializer.save(modified_by=request.user)
-            serializer.save()
+            serializer.save(modified_by=request.user)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -377,7 +377,7 @@ class ShopCategoryList(APIView):        # shop_category must be in unique format
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
-        serializer = ShopCategorySerializer(shop_catagory, many=True, context={'request': request})
+        serializer = ShopCategorySerializer(shop_catagory, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):

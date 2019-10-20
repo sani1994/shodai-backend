@@ -11,5 +11,4 @@ urlpatterns = [
     path('vat/', views.VatList.as_view()),
     path('vat/<int:id>/',views.VatDetail.as_view())
 ]
-
 urlpatterns = format_suffix_patterns(urlpatterns)

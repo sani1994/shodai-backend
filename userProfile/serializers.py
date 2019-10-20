@@ -51,8 +51,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         # fields = ['id','user_type', 'mobile_number', 'first_name', 'last_name', 'email', 'ref_code', 'pin_code', 'created_on', 'modified_on']
-        fields = ['id', 'user_type', 'mobile_number', 'first_name', 'last_name', 'email','password']
+        # fields = ['id', 'user_type', 'mobile_number', 'first_name', 'last_name', 'email','password']
+        fields = '__all__'
         write_only_fields = ('password',)
+
 
     def create(self,validated_data):
         user = UserProfile.objects.create(

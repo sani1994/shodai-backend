@@ -135,7 +135,7 @@ class OrderDetail(APIView):
     def get(self,request,id):
         obj = self.get_order_object(id)
         if obj:
-            serializer = OrderSerializer(obj,context={'request': request})
+            serializer = OrderSerializer(obj)
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:

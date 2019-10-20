@@ -50,7 +50,7 @@ class UserProfileList(APIView):
         #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
         else:
             if user_type == 'SF':
-                serializer = UserProfileSerializer(user_profile, many=True, context={'request': request})
+                serializer = UserProfileSerializer(user_profile, many=True)
                 return Response(serializer.data)
 
 
