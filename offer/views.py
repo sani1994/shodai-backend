@@ -114,7 +114,6 @@ class OfferProductList(APIView):
 
     def post(self,request):
         # if request.user.user_type== 'RT' and  request:
-            print(request.user.user_type)
             serializer = OfferProductSerializer(data= request.data)
             if serializer.is_valid():
                 serializer.save(created_by=request.user)

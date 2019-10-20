@@ -2,46 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/media/offer/2019/10/20/offer.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/offer/2019/10/20/offer_BTzRjY3.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/offer/2019/10/20/offer_ST25zel.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/offer/2019/10/20/offer_n8XN6nS.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/offer/2019/10/20/offer.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/offer/2019/10/20/offer_LolcYey.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/rice_GmxVTfM.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/rice_xKya3FG.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/offer/migrations/0006_auto_20191020_1317.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/offer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sodai/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sodai/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/admin/fonts/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/static/admin/fonts/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/2019/10/10/51304288_2257682554276330_5552805136432103424_o.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_B25ofXV.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_CseO4xL.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_HRJeZxM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_HfAOP4f.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_KLHJOB1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_gSTHicm.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_wLRusbZ.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_wtjWN63.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/13/Screenshot_2019-09-30_at_1.05.34_PM_yd3wTK9.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/14/Screenshot_2019-09-30_at_1.05.34_PM.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/14/Screenshot_2019-09-30_at_1.05.34_PM_u6LuRHO.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/offer/2019/10/14/offer.jpeg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/product/2019/10/15/chicken.jpeg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/product/2019/10/15/chicken_ZY6wWXb.jpeg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/productcategory/dry-food-packaging-sprouts-750x437.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/pictures/productmeta/meat.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
