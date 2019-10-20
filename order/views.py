@@ -175,17 +175,29 @@ class OrderProductList(APIView):
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": "Not serializable data"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self,request):
-        serializer =  OrderProductSerializer(data=request.data,context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data,status= status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+        response = {
+            'rspns',
+            'status_code',
+        }
+        responses = []
+        for data in request.data:
+            serializer = OrderProductSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK}
+                responses.append(response)
+
+            else:
+                response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
+                responses.append(response)
+
+        return  Response(responses)
 
 
 class OrderProductDetail(APIView):

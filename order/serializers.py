@@ -111,6 +111,17 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderProductSerializer(serializers.ModelSerializer):
 
+    # def create(self,validated_data):
+    #     product = self.validated_data.pop('product')
+    #     order = self.validated_data.pop('order')
+    #     order_products = OrderProduct.objects.bulk_create(validated_data,product=product,order=order)
+    #     return order_products
+    # def create(self, validated_data):
+    #     for data in validated_data:
+    #         # product=data.pop('product')
+    #         # order = data.pop('order')
+    #         return OrderProduct.objects.create(data)
+
     def update(self,instance,validated_data):
         product = self.validated_data.pop('product')
         order = self.validated_data.pop('order')
