@@ -303,3 +303,17 @@ class VatDetail(APIView):
             return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class OrderDeatils(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get(self,request,id):
+        obj = Order.objects.filter(id=id).first()
+        response = obj.orderproduct_set.all()
+        serializer = OrderProductSerializer(response,many=True)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
