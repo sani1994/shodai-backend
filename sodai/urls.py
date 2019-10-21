@@ -20,6 +20,28 @@ from rest_framework import routers
 from django.conf.urls.static import static
 from sodai import settings
 
+# for django matreial admin site
+
+from django.contrib.staticfiles.templatetags.staticfiles import static as staticfiles
+from django.urls import path, include
+from django.utils.translation import ugettext_lazy as _
+
+from material.admin.sites import site
+
+# optional
+###################################################
+site.site_header = _('Shodai')
+site.site_title = _('Shodai')
+site.favicon = staticfiles('../media/')
+site.main_bg_color = 'green'
+site.main_hover_color = 'red'
+site.profile_picture = staticfiles('../media/shodai.jpg')
+site.profile_bg = staticfiles('../media/shodai.jpg')
+site.login_logo = staticfiles('../media/shodai.jpg')
+site.logout_bg = staticfiles('../media/shodai.jpg')
+site.login_bg_color = 'green'
+##################################################
+
 urlpatterns = [
     path('', include('order.urls')),
     path('', include('product.urls')),
@@ -27,6 +49,6 @@ urlpatterns = [
     path('', include('retailer.urls')),
     path('', include('userProfile.urls')),
     path('', include('offer.urls')),
-    path('admin/', admin.site.urls),
+    path('admin/', include('material.admin.urls')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

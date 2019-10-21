@@ -1,6 +1,10 @@
 from django.contrib import admin
 from retailer.models import  Account
 from userProfile.models import UserProfile
+from material.admin.options import MaterialModelAdmin
+from material.admin.sites import site
+from retailer.models import Account,Shop,AcceptedOrder
+
 # Register your models here.
 
 # class UserInline(admin.StackedInline):
@@ -30,3 +34,12 @@ from userProfile.models import UserProfile
 # # admin.site.unregister(Retailer)
 # # admin.site.register(Retailer, RetailerAdmin)
 # admin.site.register(RetailerAdmin)
+
+class ShopAdmin(MaterialModelAdmin):
+    icon_name = 'perm_identity'
+
+
+site.register(Shop)
+site.register(Account)
+site.register(AcceptedOrder)
+

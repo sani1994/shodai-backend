@@ -1,33 +1,40 @@
 from django.contrib import admin
-from userProfile.models import UserProfile, Address
+from django.contrib.admin import register
+from material.admin.options import MaterialModelAdmin
+from material.admin.sites import site
+from userProfile.models import UserProfile, Address, Otp
 
 # Register your models here.
 
-class AddressAdmin(admin.ModelAdmin):
+class AddressAdmin(MaterialModelAdmin):
     list_display = ('road' , 'city', 'district', 'country')
+    icon_name = 'face'
 
-class AddressInline(admin.StackedInline):
-    """ Details a person in line. """
-    model = Address
-    can_delete = False
-    verbose_name_plural = 'person'
+# class AddressInline(admin.StackedInline):
+#     """ Details a person in line. """
+#     model = Address
+#     can_delete = False
+#     verbose_name_plural = 'person'
+#
+#     fields = ('road', 'city', 'district')
 
-    fields = ('road', 'city', 'district')
 
 
-    
 
 # class UserInfoAdmin(admin.ModelAdmin):
 #     # list_display = ('mobile_number', 'user_id', 'address')
 #     # exclude = ['created_by', 'modified_by']
 
 #     # inlines = [
-#     #     AddressInline 
+#     #     AddressInline
 #     # ]
 #     list_display = ['retailer_user', 'address']
 
-admin.site.register(Address, AddressAdmin)
-admin.site.register(UserProfile)
+# admin.site.register(Address, AddressAdmin)
+# admin.site.register(UserProfile)
 # admin.site.register(UserInfo, UserInfoAdmin)
 
 # admin.site.register(Retailer, RetailerAdmin)
+site.register(UserProfile)
+site.register(Address)
+site.register(Otp)

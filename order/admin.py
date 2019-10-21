@@ -1,8 +1,10 @@
 from django.contrib import admin
-from order.models import Order
+from material.admin.options import MaterialModelAdmin
+from material.admin.sites import site
+from order.models import Order,Vat,OrderProduct
 
 # Register your models here.
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'user_id')
     list_display = ('user_id','delivery_date_time', 'delivery_place', 'order_status', 'home_delivery', 'created_by', 'modified_by')
     exclude = ['created_by', 'modified_by']
@@ -15,7 +17,9 @@ class OrderAdmin(admin.ModelAdmin):
         super().save_model(request,obj, form, change)
         
 
-admin.site.register(Order, OrderAdmin)
+site.register(Order, OrderAdmin)
+site.register(OrderProduct)
+site.register(Vat)
 
 # admin.site.register(OrderProduct)
 # admin.site.register(Vat)

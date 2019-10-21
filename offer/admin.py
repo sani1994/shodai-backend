@@ -1,4 +1,7 @@
 from django.contrib import admin
-from offer.models import Offer
+from material.admin.options import MaterialModelAdmin
+from material.admin.sites import site
+from offer.models import Offer,OfferProduct
 # Register your models here.
-admin.site.register(Offer)
+site.register(Offer)
+site.register(OfferProduct)

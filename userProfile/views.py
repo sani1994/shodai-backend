@@ -42,9 +42,9 @@ class UserProfileList(APIView):
         #     return Response(user_profile)
         # else:
         user_type = request.user.user_type
-        if user_type=='CM':  # Customer = CM
+        if user_type=='CM' or user_type == 'RT':  # Customer = CM
             user_profile = UserProfile.objects.filter(id=request.user.id)
-            serializer = UserProfileSerializer(user_profile, many=True, context={'request': request})
+            serializer = UserProfileSerializer(user_profile, many=True)
             return Response(serializer.data)
         # elif user_type=='RT': # Retailer = RT
         #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())

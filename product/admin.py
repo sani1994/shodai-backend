@@ -1,4 +1,6 @@
 from django.contrib import admin
+from material.admin.options import MaterialModelAdmin
+from material.admin.sites import site
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 
 # Register your models here.
@@ -17,4 +19,7 @@ class ProductAdmin(admin.ModelAdmin):
         super().save_model(request,obj, form, change)
         
     
-admin.site.register(Product, ProductAdmin)
+site.register(Product, ProductAdmin)
+site.register(ShopCategory)
+site.register(ProductCategory)
+site.register(ProductMeta)
