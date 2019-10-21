@@ -1,22 +1,18 @@
-/*global DateTimeShortcuts, SelectFilter*/
-/**
- * Django admin inlines
- *
- * Based on jQuery Formset 1.1
- * @author Stanislaus Madueke (stan DOT madueke AT gmail DOT com)
- * @requires jQuery 1.2.6 or later
- *
- * Copyright (c) 2009, Stanislaus Madueke
- * All rights reserved.
- *
- * Spiced up with Code from Zain Memon's GSoC project 2009
- * and modified for Django by Jannis Leidel, Travis Swicegood and Julien Phalip.
- *
- * Licensed under the New BSD License
- * See: https://opensource.org/licenses/bsd-license.php
- */
-(function($) {
+function initInlineTabularSelect () {
+  $('.form-row:not(.empty-form) select').formSelect();
+}
+
+function initInlineStackedSelect () {
+  $('.inline-group .inline-related:not(.empty-form) select').formSelect();
+}
+
+function initTextareaInline() {
+  $('.vLargeTextField').addClass('materialize-textarea');
+}
+
+(function($, initInlineTabularSelect, initInlineStackedSelect, initTextareaInline) {
     'use strict';
+    var initInline = null;
     $.fn.formset = function(opts) {
         var options = $.extend({}, $.fn.formset.defaults, opts);
         var $this = $(this);
@@ -50,12 +46,12 @@
                     // If forms are laid out as table rows, insert the
                     // "add" button in a new table row:
                     var numCols = this.eq(-1).children().length;
-                    $parent.append('<tr class="' + options.addCssClass + '"><td colspan="' + numCols + '"><a href="#">' + options.addText + "</a></tr>");
+                    $parent.append('<tr class="' + options.addCssClass + '"><td colspan="' + numCols + '"><a href="#" class="add-inline-link"><i class="material-icons">add</i>' + options.addText + "</a></tr>");
                     addButton = $parent.find("tr:last a");
                 } else {
                     // Otherwise, insert it immediately after the last form:
-                    $this.filter(":last").after('<div class="' + options.addCssClass + '"><a href="#">' + options.addText + "</a></div>");
-                    addButton = $this.filter(":last").next().find("a");
+                    $this.parent().after('<div><a href="#" class="add-inline-link"><i class="material-icons">add</i><span>' + options.addText + "</span></a></div>");
+                    addButton = $this.parent().next().find("a");
                 }
             }
             addButton.on('click', function(e) {
@@ -63,8 +59,8 @@
                 var template = $("#" + options.prefix + "-empty");
                 var row = template.clone(true);
                 row.removeClass(options.emptyCssClass)
-                    .addClass(options.formCssClass)
-                    .attr("id", options.prefix + "-" + nextIndex);
+                .addClass(options.formCssClass)
+                .attr("id", options.prefix + "-" + nextIndex);
                 if (row.is("tr")) {
                     // If the forms are laid out in table rows, insert
                     // the remove button into the last table cell:
@@ -124,6 +120,7 @@
                     options.added(row);
                 }
                 $(document).trigger('formset:added', [row, options.prefix]);
+                initInline();
             });
         }
         return this;
@@ -131,16 +128,16 @@
 
     /* Setup plugin defaults */
     $.fn.formset.defaults = {
-        prefix: "form", // The form prefix for your django formset
-        addText: "add another", // Text for the add link
-        deleteText: "remove", // Text for the delete link
-        addCssClass: "add-row", // CSS class applied to the add link
-        deleteCssClass: "delete-row", // CSS class applied to the delete link
-        emptyCssClass: "empty-row", // CSS class applied to the empty row
-        formCssClass: "dynamic-form", // CSS class applied to each form in a formset
-        added: null, // Function called each time a new form is added
-        removed: null, // Function called each time a form is deleted
-        addButton: null // Existing add button to use
+        prefix: "form",          // The form prefix for your django formset
+        addText: "add another",      // Text for the add link
+        deleteText: "remove",      // Text for the delete link
+        addCssClass: "add-row",      // CSS class applied to the add link
+        deleteCssClass: "delete-row",  // CSS class applied to the delete link
+        emptyCssClass: "empty-row",    // CSS class applied to the empty row
+        formCssClass: "dynamic-form",  // CSS class applied to each form in a formset
+        added: null,          // Function called each time a new form is added
+        removed: null,          // Function called each time a form is deleted
+        addButton: null       // Existing add button to use
     };
 
 
@@ -149,8 +146,8 @@
         var $rows = $(this);
         var alternatingRows = function(row) {
             $(selector).not(".add-row").removeClass("row1 row2")
-                .filter(":even").addClass("row1").end()
-                .filter(":odd").addClass("row2");
+            .filter(":even").addClass("row1").end()
+            .filter(":odd").addClass("row2");
         };
 
         var reinitDateTimeShortCuts = function() {
@@ -285,14 +282,27 @@
                 selector;
             switch(data.inlineType) {
             case "stacked":
+                initInline = initInlineStackedSelect;
                 selector = inlineOptions.name + "-group .inline-related";
                 $(selector).stackedFormset(selector, inlineOptions.options);
                 break;
             case "tabular":
+                initInline = initInlineTabularSelect;
                 selector = inlineOptions.name + "-group .tabular.inline-related tbody:first > tr";
                 $(selector).tabularFormset(selector, inlineOptions.options);
                 break;
             }
         });
+        initTextareaInline();
+        $('.stacked-inline-close').on('click', function () {
+            var $parent = $(this).parent();
+            var closeLabel = $parent.find('.vCheckboxLabel');
+            if (closeLabel.length) {
+                closeLabel.click();
+                $parent.hide()
+            } else {
+                $parent.remove();
+            }
+        });
     });
-})(django.jQuery);
+})(django.jQuery, initInlineTabularSelect, initInlineStackedSelect, initTextareaInline);

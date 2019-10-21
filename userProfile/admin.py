@@ -8,8 +8,13 @@ from userProfile.models import UserProfile, Address, Otp
 
 class AddressAdmin(MaterialModelAdmin):
     list_display = ('road' , 'city', 'district', 'country')
-    icon_name = 'face'
+    icon_name = 'address'
 
+class UserProfileAdmin(MaterialModelAdmin):
+    icon_name ='face'
+
+class OtpAdmin(MaterialModelAdmin):
+    icon_name = 'otp'
 # class AddressInline(admin.StackedInline):
 #     """ Details a person in line. """
 #     model = Address
@@ -35,6 +40,6 @@ class AddressAdmin(MaterialModelAdmin):
 # admin.site.register(UserInfo, UserInfoAdmin)
 
 # admin.site.register(Retailer, RetailerAdmin)
-site.register(UserProfile)
-site.register(Address)
-site.register(Otp)
+site.register(UserProfile,UserProfileAdmin)
+site.register(Address,AddressAdmin)
+site.register(Otp,OtpAdmin)
