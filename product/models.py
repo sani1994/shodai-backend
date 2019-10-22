@@ -18,6 +18,9 @@ class ProductCategory(BaseModel):
     def __str__(self):
         return self.type_of_product
 
+    def save(self, *args, **kwargs):
+        return super(ProductCategory, self).save(*args, **kwargs)
+
 
 class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny name)
     name = models.CharField(max_length=100)

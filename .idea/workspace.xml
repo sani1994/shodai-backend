@@ -2,86 +2,29 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/media/address.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/chat.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/groceries.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/offer.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/otp.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/sale .png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/store.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/additional_submit_line.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/admin-out-black.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/admin-out-green.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/admin-out-night.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/admin-out-red.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/admin-out.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/app_content.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/autocomplete.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/base_site-black.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/base_site-green.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/base_site-night.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/base_site-red.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/base_site-responsive.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/base_site-theme.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/base_site.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/change_form.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/changelists.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/clearable_file_input.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/date-input.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/header.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/index.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/jquery.jscrollpane.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/layout.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/login.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/logout.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/material_icons.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/materialize.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/object_history.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/object_tools-responsive.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/object_tools.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/search_form.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/selector_relative-responsive.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/selector_relative.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/side_nav.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/split_datetime.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/submit_line.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/theme_change.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/time-input.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/tray-responsive.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/css/tray.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/error.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-bg-black.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-bg-default.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-bg-green.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-bg-night.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-bg-red.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-logo-black.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-logo-default.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-logo-green.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-logo-night.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-logo-red.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/images/login-logo.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/img/icon-unknown-alt.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/RelatedObjectLookups.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/admin.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/filters.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/inline-forms.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/jquery.jscrollpane.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/jquery.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/jquery.mousewheel.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/materialize-init.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/materialize.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/password-toggle.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/tray.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/widgets/DateInput.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/widgets/TimeInput.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/admin/js/widgets/TimeServerDiff.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/material/fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery_6kg6YC9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery_Gc7HeLq.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery_iKN2F8j.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery_iZBVORc.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/user/2019/10/22/51304288_2257682554276330_5552805136432103424_o.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/user/2019/10/22/51304288_2257682554276330_5552805136432103424_o_717evVm.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/user/2019/10/22/51304288_2257682554276330_5552805136432103424_o_wR3fbWh.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/admin/js/SelectFilter2.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/admin/js/SelectFilter2.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/admin/js/inlines.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/admin/js/inlines.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/offer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/offer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sodai/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -130,7 +73,7 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/media" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
@@ -164,9 +107,9 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="$PROJECT_DIR$/../../projects/env/bin/python" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />

@@ -25,7 +25,6 @@ from sodai import settings
 from django.contrib.staticfiles.templatetags.staticfiles import static as staticfiles
 from django.urls import path, include
 from django.utils.translation import ugettext_lazy as _
-
 from material.admin.sites import site
 
 # optional

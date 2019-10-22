@@ -8,50 +8,21 @@ from django.db.models import Q
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    # CUSTOMER = 'CM'
-    # RETAILER = 'RT'
-    # PRODUCER = 'PD'
-    # STAFF ='SF'
-    # USER_TYPES_CHOICES = [
-    #     (CUSTOMER, 'Customer'),
-    #     (RETAILER, 'Retailer'),
-    #     (PRODUCER, 'Producer'),
-    #     (STAFF, 'Staff')
-    # ]
-    # user_type= serializers.CharField(max_length=30)
-    # mobile_number = serializers.CharField(max_length=15)
-    # first_name = serializers.CharField(max_length=30)
-    # last_name = serializers.CharField(max_length=30)
-    # email = serializers.EmailField()
-    #
-    # ref_code = serializers.CharField(max_length=10)
-    # pin_code = serializers.CharField(max_length=10)
-    # created_on = serializers.DateTimeField()
-    # # created_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    # modified_on = serializers.DateTimeField()
-    # # modified_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    # # jwt_token = serializers.CharField()
-    # # def create(self, validated_data):
-    # #     return UserProfile(**validated_data)
-    # password = serializers.CharField(write_only=True)
-
 
     def update(self, instance, validated_data):
         instance.user_type = validated_data.get('user_type', instance.user_type)
         instance.mobile_number = validated_data.get('mobile_number', instance.mobile_number)
+        instance.user_image = validated_data.get('user_image',instance.user_image)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
         instance.ref_code = validated_data.get('ref_code', instance.ref_code)
         instance.pin_code = validated_data.get('pin_code', instance.pin_code)
-        instance.created_on = validated_data.get('created_on', instance.created_on)
-        instance.modified_on = validated_data.get('modified_on', instance.modified_on)
+        instance.password = validated_data.get('password',instance.password)
         return instance
     
     class Meta:
         model = UserProfile
-        # fields = ['id','user_type', 'mobile_number', 'first_name', 'last_name', 'email', 'ref_code', 'pin_code', 'created_on', 'modified_on']
-        # fields = ['id', 'user_type', 'mobile_number', 'first_name', 'last_name', 'email','password']
         fields = '__all__'
         write_only_fields = ('password',)
 
@@ -96,7 +67,6 @@ class AddressSerializer(serializers.ModelSerializer):
         user= self.context['request'].user.id
         # user=validated_data.pop('user')
         user_instance = UserProfile.objects.filter(id=user).first()
-        print("user instance: ",user_instance)
         return Address.objects.create(**validated_data,user=user_instance)
 
     def update(self, instance, validated_data):
@@ -113,9 +83,10 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ['id','road', 'city', 'district', 'country', 'zip_code','user_id']
+        depth = 1
 
 
-class UserRegistrationSerializer(serializers.HyperlinkedModelSerializer):
+class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
@@ -124,6 +95,7 @@ class UserRegistrationSerializer(serializers.HyperlinkedModelSerializer):
         user = UserProfile.objects.create(
             user_type= validated_data['user_type'],
             username=validated_data['mobile_number'],
+            user_image=validated_data['user_image'],
             mobile_number = validated_data['mobile_number'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
@@ -136,7 +108,7 @@ class UserRegistrationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model=UserProfile
-        fields= ('user_type','mobile_number','first_name','last_name','email','password')
+        fields= ('user_type','mobile_number','user_image','first_name','last_name','email','password')
 
 
 class RetailerRegistrationSreializer(serializers.ModelSerializer):

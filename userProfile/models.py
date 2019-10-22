@@ -10,7 +10,7 @@ class UserProfile(AbstractUser):
     CUSTOMER = 'CM'
     RETAILER = 'RT'
     PRODUCER = 'PD'
-    STAFF ='SF'
+    STAFF = 'SF'
     USER_TYPES_CHOICES = [
         (CUSTOMER, 'Customer'),
         (RETAILER, 'Retailer'),
@@ -24,18 +24,12 @@ class UserProfile(AbstractUser):
     last_name = models.CharField(max_length=30, blank=True, null=True)
     email = models.EmailField(blank=True, null=True,unique=True)
     user_NID = models.CharField(max_length=100,blank=False,null=True,unique=True)
-
-    # token = models.CharField(max_length=100,blank=True,null=True)
     ref_code = models.CharField(max_length=10, blank=True, null=True)
     pin_code = models.CharField(max_length=10, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
-    # created_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     modified_on = models.DateTimeField(blank=True, null=True)
-    # modified_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    # jwt_token = models.CharField(max_length=1000,blank=True, null=True)
 
     def __str__(self):
-        # return "{}, {}, {},{},{}".format( self.username, self.email, self.user_type,self.mobile_number,self.token_user)
         return self.username
 
     def save(self, *args, **kwargs):
@@ -45,6 +39,7 @@ class UserProfile(AbstractUser):
         self.modified = timezone.now()
         return super(UserProfile, self).save(*args, **kwargs)
 
+
 class Address(models.Model):
 
     road = models.CharField(max_length=30, blank=True, null=True)
@@ -53,6 +48,7 @@ class Address(models.Model):
     country = models.CharField(max_length=30, blank=True, null=True)
     zip_code = models.CharField(max_length=30, blank=True, null=True)
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+
     def __str__(self):
         return "{}, {}, {}".format(self.road, self.city, self.district)
 
@@ -62,9 +58,6 @@ class Otp(models.Model):
      mobile_number = models.CharField(max_length=11,unique=True)
      otp_code = models.CharField(max_length=10,blank=True,null=True)
      count = models.IntegerField(default=0,help_text='Number of otp sent')
-     # logged = models.BooleanField(default=False,help_text='If otp verification got successful')
-     # forgot = models.BooleanField(default=False,help_text='Only true if forgot password')
-     # forgot_logged = models.BooleanField(default=False,help_text='Only true if otp  verified for forgot password')
 
      def __str__(self):
          return str(self.mobile_number) + 'is sent' + str(self.otp_code)

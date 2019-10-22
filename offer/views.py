@@ -28,12 +28,12 @@ class OfferList(APIView):
     def post(self,request):
         if request.user.user_type == 'SF':
             if request.data:
-                serilaizer = OfferSerializer(data=request.data,context={'request':request})
-                if serilaizer.is_valid():
-                    serilaizer.save(created_by = request.user)
-                    return Response (serilaizer.data,status=status.HTTP_201_CREATED)
+                serializer = OfferSerializer(data=request.data,context={'request':request})
+                if serializer.is_valid():
+                    serializer.save(created_by = request.user)
+                    return Response (serializer.data,status=status.HTTP_201_CREATED)
                 else:
-                    return Response(serilaizer.error_messages,status=status.HTTP_400_BAD_REQUEST)
+                    return Response(serializer.error_messages,status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
         else:
@@ -54,11 +54,11 @@ class OfferDetails(APIView):
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
-                return Response({"status": "Invalide serializer"},status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": "Invalid serializer"},status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({
                 "Status": "No content",
-                "details": "Rontent not available"
+                "details": "Content not available"
             }, status=status.HTTP_204_NO_CONTENT)
 
     def put(self,request,id):
@@ -70,18 +70,18 @@ class OfferDetails(APIView):
                     serializer.save(modified_by = request.user)
                     return Response(serializer.data,status= status.HTTP_200_OK)
                 else:
-                    return Response({"status": "Invalide serializer"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"status": "Invalid serializer"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({
                     "Status": "No content",
-                    "details": "Rontent not available"
+                    "details": "Content not available"
                 }, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
     def delete(self,request,id):
         if request.user.user_type == 'SF':
-            obj =  self.get_object(id)
+            obj = self.get_object(id)
             if obj:
                 obj.delete()
                 return Response ({"status": "Delete successful..!!"},status=status.HTTP_200_OK)
@@ -105,7 +105,7 @@ class OfferProductList(APIView):
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
-                return Response({"status": "Invalide serializer"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": "Invalid serializer"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({
                 "Status": "No content",

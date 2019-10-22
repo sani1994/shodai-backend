@@ -258,35 +258,6 @@ class AddressDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# class UserRegistration(APIView):
-#
-#     def post(self,request):
-#         if not request.data:
-#             return Response({'Error': "Please provide data"}, status="400")
-#         serializer = UserProfileSerializer(data=request.data)
-#
-#         if serializer.is_valid:
-#             if 'mobile_number' in serializer:
-#                 # user = serializer.create['mobile_number']
-#                 user_registered = serializer.create()
-#
-#                 if user_registered:
-#                     return JsonResponse({
-#                         "message": "User created successfully",
-#                         # "user": user,
-#                         "status": True,
-#                         "status_code": status.HTTP_201_CREATED
-#                     }, status=status.HTTP_201_CREATED)
-#                 else:
-#                     return JsonResponse({
-#                         "message": "User creation failed.",
-#                         "status": False,
-#                         "status_code": status.HTTP_406_NOT_ACCEPTABLE,
-#                     }, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
-
-
 class Login(APIView):
 
     def post(self,request,*args,**kwargs):
@@ -304,11 +275,6 @@ class Login(APIView):
         if user:
             if user.check_password(password):
                 refresh = RefreshToken.for_user(user)
-                # UserProfile.objects.create()
-                # user.objects.create( token = refresh)
-
-                # serializer = UserProfileSerializer(jwt_token=refresh.access_token)
-                # serializer.save()
                 return JsonResponse({
                     "message": "success",
                     "status": True,
