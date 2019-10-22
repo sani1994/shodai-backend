@@ -2,26 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/media/pictures/product/2019/10/22/basmati.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/product/2019/10/22/basmati_MnnKttc.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/Grocery_0A1230l.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/NATURAL_VEGETABLE_POWDER.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/meat.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/NATURAL_VEGETABLE_POWDER.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/basmati.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/basmati_DqsIjX9.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/basmati_ne32KoW.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/basmati_taBZJ0e.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/basmati_zEqbEYh.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/meat.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/user/2019/10/22/NATURAL_VEGETABLE_POWDER.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
