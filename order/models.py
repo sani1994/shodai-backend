@@ -1,3 +1,4 @@
+import decimal
 
 from django.db import models
 from userProfile.models import UserProfile
@@ -13,6 +14,8 @@ class Order(BaseModel):
     user = models.ForeignKey(UserProfile, models.SET_NULL,blank=True,null=True)
     delivery_date_time = models.DateTimeField(auto_now=True)
     delivery_place = models.CharField(max_length=100)
+    lat = models.FloatField()
+    long=models.FloatField()
     
     ORDERED = 'OD'              # ORDER COLLECT FROM CUSTOMER
     ORDER_READY = 'RE'          # ORDER IS READY FOR DELIVERY PERSON

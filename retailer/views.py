@@ -427,8 +427,28 @@ class AcceptedOrderList(APIView):
             return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
+class AcceptedOrderDetail(APIView):
 
-### oder detail function
+    permission_classes = [GenericAuth]
+
+    def get_accepted_order_obj(self,id):
+        obj = AcceptedOrder.objects.filter(id = id).first()
+        return obj
+
+    def get(self,request,id):
+        obj = self.get_accepted_order_obj(id)
+        serializer = AcceptedOrderSerializer(obj)
+        if serializer:
+            return  Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,id):
+        obj = AcceptedOrder.objects.filter(id=id).first
+        if obj.user_id == request.user.id:
+            obj.delete()
+            return Response({'status': "Delete Successfull..!!"},status=status.HTTP_200_OK)
+        return Response({'status': 'Request Unseccessful..!!'},status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

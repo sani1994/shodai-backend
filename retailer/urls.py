@@ -8,7 +8,9 @@ urlpatterns = [
     path('shop/', views.ShopList.as_view()),
     path('shop/<int:id>/',views.ShopDetail.as_view()),
     path('account/',views.AccountList.as_view()),
-    path('account/<int:id>/',views.AccountDetail.as_view())
+    path('account/<int:id>/',views.AccountDetail.as_view()),
+    path('acceptorder/<int:id>/',views.AcceptedOrderList.as_view()), #to accept order with order id
+    path('acceptedorderdetail/<int:id>/', views.AcceptedOrderDetail.as_view()) #get accepted order detail and delete only
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
