@@ -158,8 +158,7 @@ class ProductMetaList(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-
-        serializer = ProductMetaSerializer(data=request.data)
+        serializer = ProductMetaSerializer(data=request.data,context={'request':request})
         # if request.user.is_staff:
         #     if serializer.is_valid():
         #         serializer.save(created_by=request.user)
@@ -330,7 +329,7 @@ class ProductCategoryDetail(APIView):
         else:
             return Response({
                 "Status": "No content",
-                "details": "Rontent not available"
+                "details": "Content not available"
             }, status=status.HTTP_204_NO_CONTENT)
 
     def put(self, request, id, format=None):
@@ -461,3 +460,44 @@ class ShopCategoryDetail(APIView):
         #     Product.delete()
         shop_catagory.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductCategoryDetails(APIView): # post product category id to get all the product meta list related to that product category id
+
+    permission_classes = [GenericAuth]
+
+    def post(self,request,id):
+        obj = ProductCategory.objects.filter(id=id).first()
+        if obj:
+            productMetaList = obj.productmeta_set.all()
+            serializer = ProductMetaSerializer(productMetaList,many=True)
+            if serializer:
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductMetaDetails(APIView):      # post product meta id to get all the product  list related to that product meta id
+
+    permission_classes = [GenericAuth]
+
+    def post(self,request,id):
+        obj = ProductMeta.objects.filter(id=id).first()
+        if obj:
+            productList = obj.product_set.all()
+            serializer = ProductSerializer(productList,many=True)
+            if serializer:
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
+
+

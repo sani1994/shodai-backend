@@ -24,11 +24,11 @@ class ProductCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategory
-        # fields = ['id', 'img','type_of_product']
         fields = '__all__'
 
 
 class ProductMetaSerializer(serializers.ModelSerializer):
+
 
     def update(self, instance, validated_data):
         shop_category = validated_data.pop('shop_category')
@@ -42,32 +42,32 @@ class ProductMetaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductMeta
-        fields = [ 'id','name', 'img', 'product_category', 'shop_category']
-        # fields = '__all__'
-        depth = 1
+        # fields = [ 'id','name', 'img', 'product_category', 'shop_category']
+        fields = '__all__'
+        # depth = 1
 
 
 class ProductSerializer(serializers.ModelSerializer):
 
 
-    def create(self, validated_data):
-        product_meta = validated_data.pop('product_meta')
-        product_meta_instance = ProductMeta.objects.get(pk=product_meta)
-        return Product.objects.create(**validated_data,product_meta=product_meta_instance)
+    # def create(self, validated_data):
+    #     product_meta = validated_data.pop('product_meta')
+    #     product_meta_instance = ProductMeta.objects.filter(id=product_meta).first
+    #     return Product.objects.create(**validated_data,product_meta=product_meta_instance)
 
     def update(self, instance, validated_data):
         product_meta = validated_data.pop('product_meta')
-        product_meta_instance = ProductMeta.objects.filter(id = product_meta).first()
+        # product_meta_instance = ProductMeta.objects.filter(id = product_meta).first()
 
         instance.product_name = validated_data.get('product_name', instance.product_name)
         instance.product_unit = validated_data.get('product_unit', instance.product_unit)
         instance.product_price = validated_data.get('product_price', instance.product_price)
         instance.product_image = validated_data.get('product_image',instance.product_image)
-        instance.product_meta = product_meta_instance
+        instance.product_meta = product_meta
         instance.save()
         return instance
     
     class Meta:
         model = Product
         fields = [ 'id','product_name', 'product_image', 'product_unit', 'product_price','product_meta']
-        depth = 1
+        # depth = 1

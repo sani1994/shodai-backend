@@ -311,8 +311,8 @@ class OrderDeatils(APIView):
 
     def get(self,request,id):
         obj = Order.objects.filter(id=id).first()
-        response = obj.orderproduct_set.all()
-        serializer = OrderProductSerializer(response,many=True)
+        orderProductList = obj.orderproduct_set.all()
+        serializer = OrderProductSerializer(orderProductList,many=True)
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
         else:
