@@ -4,9 +4,9 @@ from producer import views
 
 urlpatterns = [
     path('producer/', views.ProducerProductList.as_view()),
-    path('producer/<int:pk>/', views.ProducerProductDetail.as_view()),
-    path('producer/', views.ProducerFarmList.as_view()),
-    path('producer/<int:pk>/', views.ProducerFarmDetail.as_view()),
+    path('producer/<int:id>/', views.ProducerProductDetail.as_view()),
+    path('producerfarm/', views.ProducerFarmList.as_view()),
+    path('producerfarm/<int:id>/', views.ProducerFarmDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

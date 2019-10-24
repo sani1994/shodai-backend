@@ -33,12 +33,12 @@ class ProducerProductList(APIView):
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
-        serializer = ProducerProductSerializer(producer, context={'request': request})
-        return Response(serializer.data)
+        serializer = ProducerProductSerializer(producer,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         serializer = ProducerProductSerializer(data=request.data)
-        if request.user.is_staff:
+        if request.user.user_type== 'SF':
             if serializer.is_valid():
                 serializer.save(created_by=request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -48,55 +48,35 @@ class ProducerProductList(APIView):
                 if serializer.is_valid():
                     serializer.save(created_by=request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
- 
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 class ProducerProductDetail(APIView):
     """
     Retrieve, update and delete Producer
     """
-    def get_object(self, request, pk):
-        is_staff = request.user.is_staff
-        try:
-            if is_staff:
-                return ProducerProduct.objects.get(pk=pk)
-            else:
-                user_type = request.user.user_type
-                if user_type=='CM':  # Customer = CM
-                    return ProducerProduct.objects.get(pk=pk)
-                elif user_type=='RT': # Retailer = RT
-                    return ProduceProduct.objects.get(pk=pk)
-                    # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                elif user_type== 'PD': # Producer = PD
-                    return ProducerProduct.objects.get(pk=pk)
-                     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                return ProducerProduct.objects.get(pk=pk)
-        except ProducerProduct.DoesNotExist:
-            raise Http404
+    def get_producerProduct_object(self,id):
+        obj = ProducerProduct.objects.filter(id=id).first()
 
-    def get(self, request, pk, format=None):
-        producer = self.get_object(request, pk)
-        serializer = ProducerProductSerializer(producer, data=request.data)
-        if serializer.is_valid():
+    def get(self, request, id, format=None):
+        producer = self.get_producerProduct_object( id)
+        serializer = ProducerProductSerializer(producer)
+        if serializer:
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
-    def put(self, request, pk, format=None):
-        producer = self.get_object(request, pk)
+    def put(self, request, id, format=None):
+        producer = self.get_producerProduct_object(id)
         serializer = ProducerProductSerializer(producer, data=request.data)
         if serializer.is_valid():
-            if request.user.is_staff:
+            if request.user.user_type=='SF':
                 serializer.save(modified_by=request.user)
                 return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self, request, pk, format=None):
-        producer = self.get_object(request, pk)
+    def delete(self, request, id, format=None):
+        producer = self.get_producerProduct_object(id)
         if request.user.is_staff:
             producer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -126,12 +106,12 @@ class ProducerFarmList(APIView):
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
-        serializer = ProducerFarmSerializer(producer, many=True, context={'request': request})
+        serializer = ProducerFarmSerializer(producer, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = ProducerFarmSerializer(data=request.data)
-        if request.user.is_staff:
+        if request.user.user_type=='SF':
             if serializer.is_valid():
                 serializer.save(created_by=request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -141,7 +121,6 @@ class ProducerFarmList(APIView):
                 if serializer.is_valid():
                     serializer.save(created_by=request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
- 
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -152,44 +131,29 @@ class ProducerFarmDetail(APIView):
     """
     Retrieve, update and delete Producer
     """
-    def get_object(self, request, pk):
-        is_staff = request.user.is_staff
-        try:
-            if is_staff:
-                return ProducerFarm.objects.get(pk=pk)
-            else:
-                user_type = request.user.user_type
-                if user_type=='CM':  # Customer = CM
-                    return ProducerFarm.objects.get(pk=pk)
-                elif user_type=='RT': # Retailer = RT
-                    return ProducerFarm.objects.get(pk=pk)
-                    # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                elif user_type== 'PD': # Producer = PD
-                    return ProducerFarm.objects.get(pk=pk)
-                     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-                return ProducerFarm.objects.get(pk=pk)
-        except ProducerFarm.DoesNotExist:
-            raise Http404
+    def get_producerFarm_object(self,id):
+        obj = ProducerFarm.objects.filter(id=id).first()
+        return obj
 
-    def get(self, request, pk, format=None):
-        ProducerFarmDetail = self.get_object(request, pk)
-        serializer = ProducerFarmSerializer(producer, data=request.data)
-        if serializer.is_valid():
+    def get(self, request, id, format=None):
+        producerFarm = self.get_producerFarm_object(id)
+        serializer = ProducerFarmSerializer(producerFarm)
+        if serializer:
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
     def put(self, request, pk, format=None):
-        ProducerFarmDetail = self.get_object(request, pk)
-        serializer = ProducerFarmSerializer(producer, data=request.data)
+        producerFarm= self.get_producerFarm_object(request, pk)
+        serializer = ProducerFarmSerializer(producerFarm, data=request.data)
         if serializer.is_valid():
-            if request.user.is_staff:
+            if request.user.user_type=='SF':
                 serializer.save(modified_by=request.user)
                 return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk, format=None):
-        producer_farm = self.get_object(request, pk)
+        producerFarm = self.get_producerFarm_object(request, pk)
         if request.user.is_staff:
-            ProducerFarmDetail.delete()
+            producerFarm.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
