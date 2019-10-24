@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
 
-import product
+import qrcode
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, ProductMetaSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
 
@@ -101,6 +101,9 @@ class ProductDetail(APIView):
         if product:
             serializer = ProductSerializer(product)
             if serializer:
+                qr_image = qrcode.make(serializer.data)
+                print(qr_image)
+                qr_image.save('/home/sani/Sa_tech/shodai-backend/media/qr_image/obj.png')
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
