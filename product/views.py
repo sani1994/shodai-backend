@@ -101,9 +101,6 @@ class ProductDetail(APIView):
         if product:
             serializer = ProductSerializer(product)
             if serializer:
-                qr_image = qrcode.make(serializer.data)
-                print(qr_image)
-                qr_image.save('/home/sani/Sa_tech/shodai-backend/media/qr_image/obj.png')
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
