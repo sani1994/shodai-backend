@@ -5,22 +5,8 @@ from order.models import Order,OrderProduct
 from bases.models import BaseModel
 # Create your models here.
 
-# class Retailer(BaseModel):
-#     user = models.ForeignKey(UserProfile, models.SET_NULL,
-#     blank=True,
-#     null=True)
-#     address = models.ForeignKey(Address, models.SET_NULL,
-#     blank=True,
-#     null=True)
-#     retailer_logo = models.ImageField(blank=True, null=True)
-#     retailer_email = models.EmailField(max_length=20, blank=True, null=True)
-#     retailer_website = models.CharField(max_length=20, blank=True, null=True)
-
 
 class Account(BaseModel):
-    # retailer_id = models.ForeignKey(Retailer, models.SET_NULL,
-    # blank=True,
-    # null=True)
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     bank_name = models.CharField(max_length=50, blank=True, null=True)
     account_no = models.CharField(max_length=100,blank=True, null=True)
@@ -42,8 +28,8 @@ class Shop(BaseModel):
 
 
 class AcceptedOrder(BaseModel):
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
-    oder = models.ForeignKey(Order,on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
     order_product = models.ForeignKey(OrderProduct,on_delete=models.CASCADE,null=True)
 
 

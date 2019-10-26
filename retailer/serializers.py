@@ -48,18 +48,15 @@ class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
         fields = '__all__'
-        depth = 1
 
 
 class AcceptedOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-
         return AcceptedOrder.objects.create(**validated_data,user=user)
 
     class Meta:
         model=AcceptedOrder
         fields= '__all__'
-        depth = 1
 

@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from retailer.serializers import AccountSerializer, ShopSerializer, AcceptedOrderSerializer
 from retailer.models import Account, Shop, AcceptedOrder
+from order.models import Order
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -417,8 +418,12 @@ class AcceptedOrderList(APIView):
 
     def post(self,request):
         if request.user.user_type == 'RT':
+            order = request.data['order']
             serializer = AcceptedOrderSerializer(data=request.data,context={'request':request})
             if serializer.is_valid():
+                order_obj = Order.objects.get(id = order)
+                setattr(order_obj,'order_status','OA')
+                order_obj.save()
                 serializer.save()
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:

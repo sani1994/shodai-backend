@@ -194,24 +194,23 @@ class OrderProductList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self,request):
-
-        response = {
-            'rspns',
-            'status_code',
-        }
-        responses = []
-        for data in request.data:
-            serializer = OrderProductSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK}
-                responses.append(response)
-
-            else:
-                response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
-                responses.append(response)
-
-        return  Response(responses)
+        if request.user.user_type== 'CM':
+            response = {
+                'rspns',
+                'status_code',
+            }
+            responses = []
+            for data in request.data:
+                serializer = OrderProductSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK}
+                    responses.append(response)
+                else:
+                    response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
+                    responses.append(response)
+            return Response(responses)
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class OrderProductDetail(APIView):

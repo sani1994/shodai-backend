@@ -15,6 +15,7 @@ urlpatterns = [
     path('userregistration/',views.UserRegistration.as_view()), #registration for normal user
     path('otp/',views.OtpCode.as_view()),
     path('otpverify/',views.OtpVerify.as_view()),
-    path('retailerregistration/',views.RetailerRegistration.as_view()) #registration for retailer
+    path('retailerregistration/',views.RetailerRegistration.as_view()), #registration for retailer
+    path('producerregistration/',views.RetailerRegistration.as_view()) #producer registration.. same as retailer so that used same view
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

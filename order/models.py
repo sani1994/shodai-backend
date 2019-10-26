@@ -18,12 +18,14 @@ class Order(BaseModel):
     long=models.FloatField()
     
     ORDERED = 'OD'              # ORDER COLLECT FROM CUSTOMER
+    ORDER_ACCEPTED = 'OA'        #ORDER ACCEPTED BY RETAILER OR PRODUCER
     ORDER_READY = 'RE'          # ORDER IS READY FOR DELIVERY PERSON
     ORDER_AT_DELIVERY = 'OAD'   # ORDER IS WITH DELIVERY PEROSN
     ORDER_COMPLETED = 'COM'      # ORDER IS DELIVERED TO CUSTOMER
     ORDER_CANCELLED = 'CN'      # ORDER IS CANCEL BY CUSTOMER
     ORDER_STATUS = [
         (ORDERED, 'Ordered'),
+        (ORDER_ACCEPTED, 'Order Accepted'),
         (ORDER_READY, 'Order Ready'),
         (ORDER_AT_DELIVERY, 'Order At Delivery'),
         (ORDER_COMPLETED, 'Order Completed'),

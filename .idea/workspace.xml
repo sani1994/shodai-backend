@@ -2,14 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/media/user/2019/10/26/51304288_2257682554276330_5552805136432103424_o.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order/migrations/0011_auto_20191026_0906.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/retailer/migrations/0013_auto_20191026_0906.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/retailer/migrations/0014_auto_20191026_0911.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/userProfile/migrations/0012_auto_20191026_0738.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/userProfile/migrations/0013_remove_userprofile_qr_code.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirments.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirments.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/urls.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
