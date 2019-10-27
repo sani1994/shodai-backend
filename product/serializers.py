@@ -6,6 +6,7 @@ class ShopCategorySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.type_of_shop = validated_data.get('type_of_shop', instance.type_of_shop)
+        instance.modified_by = validated_data.pop('modified_by')
         instance.save()
         return instance
 
