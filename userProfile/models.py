@@ -20,7 +20,7 @@ class UserProfile(AbstractUser):
     ]
     user_type = models.CharField(max_length=30, choices=USER_TYPES_CHOICES, default=CUSTOMER)
     # qr_code = models.ImageField(upload_to='user/qr_code',blank=False,null=False)
-    user_image = models.ImageField(upload_to='user/%Y/%m/%d',blank=False,null=False)
+    user_image = models.ImageField(upload_to='user/%Y/%m/%d',blank=True,null=True)
     mobile_number = models.CharField(max_length=15, blank=True, null=True,unique=True)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
