@@ -108,7 +108,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=UserProfile
-        fields= ('user_type','mobile_number','user_image','first_name','last_name','email','password')
+        fields= ('user_type','mobile_number','first_name','last_name','email','password')
 
 
 class RetailerRegistrationSreializer(serializers.ModelSerializer):
