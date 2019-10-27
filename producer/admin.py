@@ -1,14 +1,16 @@
 from django.contrib import admin
+from material.admin.options import MaterialModelAdmin
+from material.admin.sites import site
 from producer.models import ProducerProduct, ProducerFarm
 
 # Register your models here.
 
-class ProducerProductAdmin(admin.ModelAdmin):
+class ProducerProductAdmin(MaterialModelAdmin):
     # list_filter = ('product_name', 'product_unit', 'product_price', 'product_meta')
     list_display = ('product', 'product_time', 'amount_of_product')
     exclude = ['created_by', 'modified_by']
 
-class ProducerFarmAdmin(admin.ModelAdmin):
+class ProducerFarmAdmin(MaterialModelAdmin):
     list_display = ('land_amount', 'type_of_crops_produce', 'product_photo', 'address')
     exclude = ['created_by', 'modified_by']
 
@@ -27,4 +29,5 @@ class ProducerFarmAdmin(admin.ModelAdmin):
 
         
 
-admin.site.register(ProducerProduct, ProducerProductAdmin)
+site.register(ProducerProduct, ProducerProductAdmin)
+site.register(ProducerFarm,ProducerFarmAdmin)

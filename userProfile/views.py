@@ -395,5 +395,3 @@ class RetailerRegistration(APIView):
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-
-
