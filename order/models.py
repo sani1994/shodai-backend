@@ -41,7 +41,7 @@ class Order(BaseModel):
         (BIDDING, 'Biding'),
     ]
     order_type = models.CharField(max_length=20,choices=ORDER_TYPES,default=FIXED_PRICE)
-    contact_number = models.IntegerField(null=True,blank=True)
+    contact_number = models.CharField(max_length=20,null=True,blank=True)
 
     def __str__(self):
         return self.delivery_place
