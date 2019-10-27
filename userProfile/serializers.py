@@ -83,7 +83,6 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ['id','road', 'city', 'district', 'country', 'zip_code','user_id']
-        depth = 1
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -95,7 +94,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = UserProfile.objects.create(
             user_type= validated_data['user_type'],
             username=validated_data['mobile_number'],
-            user_image=validated_data['user_image'],
             mobile_number = validated_data['mobile_number'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
