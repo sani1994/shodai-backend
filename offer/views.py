@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from offer.models import Offer,OfferProduct
-from offer.serializers import OfferSerializer,OfferProductSerializer
+from offer.serializers import OfferSerializer, OfferProductSerializer, OfferProductReadSerializer
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -101,7 +101,7 @@ class OfferProductList(APIView):
     def get(self,request):
         queryset = OfferProduct.objects.all()
         if queryset:
-            serializer = OfferProductSerializer(queryset,many=True)
+            serializer = OfferProductReadSerializer(queryset,many=True)
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:

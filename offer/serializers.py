@@ -34,4 +34,11 @@ class OfferProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class OfferProductReadSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = OfferProduct
+        fields = ('id','offer_price','offer_product_balance','offer','product')
+        depth = 1
+
 
