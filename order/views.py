@@ -205,7 +205,17 @@ class OrderProductList(APIView):
                 'status_code',
             }
             responses = []
-            for data in request.data['product_list']:
+            if not type(request.data) == list:
+                serializer = OrderProductSerializer(data=request.data,context={'request': request.data})
+                if serializer.is_valid():
+                    serializer.save()
+                    response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK}
+                    responses.append(response)
+                else:
+                    response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
+                    responses.append(response)
+                return Response(response)
+            for data in request.data:
                 serializer = OrderProductSerializer(data=data,context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
