@@ -19,7 +19,6 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
-        depth = 1
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
@@ -36,8 +35,15 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderProduct
-        fields = '__all__'
-        # depth = 1
+        fields = ('id','order_product_price','order_product_qty','product','order')
+
+
+class OrderProductReadSerializer(serializers.ModelSerializer): # this serializer has been used to get all the details including foreign key id... this duplication has been made as 'depth=1' is not working for post request in serializer.
+
+    class Meta:
+        model = OrderProduct
+        fields = ('id','order_product_price','order_product_qty','product','order')
+        depth = 1
 
 
 class VatSerializer(serializers.ModelSerializer):

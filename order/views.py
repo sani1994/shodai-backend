@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from order.serializers import OrderSerializer,OrderProductSerializer,VatSerializer
+from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer
 from order.models import OrderProduct, Order, Vat
 
 from django.http import Http404
@@ -130,7 +130,6 @@ class OrderList(APIView):
             request.data['contact_number'] = request.user.mobile_number
             request.POST._mutable = False
         serializer = OrderSerializer(data=request.data,many=isinstance(request.data,list),context={'request': request})
-        print(serializer)
         if serializer.is_valid():
             serializer.save(user = request.user,created_by = request.user)
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -149,13 +148,19 @@ class OrderDetail(APIView):
     def get(self,request,id):
         obj = self.get_order_object(id)
         if obj:
-            serializer = OrderSerializer(obj)
+            orderProductList = obj.orderproduct_set.all()
+            serializer = OrderProductReadSerializer(orderProductList, many=True)
             if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        #     serializer = OrderSerializer(obj)
+        #     if serializer:
+        #         return Response(serializer.data,status=status.HTTP_200_OK)
+        #     else:
+        #         return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def put(self,request,id):
         obj = self.get_order_object(id)
@@ -200,8 +205,8 @@ class OrderProductList(APIView):
                 'status_code',
             }
             responses = []
-            for data in request.data:
-                serializer = OrderProductSerializer(data=data)
+            for data in request.data['product_list']:
+                serializer = OrderProductSerializer(data=data,context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
                     response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK}
@@ -318,15 +323,15 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class OrderDeatils(APIView):
-
-    permission_classes = [GenericAuth]
-
-    def get(self,request,id):
-        obj = Order.objects.filter(id=id).first()
-        orderProductList = obj.orderproduct_set.all()
-        serializer = OrderProductSerializer(orderProductList,many=True)
-        if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class OrderDetails(APIView): # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
+#
+#     permission_classes = [GenericAuth]
+#
+#     def get(self,request,id):
+#         obj = Order.objects.filter(id=id).first()
+#         orderProductList = obj.orderproduct_set.all()
+#         serializer = OrderProductReadSerializer(orderProductList,many=True)
+#         if serializer:
+#             return Response(serializer.data,status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
