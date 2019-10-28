@@ -101,7 +101,7 @@ class OfferProductList(APIView):
     def get(self,request):
         queryset = OfferProduct.objects.all()
         if queryset:
-            serializer = OfferProductSerializer(queryset)
+            serializer = OfferProductSerializer(queryset,many=True)
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
