@@ -18,84 +18,6 @@ from sodai.utils.permission import GenericAuth
 # No authorization has been set yet, after completing we will set authorization
 
 
-# class OrderList(APIView):
-#     # """ List of all order from customer
-#     #     """
-#     permission_classes = [GenericAuth]
-#     def get(self, request, format=None):
-#         is_staff = request.user.is_staff
-#         order = Order.objects.all()
-#         print(order)
-#         if is_staff:
-#             order = Order.objects.all()
-#         else:
-#             user_type = request.user.user_type
-#             if user_type=='CM':  # Customer = CM
-#                 order = Order.objects.filter(created_by=request.user)
-#             elif user_type=='RT': # Retailer = RT
-#                 order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-#             elif user_type== 'PD': # Producer = PD
-#                 order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-#             elif user_type== 'SF': # Staff = SF
-#                 order = Order.objects.filter(created_by=request.user)
-#
-#         serializer = OrderSerializer(order, context={'request': request})
-#         return Response(serializer.data)
-#
-#     def post(self, request, format=None):
-#             serializer = OrderSerializer(data=request.data)
-#             if serializer.is_valid():
-#                 serializer.save(created_by=request.user)
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-#
-#
-#
-#
-#
-# class OrderDetail(APIView):
-#     """
-#     Retrieve, update and delete Orders
-#     """
-#     def get_object(self, request, pk):
-#         is_staff = request.user.is_staff
-#         try:
-#             if is_staff:
-#                 return Order.objects.get(pk=pk)
-#             else:
-#                 user_type = request.user.user_type
-#                 if user_type=='CM':  # Customer = CM
-#                     return Order.objects.get(pk=pk, created_by=request.user)
-#                 elif user_type=='RT': # Retailer = RT
-#                     return Order.objects.get(pk=pk, created_by=request.user)
-#                     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-#                 elif user_type== 'PD': # Producer = PD
-#                     return Order.objects.get(pk=pk, created_by=request.user)
-#                      # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-#                 return Order.objects.get(pk=pk, created_by=request.user)
-#         except Order.DoesNotExist:
-#             raise Http404
-#
-#     def get(self, request, pk, format=None):
-#         order = self.get_object(request, pk)
-#         serializer = OrderSerializer(order, data=request.data)
-#         if serializer.is_valid():
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#
-#     def put(self, request, pk, format=None):
-#         order = self.get_object(request, pk)
-#         serializer = OrderSerializer(order, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save(modified_by=request.user)
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#     def delete(self, request, pk, format=None):
-#         order = self.get_object(request, pk)
-#         order.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-
 class OrderList(APIView):
 
     permission_classes = [GenericAuth]
@@ -108,13 +30,6 @@ class OrderList(APIView):
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-        # elif request.user.user_type == 'RT':
-        #     user_id = request.user.id
-        #     orderList = Order.objects.filter(user_id=user_id)
-        #     serializer = OrderSerializer(orderList,many=True)
-        #     if serializer:
-        #         return Response(serializer.data,status=status.HTTP_200_OK)
-        #     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
         queryset = Order.objects.all()
         if queryset:
@@ -157,15 +72,10 @@ class OrderDetail(APIView):
             if orderProductSerializer and orderSerializer:
                 orderProductLists = orderProductSerializer.data
                 for orderProduct in orderProductLists:
-                    print(orderProduct)
-                    # orderProducts.append(orderProduct['product'])
                     product = orderProduct['product']
                     product['order_price']= orderProduct['order_product_price']
                     product['order_qty'] = orderProduct['order_product_qty']
                     orderProducts.append(product)
-                    # orderProducts[]=orderProduct['order_product_price']
-                    # orderProducts['product_qty'] = orderProduct['order_product_qty']
-
                 order = orderSerializer.data
                 order['orderProducts']=orderProducts
                 return Response(order, status=status.HTTP_200_OK)
