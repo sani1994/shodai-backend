@@ -215,7 +215,7 @@ class OrderProductList(APIView):
                     response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
                     responses.append(response)
                 return Response(response)
-            for data in request.data:
+            for data in request.getlist('order_product_list'):
                 serializer = OrderProductSerializer(data=data,context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
