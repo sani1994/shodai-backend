@@ -113,15 +113,14 @@ class OfferProductList(APIView):
             }, status=status.HTTP_204_NO_CONTENT)
 
     def post(self,request):
-        # if request.user.user_type== 'RT' and  request:
+        if request.user.user_type== 'RT' and  request:
             serializer = OfferProductSerializer(data= request.data)
             if serializer.is_valid():
                 serializer.save(created_by=request.user)
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors)
-            # else:
-            #     return Response({"status": "Unauthorized request or No content"}, status=status.HTTP_403_FORBIDDEN)
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "Unauthorized request or No content"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class OfferProductDetail(APIView):
@@ -133,7 +132,9 @@ class OfferProductDetail(APIView):
     def get(self,request,id):
         obj = self.get_offerproduct_obj(id)
         if obj:
-            serializer = OfferProductSerializer(obj)
+            serializer = OfferProductReadSerializer(obj)
+            # offerProductList = obj.offerproduct_set.all()
+            # serializer = OfferProductSerializer(offerProductList)
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:

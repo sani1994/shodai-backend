@@ -7,5 +7,9 @@ from offer.models import Offer,OfferProduct
 class OfferAdmin(MaterialModelAdmin):
     icon_name='face'
 
+class OfferProductAdmin(MaterialModelAdmin):
+    fields = ('offer','product','offer_price','offer_product_balance')
+    icon_name = 'face'
+
 site.register(Offer,OfferAdmin)
-site.register(OfferProduct)
+site.register(OfferProduct,OfferProductAdmin)
