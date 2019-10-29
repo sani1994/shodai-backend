@@ -32,8 +32,8 @@ from material.admin.sites import site
 site.site_header = _('Shodai')
 site.site_title = _('Shodai')
 site.favicon = staticfiles('../media/')
-site.main_bg_color = 'green'
-site.main_hover_color = 'yellow'
+site.main_bg_color = 'black|white'
+site.main_hover_color = 'black'
 site.profile_picture = staticfiles('../media/shodai.jpg')
 site.profile_bg = staticfiles('../media/shodai.jpg')
 site.login_logo = staticfiles('../media/shodai.jpg')

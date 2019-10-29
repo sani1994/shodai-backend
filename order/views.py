@@ -157,7 +157,15 @@ class OrderDetail(APIView):
             if orderProductSerializer and orderSerializer:
                 orderProductLists = orderProductSerializer.data
                 for orderProduct in orderProductLists:
-                    orderProducts.append(orderProduct['product'])
+                    print(orderProduct)
+                    # orderProducts.append(orderProduct['product'])
+                    product = orderProduct['product']
+                    product['order_price']= orderProduct['order_product_price']
+                    product['order_qty'] = orderProduct['order_product_qty']
+                    orderProducts.append(product)
+                    # orderProducts[]=orderProduct['order_product_price']
+                    # orderProducts['product_qty'] = orderProduct['order_product_qty']
+
                 order = orderSerializer.data
                 order['orderProducts']=orderProducts
                 return Response(order, status=status.HTTP_200_OK)
