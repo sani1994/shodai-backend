@@ -1,3 +1,5 @@
+from xxlimited import Null
+
 from django.shortcuts import render
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer
 from order.models import OrderProduct, Order, Vat
@@ -125,7 +127,7 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self,request,*args,**kwargs):
-        if request.data['contact_number'] == '':
+        if request.data['contact_number'] == "":
             request.POST._mutable =True
             request.data['contact_number'] = request.user.mobile_number
             request.POST._mutable = False
@@ -147,20 +149,21 @@ class OrderDetail(APIView):
 
     def get(self,request,id):
         obj = self.get_order_object(id)
-        if obj:
+        if obj.user == request.user or request.user == 'SF':
+            orderProducts = []
             orderProductList = obj.orderproduct_set.all()
-            serializer = OrderProductReadSerializer(orderProductList, many=True)
-            if serializer:
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            orderProductSerializer = OrderProductReadSerializer(orderProductList, many=True)
+            orderSerializer = OrderSerializer(obj)
+            if orderProductSerializer and orderSerializer:
+                orderProductLists = orderProductSerializer.data
+                for orderProduct in orderProductLists:
+                    orderProducts.append(orderProduct['product'])
+                order = orderSerializer.data
+                order['orderProducts']=orderProducts
+                return Response(order, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        #     serializer = OrderSerializer(obj)
-        #     if serializer:
-        #         return Response(serializer.data,status=status.HTTP_200_OK)
-        #     else:
-        #         return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-        # else:
-        #     return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+                return Response({orderProductSerializer.errors + orderSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
     def put(self,request,id):
         obj = self.get_order_object(id)

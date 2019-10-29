@@ -14,6 +14,7 @@ class Order(BaseModel):
     user = models.ForeignKey(UserProfile, models.SET_NULL,blank=True,null=True)
     delivery_date_time = models.DateTimeField(auto_now=True)
     delivery_place = models.CharField(max_length=100)
+    order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
     long=models.FloatField()
     
