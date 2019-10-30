@@ -49,7 +49,7 @@ class OrderList(APIView):
         serializer = OrderSerializer(data=request.data,many=isinstance(request.data,list),context={'request': request})
         if serializer.is_valid():
             serializer.save(user = request.user,created_by = request.user)
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -64,24 +64,11 @@ class OrderDetail(APIView):
 
     def get(self,request,id):
         obj = self.get_order_object(id)
-        if obj.user == request.user or request.user == 'SF':
-            orderProducts = []
-            orderProductList = obj.orderproduct_set.all()
-            orderProductSerializer = OrderProductReadSerializer(orderProductList, many=True)
-            orderSerializer = OrderSerializer(obj)
-            if orderProductSerializer and orderSerializer:
-                orderProductLists = orderProductSerializer.data
-                for orderProduct in orderProductLists:
-                    product = orderProduct['product']
-                    product['order_price']= orderProduct['order_product_price']
-                    product['order_qty'] = orderProduct['order_product_qty']
-                    orderProducts.append(product)
-                order = orderSerializer.data
-                order['orderProducts']=orderProducts
-                return Response(order, status=status.HTTP_200_OK)
-            else:
-                return Response({orderProductSerializer.errors + orderSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+        # if obj.user == request.user or request.user == 'SF':
+        serializer = OrderSerializer(obj)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def put(self,request,id):
         obj = self.get_order_object(id)
@@ -111,7 +98,7 @@ class OrderProductList(APIView):
     def get(self,request):
         queryset = OrderProduct.objects.all()
         if queryset:
-            serializer = OrderProductSerializer(queryset,many=True,context={'request': request})
+            serializer = OrderProductReadSerializer(queryset,many=True,context={'request': request})
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
@@ -151,7 +138,7 @@ class OrderProductDetail(APIView):
     def get(self,request,id):
         obj = self.get_orderproduct_obj(id)
         if obj:
-            serializer = OrderProductSerializer(obj)
+            serializer = OrderProductReadSerializer(obj)
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
@@ -245,15 +232,31 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-# class OrderDetails(APIView): # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
-#
-#     permission_classes = [GenericAuth]
-#
-#     def get(self,request,id):
-#         obj = Order.objects.filter(id=id).first()
-#         orderProductList = obj.orderproduct_set.all()
-#         serializer = OrderProductReadSerializer(orderProductList,many=True)
-#         if serializer:
-#             return Response(serializer.data,status=status.HTTP_200_OK)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class OrderProductList(APIView): # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
+
+    permission_classes = [GenericAuth]
+
+    def get_order_object(self,id):
+        obj = Order.objects.filter(id = id).first()
+        return obj
+
+    def get(self,request,id):
+        obj = self.get_order_object(id)
+        if obj.user == request.user or request.user == 'SF':
+            orderProducts = []
+            orderProductList = obj.orderproduct_set.all()
+            orderProductSerializer = OrderProductReadSerializer(orderProductList, many=True)
+            orderSerializer = OrderSerializer(obj)
+            if orderProductSerializer and orderSerializer:
+                orderProductLists = orderProductSerializer.data
+                for orderProduct in orderProductLists:
+                    product = orderProduct['product']
+                    product['order_price']= orderProduct['order_product_price']
+                    product['order_qty'] = orderProduct['order_product_qty']
+                    orderProducts.append(product)
+                order = orderSerializer.data
+                order['orderProducts']=orderProducts
+                return Response(order, status=status.HTTP_200_OK)
+            else:
+                return Response({orderProductSerializer.errors + orderSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)

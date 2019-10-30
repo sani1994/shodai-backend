@@ -55,9 +55,15 @@ class OrderProduct(BaseModel):
     order_product_price = models.FloatField(blank=False,null=False,default=0)  # product may belong to offer do the price
     order_product_qty = models.FloatField(default=1)
 
+    def __str__(self):
+        return self.product.product_name
+
 class Vat(BaseModel):
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False)
     vat_amount = models.FloatField(default=0,blank=False,null=False)
+
+    def __str__(self):
+        return self.product_meta.name
     
 
 

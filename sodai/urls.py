@@ -32,7 +32,7 @@ from material.admin.sites import site
 site.site_header = _('Shodai')
 site.site_title = _('Shodai')
 site.favicon = staticfiles('../media/')
-site.main_bg_color = 'black|white'
+site.main_bg_color = 'skyblue'
 site.main_hover_color = 'black'
 site.profile_picture = staticfiles('../media/shodai.jpg')
 site.profile_bg = staticfiles('../media/shodai.jpg')
@@ -50,4 +50,4 @@ urlpatterns = [
     path('', include('offer.urls')),
     path('admin/', include('material.admin.urls')),
 ]
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_ROOT, document_root=settings.MEDIA_ROOT)

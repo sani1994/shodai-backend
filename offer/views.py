@@ -113,7 +113,7 @@ class OfferProductList(APIView):
             }, status=status.HTTP_204_NO_CONTENT)
 
     def post(self,request):
-        if request.user.user_type== 'RT' and  request:
+        if request.user.user_type== 'SF' and  request:
             serializer = OfferProductSerializer(data= request.data)
             if serializer.is_valid():
                 serializer.save(created_by=request.user)
@@ -165,6 +165,40 @@ class OfferProductDetail(APIView):
         if obj:
             obj.delete()
             return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
+
+
+class GetOfferProducts(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get_offer_obj(self,id):
+        obj = Offer.objects.get(id=id)
+        return  obj
+
+    def get(self,request,id):
+        obj = self.get_offer_obj(id)
+        if obj:
+            offerProducts = []
+            offerserializer = OfferSerializer(obj)
+            offerProductList = obj.offerproduct_set.all()
+            offerProductserializer = OfferProductReadSerializer(offerProductList,many=True)
+            if offerserializer and  offerProductserializer:
+                # offerProductsData = offerProductserializer.data
+                for data in offerProductserializer.data:
+                    product = data['product']
+                    product['offer_price']=data['offer_price']
+                    product['offer_product_balance']=data['offer_product_balance']
+                    offerProducts.append(product)
+                offerdetail=offerserializer.data
+                offerdetail['offer_products']=offerProducts
+                return Response(offerdetail, status=status.HTTP_200_OK)
+            else:
+                return Response(offerserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({
                 "Status": "No content",

@@ -24,4 +24,4 @@ class OfferProduct(BaseModel):
     offer_product_balance = models.DecimalField(max_digits=5,decimal_places=1,blank=True,null=True)
 
     def __str__(self):
-        return self.product
+        return self.product.product_name
