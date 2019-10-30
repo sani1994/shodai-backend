@@ -50,4 +50,4 @@ urlpatterns = [
     path('', include('offer.urls')),
     path('admin/', include('material.admin.urls')),
 ]
-urlpatterns += static(settings.MEDIA_ROOT, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
