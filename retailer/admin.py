@@ -36,7 +36,8 @@ from retailer.models import Account,Shop,AcceptedOrder
 # admin.site.register(RetailerAdmin)
 
 class ShopAdmin(MaterialModelAdmin):
-    icon_name = 'perm_identity'
+    pass
+    # icon_name = 'perm_identity'
 
 
 site.register(Shop)

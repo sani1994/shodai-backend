@@ -9,16 +9,23 @@ class OrderAdmin(MaterialModelAdmin):
     list_display = ('user_id','delivery_date_time', 'delivery_place', 'order_status', 'home_delivery', 'created_by', 'modified_by')
     exclude = ['created_by', 'modified_by']
     def save_model(self, request, obj, form, change):
-        print(obj.pk)
         if obj.pk == None: 
             print("inside None")
             obj.created_by = request.user
             obj.modified_by = request.user
         super().save_model(request,obj, form, change)
+
+class OrderProductAdmin(MaterialModelAdmin):
+    pass
+    # icon_name = 'order'
+
+class VatAdmin(MaterialModelAdmin):
+    # icon_name = 'order'
+    pass
         
 
 site.register(Order, OrderAdmin)
-site.register(OrderProduct)
+site.register(OrderProduct,OrderProductAdmin)
 site.register(Vat)
 
 # admin.site.register(OrderProduct)

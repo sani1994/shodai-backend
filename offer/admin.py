@@ -5,11 +5,12 @@ from offer.models import Offer,OfferProduct
 # Register your models here.
 
 class OfferAdmin(MaterialModelAdmin):
-    icon_name='face'
+    pass
+    # icon_name='face'
 
 class OfferProductAdmin(MaterialModelAdmin):
-    fields = ('offer','product','offer_price','offer_product_balance')
-    icon_name = 'face'
+    list_display = ('offer','product','offer_price','offer_product_balance')
+    # icon_name = 'face'
 
 site.register(Offer,OfferAdmin)
 site.register(OfferProduct,OfferProductAdmin)
