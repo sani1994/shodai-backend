@@ -35,10 +35,10 @@ site.favicon = staticfiles('../media/')
 site.main_bg_color = 'skyblue'
 site.main_hover_color = 'black'
 site.profile_picture = staticfiles('../media/shodai.jpg')
-site.profile_bg = staticfiles('../media/shodai.jpg')
+site.profile_bg = staticfiles('../media/white.jpg')
 site.login_logo = staticfiles('../media/shodai.jpg')
-site.logout_bg = staticfiles('../media/shodai.jpg')
-site.login_bg_color = 'green'
+site.logout_bg = staticfiles('../media/white.jpg')
+site.login_bg_color = 'skyblue'
 ##################################################
 
 urlpatterns = [

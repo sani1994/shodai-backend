@@ -2,18 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/media/order.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/product.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/retailer.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/order.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/white.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/media/address.png" beforeDir="false" afterPath="$PROJECT_DIR$/media/address.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/media/otp.png" beforeDir="false" afterPath="$PROJECT_DIR$/media/otp.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/offer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/retailer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sodai/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/urls.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -62,7 +55,7 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/static" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/media" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
@@ -72,8 +65,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/media" />
+      <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/static/admin/img" />
     </key>
   </component>
