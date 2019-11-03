@@ -12,7 +12,8 @@ class ShopCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShopCategory
-        fields = '__all__'
+        fields = ('id','type_of_shop')
+        # fields = '__all__'
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):

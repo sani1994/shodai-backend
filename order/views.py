@@ -12,6 +12,7 @@ from datetime import datetime
 from rest_framework import permissions
 
 # Create your views here.
+from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
 
 # NB.
@@ -232,7 +233,7 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class OrderProductList(APIView): # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
+class OrderdProducts(APIView): # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
 
     permission_classes = [GenericAuth]
 
@@ -259,4 +260,31 @@ class OrderProductList(APIView): # this view returns all the products in a order
                 return Response(order, status=status.HTTP_200_OK)
             else:
                 return Response({orderProductSerializer.errors + orderSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+
+class OrderStatusUpdate(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get_acceptedOrder_obj(self,id):
+        obj = AcceptedOrder.objects.get(id=id)
+        return obj
+
+    def get_oder_obj(self,id):
+        obj = Order.objects.get(id=id)
+        return obj
+
+    def post(self,request,id):
+        if request.user.user_type== 'RT':
+            obj = self.get_acceptedOrder_obj(id)
+            if obj.user_id == request.user.id:
+                ordr_id = obj.order_id
+                order_obj = self.get_oder_obj(ordr_id)
+                if not order_obj.order_status== 'OD':
+                    setattr(order_obj,'order_status',request.data['order_status'])
+                    order_obj.save()
+                    return Response({'Order status set to': order_obj.order_status},status=status.HTTP_200_OK)
+                return Response('Cannot update order status',status=status.HTTP_400_BAD_REQUEST )
+            return Response({"status": "User Don't have permission to update status"}, status=status.HTTP_403_FORBIDDEN)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)

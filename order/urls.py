@@ -5,10 +5,11 @@ from order import views
 urlpatterns = [
     path('order/', views.OrderList.as_view()),
     path('order/<int:id>/', views.OrderDetail.as_view()),
-    path('orderproductlist/<int:id>/',views.OrderProductList.as_view()), # give order id and get all the products related to the order
+    path('orderproductlist/<int:id>/',views.OrderdProducts.as_view()), # give order id and get all the products related to the order
     path('orderproduct/',views.OrderProductList.as_view()),
     path('orderproduct/<int:id>/',views.OrderProductDetail.as_view()),
     path('vat/', views.VatList.as_view()),
     path('vat/<int:id>/',views.VatDetail.as_view()),
+    path('updateorderstatus/<int:id>/',views.OrderStatusUpdate.as_view()) # give acceptorder id and order_status order of the accepted order will update to the given order status
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

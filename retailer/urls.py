@@ -12,7 +12,7 @@ urlpatterns = [
     path('acceptorder/',views.AcceptedOrderList.as_view()), #to accept order with order id
     path('acceptedorderdetail/<int:id>/', views.AcceptedOrderDetail.as_view()), #get accepted order detail and delete only
     path('getshoplist/<int:id>/',views.RetailerShopList.as_view()), #give user id(retailer id) get retailer shop list for that retailer or user
-    path('updateorderstatus/<int:id>/',views.OrderStatusUpdate.as_view()) # give acceptorder id and order_status order of the accepted order will update to the given update
+    # path('updateorderstatus/<int:id>/',views.OrderStatusUpdate.as_view()) # give acceptorder id and order_status order of the accepted order will update to the given update
 
 ]
 
