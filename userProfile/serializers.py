@@ -27,18 +27,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         write_only_fields = ('password',)
 
 
-    def create(self,validated_data):
-        user = UserProfile.objects.create(
-        user_type = validated_data['user_type'],
-        mobile_number=validated_data['mobile_number'],
-        first_name = validated_data['first_name'],
-        last_name = validated_data['last_name'],
-        email = validated_data['email'],
-        )
-        if user:
-            user.set_password(validated_data['password'])
-            user.save()
-        return user
+    # def create(self,validated_data):
+    #     user = UserProfile.objects.create(
+    #     user_type = validated_data['user_type'],
+    #     mobile_number=validated_data['mobile_number'],
+    #     first_name = validated_data['first_name'],
+    #     last_name = validated_data['last_name'],
+    #     email = validated_data['email']
+    #     )
+    #     if user:
+    #         user.set_password(validated_data['password'])
+    #         user.save()
+    #     return user
 
 
 
@@ -78,7 +78,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             mobile_number = validated_data['mobile_number'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
-            email=validated_data['email']
+            email=validated_data['email'],
+            username=validated_data['mobile_number']
         )
         if user:
             user.set_password(validated_data['password'])
@@ -106,6 +107,7 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
             email=validated_data['email'],
             user_image=validated_data['user_image'],
             user_NID=validated_data['user_NID'],
+            username=validated_data['mobile_number']
         )
         if user:
             user.set_password(validated_data['password'])
