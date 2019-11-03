@@ -1,5 +1,5 @@
 from django.db import models
-from product.models import Product 
+from product.models import ProductCategory
 from userProfile.models import Address
 from bases.models import BaseModel
 
@@ -7,9 +7,30 @@ from bases.models import BaseModel
 
 
 class ProducerProduct(BaseModel):
-    product = models.ForeignKey(Product, models.SET_NULL,blank=True,null=True)
-    product_time = models.DateTimeField(auto_now=True)
-    amount_of_product = models.CharField(max_length=100, blank=True, null=True)
+    product_name = models.CharField(max_length=200)
+    product_image = models.ImageField(upload_to='producer/product')
+    product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    production_time = models.DateTimeField()
+    unit_price = models.FloatField()
+    delivery_amount = models.FloatField(blank=True,null=True)
+
+    def __str__(self):
+        return self.product_name
+
+
+class BusinessType(BaseModel):
+    business_type = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.business_type
+
+class ProducerBusiness(BaseModel):
+    business_type = models.ForeignKey(BusinessType,on_delete=models.CASCADE)
+    total_employees = models.IntegerField()
+    land_amount = models.CharField(max_length=30, blank=True, null=True)
+    lat = models.FloatField(blank=True,null=True)
+    long = models.FloatField(blank=True,null=True)
+    address = models.CharField(blank=True,null=True)
 
 
 class ProducerFarm(BaseModel):

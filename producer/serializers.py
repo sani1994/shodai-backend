@@ -2,31 +2,7 @@ from producer.models import ProducerProduct, ProducerFarm
 from rest_framework import serializers
 
 
-class ProducerProductSerializer(serializers.ModelSerializer):
-
-    def update(self, instance, validated_data):
-        instance.product = validated_data.get('product', instance.product)
-        instance.product_time = validated_data.get('product_time', instance.product_time)
-        instance.amount_of_product = validated_data.get('amount_of_product', instance.amount_of_product)
-        return instance
-
-    class Meta:
-        model = ProducerProduct
-        fields = ['product', 'product_time', 'amount_of_product']
-
-
 class ProducerFarmSerializer(serializers.ModelSerializer):
-    # land_amount= serializers.CharField(max_length=30)
-    # type_of_crops_produce = serializers.CharField(max_length=30)
-    # product_photo = serializers.ImageField()
-    # address = serializers.HyperlinkedRelatedField(
-    #     many=True,
-    #     read_only=True,
-    #     view_name='product'
-    # ) # foreignKey
-
-    # def create(self, validated_data):
-    #     return ProducerFarm(**validated_data)
 
     def update(self, instance, validated_data):
         instance.land_amount = validated_data.get('land_amount', instance.land_amount)
@@ -36,7 +12,25 @@ class ProducerFarmSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
     class Meta:
         model = ProducerFarm
         fields = ['land_amount', 'type_of_crops_produce', 'product_photo', 'address']
+
+
+class ProducerProductSerializer(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        instance.product_name = validated_data.get('product_name',instance.product_name)
+        instance.product_image =  validated_data.get('product_image',instance.product_image)
+        instance.product_category = validated_data.pop('product_category')
+        instance.production_time = validated_data.get('production_time',instance.production_time)
+        instance.unit_price = validated_data.get('unit_price',instance.unit_price)
+        instance.delivery_amount = validated_data.get('delivery_amount',instance.delivery_amount)
+        instance.modified_by = validated_data.get('modified_by')
+        instance.save()
+
+    class Meta:
+         model = ProducerProduct
+         fields = ('id','product_name','product_category','production_time','unit_price','delivery_amount')
+
+
