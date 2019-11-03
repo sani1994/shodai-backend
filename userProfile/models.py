@@ -24,7 +24,7 @@ class UserProfile(AbstractUser):
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
     email = models.EmailField(blank=True, null=True,unique=True)
-    user_NID = models.CharField(max_length=100,blank=False,null=True,unique=True)
+    user_NID = models.CharField(max_length=100,blank=True,null=True,unique=True)
     ref_code = models.CharField(max_length=10, blank=True, null=True)
     pin_code = models.CharField(max_length=10, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
@@ -37,7 +37,7 @@ class UserProfile(AbstractUser):
         ''' On save, update timestamps '''
         if not self.id:
             self.created_on = timezone.now()
-        self.modified = timezone.now()
+        # self.modified = timezone.now()
         return super(UserProfile, self).save(*args, **kwargs)
 
 
