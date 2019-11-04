@@ -7,8 +7,8 @@ from producer.models import ProducerProduct, ProducerFarm
 
 class ProducerProductAdmin(MaterialModelAdmin):
     # list_filter = ('product_name', 'product_unit', 'product_price', 'product_meta')
-    list_display = ('product', 'product_time', 'amount_of_product')
-    exclude = ['created_by', 'modified_by']
+    list_display = ('product_name', 'product_image', 'product_category','production_time','unit_price','delivery_amount','created_by','modified_by')
+    # exclude = ['created_by', 'modified_by']
 
 class ProducerFarmAdmin(MaterialModelAdmin):
     list_display = ('land_amount', 'type_of_crops_produce', 'product_photo', 'address')

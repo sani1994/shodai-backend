@@ -112,7 +112,8 @@ class BusinessTypeDetails(APIView):
     permission_classes = [GenericAuth]
 
     def get_businesstype_obj(self,id):
-        pass
+        obj = BusinessType.objects.get(id=id)
+        return obj
 
 
 

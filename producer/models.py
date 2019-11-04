@@ -7,11 +7,11 @@ from bases.models import BaseModel
 
 
 class ProducerProduct(BaseModel):
-    product_name = models.CharField(max_length=200)
-    product_image = models.ImageField(upload_to='producer/product')
+    product_name = models.CharField(max_length=200,null=False,blank=False)
+    product_image = models.ImageField(upload_to='producer/product',null=True,blank=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
-    production_time = models.DateTimeField()
-    unit_price = models.FloatField()
+    production_time = models.DateTimeField(null=True,blank=True)
+    unit_price = models.FloatField(null=False,blank=False)
     delivery_amount = models.FloatField(blank=True,null=True)
 
     def __str__(self):
@@ -28,11 +28,11 @@ class BusinessType(BaseModel):
 class ProducerBusiness(BaseModel):
     business_image = models.ImageField(upload_to='producer/business',blank=True,null=True)
     business_type = models.ForeignKey(BusinessType,on_delete=models.CASCADE)
-    total_employees = models.IntegerField()
+    total_employees = models.IntegerField(null=False,blank=False)
     land_amount = models.CharField(max_length=30, blank=True, null=True)
     lat = models.FloatField(blank=True,null=True)
     long = models.FloatField(blank=True,null=True)
-    address = models.CharField(blank=True,null=True)
+    address = models.CharField(max_length=300,blank=True,null=True)
 
 
 class ProducerFarm(BaseModel):
