@@ -6,7 +6,7 @@ urlpatterns = [
     path('producerproduct/', views.ProducerProductList.as_view()),
     path('producerproduct/<int:id>/', views.ProducerProductDetail.as_view()),
     path('producerbusinesstype/',views.BusinessTypeList.as_view()),
-    path('producerbusinesstype/<int:id>', views.BusinessTypeDetails.as_view()),
+    path('producerbusinesstype/<int:id>/', views.BusinessTypeDetails.as_view()),
     path('producerbusiness/',views.ProducerBusinessList.as_view()),
     path('producerbusiness/<int:id>/',views.ProducerBusinessDetails.as_view()),
     path('producerfarm/', views.ProducerFarmList.as_view()),

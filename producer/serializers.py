@@ -41,6 +41,7 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
         instance.business_type = self.validated_data.get('business_type',instance.business_type)
         instance.modified_by = validated_data.get('modified_by')
         instance.save()
+        return instance
 
     class Meta:
         model = BusinessType
@@ -59,6 +60,7 @@ class ProducerBusinessSerializer(serializers.ModelSerializer):
         instance.address = validated_data.get('address',instance.address)
         instance.modified_by = validated_data.get('modified_by')
         instance.save()
+        return instance
 
     class Meta:
         model = ProducerBusiness

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from retailer.serializers import AccountSerializer, ShopSerializer, AcceptedOrderSerializer
+from retailer.serializers import AccountSerializer, ShopSerializer, AcceptedOrderSerializer,AcceptedOrderReadSerializer
 from retailer.models import Account, Shop, AcceptedOrder
 from order.models import Order
 
@@ -405,7 +405,7 @@ class AcceptedOrderList(APIView):
             user = request.user
             obj = AcceptedOrder.objects.filter(user_id= user)
             if obj:
-                serializer = AcceptedOrderSerializer(obj,many=True)
+                serializer = AcceptedOrderReadSerializer(obj,many=True)
                 if serializer:
                     return Response(serializer.data,status=status.HTTP_200_OK)
                 else:
@@ -414,7 +414,7 @@ class AcceptedOrderList(APIView):
                 return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
         elif request.user.user_type =='SF':
             obj = AcceptedOrder.objects.all()
-            serializer = AcceptedOrderSerializer(obj,many=True)
+            serializer = AcceptedOrderReadSerializer(obj,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
 
     def post(self,request):
@@ -443,7 +443,7 @@ class AcceptedOrderDetail(APIView):
 
     def get(self,request,id):
         obj = self.get_accepted_order_obj(id)
-        serializer = AcceptedOrderSerializer(obj)
+        serializer = AcceptedOrderReadSerializer(obj)
         if serializer:
             return  Response(serializer.data,status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

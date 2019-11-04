@@ -165,7 +165,7 @@ class ProducerBusinessList(APIView):
     def get(self,request):
         if request.user.is_staff:
             queryset = ProducerBusiness.objects.all()
-        elif request.user == 'PD':
+        elif request.user.user_type == 'PD':
             queryset= ProducerBusiness.objects.filter(user=request.user)
         else:
             return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
@@ -178,7 +178,7 @@ class ProducerBusinessList(APIView):
         if request.user.is_staff or request.user.user_type == 'PD':
             serializer = ProducerBusinessSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(user=request.user)
                 return Response(serializer.data,status= status.HTTP_201_CREATED)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
@@ -189,21 +189,17 @@ class ProducerBusinessDetails(APIView):
     permission_classes = [GenericAuth]
 
     def get_producerbusiness_obj(self,id):
-        obj = ProducerBusiness.objects.get(id=id)
+        # obj = ProducerBusiness.objects.get(id=id)
+        obj = get_object_or_404(ProducerBusiness,id=id)
         return obj
 
     def get(self,request,id):
         if request.user.is_staff or request.user.user_type=='PD':
             obj = self.get_producerbusiness_obj(id)
-            if obj:
-                serializer = ProducerBusinessSerializer(obj)
-                if serializer:
-                    return Response(serializer.data, status=status.HTTP_200_OK)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            return Response({
-                    "Status": "No content",
-                    "details": "Content not available"
-                }, status=status.HTTP_204_NO_CONTENT)
+            serializer = ProducerBusinessSerializer(obj)
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
     def put(self,request,id):

@@ -60,3 +60,11 @@ class AcceptedOrderSerializer(serializers.ModelSerializer):
         model=AcceptedOrder
         fields= '__all__'
 
+
+class AcceptedOrderReadSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=AcceptedOrder
+        fields= '__all__'
+        depth = 1
+

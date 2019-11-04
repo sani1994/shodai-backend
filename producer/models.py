@@ -30,7 +30,7 @@ class ProducerBusiness(BaseModel):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     business_image = models.ImageField(upload_to='producer/business',blank=True,null=True)
     business_type = models.ForeignKey(BusinessType,on_delete=models.CASCADE)
-    total_employees = models.IntegerField(null=False,blank=False)
+    total_employees = models.IntegerField(null=True,blank=True)
     land_amount = models.CharField(max_length=30, blank=True, null=True)
     lat = models.FloatField(blank=True,null=True)
     long = models.FloatField(blank=True,null=True)
