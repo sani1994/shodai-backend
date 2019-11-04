@@ -1,4 +1,4 @@
-from producer.models import ProducerProduct, ProducerFarm
+from producer.models import ProducerProduct, ProducerFarm, BusinessType, ProducerBusiness
 from rest_framework import serializers
 
 
@@ -32,5 +32,36 @@ class ProducerProductSerializer(serializers.ModelSerializer):
     class Meta:
          model = ProducerProduct
          fields = ('id','product_name','product_category','production_time','unit_price','delivery_amount')
+
+
+class BusinessTypeSerializer(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        instance.business_type = self.validated_data.get('business_type',instance.business_type)
+        instance.modified_by = validated_data.get('modified_by')
+        instance.save()
+
+    class Meta:
+        model = BusinessType
+        fields = ('id','business_type')
+
+
+class ProducerBusinessSerializer(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        instance.business_image = validated_data.get('business_image',instance.business_image)
+        instance.business_type = validated_data.get('business_type',instance.business_type)
+        instance.total_employees = validated_data.get('total_employees',instance.total_employees)
+        instance.land_amount = validated_data.get('land_amount',instance.land_amount)
+        instance.lat = validated_data.get('lat',instance.lat)
+        instance.long = validated_data.get('long',instance.long)
+        instance.address = validated_data.get('address',instance.address)
+        instance.modified_by = validated_data.get('modified_by')
+        instance.save()
+
+    class Meta:
+        model = ProducerBusiness
+        fields = ('id','business_image','business_type','total_employees','land_amount','lat','long','address')
+
 
 

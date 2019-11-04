@@ -24,7 +24,9 @@ class BusinessType(BaseModel):
     def __str__(self):
         return self.business_type
 
+
 class ProducerBusiness(BaseModel):
+    business_image = models.ImageField(upload_to='producer/business',blank=True,null=True)
     business_type = models.ForeignKey(BusinessType,on_delete=models.CASCADE)
     total_employees = models.IntegerField()
     land_amount = models.CharField(max_length=30, blank=True, null=True)

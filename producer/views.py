@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from producer.serializers import ProducerFarmSerializer, ProducerProductSerializer
+from producer.serializers import ProducerFarmSerializer, ProducerProductSerializer, BusinessTypeSerializer
 
-from producer.models import ProducerProduct, ProducerFarm
+from producer.models import ProducerProduct, ProducerFarm, BusinessType
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,6 +9,7 @@ from rest_framework import status
 from datetime import datetime
 
 # Create your views here.
+from sodai.utils.permission import GenericAuth
 
 
 class ProducerProductList(APIView):
@@ -57,7 +58,7 @@ class ProducerProductDetail(APIView):
     Retrieve, update and delete Producer
     """
     def get_producerProduct_object(self,id):
-        obj = ProducerProduct.objects.filter(id=id).first()
+        obj = ProducerProduct.objects.get(id=id)
 
     def get(self, request, id, format=None):
         producer = self.get_producerProduct_object( id)
@@ -82,7 +83,38 @@ class ProducerProductDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-    
+class BusinessTypeList(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        queryset = BusinessType.objects.all()
+        if queryset:
+            serializer = BusinessTypeSerializer(queryset,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response({
+            "Status": "No content",
+            "details": "Content not available"
+        }, status=status.HTTP_204_NO_CONTENT)
+
+    def post(self,request):
+        if request.user.is_staff:
+            serializer = BusinessTypeSerializer(data = request.data)
+            if serializer.is_valid():
+                serializer.save(created_by = request.user)
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+
+class BusinessTypeDetails(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def get_businesstype_obj(self,id):
+        pass
+
+
 
 class ProducerFarmList(APIView):
 
