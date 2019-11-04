@@ -28,6 +28,7 @@ class ProducerProductSerializer(serializers.ModelSerializer):
         instance.delivery_amount = validated_data.get('delivery_amount',instance.delivery_amount)
         instance.modified_by = validated_data.get('modified_by')
         instance.save()
+        return instance
 
     class Meta:
          model = ProducerProduct

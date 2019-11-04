@@ -1,12 +1,13 @@
 from django.db import models
 from product.models import ProductCategory
-from userProfile.models import Address
+from userProfile.models import Address, UserProfile
 from bases.models import BaseModel
 
 # Create your models here.
 
 
 class ProducerProduct(BaseModel):
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
     product_name = models.CharField(max_length=200,null=False,blank=False)
     product_image = models.ImageField(upload_to='producer/product',null=True,blank=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
@@ -26,6 +27,7 @@ class BusinessType(BaseModel):
 
 
 class ProducerBusiness(BaseModel):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     business_image = models.ImageField(upload_to='producer/business',blank=True,null=True)
     business_type = models.ForeignKey(BusinessType,on_delete=models.CASCADE)
     total_employees = models.IntegerField(null=False,blank=False)
