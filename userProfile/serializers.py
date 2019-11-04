@@ -108,7 +108,7 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
             user_NID=validated_data['user_NID'],
             username=validated_data['mobile_number']
         )
-        user = UserProfile.objects.create_user(**validated_data)
+        # user = UserProfile.objects.create_user(**validated_data)
         if user:
             user.set_password(validated_data['password'])
             user.save()
