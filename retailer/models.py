@@ -1,6 +1,6 @@
 from django.db import models
 
-from product.models import ShopCategory
+from product.models import ShopCategory, Product
 from userProfile.models import UserProfile
 from userProfile.models import Address
 from order.models import Order,OrderProduct
@@ -17,6 +17,7 @@ class Account(BaseModel):
 
 class Shop(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
+    product = models.ManyToManyField(Product)
     shop_name = models.CharField(max_length= 100,null=False,blank=False)
     shop_type = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
     shop_lat = models.FloatField(null=True,blank=True)

@@ -78,6 +78,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ADMIN_ORDERING = [
+#     ('Shodai', [
+#         'Userprofile',
+#         'Product', 'Retailer','Producer','Order','Offer'
+#     ]),
+# ]
+
 ROOT_URLCONF = 'sodai.urls'
 
 TEMPLATES = [

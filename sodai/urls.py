@@ -39,6 +39,7 @@ site.profile_bg = staticfiles('../media/white.jpg')
 site.login_logo = staticfiles('../media/shodai.jpg')
 site.logout_bg = staticfiles('../media/white.jpg')
 site.login_bg_color = 'skyblue'
+# site.ordering = ('userProfile','Product')
 ##################################################
 
 urlpatterns = [
@@ -50,4 +51,5 @@ urlpatterns = [
     path('', include('offer.urls')),
     path('admin/', include('material.admin.urls')),
 ]
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

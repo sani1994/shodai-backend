@@ -1,7 +1,7 @@
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from producer.models import ProducerProduct, ProducerFarm
+from producer.models import ProducerProduct, ProducerFarm,ProducerBusiness,BusinessType
 
 # Register your models here.
 
@@ -27,7 +27,19 @@ class ProducerFarmAdmin(MaterialModelAdmin):
     def __str__(self):
         return str('%s object' % self.__class__.__name__)
 
+
+class BusinessTypeAdmin(MaterialModelAdmin):
+    pass
+
         
 
 site.register(ProducerProduct, ProducerProductAdmin)
 site.register(ProducerFarm,ProducerFarmAdmin)
+site.register(BusinessType,BusinessTypeAdmin)
+
+
+class ProducerBusinessAdmin(MaterialModelAdmin):
+    pass
+
+
+site.register(ProducerBusiness,ProducerBusinessAdmin)
