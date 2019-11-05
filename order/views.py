@@ -243,7 +243,7 @@ class OrderdProducts(APIView): # this view returns all the products in a order. 
 
     def get(self,request,id):
         obj = self.get_order_object(id)
-        if obj.user == request.user or request.user == 'SF' or request.user== 'RT':
+        if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
             orderProducts = []
             orderProductList = obj.orderproduct_set.all()
             orderProductSerializer = OrderProductReadSerializer(orderProductList, many=True)
