@@ -4,6 +4,13 @@ from bases.models import BaseModel
 # Create your models here.
 
 
+class ProductUnit(BaseModel):
+    product_unit = models.CharField(max_length=10,null=False,blank=False)
+
+    def __str__(self):
+        return self.product_unit
+
+
 class ShopCategory(BaseModel):
     type_of_shop = models.CharField(max_length=89)
 
@@ -33,12 +40,10 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
 
 
 class Product(BaseModel):
-    # put retailer as foreign key
     product_name = models.CharField(max_length=100, blank=True, null=True)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
-    product_unit = models.CharField(max_length=3, blank=True, null=True)
+    product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,null=True,blank=True)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
-    # product_offer_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
 
     def __str__(self):

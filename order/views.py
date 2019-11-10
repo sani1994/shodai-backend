@@ -269,6 +269,7 @@ class OrderStatusUpdate(APIView):
 
     def get_acceptedOrder_obj(self,id):
         obj = AcceptedOrder.objects.get(id=id)
+        # obj = get_or_404(AcceptedOrder,id=id)
         return obj
 
     def get_oder_obj(self,id):
