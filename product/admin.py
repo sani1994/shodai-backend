@@ -6,8 +6,8 @@ from product.models import ShopCategory, ProductCategory, ProductMeta, ProductUn
 # Register your models here.
 
 class ProductAdmin(admin.ModelAdmin):
-    list_filter = ('product_name', 'product_price', 'product_meta')
-    list_display = ('product_name','product_price', 'product_meta')
+    list_filter = ('product_name', 'product_unit', 'product_price', 'product_meta')
+    list_display = ('product_name', 'product_unit', 'product_price', 'product_meta')
     exclude = ['created_by', 'modified_by']
 
     def save_model(self, request, obj, form, change):
