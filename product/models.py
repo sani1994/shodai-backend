@@ -42,7 +42,7 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
-    product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,null=True,blank=True)
+    # product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,null=True,blank=True)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
 
