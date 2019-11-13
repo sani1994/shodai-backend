@@ -12,5 +12,5 @@ class OfferProductAdmin(MaterialModelAdmin):
     list_display = ('offer','product','offer_price','offer_product_balance')
     # icon_name = 'face'
 
-site.register(Offer,OfferAdmin)
+site.register(Offer,app = __package__)
 site.register(OfferProduct,OfferProductAdmin)

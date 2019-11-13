@@ -1,10 +1,12 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 from product.models import ShopCategory, Product
 from userProfile.models import UserProfile
 from userProfile.models import Address
 from order.models import Order,OrderProduct
 from bases.models import BaseModel
+from django.contrib.gis.db import models
 # Create your models here.
 
 
@@ -13,6 +15,10 @@ class Account(BaseModel):
     bank_name = models.CharField(max_length=50, blank=True, null=True)
     account_no = models.CharField(max_length=100,blank=True, null=True)
     account_name = models.CharField(max_length=50, blank=True, null=True)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return self.user.username
 
 
 class Shop(BaseModel):
@@ -22,22 +28,31 @@ class Shop(BaseModel):
     shop_type = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
     shop_lat = models.FloatField(null=True,blank=True)
     shop_long = models.FloatField(null=True,blank=True)
+    shop_geopoint = models.PointField(null=True)
     shop_address = models.CharField(max_length=100,blank=True,null=True)
     shop_image= models.ImageField(upload_to='retailer/shop/%Y/%m/%d',null=True,blank=True)
     shop_licence= models.CharField(max_length=200,blank=True,null=True,unique=True) #trade licence
     shop_website = models.CharField(max_length=100,blank=True,null=True)
+    history = HistoricalRecords()
+    # objects = models.GeoManager()
 
     def __str__(self):
         return self.shop_name
+
+    def save(self, *args, **kwargs):
+        self.shop_lat = self.shop_geopoint.y
+        self.shop_long = self.shop_geopoint.x
+        super(Shop, self).save(*args, **kwargs)
 
 
 class AcceptedOrder(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True)
     order = models.ForeignKey(Order,on_delete=models.CASCADE)
     order_product = models.ForeignKey(OrderProduct,on_delete=models.CASCADE,null=True)
+    history = HistoricalRecords()
 
-    # def __str__(self):
-    #     return self.order.
+    def __str__(self):
+        return self.user.username
 
 
 

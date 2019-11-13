@@ -1,6 +1,8 @@
 import decimal
 
 from django.db import models
+from simple_history.models import HistoricalRecords
+
 from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
@@ -43,6 +45,7 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20,choices=ORDER_TYPES,default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20,null=True,blank=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.delivery_place
@@ -54,6 +57,7 @@ class OrderProduct(BaseModel):
     order = models.ForeignKey(Order,on_delete=models.CASCADE)
     order_product_price = models.FloatField(blank=False,null=False,default=0)  # product may belong to offer do the price
     order_product_qty = models.FloatField(default=1)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.product.product_name
@@ -61,6 +65,7 @@ class OrderProduct(BaseModel):
 class Vat(BaseModel):
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False)
     vat_amount = models.FloatField(default=0,blank=False,null=False)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.product_meta.name

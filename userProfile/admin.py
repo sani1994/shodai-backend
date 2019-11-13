@@ -2,12 +2,15 @@ from django.contrib import admin
 from django.contrib.admin import register
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
+from simple_history.admin import SimpleHistoryAdmin
+
 from userProfile.models import UserProfile, Address, Otp
 
 # Register your models here.
 
 class AddressAdmin(MaterialModelAdmin):
     list_display = ('road' , 'city', 'district', 'country')
+    history_list_display =["road"]
     # icon_name = 'address'
 
 class UserProfileAdmin(MaterialModelAdmin):

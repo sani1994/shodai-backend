@@ -54,6 +54,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'simple_history',
+    'rest_framework',
+    'rest_framework_simplejwt',
     # for djnago material admin site
     
     'userProfile',
@@ -63,9 +67,6 @@ INSTALLED_APPS = [
     'retailer',
     'product',
     'offer',
-
-    'rest_framework',
-    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -76,14 +77,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
-
-# ADMIN_ORDERING = [
-#     ('Shodai', [
-#         'Userprofile',
-#         'Product', 'Retailer','Producer','Order','Offer'
-#     ]),
-# ]
 
 ROOT_URLCONF = 'sodai.urls'
 
@@ -111,7 +106,8 @@ WSGI_APPLICATION = 'sodai.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'shodai',
         'USER': 'postgres',
         'PASSWORD' : '9876',

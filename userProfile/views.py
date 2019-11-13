@@ -86,7 +86,7 @@ class UserProfileList(APIView):
 
 
 class UserProfileDetail(APIView):
-    permission_classes = [GenericAuth]
+    # permission_classes = [GenericAuth]
     # """
     # Retrieve, update and delete Orders
     # """

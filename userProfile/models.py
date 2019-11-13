@@ -5,6 +5,7 @@ from django.utils import timezone
 
 # from bases.models import BaseModel
 # Create your models here.
+from simple_history.models import HistoricalRecords
 
 
 class UserProfile(AbstractUser):
@@ -29,6 +30,7 @@ class UserProfile(AbstractUser):
     pin_code = models.CharField(max_length=10, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     modified_on = models.DateTimeField(blank=True, null=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.username
@@ -37,7 +39,13 @@ class UserProfile(AbstractUser):
         ''' On save, update timestamps '''
         if not self.id:
             self.created_on = timezone.now()
-        # self.modified = timezone.now()
+        #     if self.user_type == 'SF':
+        #         self.is_staff = True
+        #     self.is_staff = False
+        # # self.modified = timezone.now()
+        # if self.user_type== 'SF':
+        #     self.is_staff = True
+        # self.is_staff=False
         return super(UserProfile, self).save(*args, **kwargs)
 
 
@@ -49,16 +57,17 @@ class Address(models.Model):
     country = models.CharField(max_length=30, blank=True, null=True)
     zip_code = models.CharField(max_length=30, blank=True, null=True)
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    history = HistoricalRecords()
 
     def __str__(self):
         return "{}, {}, {}".format(self.road, self.city, self.district)
 
 
 class Otp(models.Model):
-
      mobile_number = models.CharField(max_length=11,unique=True)
      otp_code = models.CharField(max_length=10,blank=True,null=True)
      count = models.IntegerField(default=0,help_text='Number of otp sent')
+     history = HistoricalRecords()
 
      def __str__(self):
          return str(self.mobile_number) + 'is sent' + str(self.otp_code)
@@ -67,8 +76,9 @@ class Otp(models.Model):
 class BlackListedToken(models.Model):
     token = models.CharField(max_length=1000, unique=True)
     user = models.ForeignKey(
-        UserProfile, related_name="token_user", on_delete=models.CASCADE)
+    UserProfile, related_name="token_user", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name_plural = "BlackListed Tokens"

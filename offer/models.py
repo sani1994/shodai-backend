@@ -1,4 +1,6 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
+
 from bases.models import BaseModel
 from product.models import Product
 
@@ -12,6 +14,7 @@ class Offer(BaseModel):
     offer_details = models.CharField(max_length=500,blank=True,null=True)
     offer_ends_in = models.DateTimeField(blank=True,null=True)
     offer_starts_in = models.DateTimeField(blank=True,null=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.offer_name
@@ -22,6 +25,7 @@ class OfferProduct(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     offer_price = models.DecimalField(max_digits=5,decimal_places=2,blank=True,null=True)
     offer_product_balance = models.DecimalField(max_digits=5,decimal_places=1,blank=True,null=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.product.product_name

@@ -61,7 +61,6 @@ class ProducerProductDetail(APIView):
     Retrieve, update and delete Producer
     """
     def get_producerProduct_object(self,id):
-        # obj = ProducerProduct.objects.filter(id=id).first()
         obj = get_object_or_404(ProducerProduct,id=id)
         return obj
 
@@ -71,7 +70,6 @@ class ProducerProductDetail(APIView):
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def put(self, request, id, format=None):
         producer = self.get_producerProduct_object(id)
