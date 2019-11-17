@@ -70,6 +70,8 @@ class ProductDetail(APIView):
     def put(self, request, id, format=None):
         if request.user.user_type=='SF':
             product = self.get_product_object(id)
+            if request.data['product_price'] != product.product_price:
+                product.product_last_price = product.product_price
             serializer = ProductSerializer(product, data=request.data)
             if serializer.is_valid():
                 serializer.save(modified_by = request.user)

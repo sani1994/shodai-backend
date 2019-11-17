@@ -33,6 +33,8 @@ class Shop(BaseModel):
     shop_image= models.ImageField(upload_to='retailer/shop/%Y/%m/%d',null=True,blank=True)
     shop_licence= models.CharField(max_length=200,blank=True,null=True,unique=True) #trade licence
     shop_website = models.CharField(max_length=100,blank=True,null=True)
+    shop_open_time = models.TimeField(auto_now=False,null=True)
+    shop_close_time= models.TimeField(auto_now=False,null=True)
     history = HistoricalRecords()
     # objects = models.GeoManager()
 
