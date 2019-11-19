@@ -98,8 +98,6 @@ TEMPLATES = [
     },
 ]
 
-POSTGIS_TEMPLATE = 'shodai'
-
 WSGI_APPLICATION = 'sodai.wsgi.application'
 
 
