@@ -98,6 +98,8 @@ TEMPLATES = [
     },
 ]
 
+POSTGIS_TEMPLATE = 'shodai'
+
 WSGI_APPLICATION = 'sodai.wsgi.application'
 
 
@@ -115,7 +117,6 @@ DATABASES = {
     }
 }
 
-POSTGIS_TEMPLATE = 'shodai'
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
