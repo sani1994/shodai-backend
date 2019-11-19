@@ -50,21 +50,22 @@ class ProductMetaSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
 
-    def update(self, instance, validated_data):
-        product_meta = validated_data.pop('product_meta')
-
-        instance.product_name = validated_data.get('product_name', instance.product_name)
-        instance.product_unit = validated_data.get('product_unit', instance.product_unit)
-        instance.product_price = validated_data.get('product_price', instance.product_price)
-        instance.product_image = validated_data.get('product_image',instance.product_image)
-        instance.product_meta = product_meta
-        instance.modified_by = validated_data.pop('modified_by')
-        instance.save()
-        return instance
+    # def update(self, instance, validated_data):
+    #     product_meta = validated_data.pop('product_meta')
+    #
+    #     instance.product_name = validated_data.get('product_name', instance.product_name)
+    #     instance.product_unit = validated_data.get('product_unit', instance.product_unit)
+    #     instance.product_price = validated_data.get('product_price', instance.product_price)
+    #     instance.product_image = validated_data.get('product_image',instance.product_image)
+    #     instance.product_meta = product_meta
+    #     instance.modified_by = validated_data.pop('modified_by')
+    #     instance.save()
+    #     return instance
     
     class Meta:
         model = Product
-        fields = [ 'id','product_name', 'product_image', 'product_unit', 'product_price','product_meta']
+        fields = [ 'id','product_name', 'product_image', 'product_unit', 'product_price','product_meta','product_last_price','is_approved']
+        read_only = 'product_last_price'
 
 
 class ProductUnitSerializer(serializers.ModelSerializer):

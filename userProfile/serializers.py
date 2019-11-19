@@ -19,6 +19,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         instance.ref_code = validated_data.get('ref_code', instance.ref_code)
         instance.pin_code = validated_data.get('pin_code', instance.pin_code)
         instance.password = validated_data.get('password',instance.password)
+        instance.is_approved = False
+        instance.save()
         return instance
     
     class Meta:
@@ -59,6 +61,7 @@ class AddressSerializer(serializers.ModelSerializer):
         instance.country = validated_data.get('country', instance.country)
         instance.zip_code = validated_data.get('zip_code', instance.zip_code)
         instance.user = validated_data.get('user', instance.user)
+        instance.is_approved = False
         instance.save()
         return instance
 

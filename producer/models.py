@@ -17,6 +17,7 @@ class ProducerProduct(BaseModel):
     unit_price = models.FloatField(null=False,blank=False)
     delivery_amount = models.FloatField(blank=True,null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.product_name
@@ -41,9 +42,10 @@ class ProducerBusiness(BaseModel):
     productbusiness_geopoint = models.PointField(null=True)
     address = models.CharField(max_length=300,blank=True,null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return
+        return self.user.username
 
     def save(self, *args, **kwargs):
         self.shop_lat = self.productbusiness_geopoint.y
@@ -57,6 +59,7 @@ class ProducerFarm(BaseModel):
     product_photo = models.ImageField(blank=True, null=True)
     address = models.ForeignKey(Address, models.SET_NULL,blank=True,null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.type_of_crops_produce

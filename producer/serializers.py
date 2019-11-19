@@ -27,12 +27,13 @@ class ProducerProductSerializer(serializers.ModelSerializer):
         instance.unit_price = validated_data.get('unit_price',instance.unit_price)
         instance.delivery_amount = validated_data.get('delivery_amount',instance.delivery_amount)
         instance.modified_by = validated_data.get('modified_by')
+        instance.is_approved = False
         instance.save()
         return instance
 
     class Meta:
          model = ProducerProduct
-         fields = ('id','product_name','product_category','production_time','unit_price','delivery_amount')
+         fields = ('id','product_name','product_category','production_time','unit_price','delivery_amount','is_approved')
 
 
 class BusinessTypeSerializer(serializers.ModelSerializer):
@@ -40,12 +41,13 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.business_type = self.validated_data.get('business_type',instance.business_type)
         instance.modified_by = validated_data.get('modified_by')
+        instance.is_approved = False
         instance.save()
         return instance
 
     class Meta:
         model = BusinessType
-        fields = ('id','business_type')
+        fields = ('id','business_type','is_approved')
 
 
 class ProducerBusinessSerializer(serializers.ModelSerializer):
@@ -59,12 +61,13 @@ class ProducerBusinessSerializer(serializers.ModelSerializer):
         instance.long = validated_data.get('long',instance.long)
         instance.address = validated_data.get('address',instance.address)
         instance.modified_by = validated_data.get('modified_by')
+        instance.is_approved = False
         instance.save()
         return instance
 
     class Meta:
         model = ProducerBusiness
-        fields = ('id','business_image','business_type','total_employees','land_amount','lat','long','address')
+        fields = ('id','business_image','business_type','total_employees','land_amount','lat','long','address','is_approved')
 
 
 

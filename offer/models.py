@@ -15,6 +15,7 @@ class Offer(BaseModel):
     offer_ends_in = models.DateTimeField(blank=True,null=True)
     offer_starts_in = models.DateTimeField(blank=True,null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.offer_name
@@ -26,6 +27,7 @@ class OfferProduct(BaseModel):
     offer_price = models.DecimalField(max_digits=5,decimal_places=2,blank=True,null=True)
     offer_product_balance = models.DecimalField(max_digits=5,decimal_places=1,blank=True,null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.product.product_name

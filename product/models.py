@@ -1,6 +1,5 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
-
 from bases.models import BaseModel
 
 # Create your models here.
@@ -52,7 +51,8 @@ class Product(BaseModel):
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     history = HistoricalRecords()
-    product_last_price =  models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
+    product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.product_name

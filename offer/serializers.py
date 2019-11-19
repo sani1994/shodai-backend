@@ -8,6 +8,7 @@ class OfferSerializer(serializers.ModelSerializer):
         instance.offer_name = validated_data.get('offer_name',instance.offer_name)
         instance.offer_img = validated_data.get('offer_img',instance.offer_img)
         instance.offer_details = validated_data.get('offer_details',instance.offer_details)
+        instance.is_approved = False
 
         instance.save()
         return instance
@@ -26,6 +27,7 @@ class OfferProductSerializer(serializers.ModelSerializer):
         instance.offer_price =  self.validated_data.get('offer_price',instance.offer_price)
         instance.product = product
         instance.offer = offer
+        instance.is_approved = False
         instance.save()
         return instance
 

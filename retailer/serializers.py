@@ -42,6 +42,7 @@ class ShopSerializer(serializers.ModelSerializer):
         instance.shop_website = self.validated_data.get('shop_website',instance.shop_website)
         instance.user = user
         instance.modified_by = user
+        instance.is_approved = False
         instance.save()
         return  instance
 

@@ -16,6 +16,7 @@ class Account(BaseModel):
     account_no = models.CharField(max_length=100,blank=True, null=True)
     account_name = models.CharField(max_length=50, blank=True, null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -36,6 +37,7 @@ class Shop(BaseModel):
     shop_open_time = models.TimeField(auto_now=False,null=True)
     shop_close_time= models.TimeField(auto_now=False,null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
     # objects = models.GeoManager()
 
     def __str__(self):

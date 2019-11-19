@@ -6,16 +6,14 @@ from product.models import ShopCategory, ProductCategory, ProductMeta, ProductUn
 # Register your models here.
 
 class ProductAdmin(admin.ModelAdmin):
-    list_filter = ('product_name', 'product_unit', 'product_price', 'product_meta')
-    list_display = ('product_name', 'product_unit', 'product_price', 'product_meta')
-    exclude = ['created_by', 'modified_by']
+    list_filter = ('product_name', 'product_meta','is_approved')
+    list_display = ('product_name','product_price','is_approved')
+    read_only = ['created_by', 'modified_by']
 
     def save_model(self, request, obj, form, change):
-        print(obj.pk)
-        if obj.pk == None: 
-            print("inside None")
+        if obj.pk == None:
             obj.created_by = request.user
-            obj.modified_by = request.user
+        obj.modified_by = request.user
         super().save_model(request,obj, form, change)
         
     

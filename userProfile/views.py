@@ -43,7 +43,7 @@ class UserProfileList(APIView):
         # else:
         user_type = request.user.user_type
         if user_type=='CM' or user_type == 'RT' or user_type=='PD':  # Customer = CM Retailer RT
-            user_profile = UserProfile.objects.filter(id=request.user.id)
+            user_profile = UserProfile.objects.filter(id=request.user.id, is_approved=True)
             serializer = UserProfileSerializer(user_profile, many=True)
             return Response(serializer.data)
         # elif user_type=='RT': # Retailer = RT
@@ -109,7 +109,7 @@ class UserProfileDetail(APIView):
         # except UserProfile.DoesNotExist:
         #     raise Http404
 
-        user = UserProfile.objects.filter(id=id).first()
+        user = UserProfile.objects.get(id=id)
         return user
 
     def get(self, request, id, format=None):

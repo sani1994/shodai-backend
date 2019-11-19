@@ -15,7 +15,9 @@ class OfferList(APIView):
     permission_class= [GenericAuth,]
 
     def get(self,request):
-        queryset = Offer.objects.all()
+        if request.user.is_staff:
+            queryset = Offer.objects.all()
+        queryset=Offer.objects.filter(is_approved=True)
         if queryset:
             serializer = OfferSerializer(queryset,many=True)
             if serializer:
@@ -99,7 +101,9 @@ class OfferProductList(APIView):
     permission_classes = [GenericAuth]
 
     def get(self,request):
-        queryset = OfferProduct.objects.all()
+        if request.user.is_staff:
+            queryset = OfferProduct.objects.all()
+        queryset=OfferProduct.objects.filter(is_approved = True)
         if queryset:
             serializer = OfferProductReadSerializer(queryset,many=True)
             if serializer:

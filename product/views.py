@@ -25,7 +25,9 @@ class ProductList(APIView):
     ## list of Prodect
 
     def get(self, request, format=None):
-        product = Product.objects.all()
+        if request.user.is_staff:
+            product = Product.objects.all()
+        product = Product.objects.filter(is_approved=True)
         serializer = ProductSerializer(product, many=True)
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -49,32 +51,28 @@ class ProductDetail(APIView):
     """
 
     def get_product_object(self,id):
-        obj = Product.objects.get(id=id)
+        obj = get_object_or_404(Product,id=id)
         return obj
 
-    def get(self, request, id, format=None):
-
+    def get(self, request,id):
         product = self.get_product_object(id)
-        if product:
-            serializer = ProductSerializer(product)
-            if serializer:
-                return Response(serializer.data)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ProductSerializer(product)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
         else:
-            return Response({
-                "Status": "No content",
-                "details": "Rontent not available"
-                },status=status.HTTP_204_NO_CONTENT)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def put(self, request, id, format=None):
         if request.user.user_type=='SF':
             product = self.get_product_object(id)
             if request.data['product_price'] != product.product_price:
                 product.product_last_price = product.product_price
+                print("product last price added")
             serializer = ProductSerializer(product, data=request.data)
             if serializer.is_valid():
                 serializer.save(modified_by = request.user)
+                print(serializer.data)
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

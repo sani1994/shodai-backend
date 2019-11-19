@@ -205,7 +205,7 @@ class ShopList(APIView):
     def get(self,request):
         if request.user.user_type == 'RT':
             user_id = request.user.id
-            obj = Shop.objects.filter(user_id=user_id)
+            obj = Shop.objects.filter(user_id=user_id,is_approved=True)
             if obj:
                 serializer = ShopSerializer(obj,many=True)
                 if serializer:

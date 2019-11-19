@@ -31,6 +31,7 @@ class UserProfile(AbstractUser):
     created_on = models.DateTimeField(blank=True, null=True)
     modified_on = models.DateTimeField(blank=True, null=True)
     history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
