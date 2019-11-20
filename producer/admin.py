@@ -1,3 +1,5 @@
+from builtins import super
+
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site

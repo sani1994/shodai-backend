@@ -2,20 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/product/migrations/0001_initial.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0002_auto_20191007_1920.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0003_auto_20191010_1131.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0004_auto_20191013_0531.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0005_auto_20191014_0753.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0006_remove_product_product_offer_price.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0007_auto_20191015_0546.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0008_auto_20191015_0939.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0009_auto_20191027_1129.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0010_auto_20191111_1015.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0011_historicalproduct_historicalproductcategory_historicalproductmeta_historicalproductunit_historicalsh.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0012_auto_20191117_1425.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product/migrations/0013_auto_20191119_0510.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/producer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/admin.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -91,6 +80,29 @@
       </list>
     </option>
   </component>
+  <component name="RunManager">
+    <configuration name="manage" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="shodai-backend" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../.." />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/manage.py" />
+      <option name="PARAMETERS" value="runserver" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -148,6 +160,17 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="foreign key problem solved." />
     <option name="LAST_COMMIT_MESSAGE" value="foreign key problem solved." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/producer/models.py</url>
+          <line>59</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/shodai_backend$shodai.coverage" NAME="shodai Coverage Results" MODIFIED="1570623337619" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
