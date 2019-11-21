@@ -5,6 +5,7 @@ from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
 from bases.models import BaseModel
+from userProfile.models import Address
 
 # Create your models here.
 
@@ -34,6 +35,7 @@ class Order(BaseModel):
     ]
     order_status = models.CharField(max_length=100, choices=ORDER_STATUS, default=ORDERED)
     home_delivery = models.BooleanField(default=True,null=False,blank=False)
+    address = models.ForeignKey(Address,on_delete=models.CASCADE,null=True)
 
     FIXED_PRICE = 'FP'
     BIDDING = 'BD'

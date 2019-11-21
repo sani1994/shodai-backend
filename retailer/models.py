@@ -1,7 +1,7 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-from product.models import ShopCategory, Product
+from product.models import ShopCategory, Product, ProductUnit, ProductMeta
 from userProfile.models import UserProfile
 from userProfile.models import Address
 from order.models import Order,OrderProduct
@@ -44,8 +44,8 @@ class Shop(BaseModel):
         return self.shop_name
 
     def save(self, *args, **kwargs):
-        self.shop_lat = self.shop_geopoint.y
-        self.shop_long = self.shop_geopoint.x
+        self.shop_geopoint.y = self.shop_lat
+        self.shop_geopoint.x = self.shop_long
         super(Shop, self).save(*args, **kwargs)
 
 
@@ -57,6 +57,16 @@ class AcceptedOrder(BaseModel):
 
     def __str__(self):
         return self.user.username
+
+class ShopProduct(BaseModel):
+    product = models.ForeignKey(Product,on_delete=models.PROTECT)
+    product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
+    product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
+    product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
+    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
+    history = HistoricalRecords()
+    product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
+    is_approved = models.BooleanField(default=False)
 
 
 

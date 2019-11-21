@@ -6,7 +6,7 @@ from bases.models import BaseModel
 
 
 class ProductUnit(BaseModel):
-    product_unit = models.CharField(max_length=10,null=False,blank=False)
+    product_unit = models.CharField(max_length=10,null=False,blank=False,unique=True)
     history = HistoricalRecords()
 
     def __str__(self):

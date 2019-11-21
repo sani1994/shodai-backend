@@ -1,4 +1,4 @@
-from producer.models import ProducerProduct, ProducerFarm, BusinessType, ProducerBusiness
+from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness
 from rest_framework import serializers
 
 
@@ -17,23 +17,38 @@ class ProducerFarmSerializer(serializers.ModelSerializer):
         fields = ['land_amount', 'type_of_crops_produce', 'product_photo', 'address']
 
 
-class ProducerProductSerializer(serializers.ModelSerializer):
+class ProducerBulkRequestSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['user']
+        obj= ProducerBulkRequest.objects.create(**validated_data, user=user)
+        obj.created_by = user
+        obj.save()
+        return obj
 
     def update(self, instance, validated_data):
         instance.product_name = validated_data.get('product_name',instance.product_name)
         instance.product_image =  validated_data.get('product_image',instance.product_image)
         instance.product_category = validated_data.pop('product_category')
         instance.production_time = validated_data.get('production_time',instance.production_time)
+        instance.unit=validated_data.get('unit',instance.unit)
         instance.unit_price = validated_data.get('unit_price',instance.unit_price)
-        instance.delivery_amount = validated_data.get('delivery_amount',instance.delivery_amount)
+        instance.delivery_amount = validated_data.get('quantity',instance.quantity)
+        instance.general_price=validated_data.get('general_price',instance.general_price)
+        instance.general_qty=validated_data.get('general_qty',instance.general_qty)
+        instance.general_unit=validated_data.get('general_unit',instance.general_unit)
+        instance.offer_price=validated_data.get('offer_price',instance.offer_price)
+        instance.offer_qty=validated_data.get('offer_qty',instance.offer_qty)
+        instance.offer_unit=validated_data.get('offer_unit',instance.offer_unit)
         instance.modified_by = validated_data.get('modified_by')
         instance.is_approved = False
         instance.save()
         return instance
 
     class Meta:
-         model = ProducerProduct
-         fields = ('id','product_name','product_category','production_time','unit_price','delivery_amount','is_approved')
+         model = ProducerBulkRequest
+         # fields = ('id','product_name','product_category','production_time','unit_price','delivery_amount','is_approved')
+         fields =  '__all__'
 
 
 class BusinessTypeSerializer(serializers.ModelSerializer):
@@ -68,6 +83,7 @@ class ProducerBusinessSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProducerBusiness
         fields = ('id','business_image','business_type','total_employees','land_amount','lat','long','address','is_approved')
+
 
 
 

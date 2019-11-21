@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'simple_history',
     'rest_framework',
     'rest_framework_simplejwt',
+    'import_export',
+    # 'material.admin',
     # for djnago material admin site
     
     'userProfile',

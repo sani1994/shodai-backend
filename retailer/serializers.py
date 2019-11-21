@@ -27,7 +27,6 @@ class ShopSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        print(user)
         return Shop.objects.create(**validated_data,user=user)
 
     def update(self, instance, validated_data):

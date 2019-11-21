@@ -98,7 +98,6 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
-        user = self.context['request'].user
 
         if not validated_data:
             return Response({'Error': "Invalid Data"})

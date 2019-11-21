@@ -326,12 +326,14 @@ class ProductUnitList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
-        if request.user.is_staff():
-            serializer = ProductUnitSerializer(data=request.data)
-            if serializer.is_valid():
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+        if request.user.is_staff:
+            if not ProductUnit.objects.filter(ProductUnit_Item__contains=request.data):
+                serializer = ProductUnitSerializer(data=request.data)
+                if serializer.is_valid():
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'Duplicat data: '+ str(request.data['product_unit'])},status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProductUnitDetails(APIView):

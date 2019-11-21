@@ -3,20 +3,19 @@ from builtins import super
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from producer.models import ProducerProduct, ProducerFarm,ProducerBusiness,BusinessType
+from producer.models import ProducerBulkRequest, ProducerFarm,ProducerBusiness,BusinessType
 
 # Register your models here.
 
 class ProducerProductAdmin(MaterialModelAdmin):
     # list_filter = ('product_name', 'product_unit', 'product_price', 'product_meta')
-    list_display = ('product_name', 'product_image', 'product_category','production_time','unit_price','delivery_amount','created_by','modified_by')
+    # list_display = ('product_name', 'product_image', 'product_category','production_time','unit_price','delivery_amount','created_by','modified_by')
     # exclude = ['created_by', 'modified_by']
+    pass
 
 class ProducerFarmAdmin(MaterialModelAdmin):
     list_display = ('land_amount', 'type_of_crops_produce', 'product_photo', 'address')
     exclude = ['created_by', 'modified_by']
-
-    
 
     def save_model(self, request, obj, form, change):
         print(obj.pk)
@@ -35,7 +34,7 @@ class BusinessTypeAdmin(MaterialModelAdmin):
 
         
 
-site.register(ProducerProduct, ProducerProductAdmin)
+site.register(ProducerBulkRequest, ProducerProductAdmin)
 site.register(ProducerFarm,ProducerFarmAdmin)
 site.register(BusinessType,BusinessTypeAdmin)
 

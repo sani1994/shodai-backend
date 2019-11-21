@@ -1,8 +1,6 @@
 from django.shortcuts import render, get_object_or_404
-from producer.serializers import ProducerFarmSerializer, ProducerProductSerializer, BusinessTypeSerializer, \
-    ProducerBusinessSerializer
-
-from producer.models import ProducerProduct, ProducerFarm, BusinessType, ProducerBusiness
+from producer.serializers import ProducerFarmSerializer, ProducerBulkRequestSerializer, BusinessTypeSerializer,ProducerBusinessSerializer
+from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,13 +13,14 @@ from product.serializers import ProductUnitSerializer
 from sodai.utils.permission import GenericAuth
 
 
-class ProducerProductList(APIView):
+class PeroducerBulkRequestList(APIView):
 
     ## list of Producer
+    permission_classes = [GenericAuth]
 
     def get(self, request, format=None):
         is_staff = request.user.is_staff
-        producer = ProducerProduct.objects.all()
+        producer = ProducerBulkRequest.objects.all()
         # if is_staff:
         #     producer = ProducerProduct.objects.all()
         # else:
@@ -37,43 +36,44 @@ class ProducerProductList(APIView):
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
-        serializer = ProducerProductSerializer(producer,many=True)
+        serializer = ProducerBulkRequestSerializer(producer,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
-        serializer = ProducerProductSerializer(data=request.data,context={'request':request})
+        serializer = ProducerBulkRequestSerializer(data=request.data,context={'user':request.user})
+        print(serializer)
         if request.user.user_type== 'SF':
             if serializer.is_valid():
-                serializer.save(user=request.user)
+                serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         else:
             if request.user.user_type=='PD': # Producer = PD
                 if serializer.is_valid():
-                    serializer.save(user=request.user)
+                    serializer.save()
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProducerProductDetail(APIView):
+class PeroducerBulkRequestDetails(APIView):
     """
     Retrieve, update and delete Producer
     """
     def get_producerProduct_object(self,id):
-        obj = get_object_or_404(ProducerProduct,id=id)
+        obj = get_object_or_404(ProducerBulkRequest,id=id)
         return obj
 
     def get(self, request, id, format=None):
         obj = self.get_producerProduct_object( id)
-        serializer = ProducerProductSerializer(obj)
+        serializer = ProducerBulkRequestSerializer(obj)
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id, format=None):
         producer = self.get_producerProduct_object(id)
-        serializer = ProducerProductSerializer(producer, data=request.data)
+        serializer = ProducerBulkRequestSerializer(producer, data=request.data)
         if serializer.is_valid():
             if request.user.user_type=='SF':
                 serializer.save(modified_by=request.user)
