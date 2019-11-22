@@ -69,6 +69,9 @@ INSTALLED_APPS = [
     'retailer',
     'product',
     'offer',
+    'market',
+    'utility',
+    'rating',
 ]
 
 MIDDLEWARE = [

@@ -8,8 +8,8 @@ from rest_framework import status
 from datetime import datetime
 
 # Create your views here.
-from product.models import ProductUnit
-from product.serializers import ProductUnitSerializer
+# from product.models import ProductUnit
+# from product.serializers import ProductUnitSerializer
 from sodai.utils.permission import GenericAuth
 
 

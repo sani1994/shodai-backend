@@ -2,61 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/market/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/market/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/market/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/market/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/market/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/market/tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/market/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_15e5kLw.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_6gF0YqQ.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_AC8qqyK.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_Bn83d58.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_GQqOF55.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_IqnpWI2.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_OrFnQug.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_P1q2eJ7.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_VGWyFFZ.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/media/producer/product/rice_ZLb2URa.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order/migrations/0015_auto_20191121_1553.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/producer/migrations/0008_auto_20191121_1615.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/producer/migrations/0009_auto_20191121_1646.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/producer/migrations/0010_auto_20191121_1656.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/producer/migrations/0011_auto_20191121_1734.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/producer/migrations/0012_bulkorder_bulkorderproducts.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rating/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rating/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rating/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rating/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rating/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rating/tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rating/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/retailer/migrations/0021_historicalshopproduct_shopproduct.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utility/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utility/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utility/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utility/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utility/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utility/tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utility/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/market/migrations/0001_initial.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/producer/migrations/0014_auto_20191122_1527.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/migrations/0015_auto_20191122_1527.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/retailer/migrations/0022_auto_20191122_1527.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utility/migrations/0001_initial.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bases/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/bases/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/market/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/market/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/market/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/market/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/producer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/producer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/retailer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/retailer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sodai/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userProfile/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utility/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/utility/models.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

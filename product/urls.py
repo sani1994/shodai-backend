@@ -14,8 +14,8 @@ urlpatterns = [
     path('productmeta/',views.ProductMetaList.as_view()),
     path('productmeta/<int:id>/',views.ProductMetaDetail.as_view()),
     path('productmetadetails/<int:id>/',views.ProductMetaDetails.as_view()), #post productMeta id and get list of product
-    path('productunit/',views.ProductUnitList.as_view()),#post product_unit get product_unit list
-    path('productunit/<int:id>/',views.ProductUnitList.as_view())# update and delete product_unit
+    # path('productunit/',views.ProductUnitList.as_view()),#post product_unit get product_unit list
+    # path('productunit/<int:id>/',views.ProductUnitList.as_view())# update and delete product_unit
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

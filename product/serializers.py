@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from product.models import ShopCategory, ProductCategory, ProductMeta, Product, ProductUnit
+from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 
 
 class ShopCategorySerializer(serializers.ModelSerializer):
@@ -68,8 +68,8 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only = 'product_last_price'
 
 
-class ProductUnitSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ProductUnit
-        fields = ('id','product_unit')
+# class ProductUnitSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = ProductUnit
+#         fields = ('id','product_unit')

@@ -1,7 +1,7 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-from product.models import ShopCategory, Product, ProductUnit, ProductMeta
+from product.models import ShopCategory, Product, ProductMeta
 from userProfile.models import UserProfile
 from userProfile.models import Address
 from order.models import Order,OrderProduct
@@ -61,7 +61,7 @@ class AcceptedOrder(BaseModel):
 class ShopProduct(BaseModel):
     product = models.ForeignKey(Product,on_delete=models.PROTECT)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
-    product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
+    # product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     history = HistoricalRecords()

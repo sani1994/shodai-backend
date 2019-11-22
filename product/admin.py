@@ -3,7 +3,7 @@ from builtins import super
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from product.models import ShopCategory, ProductCategory, ProductMeta, ProductUnit,Product
+from product.models import ShopCategory, ProductCategory, ProductMeta,Product
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 # Register your models here.
@@ -20,16 +20,16 @@ class ProductAdmin(admin.ModelAdmin):
         super().save_model(request,obj, form, change)
 
 
-class ProductUnitResource(resources.ModelResource):
-
-    class Meta:
-        model = ProductUnit
-        fields = ('id','product_unit')
+# class ProductUnitResource(resources.ModelResource):
+#
+#     class Meta:
+#         model = ProductUnit
+#         fields = ('id','product_unit')
 
 
 class ProductUnitAdmin(ImportExportModelAdmin):
     list_display = ('product_unit','history')
-    resource_class = ProductUnitResource
+    # resource_class = ProductUnitResource
 
     def save_model(self, request, obj, form, change):
         if obj.pk == None:
@@ -61,4 +61,4 @@ site.register(Product, ProductAdmin)
 site.register(ShopCategory,ShopCategoryAdmin)
 site.register(ProductCategory)
 site.register(ProductMeta)
-site.register(ProductUnit,ProductUnitAdmin)
+# site.register(ProductUnit,ProductUnitAdmin)
