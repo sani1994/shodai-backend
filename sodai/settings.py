@@ -72,6 +72,9 @@ INSTALLED_APPS = [
     'market',
     'utility',
     'rating',
+    'due',
+    'inventory',
+    'delivery'
 ]
 
 MIDDLEWARE = [

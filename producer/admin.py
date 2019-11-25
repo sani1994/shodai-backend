@@ -3,7 +3,9 @@ from builtins import super
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from producer.models import ProducerBulkRequest, ProducerFarm,ProducerBusiness,BusinessType
+from producer.models import ProducerBulkRequest, ProducerFarm, ProducerBusiness, BusinessType, BulkOrderReqConnector, \
+    MicroBulkOrderProducts, MicroBulkOrder, BulkOrderProducts, BulkOrder
+
 
 # Register your models here.
 
@@ -32,15 +34,16 @@ class ProducerFarmAdmin(MaterialModelAdmin):
 class BusinessTypeAdmin(MaterialModelAdmin):
     pass
 
+class ProducerBusinessAdmin(MaterialModelAdmin):
+    pass
         
 
 site.register(ProducerBulkRequest, ProducerProductAdmin)
 site.register(ProducerFarm,ProducerFarmAdmin)
 site.register(BusinessType,BusinessTypeAdmin)
-
-
-class ProducerBusinessAdmin(MaterialModelAdmin):
-    pass
-
-
 site.register(ProducerBusiness,ProducerBusinessAdmin)
+site.register(BulkOrder)
+site.register(BulkOrderProducts)
+site.register(MicroBulkOrder)
+site.register(MicroBulkOrderProducts)
+site.register(BulkOrderReqConnector)

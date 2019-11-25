@@ -66,10 +66,3 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [ 'id','product_name', 'product_image', 'product_unit', 'product_price','product_meta','product_last_price','is_approved']
         read_only = 'product_last_price'
-
-
-# class ProductUnitSerializer(serializers.ModelSerializer):
-#
-#     class Meta:
-#         model = ProductUnit
-#         fields = ('id','product_unit')

@@ -1,3 +1,5 @@
+import random
+
 from django.db import models
 from simple_history.models import HistoricalRecords
 
@@ -7,6 +9,7 @@ from userProfile.models import Address, UserProfile
 from bases.models import BaseModel
 from django.contrib.gis.db import models
 # Create your models here.
+from utility.models import ProductUnit
 
 
 class ProducerBulkRequest(BaseModel):
@@ -14,7 +17,7 @@ class ProducerBulkRequest(BaseModel):
     product_name = models.CharField(max_length=200,null=False,blank=False)
     product_image = models.ImageField(upload_to='producer/product',null=True,blank=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
-    # unit=models.ForeignKey(ProductUnit,on_delete=models.CASCADE,related_name='producer_unit',null=True,blank=True)
+    unit=models.ForeignKey(ProductUnit,on_delete=models.CASCADE,related_name='producer_unit',null=True,blank=True)
     production_time = models.DateTimeField(null=True,blank=True)
     unit_price = models.FloatField(null=False,blank=False)
     quantity = models.FloatField(blank=True,null=True)
@@ -22,10 +25,10 @@ class ProducerBulkRequest(BaseModel):
     is_approved = models.BooleanField(default=False)
     general_price = models.FloatField(null=True,blank=True)
     general_qty=models.FloatField(blank=True,null=True)
-    # general_unit = models.ForeignKey(ProductUnit,on_delete=models.CASCADE,related_name='admin_unit',blank=True,null=True)
+    general_unit = models.ForeignKey(ProductUnit,on_delete=models.CASCADE,related_name='general_unit',blank=True,null=True)
     offer_price=models.FloatField(null=True,blank=True)
     offer_qty=models.FloatField(blank=True,null=True)
-    # offer_unit=models.ForeignKey(ProductUnit,on_delete=models.CASCADE,related_name='offer_unit',blank=True,null=True)
+    offer_unit=models.ForeignKey(ProductUnit,on_delete=models.CASCADE,related_name='offer_unit',blank=True,null=True)
 
 
     def __str__(self):
@@ -74,33 +77,39 @@ class ProducerFarm(BaseModel):
         return self.type_of_crops_produce
 
 
-class BulkOrder(models.Model): #write serializer
+class BulkOrder(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
-    hex_code=models.CharField(max_length=20,blank=False,null=False)
     expire_date=models.DateTimeField(blank=False,null=False)
     start_date=models.DateTimeField(auto_now=True)
+    hex_code = models.CharField(max_length=20,default='none')
+
+    # @property
+    # def hex_code(self):
+    #     random_number = random.randint(0,99999999)
+    #     return hex(random_number)
 
 
-class BulkOrderProducts(models.Model): #write serializer
+class BulkOrderProducts(BaseModel):
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
     bulk_order=models.ForeignKey(BulkOrder,on_delete=models.CASCADE)
     general_price=models.FloatField(blank=True,null=True)
     offer_price=models.FloatField(blank=True,null=True)
     target_qty=models.DecimalField(decimal_places=2,blank=True,null=True,max_digits=5)
+    unit = models.ForeignKey(ProductUnit,on_delete=models.CASCADE,blank=True,null=True)
 
 
-class MicroBulkOrder(models.Model):#write serializer
+class MicroBulkOrder(BaseModel):
     bulk_order = models.ForeignKey(BulkOrder, on_delete=models.CASCADE)
     customer=models.ForeignKey(UserProfile,on_delete=models.CASCADE)
 
 
-class MicroBulkOrderProducts(BaseModel):#write serializer
+class MicroBulkOrderProducts(BaseModel):
     bulk_order_products=models.ForeignKey(BulkOrderProducts,on_delete=models.CASCADE)
     micro_bulk_order=models.ForeignKey(MicroBulkOrder,on_delete=models.CASCADE)
     qty=models.DecimalField(decimal_places=2,blank=True,null=True,max_digits=5)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
 
-class BulkOrderReqConntr(BaseModel): #write serializer
+class BulkOrderReqConnector(BaseModel):
     bulk_order = models.ForeignKey(BulkOrder,on_delete=models.CASCADE)
     producer_bulk_request = models.ForeignKey(ProducerBulkRequest,on_delete=models.CASCADE)

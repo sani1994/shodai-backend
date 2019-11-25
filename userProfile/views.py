@@ -272,25 +272,32 @@ class Login(APIView):
         except UserProfile.DoesNotExist:
             return Response({'Error': "Invalid email/password"}, status="400")
 
-        if user:
-            if user.check_password(password):
-                refresh = RefreshToken.for_user(user)
-                return JsonResponse({
-                    "message": "success",
-                    "status": True,
-                    "user_type":user.user_type,
-                    "user_id": user.id,
-                    "username": user.username,
-                    'refresh_token': str(refresh),
-                    'access_token': str(refresh.access_token),
-                    "status_code": status.HTTP_202_ACCEPTED,
-                }, status=status.HTTP_202_ACCEPTED)
-            else:
-                return JsonResponse({
-                    "message": "Username, Password did not match!",
-                    "status": False,
-                    "status_code": status.HTTP_401_UNAUTHORIZED,
-                }, status=status.HTTP_401_UNAUTHORIZED)
+        if user.user_type == 'CM':
+            if not user.is_approved:
+                user.is_approved = True
+                user.save()
+
+        if user.is_approved:
+            if user:
+                if user.check_password(password):
+                    refresh = RefreshToken.for_user(user)
+                    return JsonResponse({
+                        "message": "success",
+                        "status": True,
+                        "user_type":user.user_type,
+                        "user_id": user.id,
+                        "username": user.username,
+                        'refresh_token': str(refresh),
+                        'access_token': str(refresh.access_token),
+                        "status_code": status.HTTP_202_ACCEPTED,
+                    }, status=status.HTTP_202_ACCEPTED)
+                else:
+                    return JsonResponse({
+                        "message": "Username, Password did not match!",
+                        "status": False,
+                        "status_code": status.HTTP_401_UNAUTHORIZED,
+                    }, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'status: Profile request is waiting for approval'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
 class Logout(APIView):
     permission_classes = [GenericAuth]

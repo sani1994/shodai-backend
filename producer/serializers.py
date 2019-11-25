@@ -1,8 +1,16 @@
-from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness
+from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, BulkOrderProducts, \
+    BulkOrder, MicroBulkOrder, MicroBulkOrderProducts, BulkOrderReqConnector
 from rest_framework import serializers
 
 
 class ProducerFarmSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = ProducerFarm.objects.create(**validated_data)
+        obj.created_by = user
+        obj.save()
+        return obj
 
     def update(self, instance, validated_data):
         instance.land_amount = validated_data.get('land_amount', instance.land_amount)
@@ -53,6 +61,13 @@ class ProducerBulkRequestSerializer(serializers.ModelSerializer):
 
 class BusinessTypeSerializer(serializers.ModelSerializer):
 
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = BusinessType.objects.create(**validated_data)
+        obj.created_by = user
+        obj.save()
+        return obj
+
     def update(self, instance, validated_data):
         instance.business_type = self.validated_data.get('business_type',instance.business_type)
         instance.modified_by = validated_data.get('modified_by')
@@ -66,6 +81,13 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
 
 
 class ProducerBusinessSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = ProducerBusiness.objects.create(**validated_data,user=created_by)
+        obj.created_by = user
+        obj.save()
+        return obj
 
     def update(self, instance, validated_data):
         instance.business_image = validated_data.get('business_image',instance.business_image)
@@ -85,5 +107,117 @@ class ProducerBusinessSerializer(serializers.ModelSerializer):
         fields = ('id','business_image','business_type','total_employees','land_amount','lat','long','address','is_approved')
 
 
+class BulkOrderProductsSerializer(serializers.HyperlinkedModelSerializer):
 
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = BulkOrderProducts.objects.create(**validated_data, user=created_by)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.product = validated_data.get('product',instance.product)
+        instance.bulk_order = validated_data.get('bulk_order',instance.bulk_order)
+        instance.general_price = validated_data.get('general_price',instance.general_price)
+        instance.offer_price = validated_data.get('offer_price',instance.offer_price)
+        instance.target_qty = validated_data.get('target_qty',instance.target_qty)
+        instance.modified_by = validated_data.get('modified_by')
+        # instance.is_approved = False
+        instance.save()
+        return instance
+
+    class Meta:
+        model = BulkOrderProducts
+        fields = '__all__'
+
+
+class BulkOrderSerializer(serializers.HyperlinkedModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = BulkOrder.objects.create(**validated_data, user=user)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.expire_date = validated_data.get('expire_date', instance.expire_date)
+        instance.start_date = validated_data.get('start_date', instance.start_date)
+        instance.modified_by = validated_data.get('modified_by')
+        # instance.is_approved = False
+        instance.save()
+        return instance
+
+    class Meta:
+        model = BulkOrder
+        fields = '__all__'
+
+
+class MicroBulkOrderSerializer(serializers.HyperlinkedModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = MicroBulkOrder.objects.create(**validated_data,customer=user)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.bulk_order = validated_data.pop('bulk_order')
+        instance.modified_by = validated_data.get('modified_by')
+        # instance.is_approved = False
+        instance.save()
+        return instance
+
+    class Meta:
+        model = MicroBulkOrder
+        fields = '__all__'
+
+
+class MicroBulkOrderProductsSetializer(serializers.HyperlinkedModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = MicroBulkOrderProducts.objects.create(**validated_data)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.bulk_order_products = validated_data.pop('bulk_order_products')
+        instance.bulk_order_products = validated_data.pop('micro_bulk_order')
+        instance.qty = validated_data.get('qty', instance.qty)
+        instance.order = validated_data.pop('order')
+        instance.modified_by = validated_data.get('modified_by')
+        # instance.is_approved = False
+        instance.save()
+        return instance
+
+
+    class Meta:
+        model = MicroBulkOrderProducts
+        fields = '__all__'
+
+
+class BulkOrderReqConntrSerializer(serializers.HyperlinkedModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = BulkOrderReqConnector.objects.create(**validated_data)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.producer_bulk_request = validated_data.pop('producer_bulk_request')
+        instance.bulk_order = validated_data.pop('bulk_order')
+        instance.modified_by = validated_data.get('modified_by')
+        # instance.is_approved = False
+        instance.save()
+        return instance
+
+    class Meta:
+        model = BulkOrderReqConnector
+        fields = '__all__'
 
