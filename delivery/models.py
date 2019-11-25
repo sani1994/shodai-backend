@@ -16,7 +16,7 @@ class DeliveryCheckList(BaseModel):
     assigned_user = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
     retailer_accept_order = models.ForeignKey(AcceptedOrder,on_delete=models.CASCADE,null=True,blank=True)
     name = models.CharField(max_length=200)
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=20,default=None)
     history = HistoricalRecords()
 
     def __str__(self):
