@@ -3,9 +3,7 @@ from django.contrib.gis.db import models
 
 # Create your models here.
 from simple_history.models import HistoricalRecords
-
 from bases.models import BaseModel
-from product.models import Product
 from userProfile.models import UserProfile
 
 
@@ -13,6 +11,9 @@ class Area(BaseModel): #write serializer
     area_name=models.CharField(max_length=200)
     polygon = models.PolygonField()
     history = HistoricalRecords()
+
+    def __str__(self):
+        return self.area_name
 
 
 class CityCountry(BaseModel): #write serializer
@@ -34,13 +35,6 @@ class ProductUnit(BaseModel):
 
     def __str__(self):
         return self.product_unit
-
-
-class CommissionRate(BaseModel):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    percentage = models.DecimalField(decimal_places=2,max_digits=3)
-    polygon = models.ForeignKey(Area,on_delete=models.CASCADE)
-    is_active = models.BooleanField(default = False)
 
 
 class Remarks(BaseModel):

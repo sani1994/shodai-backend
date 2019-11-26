@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from market.models import WholeSellRate, KitchenMarket
+from market.models import WholeSellRate, KitchenMarket, CommissionRate
 
 
 class WholeSellRateSerializer(serializers.ModelSerializer):
@@ -53,3 +53,26 @@ class KitchenMarketSerializer(serializers.ModelSerializer):
     class Meta:
         model = KitchenMarket
         fields = '__all__'
+
+
+class CommissionRateSerializer(serializers.HyperlinkedModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = CommissionRate.objects.create(**validated_data)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        instance.product = validated_data.pop('product')
+        instance.percentage = validated_data.get('percentage',instance.percentage)
+        instance.polygon = validated_data.pop('polygon')
+        instance.modified_by = user
+        instance.save()
+        return instance
+
+    class Meta:
+        model=CommissionRate
+        fields='__all__'

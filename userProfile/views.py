@@ -182,7 +182,6 @@ class AddressList(APIView):
         serializer = AddressSerializer(data=request.data,context={'request': request})
         print(serializer)
         if serializer.is_valid():
-            print("serializer valid")
             if request.user.is_staff:
             # if serializer.is_valid():
                 serializer.save()

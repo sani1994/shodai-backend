@@ -10,7 +10,6 @@ from userProfile.models import Address
 # Create your models here.
 
 
-
 class Order(BaseModel):
     user = models.ForeignKey(UserProfile, models.SET_NULL,blank=True,null=True)
     delivery_date_time = models.DateTimeField(auto_now=True)
@@ -62,8 +61,9 @@ class OrderProduct(BaseModel):
     def __str__(self):
         return self.product.product_name
 
+
 class Vat(BaseModel):
-    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False)
+    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False,default=None)
     vat_amount = models.FloatField(default=0,blank=False,null=False)
     history = HistoricalRecords()
 
