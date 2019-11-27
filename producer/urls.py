@@ -11,6 +11,8 @@ urlpatterns = [
     path('producerbusiness/<int:id>/',views.ProducerBusinessDetails.as_view()),
     path('producerfarm/', views.ProducerFarmList.as_view()),
     path('producerfarm/<int:id>/', views.ProducerFarmDetail.as_view()),
+    path('customerbulkorderrequestqty/',views.CustomerMicroBulkOrderProductRequestList.as_view()),
+    path('customerbulkorderrequestqty/<int:id>',views.CustomerMicroBulkOrderProductRequestDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

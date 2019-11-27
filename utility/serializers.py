@@ -23,7 +23,8 @@ class AreaSerializer(serializers.ModelSerializer):
         model = Area
         fields = '__all__'
 
-class CityCountrySerializer(serializers.HyperlinkedModelSerializer):
+
+class CityCountrySerializer(serializers.HyperlinkedModelSerializer): #write view
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -45,7 +46,7 @@ class CityCountrySerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class LocationSerializer(serializers.HyperlinkedModelSerializer):
+class LocationSerializer(serializers.HyperlinkedModelSerializer): #write view
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -89,7 +90,7 @@ class ProductUnitSerializer(serializers.ModelSerializer):
         fields = ('id','product_unit')
 
 
-class RemarksSerializer(serializers.HyperlinkedModelSerializer):
+class RemarksSerializer(serializers.HyperlinkedModelSerializer): #write view
 
     def create(self, validated_data):
         user = self.context['request'].user

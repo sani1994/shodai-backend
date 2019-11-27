@@ -1,5 +1,5 @@
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, BulkOrderProducts, \
-    BulkOrder, MicroBulkOrder, MicroBulkOrderProducts, BulkOrderReqConnector
+    BulkOrder, MicroBulkOrder, MicroBulkOrderProducts, BulkOrderReqConnector, CustomerMicroBulkOrderProductRequest
 from rest_framework import serializers
 
 
@@ -28,7 +28,7 @@ class ProducerFarmSerializer(serializers.ModelSerializer):
 class ProducerBulkRequestSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
-        user = self.context['user']
+        user = self.context['request'].user
         obj= ProducerBulkRequest.objects.create(**validated_data, user=user)
         obj.created_by = user
         obj.save()
@@ -84,7 +84,7 @@ class ProducerBusinessSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        obj = ProducerBusiness.objects.create(**validated_data,user=created_by)
+        obj = ProducerBusiness.objects.create(**validated_data,user=user)
         obj.created_by = user
         obj.save()
         return obj
@@ -111,7 +111,7 @@ class BulkOrderProductsSerializer(serializers.HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        obj = BulkOrderProducts.objects.create(**validated_data, user=created_by)
+        obj = BulkOrderProducts.objects.create(**validated_data, user=user)
         obj.created_by = user
         obj.save()
         return obj
@@ -221,3 +221,24 @@ class BulkOrderReqConntrSerializer(serializers.HyperlinkedModelSerializer):
         model = BulkOrderReqConnector
         fields = '__all__'
 
+
+class CustomerMicroBulkOrderProductRequestSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = CustomerMicroBulkOrderProductRequest.objects.create(**validated_data,customer=user)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.micro_bulk_order_product = validated_data.pop('micro_bulk_order_product')
+        instance.qty = validated_data.get('qty',instance.qty)
+        instance.modified_by = validated_data.get('modified_by')
+        # instance.is_approved = False
+        instance.save()
+        return instance
+
+    class Meta:
+        model = CustomerMicroBulkOrderProductRequest
+        fields = '__all__'

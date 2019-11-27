@@ -1,3 +1,4 @@
+from datetime import datetime
 import random
 
 from django.db import models
@@ -12,7 +13,7 @@ from django.contrib.gis.db import models
 from utility.models import ProductUnit
 
 
-class ProducerBulkRequest(BaseModel):
+class ProducerBulkRequest(BaseModel):    #producer product
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     product_name = models.CharField(max_length=200,null=False,blank=False)
     product_image = models.ImageField(upload_to='producer/product',null=True,blank=True)
@@ -29,10 +30,22 @@ class ProducerBulkRequest(BaseModel):
     offer_price=models.FloatField(null=True,blank=True)
     offer_qty=models.FloatField(blank=True,null=True)
     offer_unit=models.ForeignKey(ProductUnit,on_delete=models.CASCADE,related_name='offer_unit',blank=True,null=True)
+    PENDING = 'Pending'
+    ACCEPTED = 'Accepted'
+    REQUEST_STATUS = [
+        (PENDING,'Pending'),
+        (ACCEPTED,'Accepted'),
+    ]
+    status = models.CharField(choices=REQUEST_STATUS,default=PENDING,max_length=20)
 
 
     def __str__(self):
         return self.product_name
+
+    def save(self, *args, **kwargs):
+        if self.is_approved == True:
+            self.status=self.ACCEPTED
+        return super(ProducerBulkRequest, self).save(*args, **kwargs)
 
 
 class BusinessType(BaseModel):
@@ -57,7 +70,7 @@ class ProducerBusiness(BaseModel):
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.user.username
+        return self.user.first_name
 
     def save(self, *args, **kwargs):
         self.shop_lat = self.productbusiness_geopoint.y
@@ -81,16 +94,17 @@ class BulkOrder(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     expire_date=models.DateTimeField(blank=False,null=False)
     start_date=models.DateTimeField(auto_now=True)
-    hex_code = models.CharField(max_length=20,default='none')
+    hex_code = models.CharField(max_length=20,default='none',unique=True,null=True,blank=True)
 
-    # @property
-    # def hex_code(self):
-    #     random_number = random.randint(0,99999999)
-    #     return hex(random_number)
+    # def save(self, *args, **kwargs):
+    #     if not self.hex_code:
+    #         now = datetime.now()
+    #         self.hex_code=hex(now)
+    #     return super(BulkOrder, self).save(*args, **kwargs)
 
 
 class BulkOrderProducts(BaseModel):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    product = models.ForeignKey(ProducerBulkRequest,on_delete=models.CASCADE)
     bulk_order=models.ForeignKey(BulkOrder,on_delete=models.CASCADE)
     general_price=models.FloatField(blank=True,null=True)
     offer_price=models.FloatField(blank=True,null=True)
@@ -104,12 +118,31 @@ class MicroBulkOrder(BaseModel):
 
 
 class MicroBulkOrderProducts(BaseModel):
-    bulk_order_products=models.ForeignKey(BulkOrderProducts,on_delete=models.CASCADE)
-    micro_bulk_order=models.ForeignKey(MicroBulkOrder,on_delete=models.CASCADE)
-    qty=models.DecimalField(decimal_places=2,blank=True,null=True,max_digits=5)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    bulk_order_products=models.ForeignKey(BulkOrderProducts,on_delete=models.CASCADE,null=True,blank=True)
+    micro_bulk_order=models.ForeignKey(MicroBulkOrder,on_delete=models.CASCADE,null=True,blank=True)
+    qty=models.FloatField(default=0)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE,null=True,blank=True)
 
 
 class BulkOrderReqConnector(BaseModel):
     bulk_order = models.ForeignKey(BulkOrder,on_delete=models.CASCADE)
     producer_bulk_request = models.ForeignKey(ProducerBulkRequest,on_delete=models.CASCADE)
+
+
+class CustomerMicroBulkOrderProductRequest(BaseModel):   #customer will input qty request against MicrobulkorderRest obj. #newly added
+    customer = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
+    micro_bulk_order_product = models.ForeignKey(MicroBulkOrderProducts,on_delete=models.CASCADE)
+    qty = models.FloatField(default=0.0)
+    shareable_ref_code = models.CharField(max_length=100,default=None,unique=True)  #code that will share to the next customer
+    accepted_ref_code = models.CharField(max_length=30,blank=True,null=True)
+
+    def __str__(self):
+        return self.customer.first_name
+
+    def save(self, *args, **kwargs):
+        if self.shareable_ref_code is None:
+            # time = datetime.now(tz=None)
+            unique_code = hex(int(self.customer.mobile_number)) + str(datetime.now())
+            self.shareable_ref_code = unique_code
+        return super(CustomerMicroBulkOrderProductRequest,self).save(*args, **kwargs)
+
