@@ -14,6 +14,9 @@ from utility.models import ProductUnit
 
 
 class ProducerBulkRequest(BaseModel):  # producer product
+    '''
+    This is the model for Producer Bulk Request
+    '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     product_name = models.CharField(max_length=200, null=False, blank=False)
     product_image = models.ImageField(upload_to='producer/product', null=True, blank=True)
@@ -58,6 +61,9 @@ class ProducerBulkRequest(BaseModel):  # producer product
 
 
 class BusinessType(BaseModel):
+    '''
+    This Model defines the business types of the Producer
+    '''
     business_type = models.CharField(max_length=100)
     history = HistoricalRecords()
 
@@ -66,6 +72,9 @@ class BusinessType(BaseModel):
 
 
 class ProducerBusiness(BaseModel):
+    '''
+    This is the model for Producer Business location and other relevant details like contact and approval status
+    '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     business_image = models.ImageField(upload_to='producer/business', blank=True, null=True)
     business_type = models.ForeignKey(BusinessType, on_delete=models.CASCADE)
@@ -88,6 +97,9 @@ class ProducerBusiness(BaseModel):
 
 
 class ProducerFarm(BaseModel):
+    '''
+    This is the model for Producer Farm related info and location
+    '''
     land_amount = models.CharField(max_length=30, blank=True, null=True)
     type_of_crops_produce = models.CharField(max_length=30, blank=True, null=True)
     product_photo = models.ImageField(blank=True, null=True)
@@ -100,6 +112,10 @@ class ProducerFarm(BaseModel):
 
 
 class BulkOrder(BaseModel):
+    '''
+    This is the model for Bulk Order for Producer's Produce created by Shodai
+    this will have limited time
+    '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     expire_date = models.DateTimeField(blank=False, null=False)
     start_date = models.DateTimeField(auto_now=True)
@@ -113,6 +129,9 @@ class BulkOrder(BaseModel):
 
 
 class BulkOrderProducts(BaseModel):
+    '''
+    This is the model for the Products against the Bulk Order for Producer
+    '''
     product = models.ForeignKey(ProducerBulkRequest, on_delete=models.CASCADE, related_name='bulk_order_products')
     bulk_order = models.ForeignKey(BulkOrder, on_delete=models.CASCADE, related_name='bulk_orders_products')
     general_price = models.FloatField(blank=True, null=True)
@@ -125,6 +144,9 @@ class BulkOrderProducts(BaseModel):
 
 
 class MicroBulkOrder(BaseModel):
+    '''
+    This is the model for Micro Bulk Order which is going to be created against the Bulk Order for Producer's produce
+    '''
     bulk_order = models.ForeignKey(BulkOrder, on_delete=models.CASCADE, related_name='micro_bulk_order')
     customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 
@@ -133,6 +155,9 @@ class MicroBulkOrder(BaseModel):
 
 
 class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
+    '''
+    This is the model for the Products against the Micro Bulk Order
+    '''
     bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE, null=True, blank=True,
                                             related_name='mcop')
     micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE, null=True, blank=True,
@@ -152,6 +177,10 @@ class BulkOrderReqConnector(BaseModel):
 
 class CustomerMicroBulkOrderProductRequest(
     BaseModel):  # customer will input qty request against MicrobulkorderRest obj. #newly added
+    '''
+    This is the model for the Customer's Orders of Products against the Micro Bulk Order Products
+    But I think this should be part of MicroBulkOrderProducts.
+    '''
     customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     micro_bulk_order_product = models.ForeignKey(MicroBulkOrderProducts, on_delete=models.CASCADE,related_name='cmbopr') # CustomerMicroBulkOrderProductRequest = cmbopr
     qty = models.FloatField(default=0.0)
