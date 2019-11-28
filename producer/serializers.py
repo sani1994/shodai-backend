@@ -107,7 +107,7 @@ class ProducerBusinessSerializer(serializers.ModelSerializer):
         fields = ('id','business_image','business_type','total_employees','land_amount','lat','long','address','is_approved')
 
 
-class BulkOrderProductsSerializer(serializers.HyperlinkedModelSerializer):
+class BulkOrderProductsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -175,7 +175,7 @@ class MicroBulkOrderSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class MicroBulkOrderProductsSetializer(serializers.HyperlinkedModelSerializer):
+class MicroBulkOrderProductsSetializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -242,3 +242,4 @@ class CustomerMicroBulkOrderProductRequestSerializer(serializers.ModelSerializer
     class Meta:
         model = CustomerMicroBulkOrderProductRequest
         fields = '__all__'
+        # depth = 3

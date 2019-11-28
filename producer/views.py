@@ -2,9 +2,10 @@ import decimal
 
 from django.shortcuts import render, get_object_or_404
 from producer.serializers import ProducerFarmSerializer, ProducerBulkRequestSerializer, BusinessTypeSerializer, \
-    ProducerBusinessSerializer, CustomerMicroBulkOrderProductRequestSerializer
+    ProducerBusinessSerializer, CustomerMicroBulkOrderProductRequestSerializer, MicroBulkOrderProductsSetializer, \
+    BulkOrderProductsSerializer
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, MicroBulkOrderProducts, \
-    CustomerMicroBulkOrderProductRequest
+    CustomerMicroBulkOrderProductRequest, BulkOrderProducts
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -373,3 +374,25 @@ class CustomerMicroBulkOrderProductRequestDetail(APIView):
         if request.user.is_staff:
             obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+class ProducerProductListForCustomer(APIView):
+    # permission_classes = [GenericAuth]
+
+    def get(self,request):
+        q =ProducerBulkRequest.productlistforcustomer
+        print(q)
+        queryset= MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr')
+        # queryset = BulkOrderProducts.mcop_set.all()
+        # print(queryset)
+        # q1 = querySet.filter(MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr'))
+        # q1 = queryset.CustomerMicroBulkOrderProductRequest__set.all()
+        # q1 =BulkOrderProducts.objects.filter(mcop=queryset.values('id'))
+        # print(serializer.data)
+        queryset = ProducerBulkRequest.objects.prefetch_related('bulk_order_products').prefetch_related('mcop')
+            # .only(
+            # 'title', 'created_at', 'author__username', 'tags__name')
+        serializer = ProducerBulkRequestSerializer(queryset, many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
