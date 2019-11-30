@@ -382,17 +382,28 @@ class ProducerProductListForCustomer(APIView):
     # permission_classes = [GenericAuth]
 
     def get(self,request):
-        q =ProducerBulkRequest.productlistforcustomer
-        print(q)
-        queryset= MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr')
-        # queryset = BulkOrderProducts.mcop_set.all()
-        # print(queryset)
-        # q1 = querySet.filter(MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr'))
-        # q1 = queryset.CustomerMicroBulkOrderProductRequest__set.all()
-        # q1 =BulkOrderProducts.objects.filter(mcop=queryset.values('id'))
-        # print(serializer.data)
-        queryset = ProducerBulkRequest.objects.prefetch_related('bulk_order_products').prefetch_related('mcop')
-            # .only(
-            # 'title', 'created_at', 'author__username', 'tags__name')
-        serializer = ProducerBulkRequestSerializer(queryset, many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        # queryset1 = MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr')
+        queryset1 = MicroBulkOrderProducts.cmbopr.all()
+        queryset2 = MicroBulkOrderProducts.objects.all()
+        print(queryset1)
+        print(queryset2)
+        return Response(status=status.HTTP_200_OK)
+
+
+
+
+
+        # q =ProducerBulkRequest.productlistforcustomer
+        # print(q)
+        # queryset= MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr')
+        # # queryset = BulkOrderProducts.mcop_set.all()
+        # # print(queryset)
+        # # q1 = querySet.filter(MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr'))
+        # # q1 = queryset.CustomerMicroBulkOrderProductRequest__set.all()
+        # # q1 =BulkOrderProducts.objects.filter(mcop=queryset.values('id'))
+        # # print(serializer.data)
+        # queryset = ProducerBulkRequest.objects.prefetch_related('bulk_order_products').prefetch_related('mcop')
+        #     # .only(
+        #     # 'title', 'created_at', 'author__username', 'tags__name')
+        # serializer = ProducerBulkRequestSerializer(queryset, many=True)
+        # return Response(serializer.data,status=status.HTTP_200_OK)
