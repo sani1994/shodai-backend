@@ -121,11 +121,16 @@ class BulkOrder(BaseModel):
     start_date = models.DateTimeField(auto_now=True)
     hex_code = models.CharField(max_length=20, default=None, unique=True, null=True, blank=True)
 
+    def __str__(self):
+        return self.user.username
+
     # def save(self, *args, **kwargs):
     #     if not self.hex_code:
     #         now = datetime.now()
     #         self.hex_code=hex(now)
     #     return super(BulkOrder, self).save(*args, **kwargs)
+
+
 
 
 class BulkOrderProducts(BaseModel):
