@@ -2,10 +2,10 @@ import decimal
 
 from django.shortcuts import render, get_object_or_404
 from producer.serializers import ProducerFarmSerializer, ProducerBulkRequestSerializer, BusinessTypeSerializer, \
-    ProducerBusinessSerializer, CustomerMicroBulkOrderProductRequestSerializer, MicroBulkOrderProductsSetializer, \
-    BulkOrderProductsSerializer
+    ProducerBusinessSerializer, CustomerMicroBulkOrderProductRequestSerializer, MicroBulkOrderProductsSerializer, \
+    BulkOrderProductsSerializer, BulkOrderSerializer
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, MicroBulkOrderProducts, \
-    CustomerMicroBulkOrderProductRequest, BulkOrderProducts
+    CustomerMicroBulkOrderProductRequest, BulkOrderProducts, BulkOrder
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -26,18 +26,17 @@ class PeroducerBulkRequestList(APIView):
     def get(self, request, format=None):
         is_staff = request.user.is_staff
         queryset = ProducerBulkRequest.objects.all()
-        # if is_staff:
-        #     producer = ProducerProduct.objects.all()
-        # else:
-        #     user_type = request.user.user_type
-        #     if user_type=='CM':  # Customer = CM
-        #         producer = ProducerProduct.objects.filter(created_by=request.user)
-        #     elif user_type=='RT': # Retailer = RT
-        #         producer = ProducerProduct.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+        if is_staff:
+            queryset = ProducerBulkRequest.objects.all()
+        else:
+            user_type = request.user.user_type
+            if user_type=='CM'or user_type== 'RT' :  # Customer = CM
+                queryset = ProducerBulkRequest.objects.all(is_approved = True)
+            elif user_type == 'PD':
+                queryset = ProducerBulkRequest.objects.all(user = request.user)
 
-
-        #     elif user_type== 'PD': # Producer = PD
-        #         producer = ProducerProduct.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+            # elif user_type== 'PD': # Producer = PD
+            #     producer = ProducerBulkRequest.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
             
@@ -308,6 +307,28 @@ class ProducerFarmDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class BulkOrderList(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        quertset = BulkOrder.objects.all()
+        serializer = BulkOrderSerializer(quertset,many=True)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self,request):
+        serializer = BulkOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BulkOrderDetails(APIView):
+    pass
+
+
 class CustomerMicroBulkOrderProductRequestList(APIView):
 
     permission_classes = [GenericAuth]
@@ -379,31 +400,13 @@ class CustomerMicroBulkOrderProductRequestDetail(APIView):
 
 
 class ProducerProductListForCustomer(APIView):
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     def get(self,request):
-        # queryset1 = MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr')
-        queryset1 = MicroBulkOrderProducts.cmbopr.all()
-        queryset2 = MicroBulkOrderProducts.objects.all()
-        print(queryset1)
-        print(queryset2)
-        return Response(status=status.HTTP_200_OK)
+        if not request.user.user_type == 'PD':
+            queryset = ProducerBulkRequest.objects.filter(is_approved = True)
+            serializer = ProducerBulkRequestSerializer(queryset,many=True)
+            if serializer:
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
-        # q =ProducerBulkRequest.productlistforcustomer
-        # print(q)
-        # queryset= MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr')
-        # # queryset = BulkOrderProducts.mcop_set.all()
-        # # print(queryset)
-        # # q1 = querySet.filter(MicroBulkOrderProducts.objects.all().prefetch_related('cmbopr'))
-        # # q1 = queryset.CustomerMicroBulkOrderProductRequest__set.all()
-        # # q1 =BulkOrderProducts.objects.filter(mcop=queryset.values('id'))
-        # # print(serializer.data)
-        # queryset = ProducerBulkRequest.objects.prefetch_related('bulk_order_products').prefetch_related('mcop')
-        #     # .only(
-        #     # 'title', 'created_at', 'author__username', 'tags__name')
-        # serializer = ProducerBulkRequestSerializer(queryset, many=True)
-        # return Response(serializer.data,status=status.HTTP_200_OK)

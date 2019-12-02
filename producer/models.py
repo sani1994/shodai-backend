@@ -158,8 +158,7 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     '''
     This is the model for the Products against the Micro Bulk Order
     '''
-    bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE, null=True, blank=True,
-                                            related_name='mcop')
+    bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE, null=True, blank=True)
     micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE, null=True, blank=True,
                                          related_name='mcop')
     qty = models.FloatField(default=0)

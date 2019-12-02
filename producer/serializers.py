@@ -175,7 +175,7 @@ class MicroBulkOrderSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class MicroBulkOrderProductsSetializer(serializers.ModelSerializer):
+class MicroBulkOrderProductsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
