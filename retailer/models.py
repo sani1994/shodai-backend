@@ -58,6 +58,7 @@ class AcceptedOrder(BaseModel):
     def __str__(self):
         return self.user.username
 
+
 class ShopProduct(BaseModel):
     product = models.ForeignKey(Product,on_delete=models.PROTECT)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
@@ -67,6 +68,14 @@ class ShopProduct(BaseModel):
     history = HistoricalRecords()
     product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
     is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.product.product_name
+
+    def save(self, *args, **kwargs):
+        if not self.product_price:
+            self.product_price = self.product.product_price
+        return super(ShopProduct,self).save(*args,**kwargs)
 
 
 

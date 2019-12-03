@@ -1,5 +1,5 @@
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, BulkOrderProducts, \
-    BulkOrder, MicroBulkOrder, MicroBulkOrderProducts, BulkOrderReqConnector, CustomerMicroBulkOrderProductRequest
+    BulkOrder, MicroBulkOrder, MicroBulkOrderProducts, BulkOrderReqConnector
 from rest_framework import serializers
 
 
@@ -222,24 +222,24 @@ class BulkOrderReqConntrSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class CustomerMicroBulkOrderProductRequestSerializer(serializers.ModelSerializer):
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        obj = CustomerMicroBulkOrderProductRequest.objects.create(**validated_data,customer=user)
-        obj.created_by = user
-        obj.save()
-        return obj
-
-    def update(self, instance, validated_data):
-        instance.micro_bulk_order_product = validated_data.pop('micro_bulk_order_product')
-        instance.qty = validated_data.get('qty',instance.qty)
-        instance.modified_by = validated_data.get('modified_by')
-        # instance.is_approved = False
-        instance.save()
-        return instance
-
-    class Meta:
-        model = CustomerMicroBulkOrderProductRequest
-        fields = '__all__'
-        # depth = 3
+# class CustomerMicroBulkOrderProductRequestSerializer(serializers.ModelSerializer):
+#
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         obj = CustomerMicroBulkOrderProductRequest.objects.create(**validated_data,customer=user)
+#         obj.created_by = user
+#         obj.save()
+#         return obj
+#
+#     def update(self, instance, validated_data):
+#         instance.micro_bulk_order_product = validated_data.pop('micro_bulk_order_product')
+#         instance.qty = validated_data.get('qty',instance.qty)
+#         instance.modified_by = validated_data.get('modified_by')
+#         # instance.is_approved = False
+#         instance.save()
+#         return instance
+#
+#     class Meta:
+#         model = CustomerMicroBulkOrderProductRequest
+#         fields = '__all__'
+#         # depth = 3

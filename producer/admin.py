@@ -4,7 +4,7 @@ from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from producer.models import ProducerBulkRequest, ProducerFarm, ProducerBusiness, BusinessType, BulkOrderReqConnector, \
-    MicroBulkOrderProducts, MicroBulkOrder, BulkOrderProducts, BulkOrder, CustomerMicroBulkOrderProductRequest
+    MicroBulkOrderProducts, MicroBulkOrder, BulkOrderProducts, BulkOrder
 
 
 # Register your models here.
@@ -47,4 +47,3 @@ site.register(BulkOrderProducts)
 site.register(MicroBulkOrder)
 site.register(MicroBulkOrderProducts)
 site.register(BulkOrderReqConnector)
-site.register(CustomerMicroBulkOrderProductRequest)

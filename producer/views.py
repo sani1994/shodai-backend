@@ -2,10 +2,10 @@ import decimal
 
 from django.shortcuts import render, get_object_or_404
 from producer.serializers import ProducerFarmSerializer, ProducerBulkRequestSerializer, BusinessTypeSerializer, \
-    ProducerBusinessSerializer, CustomerMicroBulkOrderProductRequestSerializer, MicroBulkOrderProductsSerializer, \
+    ProducerBusinessSerializer, MicroBulkOrderProductsSerializer, \
     BulkOrderProductsSerializer, BulkOrderSerializer
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, MicroBulkOrderProducts, \
-    CustomerMicroBulkOrderProductRequest, BulkOrderProducts, BulkOrder
+     BulkOrderProducts, BulkOrder
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -329,74 +329,72 @@ class BulkOrderDetails(APIView):
     pass
 
 
-class CustomerMicroBulkOrderProductRequestList(APIView):
-
-    permission_classes = [GenericAuth]
-
-    def get(self,request):
-        if request.user.is_staff:
-            queryset = CustomerMicroBulkOrderProductRequest.objects.all()
-        elif request.user.user_type == 'CM':
-            queryset= CustomerMicroBulkOrderProductRequest.objects.filter(customer=request.user)
-        else:
-            return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-        serializer = CustomerMicroBulkOrderProductRequestSerializer(queryset,many=True)
-        if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-    def post(self,request):
-        if request.user.is_staff or request.user.user_type == 'CM':
-            obj = get_object_or_404(MicroBulkOrderProducts,id = request.data['micro_bulk_order_product'])
-            obj_qty = obj.qty
-            rqst_qty = self.request.data['qty']
-            diff = obj_qty-float(rqst_qty)
-            if diff< 0:
-                return Response({'status: Product is out of stock.You can order :'+str(obj.qty)},status=status.HTTP_400_BAD_REQUEST)
-            serializer = CustomerMicroBulkOrderProductRequestSerializer(data=request.data,context={'request': request})
-            if serializer.is_valid():
-                obj.qty=diff
-                obj.save()
-                serializer.save()
-                return Response(serializer.data,status= status.HTTP_201_CREATED)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
-
-class CustomerMicroBulkOrderProductRequestDetail(APIView):
-    """
-    Retrieve, update and delete Producer
-    """
-
-    def get_CustomerMicroBulkOrderProductRequest_object(self, id):
-        return get_object_or_404(CustomerMicroBulkOrderProductRequest, id=id)
-
-    def get(self, request, id, format=None):
-        obj = self.get_CustomerMicroBulkOrderProductRequest_object(id)
-        serializer = ProducerFarmSerializer(obj)
-        if serializer:
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, id, format=None):
-        obj = self.get_CustomerMicroBulkOrderProductRequest_object(id)
-        if MicroBulkOrderProducts.qty - request.data['qty'] < 0:
-            return Response({'status: Product is out of stock.You can order :' + str(MicroBulkOrderProducts.qty)},
-                            status=status.HTTP_400_BAD_REQUEST)
-        serializer = ProducerFarmSerializer(obj, data=request.data)
-        if serializer.is_valid():
-            if request.user.user_type == 'SF' or request.user.user_type == 'CM':
-                serializer.save(modified_by=request.user)
-                return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, id, format=None):
-        obj = self.get_CustomerMicroBulkOrderProductRequest_object(id)
-        if request.user.is_staff:
-            obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
+# class CustomerMicroBulkOrderProductRequestList(APIView):
+#
+#     permission_classes = [GenericAuth]
+#
+#     def get(self,request):
+#         if request.user.is_staff:
+#             queryset = CustomerMicroBulkOrderProductRequest.objects.all()
+#         elif request.user.user_type == 'CM':
+#             queryset= CustomerMicroBulkOrderProductRequest.objects.filter(customer=request.user)
+#         else:
+#             return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+#         serializer = CustomerMicroBulkOrderProductRequestSerializer(queryset,many=True)
+#         if serializer:
+#             return Response(serializer.data,status=status.HTTP_200_OK)
+#         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+#
+#     def post(self,request):
+#         if request.user.is_staff or request.user.user_type == 'CM':
+#             obj = get_object_or_404(MicroBulkOrderProducts,id = request.data['micro_bulk_order_product'])
+#             obj_qty = obj.qty
+#             rqst_qty = self.request.data['qty']
+#             diff = obj_qty-float(rqst_qty)
+#             if diff< 0:
+#                 return Response({'status: Product is out of stock.You can order :'+str(obj.qty)},status=status.HTTP_400_BAD_REQUEST)
+#             serializer = CustomerMicroBulkOrderProductRequestSerializer(data=request.data,context={'request': request})
+#             if serializer.is_valid():
+#                 obj.qty=diff
+#                 obj.save()
+#                 serializer.save()
+#                 return Response(serializer.data,status= status.HTTP_201_CREATED)
+#             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+#         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+#
+#
+# class CustomerMicroBulkOrderProductRequestDetail(APIView):
+#     """
+#     Retrieve, update and delete Producer
+#     """
+#
+#     def get_CustomerMicroBulkOrderProductRequest_object(self, id):
+#         return get_object_or_404(CustomerMicroBulkOrderProductRequest, id=id)
+#
+#     def get(self, request, id, format=None):
+#         obj = self.get_CustomerMicroBulkOrderProductRequest_object(id)
+#         serializer = ProducerFarmSerializer(obj)
+#         if serializer:
+#             return Response(serializer.data)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def put(self, request, id, format=None):
+#         obj = self.get_CustomerMicroBulkOrderProductRequest_object(id)
+#         if MicroBulkOrderProducts.qty - request.data['qty'] < 0:
+#             return Response({'status: Product is out of stock.You can order :' + str(MicroBulkOrderProducts.qty)},
+#                             status=status.HTTP_400_BAD_REQUEST)
+#         serializer = ProducerFarmSerializer(obj, data=request.data)
+#         if serializer.is_valid():
+#             if request.user.user_type == 'SF' or request.user.user_type == 'CM':
+#                 serializer.save(modified_by=request.user)
+#                 return Response(serializer.data)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def delete(self, request, id, format=None):
+#         obj = self.get_CustomerMicroBulkOrderProductRequest_object(id)
+#         if request.user.is_staff:
+#             obj.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProducerProductListForCustomer(APIView):
