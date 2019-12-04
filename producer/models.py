@@ -118,7 +118,7 @@ class BulkOrder(BaseModel):
     '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     expire_date = models.DateTimeField(blank=False, null=False)
-    start_date = models.DateTimeField(auto_now=True)
+    start_date = models.DateTimeField(blank=False,null=False)
     hex_code = models.CharField(max_length=20, default=None, unique=True, null=True, blank=True)
 
     def __str__(self):
@@ -153,7 +153,7 @@ class MicroBulkOrder(BaseModel):
     '''
     bulk_order = models.ForeignKey(BulkOrder, on_delete=models.CASCADE, related_name='micro_bulk_order')
     customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    shareable_ref_code = models.CharField(max_length=100, default=None,
+    shareable_ref_code = models.CharField(max_length=100,null=True,blank=True,
                                           unique=True)  # code that will share to the next customer
     accepted_ref_code = models.CharField(max_length=30, blank=True, null=True)
 

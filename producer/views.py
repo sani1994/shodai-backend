@@ -1,11 +1,13 @@
 import decimal
 
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
+
 from producer.serializers import ProducerFarmSerializer, ProducerBulkRequestSerializer, BusinessTypeSerializer, \
     ProducerBusinessSerializer, MicroBulkOrderProductsSerializer, \
-    BulkOrderProductsSerializer, BulkOrderSerializer
+    BulkOrderProductsSerializer, BulkOrderSerializer, BulkOrderProductsReadSerializer, MicroBulkOrderSerializer
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, MicroBulkOrderProducts, \
-     BulkOrderProducts, BulkOrder
+    BulkOrderProducts, BulkOrder, MicroBulkOrder
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -291,8 +293,8 @@ class ProducerFarmDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-    def put(self, request, pk, format=None):
-        producerFarm= self.get_producerFarm_object(request, pk)
+    def put(self, request, id, format=None):
+        producerFarm= self.get_producerFarm_object(request, id)
         serializer = ProducerFarmSerializer(producerFarm, data=request.data)
         if serializer.is_valid():
             if request.user.user_type=='SF':
@@ -301,7 +303,7 @@ class ProducerFarmDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk, format=None):
-        producerFarm = self.get_producerFarm_object(request, pk)
+        producerFarm = self.get_producerFarm_object(request, id)
         if request.user.is_staff:
             producerFarm.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -326,7 +328,83 @@ class BulkOrderList(APIView):
 
 
 class BulkOrderDetails(APIView):
-    pass
+    permission_classes = [GenericAuth]
+    """
+    Retrieve, update and delete Producer
+    """
+
+    def get_bulkorderdetail_object(self, id):
+        return get_object_or_404(BulkOrder,id=id)
+
+    def get(self, request, id, format=None):
+        queryset = self.get_bulkorderdetail_object(id)
+        serializer = BulkOrderSerializer(queryset)
+        if serializer:
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id, format=None):
+        queryset = self.get_bulkorderdetail_object(request, id)
+        serializer = BulkOrderSerializer(queryset, data=request.data)
+        if serializer.is_valid():
+            if request.user.user_type == 'SF':
+                serializer.save(modified_by=request.user)
+                return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        obj = self.get_bulkorderdetail_object(request, id)
+        if request.user.is_staff:
+            obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class BulkOrderProductsList(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        queryset = BulkOrderProducts.objects.all()
+        serializer = BulkOrderProductsReadSerializer(queryset,many=True)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self,request):
+        if request.user.is_staff:
+            serializer =BulkOrderProductsSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+class BulkOrderProductsDetails(APIView):
+    permission_classes = [GenericAuth]
+
+    def get_bulkorderproducts_obj(self,id):
+        return get_object_or_404(BulkOrderProducts,id=id)
+
+    def get(self,request,id):
+        queryobj = self.get_bulkorderproducts_obj(id)
+        serializer = BulkOrderProductsReadSerializer(queryobj)
+        if serializer:
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id, format=None):
+        queryobj = self.get_bulkorderproducts_obj(request, id)
+        serializer = BulkOrderProductsSerializer(queryobj, data=request.data)
+        if serializer.is_valid():
+            if request.user.user_type == 'SF':
+                serializer.save(modified_by=request.user)
+                return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        obj = self.get_bulkorderproducts_obj(request, id)
+        if request.user.is_staff:
+            obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 # class CustomerMicroBulkOrderProductRequestList(APIView):
@@ -396,15 +474,73 @@ class BulkOrderDetails(APIView):
 #             obj.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class ProducerProductListForCustomer(APIView):
+class ProducerProductListForCustomer(APIView):    # get bulk order products list from start date to expired date
     permission_classes = [GenericAuth]
 
     def get(self,request):
         if not request.user.user_type == 'PD':
-            queryset = ProducerBulkRequest.objects.filter(is_approved = True)
-            serializer = ProducerBulkRequestSerializer(queryset,many=True)
+            current_time = timezone.now()
+            bulk_order_product = []
+            queryset = BulkOrderProducts.objects.all()
+            for obj in queryset:
+                if obj.bulk_order.start_date <= current_time <= obj.bulk_order.expire_date:
+                    bulk_order_product.append(obj)
+            if not bulk_order_product:
+                return Response({'status: No Data Available'},status=status.HTTP_204_NO_CONTENT)
+            serializer = BulkOrderProductsReadSerializer(bulk_order_product,many=True)
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+class MicroBulkOrderList(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        if request.user.is_staff:
+            queryset = MicroBulkOrder.objects.all()
+        elif request.user.user_type == 'CM':
+            queryset=MicroBulkOrder.objects.filter(customer=request.user)
+        serializer = MicroBulkOrderSerializer(queryset,many=True)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self,request):
+        serializer = MicroBulkOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+class MicroBulkOrderDetails(APIView):
+    permission_classes = [GenericAuth]
+
+    def get_microbulkorder_obj(self,id):
+        return get_object_or_404(MicroBulkOrder,id=id)
+
+    def get(self,request,id):
+        queryobj = self.get_microbulkorder_obj(id)
+        serializer = MicroBulkOrderSerializer(queryobj)
+        if serializer:
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id, format=None):
+        queryobj = self.get_microbulkorder_obj(request, id)
+        serializer = MicroBulkOrderSerializer(queryobj, data=request.data)
+        if serializer.is_valid():
+            if request.user.user_type == 'SF':
+                serializer.save(modified_by=request.user)
+                return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        obj = self.get_microbulkorder_obj(request, id)
+        if request.user.is_staff:
+            obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 

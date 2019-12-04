@@ -107,6 +107,28 @@ class ProducerBusinessSerializer(serializers.ModelSerializer):
         fields = ('id','business_image','business_type','total_employees','land_amount','lat','long','address','is_approved')
 
 
+class BulkOrderSerializer(serializers.HyperlinkedModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        obj = BulkOrder.objects.create(**validated_data, user=user)
+        obj.created_by = user
+        obj.save()
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.expire_date = validated_data.get('expire_date', instance.expire_date)
+        instance.start_date = validated_data.get('start_date', instance.start_date)
+        instance.modified_by = validated_data.get('modified_by')
+        # instance.is_approved = False
+        instance.save()
+        return instance
+
+    class Meta:
+        model = BulkOrder
+        fields = '__all__'
+
+
 class BulkOrderProductsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
@@ -132,26 +154,12 @@ class BulkOrderProductsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BulkOrderSerializer(serializers.HyperlinkedModelSerializer):
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        obj = BulkOrder.objects.create(**validated_data, user=user)
-        obj.created_by = user
-        obj.save()
-        return obj
-
-    def update(self, instance, validated_data):
-        instance.expire_date = validated_data.get('expire_date', instance.expire_date)
-        instance.start_date = validated_data.get('start_date', instance.start_date)
-        instance.modified_by = validated_data.get('modified_by')
-        # instance.is_approved = False
-        instance.save()
-        return instance
+class BulkOrderProductsReadSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = BulkOrder
+        model = BulkOrderProducts
         fields = '__all__'
+        depth =2
 
 
 class MicroBulkOrderSerializer(serializers.HyperlinkedModelSerializer):
