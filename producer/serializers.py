@@ -162,7 +162,7 @@ class BulkOrderProductsReadSerializer(serializers.ModelSerializer):
         depth =2
 
 
-class MicroBulkOrderSerializer(serializers.HyperlinkedModelSerializer):
+class MicroBulkOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user

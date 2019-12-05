@@ -20,6 +20,8 @@ urlpatterns = [
     path('bulkorderproducts/<int:id>/', views.BulkOrderProductsDetails.as_view()),
     path('microbulkorder/',views.MicroBulkOrderList.as_view()),
     path('microbulkorder/<int:id>/', views.MicroBulkOrderDetails.as_view()),
+    path('microbulkorderproducts/', views.MicroBulkOrderProductsList.as_view()),
+    path('microbulkorderproducts/<int:id>/', views.MicroBulkOrderProductsDetails.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

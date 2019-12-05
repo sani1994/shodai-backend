@@ -497,7 +497,8 @@ class MicroBulkOrderList(APIView):
     permission_classes = [GenericAuth]
 
     def get(self,request):
-        if request.user.is_staff:
+        queryset = []
+        if request.user.user_type=='SF':
             queryset = MicroBulkOrder.objects.all()
         elif request.user.user_type == 'CM':
             queryset=MicroBulkOrder.objects.filter(customer=request.user)
@@ -507,7 +508,7 @@ class MicroBulkOrderList(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def post(self,request):
-        serializer = MicroBulkOrderSerializer(data=request.data)
+        serializer = MicroBulkOrderSerializer(data=request.data,context={'request':request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
@@ -543,4 +544,53 @@ class MicroBulkOrderDetails(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class MicroBulkOrderProductsList(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        queryset = []
+        if request.user.user_type == 'SF':
+            queryset = MicroBulkOrderProducts.objects.all()
+        elif request.user.user_type == 'CM':
+            queryset = MicroBulkOrderProducts.objects.filter(customer=request.user)
+        serializer = MicroBulkOrderProductsSerializer(queryset, many=True)
+        if serializer:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MicroBulkOrderProductsDetails(APIView):
+    permission_classes = [GenericAuth]
+
+    def get_microbulkorderproduct_obj(self,id):
+        return get_object_or_404(MicroBulkOrderProducts,id=id)
+
+    def get(self,request,id):
+        queryobj = self.get_microbulkorderproduct_obj(id)
+        serializer = MicroBulkOrderProductsSerializer(queryobj)
+        if serializer:
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id, format=None):
+        queryobj = self.get_microbulkorderproduct_obj(id)
+        serializer = MicroBulkOrderProductsSerializer(queryobj, data=request.data)
+        if serializer.is_valid():
+            if request.user.user_type == 'SF':
+                serializer.save(modified_by=request.user)
+                return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        obj = self.get_microbulkorderproduct_obj(id)
+        if request.user.is_staff:
+            obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 

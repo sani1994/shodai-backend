@@ -152,7 +152,7 @@ class MicroBulkOrder(BaseModel):
     This is the model for Micro Bulk Order which is going to be created against the Bulk Order for Producer's produce
     '''
     bulk_order = models.ForeignKey(BulkOrder, on_delete=models.CASCADE, related_name='micro_bulk_order')
-    customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE,blank=True)
     shareable_ref_code = models.CharField(max_length=100,null=True,blank=True,
                                           unique=True)  # code that will share to the next customer
     accepted_ref_code = models.CharField(max_length=30, blank=True, null=True)
