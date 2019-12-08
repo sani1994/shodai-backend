@@ -283,7 +283,7 @@ class ProductCategoryDetails(APIView): # get product category id to get all the 
     def get(self,request,id):
         obj = ProductCategory.objects.filter(id=id).first()
         if obj:
-            productMetaList = obj.productmetaF_set.all()
+            productMetaList = obj.productmeta_set.all()
             serializer = ProductMetaSerializer(productMetaList,many=True)
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)

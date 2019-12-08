@@ -35,6 +35,9 @@ class DeliveryCheckListItem(BaseModel):
     second_level_qty = models.DecimalField(decimal_places=2, max_digits=5)
     history = HistoricalRecords()
 
+    def __str__(self):
+        return self.name
+
 
 class DeliveryCheckListTemplate(BaseModel):
     delivery_check_list = models.ForeignKey(DeliveryCheckList, on_delete=models.CASCADE)
