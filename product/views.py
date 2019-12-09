@@ -314,5 +314,16 @@ class ProductMetaDetails(APIView):      # get product meta id to get all the pro
             }, status=status.HTTP_204_NO_CONTENT)
 
 
+class RecentlyAddedProductList(APIView):  # return list of recently added products
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        queryset = Product.objects.all().order_by('created_on')[0:10]
+        serializer = ProductSerializer(queryset,many=True)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
