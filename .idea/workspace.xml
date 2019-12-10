@@ -2,9 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/meat.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/offer1.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/rice_meat.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/vegetables.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/oil.jpeg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bases/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/bases/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/admin.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -143,7 +148,14 @@
       <option name="project" value="LOCAL" />
       <updated>1570566273547</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="recently added 10 product list end-point added">
+      <created>1575889019388</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1575889019388</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -165,29 +177,38 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="foreign key problem solved." />
-    <option name="LAST_COMMIT_MESSAGE" value="foreign key problem solved." />
+    <MESSAGE value="recently added 10 product list end-point added" />
+    <option name="LAST_COMMIT_MESSAGE" value="recently added 10 product list end-point added" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="326" y="25" width="777" height="743" key="CommitChangelistDialog2" timestamp="1575889018855">
+      <screen x="65" y="24" width="1301" height="744" />
+    </state>
+    <state x="326" y="25" width="777" height="743" key="CommitChangelistDialog2/65.24.1301.744@65.24.1301.744" timestamp="1575889018855" />
     <state x="503" y="141" key="FileChooserDialogImpl" timestamp="1575801335556">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
     <state x="503" y="141" key="FileChooserDialogImpl/65.24.1301.744@65.24.1301.744" timestamp="1575801335556" />
-    <state width="1278" height="192" key="GridCell.Tab.0.bottom" timestamp="1575885923411">
+    <state width="1278" height="192" key="GridCell.Tab.0.bottom" timestamp="1575889128215">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.bottom/65.24.1301.744@65.24.1301.744" timestamp="1575885923411" />
-    <state width="1278" height="192" key="GridCell.Tab.0.center" timestamp="1575885923408">
+    <state width="1278" height="192" key="GridCell.Tab.0.bottom/65.24.1301.744@65.24.1301.744" timestamp="1575889128215" />
+    <state width="1278" height="192" key="GridCell.Tab.0.center" timestamp="1575889128214">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.center/65.24.1301.744@65.24.1301.744" timestamp="1575885923408" />
-    <state width="1278" height="192" key="GridCell.Tab.0.left" timestamp="1575885923406">
+    <state width="1278" height="192" key="GridCell.Tab.0.center/65.24.1301.744@65.24.1301.744" timestamp="1575889128214" />
+    <state width="1278" height="192" key="GridCell.Tab.0.left" timestamp="1575889128214">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.left/65.24.1301.744@65.24.1301.744" timestamp="1575885923406" />
-    <state width="1278" height="192" key="GridCell.Tab.0.right" timestamp="1575885923410">
+    <state width="1278" height="192" key="GridCell.Tab.0.left/65.24.1301.744@65.24.1301.744" timestamp="1575889128214" />
+    <state width="1278" height="192" key="GridCell.Tab.0.right" timestamp="1575889128215">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.right/65.24.1301.744@65.24.1301.744" timestamp="1575885923410" />
+    <state width="1278" height="192" key="GridCell.Tab.0.right/65.24.1301.744@65.24.1301.744" timestamp="1575889128215" />
+    <state x="315" y="119" key="Vcs.Push.Dialog.v2" timestamp="1575889033585">
+      <screen x="65" y="24" width="1301" height="744" />
+    </state>
+    <state x="315" y="119" key="Vcs.Push.Dialog.v2/65.24.1301.744@65.24.1301.744" timestamp="1575889033585" />
     <state x="362" y="133" width="707" height="526" key="find.popup" timestamp="1575785585475">
       <screen x="65" y="24" width="1301" height="744" />
     </state>

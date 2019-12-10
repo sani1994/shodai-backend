@@ -31,7 +31,7 @@ class BaseModel(models.Model):
         ''' On save, update timestamps '''
         if not self.id:
             self.created_on = timezone.now()
-            self.created_by = self.pk
+            # self.created_by = self.pk
         self.modified = timezone.now()
         return super(BaseModel, self).save(*args, **kwargs)
 
