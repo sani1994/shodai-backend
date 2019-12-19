@@ -484,12 +484,18 @@ class ProducerProductListForCustomer(APIView):    # get bulk order products list
             queryset = BulkOrderProducts.objects.all()
             for obj in queryset:
                 if obj.bulk_order.start_date <= current_time <= obj.bulk_order.expire_date:
+                    # print(obj)
                     bulk_order_product.append(obj)
+                    # print(bulk_order_product)
             if not bulk_order_product:
                 return Response({'status: No Data Available'},status=status.HTTP_204_NO_CONTENT)
             serializer = BulkOrderProductsReadSerializer(bulk_order_product,many=True)
             if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                objects = serializer.data
+                for object in objects:
+                    object['product_name'] = object['product']['product_name']
+                    object['product_image'] = object['product']['product_image']
+                return Response(object,status=status.HTTP_200_OK)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 

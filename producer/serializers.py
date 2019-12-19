@@ -159,7 +159,7 @@ class BulkOrderProductsReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = BulkOrderProducts
         fields = '__all__'
-        depth =2
+        depth =1
 
 
 class MicroBulkOrderSerializer(serializers.ModelSerializer):
