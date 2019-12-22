@@ -5,8 +5,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/producer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -207,9 +205,10 @@
     </state>
     <state width="1278" height="192" key="GridCell.Tab.0.right/65.24.1301.744@65.24.1301.744" timestamp="1575889128215" />
     <state width="1827" height="233" key="GridCell.Tab.0.right/70.27.1850.923@70.27.1850.923" timestamp="1576754538832" />
-    <state x="484" y="123" width="1022" height="737" key="SettingsEditor" timestamp="1576750567767">
-      <screen x="70" y="27" width="1850" height="923" />
+    <state x="356" y="40" width="900" height="728" key="SettingsEditor" timestamp="1576988944922">
+      <screen x="65" y="24" width="1301" height="744" />
     </state>
+    <state x="356" y="40" width="900" height="728" key="SettingsEditor/65.24.1301.744@65.24.1301.744" timestamp="1576988944922" />
     <state x="484" y="123" width="1022" height="737" key="SettingsEditor/70.27.1850.923@70.27.1850.923" timestamp="1576750567767" />
     <state x="315" y="119" key="Vcs.Push.Dialog.v2" timestamp="1575889033585">
       <screen x="65" y="24" width="1301" height="744" />

@@ -27,7 +27,7 @@ class PeroducerBulkRequestList(APIView):
 
     def get(self, request, format=None):
         is_staff = request.user.is_staff
-        queryset = ProducerBulkRequest.objects.all()
+        queryset = []
         if is_staff:
             queryset = ProducerBulkRequest.objects.all()
         else:
