@@ -77,7 +77,7 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessType
-        fields = ('id','business_type','is_approved')
+        fields = ('id','business_type')
 
 
 class ProducerBusinessSerializer(serializers.ModelSerializer):
