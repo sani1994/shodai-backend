@@ -33,9 +33,9 @@ class PeroducerBulkRequestList(APIView):
         else:
             user_type = request.user.user_type
             if user_type=='CM'or user_type== 'RT' :  # Customer = CM
-                queryset = ProducerBulkRequest.objects.all(is_approved = True)
+                queryset = ProducerBulkRequest.objects.filter(is_approved = True)
             elif user_type == 'PD':
-                queryset = ProducerBulkRequest.objects.all(user = request.user)
+                queryset = ProducerBulkRequest.objects.filter(user = request.user)
 
             # elif user_type== 'PD': # Producer = PD
             #     producer = ProducerBulkRequest.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
