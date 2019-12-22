@@ -71,7 +71,7 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.business_type = self.validated_data.get('business_type',instance.business_type)
         instance.modified_by = validated_data.get('modified_by')
-        instance.is_approved = False
+        # instance.is_approved = False
         instance.save()
         return instance
 
