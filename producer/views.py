@@ -181,9 +181,9 @@ class ProducerBusinessList(APIView):
 
     def post(self,request):
         if request.user.is_staff or request.user.user_type == 'PD':
-            serializer = ProducerBusinessSerializer(data=request.data)
+            serializer = ProducerBusinessSerializer(data=request.data,context={'request': request})
             if serializer.is_valid():
-                serializer.save(user=request.user)
+                serializer.save()
                 return Response(serializer.data,status= status.HTTP_201_CREATED)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)

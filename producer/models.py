@@ -11,6 +11,7 @@ from bases.models import BaseModel
 from django.contrib.gis.db import models
 # Create your models here.
 from utility.models import ProductUnit
+from django.contrib.gis.geos import Point
 
 
 class ProducerBulkRequest(BaseModel):  # producer product
@@ -91,8 +92,7 @@ class ProducerBusiness(BaseModel):
         return self.user.first_name
 
     def save(self, *args, **kwargs):
-        self.productbusiness_geopoint.y = self.lat
-        self.productbusiness_geopoint.x = self.long
+        self.productbusiness_geopoint = Point(self.long,self.lat)
         super(ProducerBusiness, self).save(*args, **kwargs)
 
 
