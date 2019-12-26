@@ -1,8 +1,17 @@
 from rest_framework import serializers
+from rest_framework.relations import HyperlinkedIdentityField
+
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 
 
+
+
 class ShopCategorySerializer(serializers.ModelSerializer):
+
+    url = HyperlinkedIdentityField(
+        view_name='product_detail',
+        lookup_field = 'id'
+    )
 
     def update(self, instance, validated_data):
         instance.type_of_shop = validated_data.get('type_of_shop', instance.type_of_shop)
@@ -11,8 +20,9 @@ class ShopCategorySerializer(serializers.ModelSerializer):
         return instance
 
     class Meta:
+
         model = ShopCategory
-        fields = ('id','type_of_shop')
+        fields = ('id','type_of_shop','url')
         # fields = '__all__'
 
 

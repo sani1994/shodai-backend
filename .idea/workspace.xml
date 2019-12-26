@@ -2,9 +2,38 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/bashmati.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/miniket_8PsVuKy.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/miniket_DCJEn0a.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/miniket_ICZz3xf.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/miniket_YYAZM5J.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/miniket_oZJMhD2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/miniket_v0phcr5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery_ISL1ow0.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/vegetables_GazJIqi.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/rice_nYVnuaP.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/admin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/apps.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/ducument.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/migrations/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/serializers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/templates/search.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/search/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/offer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/producer/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/producer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirments.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirments.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sodai/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sodai/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +60,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="HTML File" />
         <option value="Python Script" />
       </list>
     </option>
@@ -56,6 +86,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$USER_HOME$/RCS/citizen_service" />
     <property name="node.js.detected.package.eslint" value="true" />
@@ -63,6 +94,7 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="run.code.analysis.last.selected.profile" value="aDefault" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -176,6 +208,10 @@
     <option name="LAST_COMMIT_MESSAGE" value="recently added 10 product list end-point added" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="454" y="239" width="520" height="286" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1577169029399">
+      <screen x="65" y="24" width="1301" height="744" />
+    </state>
+    <state x="454" y="239" width="520" height="286" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/65.24.1301.744@65.24.1301.744" timestamp="1577169029399" />
     <state x="326" y="25" width="777" height="743" key="CommitChangelistDialog2" timestamp="1575889018855">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
@@ -184,25 +220,25 @@
       <screen x="65" y="24" width="1301" height="744" />
     </state>
     <state x="503" y="141" key="FileChooserDialogImpl/65.24.1301.744@65.24.1301.744" timestamp="1575801335556" />
-    <state width="1827" height="233" key="GridCell.Tab.0.bottom" timestamp="1576754538832">
-      <screen x="70" y="27" width="1850" height="923" />
+    <state width="1278" height="192" key="GridCell.Tab.0.bottom" timestamp="1577359156401">
+      <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.bottom/65.24.1301.744@65.24.1301.744" timestamp="1575889128215" />
+    <state width="1278" height="192" key="GridCell.Tab.0.bottom/65.24.1301.744@65.24.1301.744" timestamp="1577359156401" />
     <state width="1827" height="233" key="GridCell.Tab.0.bottom/70.27.1850.923@70.27.1850.923" timestamp="1576754538832" />
-    <state width="1827" height="233" key="GridCell.Tab.0.center" timestamp="1576754538832">
-      <screen x="70" y="27" width="1850" height="923" />
+    <state width="1278" height="192" key="GridCell.Tab.0.center" timestamp="1577359156401">
+      <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.center/65.24.1301.744@65.24.1301.744" timestamp="1575889128214" />
+    <state width="1278" height="192" key="GridCell.Tab.0.center/65.24.1301.744@65.24.1301.744" timestamp="1577359156401" />
     <state width="1827" height="233" key="GridCell.Tab.0.center/70.27.1850.923@70.27.1850.923" timestamp="1576754538832" />
-    <state width="1827" height="233" key="GridCell.Tab.0.left" timestamp="1576754538831">
-      <screen x="70" y="27" width="1850" height="923" />
+    <state width="1278" height="192" key="GridCell.Tab.0.left" timestamp="1577359156400">
+      <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.left/65.24.1301.744@65.24.1301.744" timestamp="1575889128214" />
+    <state width="1278" height="192" key="GridCell.Tab.0.left/65.24.1301.744@65.24.1301.744" timestamp="1577359156400" />
     <state width="1827" height="233" key="GridCell.Tab.0.left/70.27.1850.923@70.27.1850.923" timestamp="1576754538831" />
-    <state width="1827" height="233" key="GridCell.Tab.0.right" timestamp="1576754538832">
-      <screen x="70" y="27" width="1850" height="923" />
+    <state width="1278" height="192" key="GridCell.Tab.0.right" timestamp="1577359156401">
+      <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.right/65.24.1301.744@65.24.1301.744" timestamp="1575889128215" />
+    <state width="1278" height="192" key="GridCell.Tab.0.right/65.24.1301.744@65.24.1301.744" timestamp="1577359156401" />
     <state width="1827" height="233" key="GridCell.Tab.0.right/70.27.1850.923@70.27.1850.923" timestamp="1576754538832" />
     <state x="356" y="40" width="900" height="728" key="SettingsEditor" timestamp="1576988944922">
       <screen x="65" y="24" width="1301" height="744" />

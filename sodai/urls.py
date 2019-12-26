@@ -18,6 +18,7 @@ from django.template.context_processors import static
 from django.urls import path, include
 from rest_framework import routers
 from django.conf.urls.static import static
+
 from sodai import settings
 
 # for django matreial admin site
@@ -51,6 +52,7 @@ urlpatterns = [
     path('', include('offer.urls')),
     path('',include('utility.urls')),
     path('admin/', include('material.admin.urls')),
+    path('', include('search.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

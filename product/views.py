@@ -174,6 +174,7 @@ class ProductCategoryDetail(APIView):
     # """
     # Retrieve, update and delete Orders
     # """
+
     def get_productCategory_object(self,id):     # enable another peremeter "request" when to access user
         obj = ProductCategory.objects.get(id=id)
         return obj
@@ -181,7 +182,7 @@ class ProductCategoryDetail(APIView):
     def get(self, request, id,format=None):
         product_catagory = self.get_productCategory_object(id)
         if product_catagory:
-            serializer = ProductCategorySerializer(product_catagory)
+            serializer = ProductCategorySerializer(product_catagory,context={'request':request})
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -217,7 +218,7 @@ class ShopCategoryList(APIView):        # shop_category must be in unique format
 
     def get(self, request, format=None):
         shop_catagory = ShopCategory.objects.all()
-        serializer = ShopCategorySerializer(shop_catagory, many=True)
+        serializer = ShopCategorySerializer(shop_catagory, many=True,context={'request':request})
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

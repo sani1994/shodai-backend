@@ -5,7 +5,7 @@ from product import views
 
 urlpatterns = [
     path('product/', views.ProductList.as_view()),
-    path('product/<int:id>/', views.ProductDetail.as_view()),
+    path('product/<int:id>/', views.ProductDetail.as_view(),name='product_detail'),
     path('productcatagory/', views.ProductCategoryList.as_view()), # get post product catagory
     path('productcatagory/<int:id>/', views.ProductCategoryDetail.as_view()),  # update and delete product catagory
     path('productcategorydetails/<int:id>/',views.ProductCategoryDetails.as_view()), #post productCategory id and get list of productMeta

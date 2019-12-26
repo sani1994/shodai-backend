@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search</title>
+</head>
+<body>
+
+<form method="GET">
+    <input id="q" name="q" type="text" placeholder="Your Search..">
+    </form>
+    {% for obj in product %}
+    {{obj.product_name}}
+    {%endfor %}
+
+</body>
+</html>

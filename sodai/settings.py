@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'import_export',
+    'django_elasticsearch_dsl',
     # 'material.admin',
     # for djnago material admin site
     
@@ -74,7 +75,8 @@ INSTALLED_APPS = [
     'rating',
     'due',
     'inventory',
-    'delivery'
+    'delivery',
+    'search'
 ]
 
 MIDDLEWARE = [
@@ -88,12 +90,18 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
+ELASTICSEARCH_DSL={
+    'default': {
+        'hosts': 'localhost:9200'
+    },
+}
+
 ROOT_URLCONF = 'sodai.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(os.path.dirname(__file__), 'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

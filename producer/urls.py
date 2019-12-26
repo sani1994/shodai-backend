@@ -11,8 +11,6 @@ urlpatterns = [
     path('producerbusiness/<int:id>/',views.ProducerBusinessDetails.as_view()),
     path('producerfarm/', views.ProducerFarmList.as_view()),
     path('producerfarm/<int:id>/', views.ProducerFarmDetail.as_view()),
-    # path('customerbulkorderrequestqty/',views.CustomerMicroBulkOrderProductRequestList.as_view()),
-    # path('customerbulkorderrequestqty/<int:id>',views.CustomerMicroBulkOrderProductRequestDetail.as_view()),
     path('productlistforcustomer/',views.ProducerProductListForCustomer.as_view()),
     path('bulkorder/',views.BulkOrderList.as_view()),
     path('bulkorder/<int:id>/',views.BulkOrderDetails.as_view()),
