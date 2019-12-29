@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='acceptedorder',
             name='shop',
-            field=models.ForeignKey(blank=True, default=1, on_delete=django.db.models.deletion.CASCADE, to='retailer.Shop'),
+            field=models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='retailer.Shop'),
             preserve_default=False,
         ),
         migrations.AddField(
