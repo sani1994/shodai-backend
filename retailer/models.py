@@ -66,7 +66,7 @@ class AcceptedOrder(BaseModel):
 
 class ShopProduct(BaseModel):
     product = models.ForeignKey(Product,on_delete=models.PROTECT)
-    shop = models.ForeignKey(Shop,on_delete=models.CASCADE,default=None)
+    shop = models.ForeignKey(Shop,on_delete=models.CASCADE,blank=True,null=True)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
