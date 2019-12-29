@@ -1,3 +1,4 @@
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import models
 from simple_history.models import HistoricalRecords
 
@@ -8,6 +9,7 @@ from order.models import Order,OrderProduct
 from bases.models import BaseModel
 from django.contrib.gis.db import models
 # Create your models here.
+from utility.models import ProductUnit
 
 
 class Account(BaseModel):
@@ -44,13 +46,16 @@ class Shop(BaseModel):
         return self.shop_name
 
     def save(self, *args, **kwargs):
-        self.shop_geopoint.y = self.shop_lat
-        self.shop_geopoint.x = self.shop_long
+        # self.shop_geopoint.y = self.shop_lat
+        # self.shop_geopoint.x = self.shop_long
+        # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
+        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.shop_long,self.shop_lat))
         super(Shop, self).save(*args, **kwargs)
 
 
 class AcceptedOrder(BaseModel):
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True)
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True,null=True)
+    shop = models.ForeignKey(Shop,on_delete=models.CASCADE,blank=True,null=True)   # to track the order by shop, shop has been added as a foreign key
     order = models.ForeignKey(Order,on_delete=models.CASCADE)
     order_product = models.ForeignKey(OrderProduct,on_delete=models.CASCADE,null=True)
     history = HistoricalRecords()
@@ -61,8 +66,9 @@ class AcceptedOrder(BaseModel):
 
 class ShopProduct(BaseModel):
     product = models.ForeignKey(Product,on_delete=models.PROTECT)
+    shop = models.ForeignKey(Shop,on_delete=models.CASCADE,default=None)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
-    # product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
+    product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     history = HistoricalRecords()

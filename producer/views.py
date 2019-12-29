@@ -494,7 +494,7 @@ class ProducerProductListForCustomer(APIView):    # get bulk order products list
                     object['product_name'] = object['product']['product_name']
                     object['product_image'] = object['product']['product_image']
                     object.pop("product")
-                return Response(object,status=status.HTTP_200_OK)
+                return Response(objects,status=status.HTTP_200_OK)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 

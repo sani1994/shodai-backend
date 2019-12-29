@@ -47,7 +47,7 @@ class Order(BaseModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return self.delivery_place
+        return self.user.username
 
 
 class OrderProduct(BaseModel):
