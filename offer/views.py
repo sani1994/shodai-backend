@@ -200,7 +200,7 @@ class GetOfferProducts(APIView):
                     offerProducts.append(product)
                 offerdetail=offerserializer.data
                 offerdetail['offer_products']=offerProducts
-                return Response(offerdetail, status=status.HTTP_200_OK)
+                return Response(offerProducts, status=status.HTTP_200_OK) # returning on offer product list
             else:
                 return Response(offerserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
