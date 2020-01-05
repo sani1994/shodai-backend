@@ -159,6 +159,7 @@ class BulkOrderProductsReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = BulkOrderProducts
         fields = '__all__'
+        # exclude = ('created_on','modified_on','created_by','modified_by')
         depth =1
 
 
