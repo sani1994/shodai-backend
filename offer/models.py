@@ -12,8 +12,8 @@ class Offer(BaseModel):
     offer_name = models.CharField(max_length=100,blank=False,null=False)
     offer_img = models.ImageField(upload_to="offer/%Y/%m/%d",blank=False,null=False)
     offer_details = models.CharField(max_length=500,blank=True,null=True)
-    offer_ends_in = models.DateTimeField(blank=True,null=True)
     offer_starts_in = models.DateTimeField(blank=True,null=True)
+    offer_ends_in = models.DateTimeField(blank=True, null=True)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
 

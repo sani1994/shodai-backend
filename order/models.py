@@ -1,6 +1,6 @@
-from django.db import models
+from django.contrib.gis.db import models
 from simple_history.models import HistoricalRecords
-
+from django.contrib.gis.geos import GEOSGeometry
 from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
@@ -17,6 +17,7 @@ class Order(BaseModel):
     order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
     long=models.FloatField()
+    order_geopoint = models.PointField(null=True)
     
     ORDERED = 'OD'              # ORDER COLLECT FROM CUSTOMER
     ORDER_ACCEPTED = 'OA'        #ORDER ACCEPTED BY RETAILER OR PRODUCER
@@ -48,6 +49,13 @@ class Order(BaseModel):
 
     def __str__(self):
         return self.user.username
+
+    def save(self, *args, **kwargs):
+        # self.shop_geopoint.y = self.shop_lat
+        # self.shop_geopoint.x = self.shop_long
+        # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
+        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long,self.lat))
+        super(Order, self).save(*args, **kwargs)
 
 
 class OrderProduct(BaseModel):

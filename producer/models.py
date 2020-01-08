@@ -60,6 +60,9 @@ class ProducerBulkRequest(BaseModel):  # producer product
             self.status = self.ACCEPTED
         return super(ProducerBulkRequest, self).save(*args, **kwargs)
 
+    class Meta:
+        verbose_name_plural = "producer products"
+
 
 class BusinessType(BaseModel):
     '''
@@ -117,8 +120,8 @@ class BulkOrder(BaseModel):
     this will have limited time
     '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
+    start_date = models.DateTimeField(blank=False, null=False)
     expire_date = models.DateTimeField(blank=False, null=False)
-    start_date = models.DateTimeField(blank=False,null=False)
     hex_code = models.CharField(max_length=20, default=None, unique=True, null=True, blank=True)
 
     def __str__(self):

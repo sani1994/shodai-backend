@@ -9,23 +9,40 @@ from producer.models import ProducerBulkRequest, ProducerFarm, ProducerBusiness,
 
 # Register your models here.
 
-class ProducerProductAdmin(MaterialModelAdmin):
-    # list_filter = ('product_name', 'product_unit', 'product_price', 'product_meta')
-    # list_display = ('product_name', 'product_image', 'product_category','production_time','unit_price','delivery_amount','created_by','modified_by')
-    # exclude = ['created_by', 'modified_by']
-    pass
+class ProducerBulkRequestAdmin(MaterialModelAdmin):
+    list_filter = ('product_name', 'product_category')
+    list_display = ('product_name', 'product_category','production_time','unit_price')
+    readonly_fields = ['created_by', 'modified_by']
+
+    class Meta:
+        verbose_name_plural = "producer products"
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
 
 class ProducerFarmAdmin(MaterialModelAdmin):
     list_display = ('land_amount', 'type_of_crops_produce', 'product_photo', 'address')
-    exclude = ['created_by', 'modified_by']
+    readonly_fields = ['created_by', 'modified_by']
+
+    # def save_model(self, request, obj, form, change):
+    #     print(obj.pk)
+    #     if obj.pk == None:
+    #         print("inside None")
+    #         obj.created_by = request.user
+    #         obj.modified_by = request.user
+    #     super().save_model(request,obj, form, change)
 
     def save_model(self, request, obj, form, change):
-        print(obj.pk)
-        if obj.pk == None: 
-            print("inside None")
-            obj.created_by = request.user
+        if obj.id:
             obj.modified_by = request.user
-        super().save_model(request,obj, form, change)
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
 
     def __str__(self):
         return str('%s object' % self.__class__.__name__)
@@ -36,14 +53,43 @@ class BusinessTypeAdmin(MaterialModelAdmin):
 
 class ProducerBusinessAdmin(MaterialModelAdmin):
     pass
-        
 
-site.register(ProducerBulkRequest, ProducerProductAdmin)
+class BulkOrderAdmin(MaterialModelAdmin):
+    list_display = ('user', 'start_date','expire_date')
+    list_filter = ('hex_code',)
+    readonly_fields = ['created_by', 'modified_by']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
+class BulkOrderProductsAdmin(MaterialModelAdmin):
+    list_display = ('product','bulk_order')
+    list_filter = ('bulk_order',)
+    readonly_fields = ['created_by', 'modified_by']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
+class MicroBulkOrderAdmin(MaterialModelAdmin):
+    list_display = ('')
+
+
+site.register(ProducerBulkRequest, ProducerBulkRequestAdmin)
 site.register(ProducerFarm,ProducerFarmAdmin)
 site.register(BusinessType,BusinessTypeAdmin)
 site.register(ProducerBusiness,ProducerBusinessAdmin)
-site.register(BulkOrder)
-site.register(BulkOrderProducts)
+site.register(BulkOrder,BulkOrderAdmin)
+site.register(BulkOrderProducts,BulkOrderProductsAdmin)
 site.register(MicroBulkOrder)
 site.register(MicroBulkOrderProducts)
 site.register(BulkOrderReqConnector)
