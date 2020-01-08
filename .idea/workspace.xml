@@ -2,18 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/offer/migrations/0003_auto_20200108_1221.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/offer/migrations/0004_auto_20200108_1233.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order/migrations/0003_auto_20200107_1205.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/producer/migrations/0005_auto_20200107_1310.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/offer/2020/01/08/offer.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/offer/2020/01/08/offer_4OOD5lI.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/grocery.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/grocery_6HhSyoj.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery_9GpEYno.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productcategory/grocery_hEgakea.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/grocery.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/grocery_19Zo1LH.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/user/2020/01/08/56563190_2351866188191299_7189.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/offer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/offer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/producer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/admin.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -200,25 +200,25 @@
       <screen x="65" y="24" width="1301" height="744" />
     </state>
     <state x="503" y="141" key="FileChooserDialogImpl/65.24.1301.744@65.24.1301.744" timestamp="1575801335556" />
-    <state width="1278" height="192" key="GridCell.Tab.0.bottom" timestamp="1578465248519">
+    <state width="1278" height="192" key="GridCell.Tab.0.bottom" timestamp="1578468286334">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.bottom/65.24.1301.744@65.24.1301.744" timestamp="1578465248519" />
+    <state width="1278" height="192" key="GridCell.Tab.0.bottom/65.24.1301.744@65.24.1301.744" timestamp="1578468286334" />
     <state width="1827" height="233" key="GridCell.Tab.0.bottom/70.27.1850.923@70.27.1850.923" timestamp="1576754538832" />
-    <state width="1278" height="192" key="GridCell.Tab.0.center" timestamp="1578465248518">
+    <state width="1278" height="192" key="GridCell.Tab.0.center" timestamp="1578468286331">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.center/65.24.1301.744@65.24.1301.744" timestamp="1578465248518" />
+    <state width="1278" height="192" key="GridCell.Tab.0.center/65.24.1301.744@65.24.1301.744" timestamp="1578468286331" />
     <state width="1827" height="233" key="GridCell.Tab.0.center/70.27.1850.923@70.27.1850.923" timestamp="1576754538832" />
-    <state width="1278" height="192" key="GridCell.Tab.0.left" timestamp="1578465248517">
+    <state width="1278" height="192" key="GridCell.Tab.0.left" timestamp="1578468286329">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.left/65.24.1301.744@65.24.1301.744" timestamp="1578465248517" />
+    <state width="1278" height="192" key="GridCell.Tab.0.left/65.24.1301.744@65.24.1301.744" timestamp="1578468286329" />
     <state width="1827" height="233" key="GridCell.Tab.0.left/70.27.1850.923@70.27.1850.923" timestamp="1576754538831" />
-    <state width="1278" height="192" key="GridCell.Tab.0.right" timestamp="1578465248519">
+    <state width="1278" height="192" key="GridCell.Tab.0.right" timestamp="1578468286333">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state width="1278" height="192" key="GridCell.Tab.0.right/65.24.1301.744@65.24.1301.744" timestamp="1578465248519" />
+    <state width="1278" height="192" key="GridCell.Tab.0.right/65.24.1301.744@65.24.1301.744" timestamp="1578468286333" />
     <state width="1827" height="233" key="GridCell.Tab.0.right/70.27.1850.923@70.27.1850.923" timestamp="1576754538832" />
     <state x="356" y="40" width="900" height="728" key="SettingsEditor" timestamp="1578466687704">
       <screen x="65" y="24" width="1301" height="744" />
@@ -229,9 +229,9 @@
       <screen x="65" y="24" width="1301" height="744" />
     </state>
     <state x="315" y="119" key="Vcs.Push.Dialog.v2/65.24.1301.744@65.24.1301.744" timestamp="1575889033585" />
-    <state x="362" y="133" width="866" height="592" key="find.popup" timestamp="1578381034287">
+    <state x="362" y="133" width="866" height="602" key="find.popup" timestamp="1578482086898">
       <screen x="65" y="24" width="1301" height="744" />
     </state>
-    <state x="362" y="133" width="866" height="592" key="find.popup/65.24.1301.744@65.24.1301.744" timestamp="1578381034287" />
+    <state x="362" y="133" width="866" height="602" key="find.popup/65.24.1301.744@65.24.1301.744" timestamp="1578482086898" />
   </component>
 </project>
