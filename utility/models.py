@@ -21,6 +21,9 @@ class CityCountry(BaseModel): #write serializer
     tire_country=models.CharField(max_length=200)
     history = HistoricalRecords()
 
+    def __str__(self):
+        return self.tire_city + self.tire_country
+
 
 class Location(BaseModel):
     geo_loc = models.PointField()
@@ -28,6 +31,8 @@ class Location(BaseModel):
     city_country = models.ForeignKey(CityCountry,on_delete=models.CASCADE)
     history = HistoricalRecords()
 
+    def __str__(self):
+        return self.loc_name
 
 class ProductUnit(BaseModel):
     product_unit = models.CharField(max_length=10,null=False,blank=False,unique=True)
@@ -40,5 +45,8 @@ class ProductUnit(BaseModel):
 class Remarks(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True,null=True)
     remark = models.CharField(max_length=400)
+
+    def __str__(self):
+        return self.user
 
 

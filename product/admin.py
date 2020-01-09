@@ -10,7 +10,7 @@ from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
 
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_name', 'product_meta', 'is_approved')
     list_display = ('product_name', 'product_price', 'is_approved')
     readonly_fields = ["created_by", "modified_by", ]
