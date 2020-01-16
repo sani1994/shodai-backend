@@ -3,7 +3,7 @@ import random
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
 
 from sodai.utils.helper import get_user_object
@@ -28,7 +28,7 @@ from datetime import datetime
 
 
 
-class UserProfileList(APIView):
+class UserProfileList(APIView):             # this view returns list of user and create user
     # permission_classes = (IsAuthenticated,)
     permission_classes = [GenericAuth]
 
@@ -42,26 +42,17 @@ class UserProfileList(APIView):
         #     return Response(user_profile)
         # else:
         user_type = request.user.user_type
-        if user_type=='CM' or user_type == 'RT' or user_type=='PD':  # Customer = CM Retailer RT
-            user_profile = UserProfile.objects.filter(id=request.user.id, is_approved=True)
+        if user_type=='CM' or user_type == 'RT' or user_type=='PD':                 # Customer = CM Retailer = RT
+            user_profile = UserProfile.objects.filter(id=request.user.id, is_approved=True).first()    # takes only requestd users object
             serializer = UserProfileSerializer(user_profile, many=True)
-            return Response(serializer.data)
+            return Response(serializer.data,status=status.HTTP_200_OK)
         # elif user_type=='RT': # Retailer = RT
         #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
         else:
-            if user_type == 'SF':
+            if user_type == 'SF':                   # takes all users object
                 serializer = UserProfileSerializer(user_profile, many=True)
-                return Response(serializer.data)
-
-
-
-            # elif user_type== 'PD': # Producer = PD
-            #     product = .objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-            # elif user_type== 'SF': # Staff = SF
-            #     order = Order.objects.filter(created_by=request.user)
+                return Response(serializer.data,status=status.HTTP_200_OK)
         return Response ({"status": "Invalid request"},status=status.HTTP_400_BAD_REQUEST)
-            
-
 
     def post(self, request, format=None):
         serializer = UserProfileSerializer(data=request.data)
@@ -83,55 +74,54 @@ class UserProfileList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 class UserProfileDetail(APIView):
     # permission_classes = [GenericAuth]
     # """
     # Retrieve, update and delete Orders
     # """
-    def get_object(self, request, id):
-        # is_staff = request.user.is_staff
-        # try:
-        #     if is_staff:
-        #         return UserProfile.objects.get(pk=pk)
-        #     else:
-        #         # user_type = request.user.user_type
-        #         # if user_type=='CM':  # Customer = CM
-        #         #     return UserProfile.objects.get(pk=pk)
-        #         # elif user_type=='RT': # Retailer = RT
-        #         #     return UserProfile.objects.get(pk=pk)
-        #         #     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-        #         # elif user_type== 'PD': # Producer = PD
-        #         #     return UserProfile.objects.get(pk=pk)
-        #         #      # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-        #         return UserProfile.objects.get(pk=pk)
-        # except UserProfile.DoesNotExist:
-        #     raise Http404
+    # def get_object(self, request, id):
+    #     # is_staff = request.user.is_staff
+    #     # try:
+    #     #     if is_staff:
+    #     #         return UserProfile.objects.get(pk=pk)
+    #     #     else:
+    #     #         # user_type = request.user.user_type
+    #     #         # if user_type=='CM':  # Customer = CM
+    #     #         #     return UserProfile.objects.get(pk=pk)
+    #     #         # elif user_type=='RT': # Retailer = RT
+    #     #         #     return UserProfile.objects.get(pk=pk)
+    #     #         #     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+    #     #         # elif user_type== 'PD': # Producer = PD
+    #     #         #     return UserProfile.objects.get(pk=pk)
+    #     #         #      # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
+    #     #         return UserProfile.objects.get(pk=pk)
+    #     # except UserProfile.DoesNotExist:
+    #     #     raise Http404
+    #
+    #     user = UserProfile.objects.get(id=id)
+    #     return user
 
-        user = UserProfile.objects.get(id=id)
-        return user
+    def get(self, request, id):
+        user_profile = get_object_or_404(UserProfile,id = id)
+        if request.user == user_profile:
+            serializer = UserProfileSerializer(user_profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'Un-authorized request'},status=status.HTTP_401_UNAUTHORIZED)
 
-    def get(self, request, id, format=None):
-        user_profile = self.get_object(request, id)
-        serializer = UserProfileSerializer(user_profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
+    def put(self, request, id ):
+        user_profile = get_object_or_404(UserProfile, id=id)
+        if request.user==user_profile or request.user.is_staff:
+            serializer = UserProfileSerializer(user_profile, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response({'Un-authorized request'},status=status.HTTP_401_UNAUTHORIZED)
 
-    def put(self, request, id, format=None):
-        user_profile = self.get_object(request, id)
-        serializer = UserProfileSerializer(user_profile, data=request.data)
-        if serializer.is_valid():
-            # if request.user==UserProfile.created_by or request.user.is_staff:
-            serializer.save(modified_by=request.user)
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk, format=None):
-        user_profile = self.get_object(request, pk)
-        # if request.user==user_profile.created_by or request.user.is_staff:
-        user_profile.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, id):
+        user_profile = get_object_or_404(UserProfile, id = id)
+        if request.user==user_profile or request.user.is_staff:
+            user_profile.delete()
+        return Response({'User Deleted'},status=status.HTTP_204_NO_CONTENT)                     # code re-fractored
 
 
 class AddressList(APIView):

@@ -43,10 +43,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     #     return user
 
 
-
-
-
-
 class AddressSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):

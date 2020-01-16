@@ -10,8 +10,8 @@ from simple_history.models import HistoricalRecords
 
 class UserProfile(AbstractUser):
     '''
-    Add the following boolean fields
-    is_customer: if customer then True
+    Add the following boolean fields                    # this changes not implemented yet.
+    is_customer: if customer then True                  # should add this following fields for further enhanhment
     is_retailer: if retailer then True
     is_producer: if producer then True
     is_sales: if staff then True

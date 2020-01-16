@@ -1,15 +1,15 @@
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import models
 from simple_history.models import HistoricalRecords
-
 from product.models import ShopCategory, Product, ProductMeta
 from userProfile.models import UserProfile
 from userProfile.models import Address
 from order.models import Order,OrderProduct
 from bases.models import BaseModel
 from django.contrib.gis.db import models
-# Create your models here.
 from utility.models import ProductUnit
+# Create your models here.
+
 
 
 class Account(BaseModel):

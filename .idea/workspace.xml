@@ -2,10 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shodai-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shodai-backend.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utility/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/utility/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utility/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/utility/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/retailer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/retailer/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,6 +81,18 @@
       <recent name="$PROJECT_DIR$/market" />
     </key>
   </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
   <component name="RunManager">
     <configuration name="manage" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="shodai-backend" />
@@ -91,6 +106,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/manage.py" />
       <option name="PARAMETERS" value="runserver" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -100,18 +116,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-  </component>
-  <component name="ServiceViewManager">
-    <option name="viewStates">
-      <list>
-        <serviceView>
-          <treeState>
-            <expand />
-            <select />
-          </treeState>
-        </serviceView>
-      </list>
-    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -225,5 +229,8 @@
       <screen x="65" y="24" width="1301" height="744" />
     </state>
     <state x="362" y="133" width="866" height="602" key="find.popup/65.24.1301.744@65.24.1301.744" timestamp="1578482086898" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/shodai_backend$manage.coverage" NAME="manage Coverage Results" MODIFIED="1579170860209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
   </component>
 </project>
