@@ -19,6 +19,8 @@ class ProductAdmin(MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
         obj.created_by = request.user
+        if obj.product_last_price != request.data['product_last_price']:
+            obj.product_last_price = request.data['product_last_price']
         obj.save()
         return super().save_model(request, obj, form, change)
 

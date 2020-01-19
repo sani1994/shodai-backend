@@ -33,7 +33,7 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
     name_bn = models.CharField(max_length=100,null=True,blank=True,verbose_name='নাম')
     img = models.ImageField(upload_to="pictures/productmeta/", blank=True, null=True)
     product_category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
-    shop_category = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
+    shop_category = models.ForeignKey(ShopCategory,on_delete=models.CASCADE,verbose_name='Product Type')
     history = HistoricalRecords()
 
     def __str__(self):

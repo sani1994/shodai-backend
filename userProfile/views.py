@@ -43,8 +43,8 @@ class UserProfileList(APIView):             # this view returns list of user and
         # else:
         user_type = request.user.user_type
         if user_type=='CM' or user_type == 'RT' or user_type=='PD':                 # Customer = CM Retailer = RT
-            user_profile = UserProfile.objects.filter(id=request.user.id, is_approved=True).first()    # takes only requestd users object
-            serializer = UserProfileSerializer(user_profile, many=True)
+            user_profile = UserProfile.objects.filter(id=request.user.id, is_approved=True)   # takes only requestd users object
+            serializer = UserProfileSerializer(user_profile)
             return Response(serializer.data,status=status.HTTP_200_OK)
         # elif user_type=='RT': # Retailer = RT
         #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
@@ -206,7 +206,7 @@ def otp_key(number):            #generate OTP code
         return False
 
 
-class OtpCode(APIView):
+class OtpCode(APIView):             #OTP code class to generate OTP code
 
     def post(self,request):
         mobile_number = request.data['mobile_number']
@@ -237,7 +237,7 @@ class OtpCode(APIView):
                 },status=status.HTTP_200_OK)
 
 
-class OtpVerify(APIView):
+class OtpVerify(APIView):               # to varify otp code against a number
 
     def post(self,request):
         mobile_number = request.data['mobile_number']
@@ -261,7 +261,7 @@ class OtpVerify(APIView):
             }, status=status.HTTP_204_NO_CONTENT)
 
 
-class RetailerRegistration(APIView):
+class RetailerRegistration(APIView):                #Retailer regerstration class
 
     def post(self,request):
         if request.data:

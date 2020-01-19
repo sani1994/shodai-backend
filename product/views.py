@@ -62,13 +62,11 @@ class ProductDetail(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     def put(self, request, id, format=None):
         if request.user.user_type=='SF':
             product = self.get_product_object(id)
             if request.data['product_price'] != product.product_price:
                 product.product_last_price = product.product_price
-                print("product last price added")
             serializer = ProductSerializer(product, data=request.data)
             if serializer.is_valid():
                 serializer.save(modified_by = request.user)
