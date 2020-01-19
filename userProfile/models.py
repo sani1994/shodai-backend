@@ -39,8 +39,8 @@ class UserProfile(AbstractUser):
     pin_code = models.CharField(max_length=10, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     modified_on = models.DateTimeField(blank=True, null=True)
-    history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.username

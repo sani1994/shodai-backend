@@ -8,6 +8,7 @@ from utility.models import ProductUnit
 
 class ShopCategory(BaseModel):
     type_of_shop = models.CharField(max_length=89)
+    type_of_shop_bn = models.CharField(max_length=90,null=True,blank=True,verbose_name='দোকানের ধরন')
     history = HistoricalRecords()
 
     def __str__(self):
@@ -16,6 +17,7 @@ class ShopCategory(BaseModel):
 
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
+    type_of_product_bn = models.CharField(max_length=90,null=True,blank=True,verbose_name='পন্যের ধরন')
     img = models.ImageField(upload_to='pictures/productcategory/', blank=True, null=True)
     history = HistoricalRecords()
 
@@ -28,6 +30,7 @@ class ProductCategory(BaseModel):
 
 class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny name)
     name = models.CharField(max_length=100)
+    name_bn = models.CharField(max_length=100,null=True,blank=True,verbose_name='নাম')
     img = models.ImageField(upload_to="pictures/productmeta/", blank=True, null=True)
     product_category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
     shop_category = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
@@ -39,9 +42,12 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
+    product_name_bn = models.CharField(max_length=100,null=True,blank=True,verbose_name= 'পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
+    product_description = models.CharField(max_length=200,null=True,blank=True)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,default=None)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
+    product_price_bn = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,verbose_name='পন্যের মুল্য')
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     history = HistoricalRecords()
     product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
@@ -49,7 +55,6 @@ class Product(BaseModel):
 
     def __str__(self):
         return self.product_name
-
 
 
 

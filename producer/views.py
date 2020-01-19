@@ -539,7 +539,7 @@ class MicroBulkOrderDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id, format=None):
-        queryobj = self.get_microbulkorder_obj(request, id)
+        queryobj = self.get_microbulkorder_obj(id)
         serializer = MicroBulkOrderSerializer(queryobj, data=request.data)
         if serializer.is_valid():
             if request.user.user_type == 'SF':

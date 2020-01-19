@@ -56,50 +56,13 @@ class UserProfileList(APIView):             # this view returns list of user and
 
     def post(self, request, format=None):
         serializer = UserProfileSerializer(data=request.data)
-        # if request.user.is_staff:
-        #     if serializer.is_valid():
-        #         serializer.save(created_by=request.user)
-        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        # else:
-        #     if request.user.user_type=='RT': # Retailer = RT
-        #         if serializer.is_valid():
-        #             serializer.save(created_by=request.user)
-        #             return Response(serializer.data, status=status.HTTP_201_CREATED)
- 
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileDetail(APIView):
-    # permission_classes = [GenericAuth]
-    # """
-    # Retrieve, update and delete Orders
-    # """
-    # def get_object(self, request, id):
-    #     # is_staff = request.user.is_staff
-    #     # try:
-    #     #     if is_staff:
-    #     #         return UserProfile.objects.get(pk=pk)
-    #     #     else:
-    #     #         # user_type = request.user.user_type
-    #     #         # if user_type=='CM':  # Customer = CM
-    #     #         #     return UserProfile.objects.get(pk=pk)
-    #     #         # elif user_type=='RT': # Retailer = RT
-    #     #         #     return UserProfile.objects.get(pk=pk)
-    #     #         #     # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-    #     #         # elif user_type== 'PD': # Producer = PD
-    #     #         #     return UserProfile.objects.get(pk=pk)
-    #     #         #      # order = Order.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-    #     #         return UserProfile.objects.get(pk=pk)
-    #     # except UserProfile.DoesNotExist:
-    #     #     raise Http404
-    #
-    #     user = UserProfile.objects.get(id=id)
-    #     return user
 
     def get(self, request, id):
         user_profile = get_object_or_404(UserProfile,id = id)
@@ -121,154 +84,71 @@ class UserProfileDetail(APIView):
         user_profile = get_object_or_404(UserProfile, id = id)
         if request.user==user_profile or request.user.is_staff:
             user_profile.delete()
-        return Response({'User Deleted'},status=status.HTTP_204_NO_CONTENT)                     # code re-fractored
+        return Response({'User Deleted'},status=status.HTTP_204_NO_CONTENT)
 
 
-class AddressList(APIView):
+class AddressList(APIView):         # get address list and create new address
     permission_classes = [GenericAuth]
-    ## list of Address
 
-    # def get(self, request, format=None):   # previous get function
-    #     is_staff = request.user.is_staff
-    #     address =Address.objects.all()
-    #     if is_staff:
-    #         # address = Address.objects.all()
-    #         serializer = AddressSerializer(data=address)
-    #         return  Response(serializer.data)
-    #     else:
-    #         user_type = request.user.user_type
-    #         if user_type=='CM':  # Customer = CM
-    #             address = Address.objects.filter(user=request.user)
-    #         elif user_type=='RT': # Retailer = RT
-    #             address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-    #
-    #
-    #         elif user_type== 'PD': # Producer = PD
-    #             address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-    #         elif user_type== 'SF': # Staff = SF
-    #             address = Address.objects.filter(created_by=request.user)
-    #
-    #         serializer = AddressSerializer(address, many=True, context={'request': request})
-    #     return Response(serializer.data)
-
-    def get(self,request):    # new written by me
-        if request:
-            address = Address.objects.all()
-            user_type = request.user.user_type
-            if address:
-                serializer = AddressSerializer(address,many=True)
-                if user_type == 'SF':
-                    return Response(serializer.data)
-                    # else:
-                    #     Response({"Status": "user not allowed"},status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    return Response({"Status": "Invalide serializer"},status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({"Status": "No data to show"},status=status.HTTP_204_NO_CONTENT)
+    def get(self,request):
+        address = Address.objects.all()
+        user_type = request.user.user_type
+        if address:
+            serializer = AddressSerializer(address,many=True)
+            if user_type == 'SF':
+                return Response(serializer.data,status=status.HTTP_200_OK)
         else:
-            return Response ({"Status": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Status": "No data to show"},status=status.HTTP_204_NO_CONTENT)
 
     def post(self, request, format=None):
-        serializer = AddressSerializer(data=request.data,context={'request': request})
-        print(serializer)
-        if serializer.is_valid():
-            if request.user.is_staff:
-            # if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        else:
-            if request.user.user_type=='RT': # Retailer = RT
-                if serializer.is_valid():
-                    serializer.save(created_by=request.user)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # if serializer.is_valid():
-        #     serializer.save()
-        return Response({"baaal..!!"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = AddressSerializer(data=request.data,context={'request':request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
 
 
-
-
-
-
-class AddressDetail(APIView):
+class AddressDetail(APIView):           #get address with address id, update and delete
     """
     Retrieve, update and delete Orders
     """
-    def get_object(self, request, pk):
-        # is_staff = request.user.is_staff
-        # try:
-        #     if is_staff:
-        #         return Address.objects.get(pk=pk)
-        #     else:
-        #         user_type = request.user.user_type
-        #         if user_type=='CM':  # Customer = CM
-        #             return Address.objects.get(pk=pk)
-        #         elif user_type=='RT': # Retailer = RT
-        #             return Address.objects.get(pk=pk)
-        #             # address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-        #         elif user_type== 'PD': # Producer = PD
-        #             return Address.objects.get(pk=pk)
-        #              # address = Address.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-        #         return Address.objects.get(pk=pk)
-        try:
-            return Address.objects.get(pk=pk)
-        except Address.DoesNotExist:
-            raise Http404
+    def get(self, request, id, format=None):
+        address = get_object_or_404(Address,id = id)
+        serializer = AddressSerializer(address)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request, pk, format=None):
-        address = self.get_object(request, pk)
+    def put(self, request, id, format=None):
+        address = get_object_or_404(Address,id = id)
         serializer = AddressSerializer(address, data=request.data)
-        if serializer.is_valid():
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_200_OK)
     
-
-    def put(self, request, pk, format=None):
-        address = self.get_object(request, pk)
-        serializer = AddressSerializer(address, data=request.data)
-        if serializer.is_valid():
-            # if request.user==address.created_by or request.user.is_staff:
-            #     serializer.save(modified_by=request.user)
-            #     return Response(serializer.data)
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk, format=None):
-        # address = self.get_object(request, pk)
-        address = Address.objects.all()
+    def delete(self, request, id, format=None):
+        address = get_object_or_404(Address, id=id)
         address.delete()
-        # if request.user==address.created_by or request.user.is_staff:
-        #     address.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'Delete Successful..!!'},status=status.HTTP_200_OK)
 
 
-class Login(APIView):
+class Login(APIView):           #login with mobile number and passwrd
 
-    def post(self,request,*args,**kwargs):
+    def post(self,request):
         if not request.data:
-            return Response({'Error': "Please provide mobile no/password"}, status="400")
-
-        mobile_number = request.data['mobile_number']
-        # email = request.data['email']
-        password = request.data['password']
+            return Response({'Error': "Please provide mobile no/password"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            user = UserProfile.objects.get( mobile_number = mobile_number)
+            user = UserProfile.objects.get( mobile_number = request.data['mobile_number'])
         except UserProfile.DoesNotExist:
-            return Response({'Error': "Invalid email/password"}, status="400")
+            return Response({'Error': "Invalid email/password"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user.user_type == 'CM':
+        if user.user_type == 'CM':  # if user type is customer no need to approve from admin panel. it will be automatically approve here.
             if not user.is_approved:
                 user.is_approved = True
                 user.save()
 
-        if user.is_approved:
+        if user.is_approved:            #check weather user is approved or not.
             if user:
-                if user.check_password(password):
+                if user.check_password(request.data['password']):
                     refresh = RefreshToken.for_user(user)
                     return JsonResponse({
                         "message": "success",
@@ -288,8 +168,10 @@ class Login(APIView):
                     }, status=status.HTTP_401_UNAUTHORIZED)
         return Response({'status: Profile request is waiting for approval'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
-class Logout(APIView):
+
+class Logout(APIView):          #logout
     permission_classes = [GenericAuth]
+
     def post(self,request):
         user = get_user_object(username=request.user.username)
         try:
@@ -310,13 +192,13 @@ class Logout(APIView):
             }, status=status.HTTP_200_OK)
 
 
-class UserRegistration(CreateAPIView):
+class UserRegistration(CreateAPIView):              #user registration class
     permission_classes = (AllowAny,)
     models = UserProfile
     serializer_class = UserRegistrationSerializer
 
 
-def otp_key(number):
+def otp_key(number):            #generate OTP code
     if number:
         key = random.randint(999,9999)
         return key
@@ -330,11 +212,11 @@ class OtpCode(APIView):
         mobile_number = request.data['mobile_number']
         if mobile_number:
             mobile_number = str(mobile_number)
-            obj = Otp.objects.filter(mobile_number__exact=mobile_number).first()
+            obj = Otp.objects.get(mobile_number=mobile_number)
             if obj:
                 # obj.counter = 0
                 # obj.save()
-                if obj.count >5 :
+                if obj.count >5 :     # if otp is sent more then 5 times it will block the user
                     return Response ({"Status": "Faild",
                                                 "details": "OTP sent 5 times. please contact with support"},status=status.HTTP_400_BAD_REQUEST)
                 else:
@@ -360,7 +242,7 @@ class OtpVerify(APIView):
     def post(self,request):
         mobile_number = request.data['mobile_number']
         code = request.data['otp_code']
-        obj = Otp.objects.filter(mobile_number__exact=mobile_number).first()
+        obj = Otp.objects.get(mobile_number=mobile_number)
         if obj:
             if obj.otp_code == code:
                 obj.otp_code = 0

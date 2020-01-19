@@ -20,6 +20,7 @@ class ProducerBulkRequest(BaseModel):  # producer product
     '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     product_name = models.CharField(max_length=200, null=False, blank=False)
+    product_name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='পন্যের নাম')
     product_image = models.ImageField(upload_to='producer/product', null=True, blank=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='producer_unit', null=True, blank=True)
@@ -49,9 +50,7 @@ class ProducerBulkRequest(BaseModel):  # producer product
 
     def productlistforcustomer(self):
         bulk_order_products = self.bulkorderproducts_set.all()
-        print(bulk_order_products)
         micro_bulk_order_products =bulk_order_products.microbulkorderproducts_set.all()
-        print(micro_bulk_order_products)
         return micro_bulk_order_products.customermicroBulkorderproductrequest_set.all().count()
         # return bulk_order_products
 

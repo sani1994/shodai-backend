@@ -1,6 +1,8 @@
 from xxlimited import Null
 
 from django.shortcuts import render
+from rest_framework.generics import get_object_or_404
+
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer
 from order.models import OrderProduct, Order, Vat
 
@@ -288,4 +290,11 @@ class OrderStatusUpdate(APIView):
                     return Response({'Order status set to': order_obj.order_status},status=status.HTTP_200_OK)
                 return Response('Cannot update order status',status=status.HTTP_400_BAD_REQUEST )
             return Response({"status": "User Don't have permission to update status"}, status=status.HTTP_403_FORBIDDEN)
+        elif request.user.user_type == 'CM':
+            order_obj = get_object_or_404(Order,id = id)
+            if order_obj.user == request.user:
+                setattr(order_obj,'order_status',request.data['order_status'])
+                order_obj.save()
+                return Response({'Order status set to': order_obj.order_status}, status=status.HTTP_200_OK)
+            return Response('Cannot update order status', status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
