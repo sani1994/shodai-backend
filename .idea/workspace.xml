@@ -2,11 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/Grocery_4vk9f5U.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/Grocery_hqJgCLb.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/Grocery_pbrzTKW.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/product/dry-food-packaging-sprouts-750x437.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/pictures/productmeta/dry_food.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sodai/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/sodai/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/userProfile/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -143,7 +145,7 @@
       <workItem from="1570700517758" duration="13469000" />
       <workItem from="1570813634601" duration="3427000" />
       <workItem from="1570866522740" duration="5653000" />
-      <workItem from="1579407205254" duration="10417000" />
+      <workItem from="1579407205254" duration="13052000" />
     </task>
     <task id="LOCAL-00001" summary="foreign key problem solved.">
       <created>1570566273547</created>
@@ -232,6 +234,6 @@
     <state x="362" y="133" width="866" height="602" key="find.popup/65.24.1301.744@65.24.1301.744" timestamp="1578482086898" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/shodai_backend$manage.coverage" NAME="manage Coverage Results" MODIFIED="1579429979302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
+    <SUITE FILE_PATH="coverage/shodai_backend$manage.coverage" NAME="manage Coverage Results" MODIFIED="1579431297262" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
   </component>
 </project>

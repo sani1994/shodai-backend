@@ -27,7 +27,6 @@ from datetime import datetime
 # Create your views here.
 
 
-
 class UserProfileList(APIView):             # this view returns list of user and create user
     # permission_classes = (IsAuthenticated,)
     permission_classes = [GenericAuth]
@@ -43,8 +42,8 @@ class UserProfileList(APIView):             # this view returns list of user and
         # else:
         user_type = request.user.user_type
         if user_type=='CM' or user_type == 'RT' or user_type=='PD':                 # Customer = CM Retailer = RT
-            user_profile = UserProfile.objects.filter(id=request.user.id, is_approved=True)   # takes only requestd users object
-            serializer = UserProfileSerializer(user_profile)
+            user_obj = UserProfile.objects.filter(id=request.user.id, is_approved=True)  # takes only requestd users object
+            serializer = UserProfileSerializer(user_obj)
             return Response(serializer.data,status=status.HTTP_200_OK)
         # elif user_type=='RT': # Retailer = RT
         #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
