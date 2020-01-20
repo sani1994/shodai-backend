@@ -3,6 +3,8 @@ from builtins import super
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
+from rest_framework.generics import get_object_or_404
+
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -18,6 +20,9 @@ class ProductAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
+            old_obj = get_object_or_404(Product,id = obj.id)
+            obj.product_last_price = old_obj.product_price
+            obj.save()
         obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)

@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from rest_framework.generics import get_object_or_404
+
 from offer.models import Offer,OfferProduct
 from offer.serializers import OfferSerializer, OfferProductSerializer, OfferProductReadSerializer
 
@@ -180,32 +182,23 @@ class GetOfferProducts(APIView):
 
     permission_classes = [GenericAuth]
 
-    def get_offer_obj(self,id):
-        obj = Offer.objects.get(id=id)
-        return  obj
-
     def get(self,request,id):
-        obj = self.get_offer_obj(id)
-        if obj:
-            offerProducts = []
-            offerserializer = OfferSerializer(obj)
-            offerProductList = obj.offerproduct_set.all()
-            offerProductserializer = OfferProductReadSerializer(offerProductList,many=True)
-            if offerserializer and  offerProductserializer:
-                # offerProductsData = offerProductserializer.data
-                for data in offerProductserializer.data:
-                    product = data['product']
-                    product['offer_price']=data['offer_price']
-                    product['offer_product_balance']=data['offer_product_balance']
-                    offerProducts.append(product)
-                offerdetail=offerserializer.data
-                offerdetail['offer_products']=offerProducts
-                return Response(offerProducts, status=status.HTTP_200_OK) # returning on offer product list
-            else:
-                return Response(offerserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        obj = get_object_or_404(Offer,id=id)
+        offerProducts = []
+        offerserializer = OfferSerializer(obj)
+        offerProductList = obj.offerproduct_set.all()
+        offerProductserializer = OfferProductReadSerializer(offerProductList,many=True)
+        if offerserializer and  offerProductserializer:
+            # offerProductsData = offerProductserializer.data
+            for data in offerProductserializer.data:
+                product = data['product']
+                product['offer_price']=data['offer_price']
+                product['offer_product_balance']=data['offer_product_balance']
+                product['offer_id'] = data['offer']['id']
+                offerProducts.append(product)
+            offerdetail=offerserializer.data
+            offerdetail['offer_products']=offerProducts
+            return Response(offerProducts, status=status.HTTP_200_OK) # returning on offer product list
         else:
-            return Response({
-                "Status": "No content",
-                "details": "Content not available"
-            }, status=status.HTTP_204_NO_CONTENT)
+            return Response(offerserializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

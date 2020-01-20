@@ -317,7 +317,7 @@ class RecentlyAddedProductList(APIView):  # return list of recently added produc
     permission_classes = [GenericAuth]
 
     def get(self,request):
-        queryset = Product.objects.all().order_by('created_on')[0:10]
+        queryset = Product.objects.all().order_by('-created_on')[:10]
         serializer = ProductSerializer(queryset,many=True)
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
