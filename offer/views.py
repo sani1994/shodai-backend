@@ -190,11 +190,20 @@ class GetOfferProducts(APIView):
         offerProductserializer = OfferProductReadSerializer(offerProductList,many=True)
         if offerserializer and  offerProductserializer:
             # offerProductsData = offerProductserializer.data
+            product=[]
             for data in offerProductserializer.data:
                 product = data['product']
                 product['offer_price']=data['offer_price']
                 product['offer_product_balance']=data['offer_product_balance']
-                product['offer_id'] = data['offer']['id']
+                # product['offer_id'] = data['offer']['id']
+                # product['offer_name'] = data['offer'] ['offer_name']
+                # product['product_id'] = data['product']['id']
+                # product['product_name'] = data['product']['product_name']
+                # product['product_name_bn'] = data['product']['product_name_bn']
+                # product['product_image'] = data['product']['product_image']
+                # product['product_description'] = data['product']['product_description']
+                # product['product_unit'] = data['product']['product_unit']
+                # product['product_price'] = data['product']['product_price']
                 offerProducts.append(product)
             offerdetail=offerserializer.data
             offerdetail['offer_products']=offerProducts
