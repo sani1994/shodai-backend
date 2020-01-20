@@ -10,7 +10,7 @@ from rest_framework import status
 # Create your views here.
 
 
-class AreaList(APIView):
+class AreaList(APIView):                #get area list and create area
     permission_classes = [GenericAuth]
 
     def get(self,request):
@@ -28,7 +28,7 @@ class AreaList(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
-class AreaDetails(APIView):
+class AreaDetails(APIView):         # area object get, update and delete
     permission_classes = [GenericAuth]
 
     def get_area_obj(self,id):
@@ -56,7 +56,7 @@ class AreaDetails(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProductUnitList(APIView):
+class ProductUnitList(APIView):         # product unit list get and create
     permission_classes = [GenericAuth]
 
     def get(self, request):
@@ -78,7 +78,7 @@ class ProductUnitList(APIView):
         return Response({'Duplicat data: '+ str(request.data['product_unit'])}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProductUnitDetails(APIView):
+class ProductUnitDetails(APIView):          #product unit object get, update and delete
     permission_classes = [GenericAuth]
 
     def get_productunit_obj(self, id):
@@ -116,7 +116,7 @@ class ProductUnitDetails(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class RemarksList(APIView):
+class RemarksList(APIView):             #get remarks list and create area
 
     permission_classes = [GenericAuth]
 
@@ -135,7 +135,7 @@ class RemarksList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RemarksDetails(APIView):
+class RemarksDetails(APIView):              #remarks unit object get, update and delete
     permission_classes = [GenericAuth]
 
     def get_remarks_obj(self,id):

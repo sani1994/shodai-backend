@@ -14,6 +14,10 @@ class ShopCategory(BaseModel):
     def __str__(self):
         return self.type_of_shop
 
+    class Meta:
+        verbose_name = 'Shop Category'
+        verbose_name_plural = 'Shop Category'
+
 
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
@@ -24,8 +28,9 @@ class ProductCategory(BaseModel):
     def __str__(self):
         return self.type_of_product
 
-    # def save(self, *args, **kwargs):
-    #     return super(ProductCategory, self).save(*args, **kwargs)
+    class Meta:
+        verbose_name = 'Product Category'
+        verbose_name_plural = 'Product Category'
 
 
 class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny name)
@@ -39,17 +44,21 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'Product Meta'
+        verbose_name_plural = 'Product Meta'
+
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
     product_name_bn = models.CharField(max_length=100,null=True,blank=True,verbose_name= 'পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
-    product_description = models.CharField(max_length=200,null=True,blank=True)
+    product_description = models.CharField(max_length=200,default=" ")
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,default=None)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
     product_price_bn = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,verbose_name='পন্যের মুল্য')
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
-    product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
+    product_last_price = models.DecimalField(decimal_places=2,max_digits=7,default=0.00)
     is_approved = models.BooleanField(default=False)
     history = HistoricalRecords()
 

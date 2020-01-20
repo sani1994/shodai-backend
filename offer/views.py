@@ -190,7 +190,6 @@ class GetOfferProducts(APIView):
         offerProductserializer = OfferProductReadSerializer(offerProductList,many=True)
         if offerserializer and  offerProductserializer:
             # offerProductsData = offerProductserializer.data
-            product=[]
             for data in offerProductserializer.data:
                 product = data['product']
                 product['offer_price']=data['offer_price']

@@ -58,6 +58,10 @@ class UserProfile(AbstractUser):
         # self.is_staff=False
         return super(UserProfile, self).save(*args, **kwargs)
 
+    class Meta:
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profile'
+
 
 class Address(models.Model):
 

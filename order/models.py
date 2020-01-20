@@ -68,6 +68,10 @@ class OrderProduct(BaseModel):
     def __str__(self):
         return self.product.product_name
 
+    class Meta:
+        verbose_name = 'Order Product'
+        verbose_name_plural = 'Order Product'
+
 
 class Vat(BaseModel):
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False,default=None)

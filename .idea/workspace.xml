@@ -4,7 +4,12 @@
     <list default="true" id="34a5c9be-9c46-48c0-aee8-113d00d41fe5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/offer/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/offer/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/producer/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/producer/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/product/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/userProfile/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/userProfile/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utility/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/utility/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utility/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/utility/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -141,7 +146,7 @@
       <workItem from="1570813634601" duration="3427000" />
       <workItem from="1570866522740" duration="5653000" />
       <workItem from="1579407205254" duration="13307000" />
-      <workItem from="1579500492093" duration="7204000" />
+      <workItem from="1579500492093" duration="10399000" />
     </task>
     <task id="LOCAL-00001" summary="foreign key problem solved.">
       <created>1570566273547</created>
@@ -230,6 +235,6 @@
     <state x="362" y="133" width="866" height="602" key="find.popup/65.24.1301.744@65.24.1301.744" timestamp="1578482086898" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/shodai_backend$manage.coverage" NAME="manage Coverage Results" MODIFIED="1579500810128" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
+    <SUITE FILE_PATH="coverage/shodai_backend$manage.coverage" NAME="manage Coverage Results" MODIFIED="1579517734076" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
   </component>
 </project>

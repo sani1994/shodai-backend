@@ -48,11 +48,11 @@ class ProducerBulkRequest(BaseModel):  # producer product
     def __str__(self):
         return self.product_name
 
-    def productlistforcustomer(self):
-        bulk_order_products = self.bulkorderproducts_set.all()
-        micro_bulk_order_products =bulk_order_products.microbulkorderproducts_set.all()
-        return micro_bulk_order_products.customermicroBulkorderproductrequest_set.all().count()
-        # return bulk_order_products
+    # def productlistforcustomer(self):
+    #     bulk_order_products = self.bulkorderproducts_set.all()
+    #     micro_bulk_order_products =bulk_order_products.microbulkorderproducts_set.all()
+    #     return micro_bulk_order_products.customermicroBulkorderproductrequest_set.all().count()
+    #     # return bulk_order_products
 
     def save(self, *args, **kwargs):
         if self.is_approved:
@@ -60,7 +60,8 @@ class ProducerBulkRequest(BaseModel):  # producer product
         return super(ProducerBulkRequest, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name_plural = "producer products"
+        verbose_name_plural = "producer product"
+        verbose_name = "producer product"
 
 
 class BusinessType(BaseModel):
