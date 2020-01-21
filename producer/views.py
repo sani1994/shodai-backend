@@ -20,7 +20,7 @@ from datetime import datetime
 from sodai.utils.permission import GenericAuth
 
 
-class PeroducerBulkRequestList(APIView):
+class PeroducerBulkRequestList(APIView):                #get producer bulk request(producer's product request to sell) list and create
 
     ## list of Producer
     permission_classes = [GenericAuth]
@@ -61,7 +61,7 @@ class PeroducerBulkRequestList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PeroducerBulkRequestDetails(APIView):
+class PeroducerBulkRequestDetails(APIView):                 #get producer bulk request(producer's product request to sell) ,update delete
     """
     Retrieve, update and delete Producer
     """
@@ -92,7 +92,7 @@ class PeroducerBulkRequestDetails(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BusinessTypeList(APIView):
+class BusinessTypeList(APIView):                    #get business type list and create
 
     permission_classes = [GenericAuth]
 
@@ -116,7 +116,7 @@ class BusinessTypeList(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class BusinessTypeDetails(APIView):
+class BusinessTypeDetails(APIView):             # business type get, update and delete
 
     permission_classes = [GenericAuth]
 
@@ -163,7 +163,7 @@ class BusinessTypeDetails(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProducerBusinessList(APIView):
+class ProducerBusinessList(APIView):                    #get producer business list and create
 
     permission_classes = [GenericAuth]
 
@@ -189,7 +189,7 @@ class ProducerBusinessList(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProducerBusinessDetails(APIView):
+class ProducerBusinessDetails(APIView):             #producer business get ,update and delete
 
     permission_classes = [GenericAuth]
 
@@ -234,7 +234,7 @@ class ProducerBusinessDetails(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProducerFarmList(APIView):
+class ProducerFarmList(APIView):                #get producer farm and create
 
     ## list of Producer Farm
 
@@ -277,7 +277,7 @@ class ProducerFarmList(APIView):
 
 
 
-class ProducerFarmDetail(APIView):
+class ProducerFarmDetail(APIView):                  #producer farm get,update and delete
     """
     Retrieve, update and delete Producer
     """
@@ -310,6 +310,10 @@ class ProducerFarmDetail(APIView):
 
 
 class BulkOrderList(APIView):
+    """
+    get list of bulk order
+    """
+
     permission_classes = [GenericAuth]
 
     def get(self,request):
@@ -328,10 +332,10 @@ class BulkOrderList(APIView):
 
 
 class BulkOrderDetails(APIView):
-    permission_classes = [GenericAuth]
     """
     Retrieve, update and delete Producer
     """
+    permission_classes = [GenericAuth]
 
     def get_bulkorderdetail_object(self, id):
         return get_object_or_404(BulkOrder,id=id)
@@ -344,7 +348,7 @@ class BulkOrderDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id, format=None):
-        queryset = self.get_bulkorderdetail_object(request, id)
+        queryset = self.get_bulkorderdetail_object(id)
         serializer = BulkOrderSerializer(queryset, data=request.data)
         if serializer.is_valid():
             if request.user.user_type == 'SF':
@@ -353,10 +357,11 @@ class BulkOrderDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, format=None):
-        obj = self.get_bulkorderdetail_object(request, id)
+        obj = self.get_bulkorderdetail_object(id)
         if request.user.is_staff:
             obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class BulkOrderProductsList(APIView):
     permission_classes = [GenericAuth]
@@ -391,7 +396,7 @@ class BulkOrderProductsDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id, format=None):
-        queryobj = self.get_bulkorderproducts_obj(request, id)
+        queryobj = self.get_bulkorderproducts_obj(id)
         serializer = BulkOrderProductsSerializer(queryobj, data=request.data)
         if serializer.is_valid():
             if request.user.user_type == 'SF':
@@ -400,7 +405,7 @@ class BulkOrderProductsDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, format=None):
-        obj = self.get_bulkorderproducts_obj(request, id)
+        obj = self.get_bulkorderproducts_obj(id)
         if request.user.is_staff:
             obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -548,7 +553,7 @@ class MicroBulkOrderDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, format=None):
-        obj = self.get_microbulkorder_obj(request, id)
+        obj = self.get_microbulkorder_obj(id)
         if request.user.is_staff:
             obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

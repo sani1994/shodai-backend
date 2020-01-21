@@ -17,8 +17,7 @@ class OfferList(APIView):
     permission_class= [GenericAuth,]
 
     def get(self,request):
-        if request.user.is_staff:
-            queryset = Offer.objects.all()
+
         queryset=Offer.objects.filter(is_approved=True)
         if queryset:
             serializer = OfferSerializer(queryset,many=True)
