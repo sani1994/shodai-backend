@@ -60,7 +60,7 @@ class ProducerBulkRequest(BaseModel):  # producer product
         return super(ProducerBulkRequest, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name_plural = "producer product"
+        verbose_name_plural = "Producer Bulk Request"
         verbose_name = "producer product"
 
 
@@ -86,7 +86,7 @@ class ProducerBusiness(BaseModel):
     land_amount = models.CharField(max_length=30, blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
     long = models.FloatField(blank=True, null=True)
-    productbusiness_geopoint = models.PointField(null=True)
+    product_business_geopoint = models.PointField(null=True)
     address = models.CharField(max_length=300, blank=True, null=True)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
@@ -177,8 +177,7 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     This is the model for the Products against the Micro Bulk Order
     '''
     bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE, null=True, blank=True)
-    micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE, null=True, blank=True,
-                                         related_name='mcop')
+    micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE, null=True, blank=True)
     qty = models.FloatField(default=0)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
 

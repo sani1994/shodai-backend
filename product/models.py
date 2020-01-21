@@ -54,6 +54,7 @@ class Product(BaseModel):
     product_name_bn = models.CharField(max_length=100,null=True,blank=True,verbose_name= 'পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_description = models.CharField(max_length=200,default=" ")
+    product_description_bn = models.CharField(max_length=200, default=" ")
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,default=None)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
     product_price_bn = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,verbose_name='পন্যের মুল্য')

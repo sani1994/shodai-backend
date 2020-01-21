@@ -10,8 +10,10 @@ from product.models import Product
 class Offer(BaseModel):
     # put reailer as foreign key
     offer_name = models.CharField(max_length=100,blank=False,null=False)
-    offer_img = models.ImageField(upload_to="offer/%Y/%m/%d",blank=False,null=False)
+    offer_name_bn = models.CharField(max_length=100, blank=False, null=False)
+    offer_img = models.ImageField(upload_to="offer",blank=False,null=False)
     offer_details = models.CharField(max_length=500,blank=True,null=True)
+    offer_details_bn = models.CharField(max_length=500, blank=True, null=True,verbose_name='Offer Detail Bangla')
     offer_starts_in = models.DateTimeField(blank=True,null=True)
     offer_ends_in = models.DateTimeField(blank=True, null=True)
     history = HistoricalRecords()

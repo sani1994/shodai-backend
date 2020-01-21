@@ -4,8 +4,6 @@ from rest_framework.relations import HyperlinkedIdentityField
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 
 
-
-
 class ShopCategorySerializer(serializers.ModelSerializer):
 
     url = HyperlinkedIdentityField(
@@ -74,5 +72,5 @@ class ProductSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Product
-        fields = [ 'id','product_name','product_name_bn', 'product_image', 'product_unit', 'product_price','product_meta','product_last_price','is_approved','product_description']
+        fields = [ 'id','product_name','product_name_bn', 'product_image', 'product_unit', 'product_price','product_meta','product_last_price','is_approved','product_description','product_description_bn']
         read_only = 'product_last_price'
