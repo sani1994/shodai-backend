@@ -21,6 +21,7 @@ class ProducerBulkRequestAdmin(MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
         obj.created_by = request.user
+        obj.user = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -57,12 +58,13 @@ class ProducerBusinessAdmin(MaterialModelAdmin):
 class BulkOrderAdmin(MaterialModelAdmin):
     list_display = ('user', 'start_date','expire_date')
     list_filter = ('hex_code',)
-    readonly_fields = ['created_by', 'modified_by']
+    readonly_fields = ['created_by', 'modified_by','user']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
         obj.created_by = request.user
+        obj.user = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -81,7 +83,15 @@ class BulkOrderProductsAdmin(MaterialModelAdmin):
 
 
 class MicroBulkOrderAdmin(MaterialModelAdmin):
-    list_display = ('')
+    list_display = ('customer','bulk_order')
+    readonly_fields = ['created_by', 'modified_by','customer']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
 
 
 site.register(ProducerBulkRequest, ProducerBulkRequestAdmin)
@@ -90,6 +100,6 @@ site.register(BusinessType,BusinessTypeAdmin)
 site.register(ProducerBusiness,ProducerBusinessAdmin)
 site.register(BulkOrder,BulkOrderAdmin)
 site.register(BulkOrderProducts,BulkOrderProductsAdmin)
-site.register(MicroBulkOrder)
+site.register(MicroBulkOrder,MicroBulkOrderAdmin)
 site.register(MicroBulkOrderProducts)
 site.register(BulkOrderReqConnector)

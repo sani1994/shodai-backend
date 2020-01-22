@@ -26,7 +26,7 @@ class Account(BaseModel):
 
 class Shop(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
-    product = models.ManyToManyField(Product)
+    shodai_products = models.ManyToManyField(Product)
     shop_name = models.CharField(max_length= 100,null=False,blank=False)
     shop_type = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
     shop_lat = models.FloatField(null=True,blank=True)
@@ -65,7 +65,7 @@ class AcceptedOrder(BaseModel):
 
 
 class ShopProduct(BaseModel):
-    product = models.ForeignKey(Product,on_delete=models.PROTECT)
+    product = models.ForeignKey(Product,on_delete=models.PROTECT,verbose_name='Shodai Product')
     shop = models.ForeignKey(Shop,on_delete=models.CASCADE,blank=True,null=True)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)

@@ -17,9 +17,6 @@ from rest_framework import permissions
 from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
 
-# NB.
-# No authorization has been set yet, after completing we will set authorization
-
 
 class OrderList(APIView):
 
@@ -161,7 +158,6 @@ class OrderProductDetail(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-
     def delete(self,request,id):
         obj = self.get_orderproduct_obj(id)
         if obj:
@@ -247,7 +243,7 @@ class OrderdProducts(APIView): # this view returns all the products in a order. 
         obj = self.get_order_object(id)
         if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
             orderProducts = []
-            orderProductList = obj.orderproduct_set.all()
+            orderProductList = obj.orderproduct_set.all()       # get all orderd products of individual product
             orderProductSerializer = OrderProductReadSerializer(orderProductList, many=True)
             orderSerializer = OrderSerializer(obj)
             if orderProductSerializer and orderSerializer:
@@ -271,7 +267,6 @@ class OrderStatusUpdate(APIView):
 
     def get_acceptedOrder_obj(self,id):
         obj = AcceptedOrder.objects.get(id=id)
-        # obj = get_or_404(AcceptedOrder,id=id)
         return obj
 
     def get_oder_obj(self,id):
@@ -293,7 +288,7 @@ class OrderStatusUpdate(APIView):
         elif request.user.user_type == 'CM':
             order_obj = get_object_or_404(Order,id = id)
             if order_obj.user == request.user:
-                setattr(order_obj,'order_status',request.data['order_status'])
+                setattr(order_obj,'order_status',request.data['order_status'])  #set status in order
                 order_obj.save()
                 return Response({'Order status set to': order_obj.order_status}, status=status.HTTP_200_OK)
             return Response('Cannot update order status', status=status.HTTP_400_BAD_REQUEST)
