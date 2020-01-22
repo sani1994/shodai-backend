@@ -12,7 +12,7 @@ from producer.models import ProducerBulkRequest, ProducerFarm, ProducerBusiness,
 class ProducerBulkRequestAdmin(MaterialModelAdmin):
     list_filter = ('product_name', 'product_category')
     list_display = ('product_name', 'product_category','production_time','unit_price')
-    readonly_fields = ['created_by', 'modified_by']
+    readonly_fields = ['created_by', 'modified_by','user']
 
     class Meta:
         verbose_name_plural = "producer products"

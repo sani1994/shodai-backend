@@ -90,6 +90,7 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
+
 ELASTICSEARCH_DSL={
     'default': {
         'hosts': 'localhost:9200'
