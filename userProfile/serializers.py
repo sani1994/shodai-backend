@@ -26,7 +26,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = '__all__'
-        write_only_fields = ('password',)
 
 
     # def create(self,validated_data):
