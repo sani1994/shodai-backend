@@ -33,7 +33,7 @@ class UserProfile(AbstractUser):
     mobile_number = models.CharField(max_length=15, blank=True, null=True,unique=True)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True,unique=True)
+    email = models.EmailField(blank=True, null=True)
     user_NID = models.CharField(max_length=100,blank=True,null=True,unique=True)
     ref_code = models.CharField(max_length=10, blank=True, null=True)
     pin_code = models.CharField(max_length=10, blank=True, null=True)

@@ -1,30 +1,18 @@
 import random
-
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render
 from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
-
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import GenericAuth
 from userProfile.serializers import UserProfileSerializer, AddressSerializer,UserRegistrationSerializer,RetailerRegistrationSreializer
-
-from userProfile.models import UserProfile, Address, BlackListedToken
-
+from userProfile.models import Address, BlackListedToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
-# from rest_framework.permissions import IsAuthenticated
 from userProfile.models import UserProfile,Otp
-from django.db.models import Q
-import jwt,json
-# from django.contrib.auth import authenticate
-
-from datetime import datetime
-# Create your views here.
 
 
 class UserProfileList(APIView):             # this view returns list of user and create user
@@ -44,7 +32,10 @@ class UserProfileList(APIView):             # this view returns list of user and
         if user_type=='CM' or user_type == 'RT' or user_type=='PD':                 # Customer = CM Retailer = RT
             user_obj = UserProfile.objects.filter(id=request.user.id, is_approved=True).get() # takes only requestd users object
             serializer = UserProfileSerializer(user_obj)
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            obj = []                            #front-end requested to return the object as list
+            obj.append(serializer.data)
+            return Response(obj, status=status.HTTP_200_OK)
+            # return Response(serializer.data,status=status.HTTP_200_OK)
         # elif user_type=='RT': # Retailer = RT
         #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
         else:
