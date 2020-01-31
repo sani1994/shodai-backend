@@ -1,6 +1,9 @@
 from django.shortcuts import render
-from retailer.serializers import AccountSerializer, ShopSerializer, AcceptedOrderSerializer,AcceptedOrderReadSerializer
-from retailer.models import Account, Shop, AcceptedOrder
+from rest_framework.generics import get_object_or_404
+
+from retailer.serializers import AccountSerializer, ShopSerializer, AcceptedOrderSerializer, \
+    AcceptedOrderReadSerializer, ShopProductSerializer
+from retailer.models import Account, Shop, AcceptedOrder, ShopProduct
 from order.models import Order
 
 from django.http import Http404
@@ -477,11 +480,42 @@ class RetailerShopList(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
+class ShopProductList(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        if request.user.user_type == 'RT':
+            shop = Shop.objects.get(user=request.user)
+            product_list = ShopProduct.objects.filter(shop=shop)
+            serializer = ShopProductSerializer(product_list,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+    def post(self,request):
+        if request.user.user_type == 'RT':
+            serializer = ShopProductSerializer(data= request.data,context={'request':request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
+class ShopPeroductDetail(APIView):
+    permission_classes = [GenericAuth]
 
+    def get(self,request,id):
+        product = get_object_or_404(ShopProduct,id=id)
+        serializer = ShopProductSerializer(product)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
+    def put(self,request,id):
+        product = get_object_or_404(ShopProduct, id=id)
+        serializer = ShopProductSerializer(product,data=request.data,context={'request':request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
-
-
-
+    def delete(self,request,id):
+        product = get_object_or_404(ShopProduct, id=id)
+        product.delete()
+        return Response({'Delete Successful'}, status=status.HTTP_200_OK)

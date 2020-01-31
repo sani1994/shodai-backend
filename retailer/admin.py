@@ -1,5 +1,7 @@
 from django.contrib import admin
-from retailer.models import  Account
+from rest_framework.generics import get_object_or_404
+
+from retailer.models import Account, ShopProduct
 from userProfile.models import UserProfile
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
@@ -59,8 +61,24 @@ class AcceptedOrderAdmin(MaterialModelAdmin):
     readonly_fields = ["created_by", "modified_by", 'user','order','order_product']
 
 
+class ShopProductAdmin(MaterialModelAdmin):
+    model = ShopProduct
+    list_display = ('product','shop')
+    readonly_fields = ["created_by", "modified_by", 'shop', 'product_last_price']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+            old_obj = get_object_or_404(ShopProduct,id = obj.id)
+            obj.product_last_price = old_obj.product_last_price
+            obj.save()
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
 site.register(Shop, ShopAdmin)
 site.register(Account)
 site.register(AcceptedOrder,AcceptedOrderAdmin)
-# site.register(UserInline)
+site.register(ShopProduct,ShopProductAdmin)
 

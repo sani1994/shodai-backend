@@ -11,7 +11,6 @@ from utility.models import ProductUnit
 # Create your models here.
 
 
-
 class Account(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     bank_name = models.CharField(max_length=50, blank=True, null=True)
@@ -26,7 +25,7 @@ class Account(BaseModel):
 
 class Shop(BaseModel):
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
-    shodai_products = models.ManyToManyField(Product)
+    # shodai_products = models.ManyToManyField(Product)
     shop_name = models.CharField(max_length= 100,null=False,blank=False)
     shop_type = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
     shop_lat = models.FloatField(null=True,blank=True)
@@ -70,7 +69,7 @@ class ShopProduct(BaseModel):
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
-    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
+    # product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     history = HistoricalRecords()
     product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
     is_approved = models.BooleanField(default=False)

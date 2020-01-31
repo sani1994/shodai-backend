@@ -32,7 +32,7 @@ class UserProfileList(APIView):             # this view returns list of user and
         if user_type=='CM' or user_type == 'RT' or user_type=='PD':                 # Customer = CM Retailer = RT
             user_obj = UserProfile.objects.filter(id=request.user.id, is_approved=True).get() # takes only requestd users object
             serializer = UserProfileSerializer(user_obj)
-            obj = []                            #front-end requested to return the object as list
+            obj = []    #front-end requested to return the object as list
             obj.append(serializer.data)
             return Response(obj, status=status.HTTP_200_OK)
             # return Response(serializer.data,status=status.HTTP_200_OK)

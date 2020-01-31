@@ -28,17 +28,8 @@ class ProductAdmin(MaterialModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-# class ProductUnitResource(resources.ModelResource):
-#
-#     class Meta:
-#         model = ProductUnit
-#         fields = ('id','product_unit')
-
-
 class ProductUnitAdmin(ImportExportModelAdmin):
     list_display = ('product_unit', 'history')
-
-    # resource_class = ProductUnitResource
 
     def save_model(self, request, obj, form, change):
         if obj.id:
