@@ -66,4 +66,9 @@ class Product(BaseModel):
     def __str__(self):
         return self.product_name
 
+    def product_unit_name(self):
+        return self.product_unit.product_unit
+
+    def product_meta_name(self):
+        return self.product_meta.name
 

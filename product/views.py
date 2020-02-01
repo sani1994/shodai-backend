@@ -25,12 +25,15 @@ class ProductList(APIView):
     ## list of Prodect
 
     def get(self, request, format=None):
-        if request.user.is_staff:
-            product = Product.objects.all()
-        product = Product.objects.filter(is_approved=True)
-        serializer = ProductSerializer(product, many=True)
+        products = Product.objects.filter(is_approved=True)
+        serializer = ProductSerializer(products, many=True)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            datas = serializer.data
+            # for data in datas:
+                # for product in products:
+                #     data['product_unit'] = product.product_unit.product_unit
+                #     data['product_meta'] = product.product_meta.name
+            return Response(datas,status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
