@@ -519,3 +519,13 @@ class ShopPeroductDetail(APIView):
         product = get_object_or_404(ShopProduct, id=id)
         product.delete()
         return Response({'Delete Successful'}, status=status.HTTP_200_OK)
+
+
+class HasShop(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        has_shop = Shop.objects.filter(user=request.user)
+        if has_shop:
+            return Response(True,status=status.HTTP_200_OK)
+        return Response(False,status=status.HTTP_204_NO_CONTENT)

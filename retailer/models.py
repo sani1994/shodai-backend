@@ -24,7 +24,7 @@ class Account(BaseModel):
 
 
 class Shop(BaseModel):
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
+    user = models.OneToOneField(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     # shodai_products = models.ManyToManyField(Product)
     shop_name = models.CharField(max_length= 100,null=False,blank=False)
     shop_type = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
