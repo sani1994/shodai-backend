@@ -50,7 +50,7 @@ class ShopAdmin(MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
         obj.created_by = request.user
-        obj.user = request.user
+        # obj.user = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
