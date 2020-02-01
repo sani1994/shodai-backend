@@ -217,8 +217,8 @@ class ShopList(APIView):
                     return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-        elif request.user.user_type == 'CM':
-            return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+        # elif request.user.user_type == 'CM':
+        #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
         else:
             obj = Shop.objects.all()
             if obj:
@@ -459,25 +459,25 @@ class AcceptedOrderDetail(APIView):
         return Response({'status': 'Request Unseccessful..!!'},status=status.HTTP_400_BAD_REQUEST)
 
 
-class RetailerShopList(APIView):
-
-    permission_classes = [GenericAuth]
-
-    # def get_user_obj(self,id):
-    #     obj = UserProfile.objects.get(id=id)
-    #     return obj
-
-    def get(self,request,id):
-        if request.user.user_type == 'RT':
-            obj = request.user
-            ShopList = obj.shop_set.all()
-            if ShopList:
-                serializer = ShopSerializer(ShopList,many=True)
-                if serializer:
-                    return Response(serializer.data,status=status.HTTP_200_OK)
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+# class RetailerShopList(APIView):
+#
+#     permission_classes = [GenericAuth]
+#
+#     # def get_user_obj(self,id):
+#     #     obj = UserProfile.objects.get(id=id)
+#     #     return obj
+#
+#     def get(self,request):
+#         if request.user.user_type == 'RT':
+#             obj = request.user
+#             ShopList = obj.shop_set.all()
+#             if ShopList:
+#                 serializer = ShopSerializer(ShopList,many=True)
+#                 if serializer:
+#                     return Response(serializer.data,status=status.HTTP_200_OK)
+#                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+#         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ShopProductList(APIView):
@@ -527,5 +527,7 @@ class HasShop(APIView):
     def get(self,request):
         has_shop = Shop.objects.filter(user=request.user)
         if has_shop:
+            if not has_shop.is_approved:
+                return Response("waiting for admin approval for your shop",status=status.HTTP_401_UNAUTHORIZED)
             return Response(True,status=status.HTTP_200_OK)
         return Response(False,status=status.HTTP_204_NO_CONTENT)
