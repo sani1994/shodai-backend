@@ -29,10 +29,10 @@ class ProductList(APIView):
         serializer = ProductSerializer(products, many=True)
         if serializer:
             datas = serializer.data
-            # for data in datas:
-                # for product in products:
-                #     data['product_unit'] = product.product_unit.product_unit
-                #     data['product_meta'] = product.product_meta.name
+            for data in datas:
+                for product in products:
+                    data['product_unit'] = product.product_unit.product_unit
+                    data['product_meta'] = product.product_meta.name
             return Response(datas,status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 

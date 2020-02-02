@@ -328,7 +328,6 @@ class AccountList(APIView):
     def post(self,request):
         if request.user.user_type=='RT':
             serializer = AccountSerializer(data=request.data,context={'request': request})
-            print(serializer)
             if serializer.is_valid():
                 serializer.save(created_by = request.user)
                 return Response(serializer.data,status=status.HTTP_200_OK)
@@ -529,5 +528,5 @@ class HasShop(APIView):
         if has_shop:
             if not has_shop.is_approved:
                 return Response("waiting for admin approval for your shop",status=status.HTTP_401_UNAUTHORIZED)
-            return Response(True,status=status.HTTP_200_OK)
-        return Response(False,status=status.HTTP_204_NO_CONTENT)
+            return Response({"True"},status=status.HTTP_200_OK)
+        return Response({"False"},status=status.HTTP_204_NO_CONTENT)
