@@ -243,15 +243,21 @@ class OrderdProducts(APIView): # this view returns all the products in a order. 
         obj = self.get_order_object(id)
         if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
             orderProducts = []
-            orderProductList = obj.orderproduct_set.all()       # get all orderd products of individual product
+            orderProductList = obj.orderproduct_set.all()  # get all orderd products of individual product
             orderProductSerializer = OrderProductReadSerializer(orderProductList, many=True)
             orderSerializer = OrderSerializer(obj)
             if orderProductSerializer and orderSerializer:
                 orderProductLists = orderProductSerializer.data
                 for orderProduct in orderProductLists:
+                    orderProduct['product']['product_unit']= orderProduct['product']['product_unit']['product_unit']
+                    orderProduct['product']['product_meta'] = orderProduct['product']['product_meta']['name']
+                    # orderProduct['product'].pop('created_by')
+                    # orderProduct['product'].pop('modified_by')
                     product = orderProduct['product']
                     product['order_price']= orderProduct['order_product_price']
                     product['order_qty'] = orderProduct['order_product_qty']
+                    # product['product_unit'] = orderProduct['product']['product_unit'].product_unit
+                    # print(orderProduct['product']['product_unit']['product_unit'])
                     orderProducts.append(product)
                 order = orderSerializer.data
                 order['orderProducts']=orderProducts

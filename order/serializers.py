@@ -43,7 +43,7 @@ class OrderProductReadSerializer(serializers.ModelSerializer): # this serializer
     class Meta:
         model = OrderProduct
         fields = ('id','order_product_price','order_product_qty','product','order')
-        depth = 1
+        depth = 2
 
 
 class VatSerializer(serializers.ModelSerializer):
