@@ -468,12 +468,12 @@ class RetailerShopList(APIView):
 
     def get(self,request,id):
         if request.user.user_type == 'RT':
-            shop_list = get_object_or_404(Shop,user=request.user)
-            if shop_list:
-                serializer = ShopSerializer(shop_list)
+            shop = get_object_or_404(Shop,user=request.user)
+            if shop:
+                serializer = ShopSerializer(shop)
                 if serializer:
                     return Response(serializer.data,status=status.HTTP_200_OK)
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                # return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
