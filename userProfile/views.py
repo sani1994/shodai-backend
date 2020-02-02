@@ -31,18 +31,14 @@ class UserProfileList(APIView):             # this view returns list of user and
         user_type = request.user.user_type
         if user_type=='CM' or user_type == 'RT' or user_type=='PD':                 # Customer = CM Retailer = RT
             user_obj = UserProfile.objects.filter(id=request.user.id, is_approved=True).get() # takes only requestd users object
-            serializer = UserProfileSerializer(user_obj)
-            obj = []    #front-end requested to return the object as list
-            obj.append(serializer.data)
-            return Response(obj, status=status.HTTP_200_OK)
-            # return Response(serializer.data,status=status.HTTP_200_OK)
-        # elif user_type=='RT': # Retailer = RT
-        #     product = UserProfile.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-        else:
-            if user_type == 'SF':                   # takes all users object
-                serializer = UserProfileSerializer(user_profile, many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response ({"status": "Invalid request"},status=status.HTTP_400_BAD_REQUEST)
+            if user_obj:
+                serializer = UserProfileSerializer(user_obj)
+                # obj = []    #front-end requested to return the object as list
+                # obj.append(serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response ({"User is not approved"}, status=status.HTTP_200_OK)
+        return Response({"Unauthorized request "}, status=status.HTTP_401_UNAUTHORIZED)
 
     def post(self, request, format=None):
         serializer = UserProfileSerializer(data=request.data)
