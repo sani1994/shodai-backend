@@ -1,3 +1,5 @@
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import D
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
 
@@ -10,6 +12,8 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+# from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.db.models.functions import Distance
 from datetime import datetime
 # Create your views here.
 
@@ -529,3 +533,46 @@ class HasShop(APIView):
                 return Response("waiting for admin approval for your shop",status=status.HTTP_401_UNAUTHORIZED)
             return Response({"True"},status=status.HTTP_200_OK)
         return Response({"False"},status=status.HTTP_204_NO_CONTENT)
+
+
+class ShopProductForCustomer(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        user_location = GEOSGeometry('POINT(%f %f)' % (float(request.data['long']),float(request.data['lat'])))
+        near_by_shop_list = Shop.objects.filter(shop_geopoint__distance_lte=(user_location, D(m=100))).annotate(distance=Distance('shop_geopoint', user_location)).order_by('distance')
+        if not near_by_shop_list:
+            return Response("No nearby shops are there.",status=status.HTTP_204_NO_CONTENT)
+        products = []
+        for shop in near_by_shop_list:
+            product = shop.shopproduct_set.all().distinct('product__id')
+            serializer = ShopProductSerializer(product,many=True)
+            for data in serializer.data:
+                products.append(data)
+        if not products:
+            return Response("No available products in shop.", status=status.HTTP_204_NO_CONTENT)
+        return Response(products,status=status.HTTP_200_OK)
+
+
+class GetNearbyShops(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        user_location = GEOSGeometry('POINT(%f %f)' % (float(request.data['long']),float(request.data['lat'])))
+        near_by_shop_list = Shop.objects.filter(shop_geopoint__distance_lte=(user_location, D(m=100))).annotate(distance=Distance('shop_geopoint', user_location)).order_by('distance')
+        if not near_by_shop_list:
+            return Response("No nearby shops are there.",status=status.HTTP_204_NO_CONTENT)
+        serializer = ShopSerializer(near_by_shop_list,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+class GetNearbyShopProducts(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request,id): # id = shop_id
+        shop = Shop.objects.get(id = id)
+        products = shop.shopproduct_set.all()
+        serializer = ShopProductSerializer(products,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+

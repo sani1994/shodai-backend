@@ -6,7 +6,8 @@ from userProfile.models import UserProfile
 from userProfile.models import Address
 from order.models import Order,OrderProduct
 from bases.models import BaseModel
-from django.contrib.gis.db import models
+# from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.db import models as gis_models
 from utility.models import ProductUnit
 # Create your models here.
 
@@ -30,7 +31,7 @@ class Shop(BaseModel):
     shop_type = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
     shop_lat = models.FloatField(null=True,blank=True)
     shop_long = models.FloatField(null=True,blank=True)
-    shop_geopoint = models.PointField(null=True)
+    shop_geopoint = gis_models.PointField(null=True)
     shop_address = models.CharField(max_length=100,blank=True,null=True)
     shop_image= models.ImageField(upload_to='retailer/shop/%Y/%m/%d',null=True,blank=True)
     shop_licence= models.CharField(max_length=200,blank=True,null=True,unique=True) #trade licence
@@ -39,7 +40,7 @@ class Shop(BaseModel):
     shop_close_time= models.TimeField(auto_now=False,null=True)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
-    # objects = models.GeoManager()
+    # geo_objects = gis_models.GeoManager()
 
     def __str__(self):
         return self.shop_name
