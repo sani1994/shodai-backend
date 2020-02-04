@@ -7,8 +7,8 @@ from order.models import Order,Vat,OrderProduct
 
 
 class OrderAdmin(MaterialModelAdmin):
-    list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'user_id')
-    list_display = ('user','order_status', 'home_delivery')
+    list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id')
+    list_display = ('id','user','order_status', 'home_delivery')
     readonly_fields = ['created_by', 'modified_by','user']
 
     def save_model(self, request, obj, form, change):
@@ -20,9 +20,9 @@ class OrderAdmin(MaterialModelAdmin):
 
 
 class OrderProductAdmin(MaterialModelAdmin):
-    list_display = ('product', 'order', 'order_product_price','order_product_qty')
-    list_filter = ('order',)
-    readonly_fields = ['created_by', 'modified_by','created_on']
+    list_display = ('product', 'order_id', 'order_product_price','order_product_qty')
+    list_filter = ('order_id',)
+    readonly_fields = ['created_by', 'modified_by']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
