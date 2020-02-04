@@ -235,12 +235,12 @@ class OrderdProducts(APIView): # this view returns all the products in a order. 
 
     permission_classes = [GenericAuth]
 
-    def get_order_object(self,id):
-        obj = Order.objects.get(id = id)
-        return obj
+    # def get_order_object(self,id):
+    #     obj = Order.objects.get(id = id)
+    #     return obj
 
     def get(self,request,id):
-        obj = self.get_order_object(id)
+        obj = get_object_or_404(Order,id=id)
         if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
             orderProducts = []
             orderProductList = obj.orderproduct_set.all()  # get all orderd products of individual product

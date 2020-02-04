@@ -8,7 +8,7 @@ from django.db import utils
 # Create your models here.
 
 class BaseModel(models.Model):
-    created_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(null=True,blank=True)
     created_by = models.ForeignKey(UserProfile, 
         on_delete=models.DO_NOTHING,
         verbose_name=_("Created By"),

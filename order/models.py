@@ -48,7 +48,7 @@ class Order(BaseModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return self.user.username
+        return self.id
 
     def save(self, *args, **kwargs):
         # self.shop_geopoint.y = self.shop_lat

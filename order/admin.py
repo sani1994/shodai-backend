@@ -22,7 +22,7 @@ class OrderAdmin(MaterialModelAdmin):
 class OrderProductAdmin(MaterialModelAdmin):
     list_display = ('product', 'order', 'order_product_price','order_product_qty')
     list_filter = ('order',)
-    readonly_fields = ['created_by', 'modified_by']
+    readonly_fields = ['created_by', 'modified_by','created_on']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
