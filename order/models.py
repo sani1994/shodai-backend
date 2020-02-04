@@ -47,10 +47,10 @@ class Order(BaseModel):
     contact_number = models.CharField(max_length=20,null=True,blank=True)
     history = HistoricalRecords()
 
-    # def __str__(self):
-    #     return self.id
-    def __int__(self):
-        return self.id
+    def __str__(self):
+        return "{}".format(self.id)
+    # def __int__(self):
+    #     return self.order_id
 
     def save(self, *args, **kwargs):
         # self.shop_geopoint.y = self.shop_lat

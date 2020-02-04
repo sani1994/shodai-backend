@@ -8,8 +8,22 @@ from order.models import Order,Vat,OrderProduct
 
 class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id')
-    list_display = ('id','user','order_status', 'home_delivery')
-    readonly_fields = ['created_by', 'modified_by','user']
+    # list_display = ('id','user','order_status', 'home_delivery')
+    readonly_fields = ['created_by', 'modified_by','user','created_on',]
+
+    def _products(self,obj):
+        return obj.offerproduct_set.all().count()
+
+
+    def order_products(self):
+        list = []
+        objs = OrderProduct.objects.filter(order__id=self.id)
+        for obj in objs:
+            # html += "<p> <a href='%s'>%s</a></p>" %(obj.get_offer_product_url(),obj.product) # this code has been added to show hyperlink tag of offerproducts , but not rendering the html
+            list.append('%s' %obj.product)
+        return list
+
+    list_display = ('id','user','order_status', 'home_delivery',order_products)
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -21,8 +35,8 @@ class OrderAdmin(MaterialModelAdmin):
 
 class OrderProductAdmin(MaterialModelAdmin):
     list_display = ('product', 'order_id', 'order_product_price','order_product_qty')
-    list_filter = ('order_id',)
-    readonly_fields = ['created_by', 'modified_by']
+    list_filter = ('order',)
+    readonly_fields = ['created_by', 'modified_by','created_on']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
