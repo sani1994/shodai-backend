@@ -418,6 +418,7 @@ class AcceptedOrderList(APIView):
                     return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 response = []            # front end cannot hendle single object
+                response.append({"id":0})
                 return Response(response, status=status.HTTP_204_NO_CONTENT)
         elif request.user.user_type =='SF':
             obj = AcceptedOrder.objects.all()
