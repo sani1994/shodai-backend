@@ -423,33 +423,33 @@ class AcceptedOrderList(APIView):
                         "id": 0,
                         "created_on": "2020-02-04T12:15:51.995451+06:00",
                         "modified_on": "2020-02-04T12:15:51.995748+06:00",
-                        "created_by": None,
-                        "modified_by": None,
+                        "created_by": " ",
+                        "modified_by": " ",
                         "user": {
                             "id": 28,
                             "password": "pbkdf2_sha256$150000$o9jeeoDOMQHk$tGreovlksbG47PqggCrTi+aBP1/HPm2cZpatfj8c0fM=",
-                            "last_login": None,
+                            "last_login": " ",
                             "is_superuser": False,
                             "username": "+88000000000000",
                             "is_staff": False,
                             "is_active": True,
                             "date_joined": "2020-01-30T14:42:02+06:00",
                             "user_type": "RT",
-                            "user_image": None,
+                            "user_image": " ",
                             "mobile_number": "+88000000000000",
                             "first_name": "sajib",
                             "last_name": "sajib",
                             "email": "nishat@nishat.com",
                             "user_NID": "142739047262729",
-                            "ref_code": None,
-                            "pin_code": None,
+                            "ref_code": " ",
+                            "pin_code": " ",
                             "created_on": "2020-01-30T14:42:02+06:00",
-                            "modified_on": None,
+                            "modified_on": " ",
                             "is_approved": True,
                             "groups": [],
                             "user_permissions": []
                         },
-                        "shop": None,
+                        "shop": " ",
                         "order": {
                             "id": 74,
                             "created_on": "2020-02-04T11:57:00.208849+06:00",
@@ -459,17 +459,17 @@ class AcceptedOrderList(APIView):
                             "order_total_price": 60.0,
                             "lat": 23.7937,
                             "long": 90.4066,
-                            "order_geopoint": None,
+                            "order_geopoint": " ",
                             "order_status": "OA",
                             "home_delivery": True,
                             "order_type": "FP",
                             "contact_number": "+8801747162600",
                             "created_by": 2,
-                            "modified_by": None,
+                            "modified_by": " ",
                             "user": 2,
-                            "address": None
+                            "address": " "
                         },
-                        "order_product": None
+                        "order_product": " "
                     }
                 )
                 return Response(response, status=status.HTTP_204_NO_CONTENT)
