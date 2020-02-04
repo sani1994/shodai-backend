@@ -48,7 +48,7 @@ class ProductUnit(BaseModel):
 
 
 class Remarks(BaseModel):
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True,None=True)
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True,null=True)
     remark = models.CharField(max_length=400)
 
     def __str__(self):
