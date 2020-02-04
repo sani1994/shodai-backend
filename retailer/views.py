@@ -418,7 +418,60 @@ class AcceptedOrderList(APIView):
                     return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 response = []            # front end cannot hendle single object
-                response.append({"id":0})
+                response.append(
+                    {
+                        "id": 0,
+                        "created_on": "2020-02-04T12:15:51.995451+06:00",
+                        "modified_on": "2020-02-04T12:15:51.995748+06:00",
+                        "created_by": None,
+                        "modified_by": None,
+                        "user": {
+                            "id": 28,
+                            "password": "pbkdf2_sha256$150000$o9jeeoDOMQHk$tGreovlksbG47PqggCrTi+aBP1/HPm2cZpatfj8c0fM=",
+                            "last_login": None,
+                            "is_superuser": False,
+                            "username": "+88000000000000",
+                            "is_staff": False,
+                            "is_active": True,
+                            "date_joined": "2020-01-30T14:42:02+06:00",
+                            "user_type": "RT",
+                            "user_image": None,
+                            "mobile_number": "+88000000000000",
+                            "first_name": "sajib",
+                            "last_name": "sajib",
+                            "email": "nishat@nishat.com",
+                            "user_NID": "142739047262729",
+                            "ref_code": None,
+                            "pin_code": None,
+                            "created_on": "2020-01-30T14:42:02+06:00",
+                            "modified_on": None,
+                            "is_approved": True,
+                            "groups": [],
+                            "user_permissions": []
+                        },
+                        "shop": None,
+                        "order": {
+                            "id": 74,
+                            "created_on": "2020-02-04T11:57:00.208849+06:00",
+                            "modified_on": "2020-02-04T12:15:51.989411+06:00",
+                            "delivery_date_time": "2020-02-04T12:15:51.989420+06:00",
+                            "delivery_place": "Banani",
+                            "order_total_price": 60.0,
+                            "lat": 23.7937,
+                            "long": 90.4066,
+                            "order_geopoint": None,
+                            "order_status": "OA",
+                            "home_delivery": True,
+                            "order_type": "FP",
+                            "contact_number": "+8801747162600",
+                            "created_by": 2,
+                            "modified_by": None,
+                            "user": 2,
+                            "address": None
+                        },
+                        "order_product": None
+                    }
+                )
                 return Response(response, status=status.HTTP_204_NO_CONTENT)
         elif request.user.user_type =='SF':
             obj = AcceptedOrder.objects.all()
