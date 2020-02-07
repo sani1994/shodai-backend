@@ -2,6 +2,7 @@ import random
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render
+from django.views.generic import TemplateView
 from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
 from sodai.utils.helper import get_user_object
@@ -259,3 +260,7 @@ class RetailerRegistration(APIView):                #Retailer regerstration clas
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class Home(TemplateView):
+      template_name = 'userProfile/index.html'

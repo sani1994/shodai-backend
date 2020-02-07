@@ -1,7 +1,9 @@
+from django.conf import settings
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from userProfile import views
 from rest_framework_simplejwt import views as jwt_views
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('refresh/', jwt_views.TokenRefreshView.as_view(),
@@ -16,6 +18,7 @@ urlpatterns = [
     path('otp/',views.OtpCode.as_view()),
     path('otpverify/',views.OtpVerify.as_view()),
     path('retailerregistration/',views.RetailerRegistration.as_view()), #registration for retailer
-    path('producerregistration/',views.RetailerRegistration.as_view()) #producer registration.. same as retailer so that used same view
-]
+    path('producerregistration/',views.RetailerRegistration.as_view()) ,#producer registration.. same as retailer so that used same view
+    path('', views.Home.as_view()),
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns = format_suffix_patterns(urlpatterns)
