@@ -5,6 +5,7 @@ from userProfile import views
 from rest_framework_simplejwt import views as jwt_views
 from django.conf.urls.static import static
 
+app_name = 'userProfile'
 urlpatterns = [
     path('refresh/', jwt_views.TokenRefreshView.as_view(),
          name='token_refresh'),
@@ -20,5 +21,6 @@ urlpatterns = [
     path('retailerregistration/',views.RetailerRegistration.as_view()), #registration for retailer
     path('producerregistration/',views.RetailerRegistration.as_view()) ,#producer registration.. same as retailer so that used same view
     path('', views.Home.as_view()),
+    path('dw', views.Download.as_view(), name = 'download-html')
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="{% static 'userProfile/css/style.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'userProfile/css/style.css' %}" />
   </head>
   <body>
     <section id="banner">
@@ -24,7 +24,7 @@
         <div class="row">
           <div class="col-md-7">
             <div class="logo">
-              <img src="{% static 'userProfile/images/logo.png' %}" />
+              <img src={% static 'userProfile/images/logo.png' %} />
             </div>
             <h1>
               Shodai has several benifits which solve your shopping problem and
@@ -59,7 +59,7 @@
 
             <div class="buttonWrap">
               <a
-                href="./app/download/index.html"
+                href="{% url 'userProfile:download-html' %}"
                 class="btn btn-primary btn-lg"
               >
                 Download
@@ -92,7 +92,6 @@
       integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
       crossorigin="anonymous"
     ></script>
-
     <script>
       $("#year").text(new Date().getFullYear());
     </script>

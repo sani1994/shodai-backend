@@ -145,9 +145,21 @@ class BulkOrderProducts(BaseModel):
     target_qty = models.DecimalField(decimal_places=2, blank=True, null=True, max_digits=5)
     max_qty = models.DecimalField(decimal_places=2, blank=True, null=True, max_digits=5)
     unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, blank=True, null=True)
+    shareable_ref_code = models.CharField(max_length=100,null=True,blank=True,
+                                          unique=True)  # code that will share to the next customer
+    available_qty = models.DecimalField(decimal_places=2, blank=True, null=True, max_digits=5)
 
     def __str__(self):
         return self.product.product_name
+
+    def save(self, *args, **kwargs):
+        if self.shareable_ref_code is None:
+            # time = datetime.now(tz=None)
+            unique_code = hex(int(random.randint(10,99))) + str(datetime.now())
+            self.shareable_ref_code = unique_code
+        if not self.id:
+            self.available_qty = self.target_qty
+        return super(BulkOrderProducts, self).save(*args, **kwargs)
 
 
 class MicroBulkOrder(BaseModel):
@@ -156,20 +168,20 @@ class MicroBulkOrder(BaseModel):
     '''
     bulk_order = models.ForeignKey(BulkOrder, on_delete=models.CASCADE, related_name='micro_bulk_order')
     customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE,blank=True)
-    shareable_ref_code = models.CharField(max_length=100,null=True,blank=True,
-                                          unique=True)  # code that will share to the next customer
+    # shareable_ref_code = models.CharField(max_length=100,null=True,blank=True,
+    #                                       unique=True)  # code that will share to the next customer
     accepted_ref_code = models.CharField(max_length=30, blank=True, null=True)
 
 
     def __str__(self):
-        return self.customer.first_name
+        return '{}'.format(self.id)
 
-    def save(self, *args, **kwargs):
-        if self.shareable_ref_code is None:
-            # time = datetime.now(tz=None)
-            unique_code = hex(int(self.customer.mobile_number)) + str(datetime.now())
-            self.shareable_ref_code = unique_code
-        return super(MicroBulkOrder, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if self.shareable_ref_code is None:
+    #         # time = datetime.now(tz=None)
+    #         unique_code = hex(int(self.customer.mobile_number)) + str(datetime.now())
+    #         self.shareable_ref_code = unique_code
+    #     return super(MicroBulkOrder, self).save(*args, **kwargs)
 
 
 class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
@@ -178,7 +190,7 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     '''
     bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE, null=True, blank=True)
     micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE, null=True, blank=True)
-    qty = models.FloatField(default=0)
+    qty = models.DecimalField(decimal_places=2,default=0, max_digits=5)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
 
     # def __str__(self):

@@ -264,3 +264,6 @@ class RetailerRegistration(APIView):                #Retailer regerstration clas
 
 class Home(TemplateView):
       template_name = 'userProfile/index.html'
+
+class Download(TemplateView):
+    template_name = 'userProfile/download.html'

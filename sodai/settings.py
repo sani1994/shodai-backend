@@ -27,7 +27,7 @@ SECRET_KEY = '3)*6hzohkg8$(c+=8zr(je6rz_--l5bcem3$@#n!!&t&#rkug_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['shod.ai','www.shod.ai','127.0.0.1']
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 REST_FRAMEWORK = {
@@ -102,7 +102,6 @@ ROOT_URLCONF = 'sodai.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [os.path.join(os.path.dirname(__file__), 'templates'),],
         'DIRS': [os.path.join(BASE_DIR, 'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -171,10 +170,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIR = [
-    os.path.join(BASE_DIR,'static'),
-    '/home/sani/Sa_tech/shodai-backend/static',
-]
+
+# STATICFILES_DIR = [
+#     os.path.join(BASE_DIR,'/static/'),
+# ]
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 

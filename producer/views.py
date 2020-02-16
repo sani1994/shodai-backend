@@ -8,7 +8,7 @@ from producer.serializers import ProducerFarmSerializer, ProducerBulkRequestSeri
     BulkOrderProductsSerializer, BulkOrderSerializer, BulkOrderProductsReadSerializer, MicroBulkOrderSerializer
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, MicroBulkOrderProducts, \
     BulkOrderProducts, BulkOrder, MicroBulkOrder
-
+from decimal import Decimal
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -20,7 +20,8 @@ from datetime import datetime
 from sodai.utils.permission import GenericAuth
 
 
-class PeroducerBulkRequestList(APIView):                #get producer bulk request(producer's product request to sell) list and create
+class PeroducerBulkRequestList(
+    APIView):  # get producer bulk request(producer's product request to sell) list and create
 
     ## list of Producer
     permission_classes = [GenericAuth]
@@ -32,28 +33,28 @@ class PeroducerBulkRequestList(APIView):                #get producer bulk reque
             queryset = ProducerBulkRequest.objects.all()
         else:
             user_type = request.user.user_type
-            if user_type=='CM'or user_type== 'RT' :  # Customer = CM
-                queryset = ProducerBulkRequest.objects.filter(is_approved = True)
+            if user_type == 'CM' or user_type == 'RT':  # Customer = CM
+                queryset = ProducerBulkRequest.objects.filter(is_approved=True)
             elif user_type == 'PD':
-                queryset = ProducerBulkRequest.objects.filter(user = request.user)
+                queryset = ProducerBulkRequest.objects.filter(user=request.user)
 
             # elif user_type== 'PD': # Producer = PD
             #     producer = ProducerBulkRequest.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
-            
-        serializer = ProducerBulkRequestSerializer(queryset,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+
+        serializer = ProducerBulkRequestSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
-        serializer = ProducerBulkRequestSerializer(data=request.data,context={'request':request})
-        if request.user.user_type== 'SF':
+        serializer = ProducerBulkRequestSerializer(data=request.data, context={'request': request})
+        if request.user.user_type == 'SF':
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         else:
-            if request.user.user_type=='PD': # Producer = PD
+            if request.user.user_type == 'PD':  # Producer = PD
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -61,30 +62,32 @@ class PeroducerBulkRequestList(APIView):                #get producer bulk reque
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PeroducerBulkRequestDetails(APIView):                 #get producer bulk request(producer's product request to sell) ,update delete
+class PeroducerBulkRequestDetails(
+    APIView):  # get producer bulk request(producer's product request to sell) ,update delete
     """
     Retrieve, update and delete Producer
     """
-    def get_producerProduct_object(self,id):
-        obj = get_object_or_404(ProducerBulkRequest,id=id)
+
+    def get_producerProduct_object(self, id):
+        obj = get_object_or_404(ProducerBulkRequest, id=id)
         return obj
 
     def get(self, request, id, format=None):
-        obj = self.get_producerProduct_object( id)
+        obj = self.get_producerProduct_object(id)
         serializer = ProducerBulkRequestSerializer(obj)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id, format=None):
         producer = self.get_producerProduct_object(id)
         serializer = ProducerBulkRequestSerializer(producer, data=request.data)
         if serializer.is_valid():
-            if request.user.user_type=='SF':
+            if request.user.user_type == 'SF':
                 serializer.save(modified_by=request.user)
                 return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, id, format=None):
         producer = self.get_producerProduct_object(id)
         if request.user.is_staff:
@@ -92,55 +95,55 @@ class PeroducerBulkRequestDetails(APIView):                 #get producer bulk r
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BusinessTypeList(APIView):                    #get business type list and create
+class BusinessTypeList(APIView):  # get business type list and create
 
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         queryset = BusinessType.objects.all()
         if queryset:
-            serializer = BusinessTypeSerializer(queryset,many=True)
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            serializer = BusinessTypeSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({
             "Status": "No content",
             "details": "Content not available"
         }, status=status.HTTP_204_NO_CONTENT)
 
-    def post(self,request):
+    def post(self, request):
         if request.user.is_staff:
-            serializer = BusinessTypeSerializer(data = request.data)
+            serializer = BusinessTypeSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save(created_by = request.user)
-                return Response(serializer.data,status=status.HTTP_201_CREATED)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                serializer.save(created_by=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class BusinessTypeDetails(APIView):             # business type get, update and delete
+class BusinessTypeDetails(APIView):  # business type get, update and delete
 
     permission_classes = [GenericAuth]
 
-    def get_businesstype_obj(self,id):
+    def get_businesstype_obj(self, id):
         obj = BusinessType.objects.get(id=id)
         return obj
 
-    def get(self,request,id):
+    def get(self, request, id):
         obj = self.get_businesstype_obj(id)
         if obj:
             serializer = BusinessTypeSerializer(obj)
             if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({
             "Status": "No content",
             "details": "Content not available"
         }, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self,request,id):
+    def put(self, request, id):
         if request.user.is_staff:
             obj = self.get_businesstype_obj(id)
             if obj:
-                serializer = BusinessTypeSerializer(obj,data=request.data)
+                serializer = BusinessTypeSerializer(obj, data=request.data)
                 if serializer.is_valid():
                     serializer.save(modified_by=request.user)
                     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -151,7 +154,7 @@ class BusinessTypeDetails(APIView):             # business type get, update and 
             }, status=status.HTTP_204_NO_CONTENT)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self,request,id):
+    def delete(self, request, id):
         if request.user.is_staff:
             obj = self.get_businesstype_obj(id)
             if obj:
@@ -163,43 +166,43 @@ class BusinessTypeDetails(APIView):             # business type get, update and 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProducerBusinessList(APIView):                    #get producer business list and create
+class ProducerBusinessList(APIView):  # get producer business list and create
 
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         if request.user.is_staff:
             queryset = ProducerBusiness.objects.all()
         elif request.user.user_type == 'PD':
-            queryset= ProducerBusiness.objects.filter(user=request.user)
+            queryset = ProducerBusiness.objects.filter(user=request.user)
         else:
             return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-        serializer = ProducerBusinessSerializer(queryset,many=True)
+        serializer = ProducerBusinessSerializer(queryset, many=True)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self,request):
+    def post(self, request):
         if request.user.is_staff or request.user.user_type == 'PD':
-            serializer = ProducerBusinessSerializer(data=request.data,context={'request': request})
+            serializer = ProducerBusinessSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data,status= status.HTTP_201_CREATED)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProducerBusinessDetails(APIView):             #producer business get ,update and delete
+class ProducerBusinessDetails(APIView):  # producer business get ,update and delete
 
     permission_classes = [GenericAuth]
 
-    def get_producerbusiness_obj(self,id):
+    def get_producerbusiness_obj(self, id):
         # obj = ProducerBusiness.objects.get(id=id)
-        obj = get_object_or_404(ProducerBusiness,id=id)
+        obj = get_object_or_404(ProducerBusiness, id=id)
         return obj
 
-    def get(self,request,id):
-        if request.user.is_staff or request.user.user_type=='PD':
+    def get(self, request, id):
+        if request.user.is_staff or request.user.user_type == 'PD':
             obj = self.get_producerbusiness_obj(id)
             serializer = ProducerBusinessSerializer(obj)
             if serializer:
@@ -207,34 +210,34 @@ class ProducerBusinessDetails(APIView):             #producer business get ,upda
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-    def put(self,request,id):
-        if request.user.is_staff or request.user.user_type=='PD':
+    def put(self, request, id):
+        if request.user.is_staff or request.user.user_type == 'PD':
             obj = self.get_producerbusiness_obj(id)
             if obj:
-                serializer = ProducerBusinessSerializer(obj,data=request.data)
+                serializer = ProducerBusinessSerializer(obj, data=request.data)
                 if serializer.is_valid():
-                    serializer.save(modified_by = request.user)
+                    serializer.save(modified_by=request.user)
                     return Response(serializer.data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             return Response({
-                    "Status": "No content",
-                    "details": "Content not available"
-                }, status=status.HTTP_204_NO_CONTENT)
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self,request,id):
-        if request.user.is_staff or request.user.user_type=='PD':
+    def delete(self, request, id):
+        if request.user.is_staff or request.user.user_type == 'PD':
             obj = self.get_producerbusiness_obj(id)
             if obj:
                 obj.delete()
             return Response({
-                    "Status": "No content",
-                    "details": "Content not available"
-                }, status=status.HTTP_204_NO_CONTENT)
+                "Status": "No content",
+                "details": "Content not available"
+            }, status=status.HTTP_204_NO_CONTENT)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProducerFarmList(APIView):                #get producer farm and create
+class ProducerFarmList(APIView):  # get producer farm and create
 
     ## list of Producer Farm
 
@@ -250,24 +253,23 @@ class ProducerFarmList(APIView):                #get producer farm and create
         #     elif user_type=='RT': # Retailer = RT
         #         producer = ProducerProduct.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
 
-
         #     elif user_type== 'PD': # Producer = PD
         #         producer = ProducerProduct.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-            # elif user_type== 'SF': # Staff = SF
-            #     order = Order.objects.filter(created_by=request.user)
-            
+        # elif user_type== 'SF': # Staff = SF
+        #     order = Order.objects.filter(created_by=request.user)
+
         serializer = ProducerFarmSerializer(producer, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = ProducerFarmSerializer(data=request.data)
-        if request.user.user_type=='SF':
+        if request.user.user_type == 'SF':
             if serializer.is_valid():
                 serializer.save(created_by=request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         else:
-            if request.user.user_type=='PD': # Producer = PD
+            if request.user.user_type == 'PD':  # Producer = PD
                 if serializer.is_valid():
                     serializer.save(created_by=request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -275,13 +277,12 @@ class ProducerFarmList(APIView):                #get producer farm and create
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-class ProducerFarmDetail(APIView):                  #producer farm get,update and delete
+class ProducerFarmDetail(APIView):  # producer farm get,update and delete
     """
     Retrieve, update and delete Producer
     """
-    def get_producerFarm_object(self,id):
+
+    def get_producerFarm_object(self, id):
         obj = ProducerFarm.objects.filter(id=id).first()
         return obj
 
@@ -291,17 +292,16 @@ class ProducerFarmDetail(APIView):                  #producer farm get,update an
         if serializer:
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
     def put(self, request, id, format=None):
-        producerFarm= self.get_producerFarm_object(request, id)
+        producerFarm = self.get_producerFarm_object(request, id)
         serializer = ProducerFarmSerializer(producerFarm, data=request.data)
         if serializer.is_valid():
-            if request.user.user_type=='SF':
+            if request.user.user_type == 'SF':
                 serializer.save(modified_by=request.user)
                 return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk, format=None):
         producerFarm = self.get_producerFarm_object(request, id)
         if request.user.is_staff:
@@ -316,18 +316,18 @@ class BulkOrderList(APIView):
 
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         quertset = BulkOrder.objects.all()
-        serializer = BulkOrderSerializer(quertset,many=True)
+        serializer = BulkOrderSerializer(quertset, many=True)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self,request):
+    def post(self, request):
         serializer = BulkOrderSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -338,7 +338,7 @@ class BulkOrderDetails(APIView):
     permission_classes = [GenericAuth]
 
     def get_bulkorderdetail_object(self, id):
-        return get_object_or_404(BulkOrder,id=id)
+        return get_object_or_404(BulkOrder, id=id)
 
     def get(self, request, id, format=None):
         queryset = self.get_bulkorderdetail_object(id)
@@ -366,29 +366,29 @@ class BulkOrderDetails(APIView):
 class BulkOrderProductsList(APIView):
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         queryset = BulkOrderProducts.objects.all()
-        serializer = BulkOrderProductsReadSerializer(queryset,many=True)
+        serializer = BulkOrderProductsReadSerializer(queryset, many=True)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self,request):
+    def post(self, request):
         if request.user.is_staff:
-            serializer =BulkOrderProductsSerializer(data=request.data)
+            serializer = BulkOrderProductsSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data,status=status.HTTP_201_CREATED)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class BulkOrderProductsDetails(APIView):
     permission_classes = [GenericAuth]
 
-    def get_bulkorderproducts_obj(self,id):
-        return get_object_or_404(BulkOrderProducts,id=id)
+    def get_bulkorderproducts_obj(self, id):
+        return get_object_or_404(BulkOrderProducts, id=id)
 
-    def get(self,request,id):
+    def get(self, request, id):
         queryobj = self.get_bulkorderproducts_obj(id)
         serializer = BulkOrderProductsReadSerializer(queryobj)
         if serializer:
@@ -409,7 +409,6 @@ class BulkOrderProductsDetails(APIView):
         if request.user.is_staff:
             obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 
 # class CustomerMicroBulkOrderProductRequestList(APIView):
@@ -479,10 +478,10 @@ class BulkOrderProductsDetails(APIView):
 #             obj.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class ProducerProductListForCustomer(APIView):    # get bulk order products list from start date to expired date
+class ProducerProductListForCustomer(APIView):  # get bulk order products list from start date to expired date
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         if not request.user.user_type == 'PD':
             current_time = timezone.now()
             bulk_order_product = []
@@ -491,8 +490,8 @@ class ProducerProductListForCustomer(APIView):    # get bulk order products list
                 if obj.bulk_order.start_date <= current_time <= obj.bulk_order.expire_date:
                     bulk_order_product.append(obj)
             if not bulk_order_product:
-                return Response({'status: No Data Available'},status=status.HTTP_204_NO_CONTENT)
-            serializer = BulkOrderProductsReadSerializer(bulk_order_product,many=True)
+                return Response({'status: No Data Available'}, status=status.HTTP_204_NO_CONTENT)
+            serializer = BulkOrderProductsReadSerializer(bulk_order_product, many=True)
             if serializer:
                 objects = serializer.data
                 for object in objects:
@@ -504,39 +503,39 @@ class ProducerProductListForCustomer(APIView):    # get bulk order products list
                     object.pop("product")
                     object.pop('bulk_order')
                     object.pop('unit')
-                return Response(objects,status=status.HTTP_200_OK)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(objects, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MicroBulkOrderList(APIView):
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         queryset = []
-        if request.user.user_type=='SF':
+        if request.user.user_type == 'SF':
             queryset = MicroBulkOrder.objects.all()
         elif request.user.user_type == 'CM':
-            queryset=MicroBulkOrder.objects.filter(customer=request.user)
-        serializer = MicroBulkOrderSerializer(queryset,many=True)
+            queryset = MicroBulkOrder.objects.filter(customer=request.user)
+        serializer = MicroBulkOrderSerializer(queryset, many=True)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self,request):
-        serializer = MicroBulkOrderSerializer(data=request.data,context={'request':request})
+    def post(self, request):
+        serializer = MicroBulkOrderSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MicroBulkOrderDetails(APIView):
     permission_classes = [GenericAuth]
 
-    def get_microbulkorder_obj(self,id):
-        return get_object_or_404(MicroBulkOrder,id=id)
+    def get_microbulkorder_obj(self, id):
+        return get_object_or_404(MicroBulkOrder, id=id)
 
-    def get(self,request,id):
+    def get(self, request, id):
         queryobj = self.get_microbulkorder_obj(id)
         serializer = MicroBulkOrderSerializer(queryobj)
         if serializer:
@@ -562,32 +561,49 @@ class MicroBulkOrderDetails(APIView):
 class MicroBulkOrderProductsList(APIView):
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         queryset = []
-        if request.user.user_type == 'SF':
+        list = []
+        if request.user.user_type == 'RT':
             queryset = MicroBulkOrderProducts.objects.all()
         elif request.user.user_type == 'CM':
             queryset = MicroBulkOrderProducts.objects.filter(customer=request.user)
         serializer = MicroBulkOrderProductsSerializer(queryset, many=True)
         if serializer:
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            for data in serializer.data:
+                bulk_order_product = get_object_or_404(BulkOrderProducts,id=data['bulk_order_products'])
+                data['available_qty']=bulk_order_product.available_qty
+                list.append(data)
+            return Response(list, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
-        serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        sharable_code = ""
+        bulk_order_product_id = request.data['bulk_order_products']
+        qty = request.data['qty']
+        bulk_order_product = get_object_or_404(BulkOrderProducts, id=bulk_order_product_id)
+        if bulk_order_product.available_qty >= Decimal(qty):
+            bulk_order_product.available_qty -= Decimal(qty)
+            sharable_code = bulk_order_product.shareable_ref_code
+            serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                bulk_order_product.save()
+                data = serializer.data
+                data['shareable_ref_code'] = sharable_code
+                return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MicroBulkOrderProductsDetails(APIView):
     permission_classes = [GenericAuth]
 
-    def get_microbulkorderproduct_obj(self,id):
-        return get_object_or_404(MicroBulkOrderProducts,id=id)
+    def get_microbulkorderproduct_obj(self, id):
+        return get_object_or_404(MicroBulkOrderProducts, id=id)
 
-    def get(self,request,id):
+    def get(self, request, id):
         queryobj = self.get_microbulkorderproduct_obj(id)
         serializer = MicroBulkOrderProductsSerializer(queryobj)
         if serializer:
@@ -608,4 +624,3 @@ class MicroBulkOrderProductsDetails(APIView):
         if request.user.is_staff:
             obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
