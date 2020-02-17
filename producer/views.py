@@ -563,37 +563,21 @@ class MicroBulkOrderProductsList(APIView):
 
     def get(self, request):
         queryset = []
-        list = []
         if request.user.user_type == 'RT':
             queryset = MicroBulkOrderProducts.objects.all()
         elif request.user.user_type == 'CM':
             queryset = MicroBulkOrderProducts.objects.filter(customer=request.user)
         serializer = MicroBulkOrderProductsSerializer(queryset, many=True)
         if serializer:
-            for data in serializer.data:
-                bulk_order_product = get_object_or_404(BulkOrderProducts,id=data['bulk_order_products'])
-                data['available_qty']=bulk_order_product.available_qty
-                list.append(data)
-            return Response(list, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
-
-        sharable_code = ""
-        bulk_order_product_id = request.data['bulk_order_products']
-        qty = request.data['qty']
-        bulk_order_product = get_object_or_404(BulkOrderProducts, id=bulk_order_product_id)
-        if bulk_order_product.available_qty >= Decimal(qty):
-            bulk_order_product.available_qty -= Decimal(qty)
-            sharable_code = bulk_order_product.shareable_ref_code
-            serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
-            if serializer.is_valid():
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                bulk_order_product.save()
-                data = serializer.data
-                data['shareable_ref_code'] = sharable_code
-                return Response(data, status=status.HTTP_201_CREATED)
+        serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

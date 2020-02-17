@@ -193,9 +193,8 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     qty = models.DecimalField(decimal_places=2,default=0, max_digits=5)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
 
-    # def __str__(self):
-    #     pass
-        # return self.order.user.first_name
+    def __str__(self):
+        return self.bulk_order_products.product
 
 
 class BulkOrderReqConnector(BaseModel):
