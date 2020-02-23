@@ -98,6 +98,18 @@ class MicroBulkOrderAdmin(MaterialModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+class MicrobulkOrderProductAdmin(MaterialModelAdmin):
+    list_display = ('micro_bulk_order','bulk_order_products')
+    readonly_fields = ['created_by', 'modified_by', 'created_on']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
 site.register(ProducerBulkRequest, ProducerBulkRequestAdmin)
 site.register(ProducerFarm, ProducerFarmAdmin)
 site.register(BusinessType, BusinessTypeAdmin)
@@ -105,5 +117,5 @@ site.register(ProducerBusiness, ProducerBusinessAdmin)
 site.register(BulkOrder, BulkOrderAdmin)
 site.register(BulkOrderProducts, BulkOrderProductsAdmin)
 site.register(MicroBulkOrder, MicroBulkOrderAdmin)
-site.register(MicroBulkOrderProducts)
+site.register(MicroBulkOrderProducts,MicrobulkOrderProductAdmin)
 site.register(BulkOrderReqConnector)

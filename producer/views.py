@@ -20,8 +20,7 @@ from datetime import datetime
 from sodai.utils.permission import GenericAuth
 
 
-class PeroducerBulkRequestList(
-    APIView):  # get producer bulk request(producer's product request to sell) list and create
+class PeroducerBulkRequestList(APIView):  # get producer bulk request(producer's product request to sell) list and create
 
     ## list of Producer
     permission_classes = [GenericAuth]
@@ -37,37 +36,30 @@ class PeroducerBulkRequestList(
                 queryset = ProducerBulkRequest.objects.filter(is_approved=True)
             elif user_type == 'PD':
                 queryset = ProducerBulkRequest.objects.filter(user=request.user)
-
             # elif user_type== 'PD': # Producer = PD
             #     producer = ProducerBulkRequest.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
             # elif user_type== 'SF': # Staff = SF
             #     order = Order.objects.filter(created_by=request.user)
-
         serializer = ProducerBulkRequestSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         serializer = ProducerBulkRequestSerializer(data=request.data, context={'request': request})
-        if request.user.user_type == 'SF':
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        else:
-            if request.user.user_type == 'PD':  # Producer = PD
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # if request.user.user_type == 'SF':
+        #     if serializer.is_valid():
+        #         serializer.save()
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # else:
+        # if request.user.user_type == 'PD':  # Producer = PD
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
 
-class PeroducerBulkRequestDetails(
-    APIView):  # get producer bulk request(producer's product request to sell) ,update delete
+class PeroducerBulkRequestDetails(APIView):  # get producer bulk request(producer's product request to sell) ,update delete
     """
     Retrieve, update and delete Producer
     """
-
     def get_producerProduct_object(self, id):
         obj = get_object_or_404(ProducerBulkRequest, id=id)
         return obj

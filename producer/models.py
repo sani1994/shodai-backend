@@ -194,7 +194,10 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.bulk_order_products.product
+        if self.bulk_order_products:
+            return '{}'.format(self.bulk_order_products.product)
+        else:
+            return '{}'.format(str(self.id))
 
 
 class BulkOrderReqConnector(BaseModel):
