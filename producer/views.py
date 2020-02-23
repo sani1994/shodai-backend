@@ -26,22 +26,15 @@ class PeroducerBulkRequestList(APIView):  # get producer bulk request(producer's
     permission_classes = [GenericAuth]
 
     def get(self, request, format=None):
-        is_staff = request.user.is_staff
-        queryset = []
-        if is_staff:
-            queryset = ProducerBulkRequest.objects.all()
-        else:
             user_type = request.user.user_type
             if user_type == 'CM' or user_type == 'RT':  # Customer = CM
                 queryset = ProducerBulkRequest.objects.filter(is_approved=True)
+                serializer = ProducerBulkRequestSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             elif user_type == 'PD':
                 queryset = ProducerBulkRequest.objects.filter(user=request.user)
-            # elif user_type== 'PD': # Producer = PD
-            #     producer = ProducerBulkRequest.objects.filter(order_status='OD', delivery_date_time__gt=datetime.now())
-            # elif user_type== 'SF': # Staff = SF
-            #     order = Order.objects.filter(created_by=request.user)
-        serializer = ProducerBulkRequestSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+                serializer = ProducerBulkRequestSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         serializer = ProducerBulkRequestSerializer(data=request.data, context={'request': request})
