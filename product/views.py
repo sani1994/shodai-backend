@@ -59,6 +59,8 @@ class ProductDetail(APIView):
 
     def get(self, request,id):
         product = self.get_product_object(id)
+        product_meta = product.product_meta
+        print(product_meta.vat_set.all()) # working
         serializer = ProductSerializer(product)
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -172,9 +174,9 @@ class ProductCategoryList(APIView):
 class ProductCategoryDetail(APIView):
 
     permission_classes = [GenericAuth]
-    # """
-    # Retrieve, update and delete Orders
-    # """
+    """
+    Retrieve, update and delete Orders
+    """
 
     def get_productCategory_object(self,id):     # enable another peremeter "request" when to access user
         obj = ProductCategory.objects.get(id=id)

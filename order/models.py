@@ -76,13 +76,20 @@ class OrderProduct(BaseModel):
 
 
 class Vat(BaseModel):
-    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=False,null=False,default=None)
-    vat_amount = models.FloatField(default=0,blank=False,null=False)
+    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=True,null=True,default=None)
+    vat_amount = models.FloatField(default=0,blank=False,null=False, verbose_name='Vat Amount(%)')
     history = HistoricalRecords()
 
     def __str__(self):
-        return self.product_meta.name
-    
+        return str(self.vat_amount)
+
+
+class DeliveryCharge(BaseModel):
+    delivery_charge_inside_dhaka = models.FloatField(default=0,verbose_name='Delivery Charge(Dhaka)')
+    delivery_charge_outside_dhaka = models.FloatField(default=0,verbose_name='Delivery Charge(Outside)')
+
+    def __str__(self):
+        return '{}'.format(str(self.delivery_charge_inside_dhaka))
 
 
 

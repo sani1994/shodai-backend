@@ -1,4 +1,4 @@
-from order.models import Order, OrderProduct, Vat
+from order.models import Order, OrderProduct, Vat, DeliveryCharge
 from rest_framework import serializers
 
 
@@ -59,4 +59,11 @@ class VatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vat
         fields = '__all__'
-        depth = 1
+
+
+class DeliveryChargeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DeliveryCharge
+        fields = '__all__'
+

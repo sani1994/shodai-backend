@@ -3,8 +3,9 @@ from xxlimited import Null
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
 
-from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer
-from order.models import OrderProduct, Order, Vat
+from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
+    DeliveryChargeSerializer
+from order.models import OrderProduct, Order, Vat, DeliveryCharge
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -299,3 +300,33 @@ class OrderStatusUpdate(APIView):
                 return Response({'Order status set to': order_obj.order_status}, status=status.HTTP_200_OK)
             return Response('Cannot update order status', status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+
+class DeliverChargeList(APIView):
+
+    def get(self,request):
+        queryset = DeliveryCharge.objects.all()
+        if queryset:
+            serializer = DeliveryChargeSerializer(queryset,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response('{No data found}', status=status.HTTP_204_NO_CONTENT)
+
+
+class VatDeliveryChargeList(APIView):
+    '''
+    this view returns vat and delivery charge as objects in return
+    '''
+
+    def get(self,request):
+        vatqueryset = Vat.objects.all()
+        vat_serializer = VatSerializer(vatqueryset,many=True)
+        delivery_queryset = DeliveryCharge.objects.all()
+        delivery_serializer = DeliveryChargeSerializer(delivery_queryset,many=True)
+        list = []
+        data = {
+            'vat':vat_serializer.data[0]['vat_amount'],
+            'delivery_charge': delivery_serializer.data[0]['delivery_charge_inside_dhaka']
+        }
+        list.append(data)
+        return Response(list,status=status.HTTP_200_OK)
+
