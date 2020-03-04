@@ -2,9 +2,11 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
 from httplib2 import Response
 
+from sodai import settings
 from userProfile.models import UserProfile, Address
 from rest_framework import serializers
 from django.db.models import Q
+from django.core.mail import  send_mail
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -108,6 +110,7 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
         if user:
             user.set_password(validated_data['password'])
             user.save()
+            print(user.is_retailer)
         return user
 
     class Meta:

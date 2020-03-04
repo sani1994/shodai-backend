@@ -40,6 +40,12 @@ class UserProfile(AbstractUser):
     created_on = models.DateTimeField(blank=True, null=True)
     modified_on = models.DateTimeField(blank=True, null=True)
     is_approved = models.BooleanField(default=False)
+    is_customer = models.BooleanField(default=False)
+    is_retailer = models.BooleanField(default=False)
+    is_producer = models.BooleanField(default=False)
+    is_sales = models.BooleanField(default=False)
+    is_delivery = models.BooleanField(default=False)
+    is_third_party = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -49,13 +55,13 @@ class UserProfile(AbstractUser):
         ''' On save, update timestamps '''
         if not self.id:
             self.created_on = timezone.now()
-        #     if self.user_type == 'SF':
-        #         self.is_staff = True
-        #     self.is_staff = False
-        # # self.modified = timezone.now()
-        # if self.user_type== 'SF':
-        #     self.is_staff = True
-        # self.is_staff=False
+            if self.user_type=='RT':
+                self.is_retailer = True
+            if self.user_type == 'CM':
+                self.is_customer = True
+            if self.user_type == 'PD':
+                self.is_producer = True
+            return super(UserProfile, self).save(*args, **kwargs)
         return super(UserProfile, self).save(*args, **kwargs)
 
     class Meta:
