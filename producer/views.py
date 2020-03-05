@@ -18,6 +18,7 @@ from datetime import datetime
 # from product.models import ProductUnit
 # from product.serializers import ProductUnitSerializer
 from sodai.utils.permission import GenericAuth
+from utility.notification import email_notification
 
 
 class PeroducerBulkRequestList(APIView):  # get producer bulk request(producer's product request to sell) list and create
@@ -46,6 +47,15 @@ class PeroducerBulkRequestList(APIView):  # get producer bulk request(producer's
         # if request.user.user_type == 'PD':  # Producer = PD
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        """
+        To send notification to admin 
+        """
+        sub = "Approval Request For Producer Product"
+        body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted {serializer.data['product_name']}\r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
+        email_notification(sub,body)
+        """
+        Notification code ends here
+        """
         return Response(serializer.data,status=status.HTTP_200_OK)
 
 

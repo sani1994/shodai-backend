@@ -19,6 +19,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from userProfile.models import UserProfile, Otp
 from django.core.mail import send_mail
 
+from utility.notification import email_notification
+
 
 class UserProfileList(APIView):  # this view returns list of user and create user
     # permission_classes = (IsAuthenticated,)
@@ -258,10 +260,15 @@ class RetailerRegistration(APIView):  # Retailer regerstration class
             serializer = RetailerRegistrationSreializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
-                target_user = ['rana@shod.ai', 'shisir@shod.ai', 'support@shod.ai', 'sanikhan2016@gmail.com']
-                # send_mail("Approval Request",
-                #               f"Dear Concern,\r\n User phone number :{serializer.data['mobile_number']} \r\nUser type: {serializer.data['user_type']} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai",
-                #               settings.EMAIL_HOST_USER, target_user)
+                """
+                To send notification to admin 
+                """
+                sub = "Approval Request For Retailer Account"
+                body = f"Dear Concern,\r\n User phone number :{serializer.data['mobile_number']} \r\nUser type: {serializer.data['user_type']} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
+                email_notification(sub,body)
+                """
+                Notification code ends here
+                """
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

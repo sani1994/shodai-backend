@@ -203,6 +203,7 @@ from sodai.utils.permission import GenericAuth
 #             account.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 from userProfile.models import UserProfile
+from utility.notification import email_notification
 
 
 class ShopList(APIView):
@@ -428,6 +429,15 @@ class AcceptedOrderList(APIView):
                 setattr(order_obj,'order_status','OA')
                 order_obj.save()
                 serializer.save()
+                """
+                To send notification to admin 
+                """
+                sub = f"Order Accepted by {request.user.username}"
+                body = f"Dear Concern,\r\n Retailer phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} accepted an order Order id: {order}.\r\n \r\nThanks and Regards\r\nShodai"
+                email_notification(sub, body)
+                """
+                Notification code ends here
+                """
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

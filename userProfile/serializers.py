@@ -5,8 +5,8 @@ from httplib2 import Response
 from sodai import settings
 from userProfile.models import UserProfile, Address
 from rest_framework import serializers
-from django.db.models import Q
-from django.core.mail import  send_mail
+
+from utility.notification import email_notification
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -84,6 +84,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if user:
             user.set_password(validated_data['password'])
             user.save()
+            if user.user_type == 'PD':
+                sub = "Approval Request"
+                body = f"Dear Concern,\r\n User phone number :{user.mobile_number} \r\nUser type: {user.user_type} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
+                email_notification(sub, body)
         return user
 
     class Meta:

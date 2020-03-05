@@ -17,6 +17,7 @@ from rest_framework import permissions
 # Create your views here.
 from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
+from utility.notification import email_notification
 
 
 class OrderList(APIView):
@@ -50,6 +51,15 @@ class OrderList(APIView):
         serializer = OrderSerializer(data=request.data,many=isinstance(request.data,list),context={'request': request})
         if serializer.is_valid():
             serializer.save(user = request.user,created_by = request.user)
+            """
+            To send notification to admin 
+            """
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
+            email_notification(sub,body)
+            """
+            Notification code ends here
+            """
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
