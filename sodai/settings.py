@@ -76,7 +76,8 @@ INSTALLED_APPS = [
     'due',
     'inventory',
     'delivery',
-    'search'
+    'search',
+    'notifications',
 ]
 
 MIDDLEWARE = [

@@ -1,5 +1,5 @@
 from xxlimited import Null
-
+from notifications import notify
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
 
@@ -294,11 +294,12 @@ class OrderStatusUpdate(APIView):
         if request.user.user_type== 'RT':
             obj = self.get_acceptedOrder_obj(id)
             if obj.user_id == request.user.id:
-                ordr_id = obj.order_id
-                order_obj = self.get_oder_obj(ordr_id)
+                order_obj = self.get_oder_obj(obj.ordr_id)
                 if not order_obj.order_status== 'OD':
                     setattr(order_obj,'order_status',request.data['order_status'])
                     order_obj.save()
+                    recipient = order_obj.user
+                    notify.send(recipient=recipient,sender=request.user, verb=f"Your is now in {order_obj.order_status} state.")
                     return Response({'Order status set to': order_obj.order_status},status=status.HTTP_200_OK)
                 return Response('Cannot update order status',status=status.HTTP_400_BAD_REQUEST )
             return Response({"status": "User Don't have permission to update status"}, status=status.HTTP_403_FORBIDDEN)

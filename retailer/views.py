@@ -15,6 +15,7 @@ from rest_framework import status
 # from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.db.models.functions import Distance
 from datetime import datetime
+from notifications import notify
 # Create your views here.
 
 
@@ -435,6 +436,8 @@ class AcceptedOrderList(APIView):
                 sub = f"Order Accepted by {request.user.username}"
                 body = f"Dear Concern,\r\n Retailer phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} accepted an order Order id: {order}.\r\n \r\nThanks and Regards\r\nShodai"
                 email_notification(sub, body)
+                recipient = order_obj.user,
+                notify.send(recipient=recipient,sender=request.user, verb=f"Your Order Acceped by {serializer.data['shop']}")
                 """
                 Notification code ends here
                 """
