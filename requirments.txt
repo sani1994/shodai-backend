@@ -1,3 +1,4 @@
+app-version==1.0.1
 defusedxml==0.6.0
 diff-match-patch==20181111
 Django==2.2.5
@@ -6,6 +7,7 @@ django-elasticsearch-dsl==7.1.0
 django-import-export==1.2.0
 django-material-admin==1.5.0
 django-model-utils==3.2.0
+django-notifications-hq==1.6.0
 django-rest-elasticsearch==0.4.2
 django-simple-history==2.7.3
 djangorestframework==3.10.3
@@ -15,8 +17,10 @@ elasticsearch-dsl==7.1.0
 et-xmlfile==1.0.1
 httplib2==0.14.0
 jdcal==1.4.1
+jsonfield==3.1.0
 MarkupPy==1.14
 material==0.1
+notify==0.3.1
 odfpy==1.4.0
 openpyxl==3.0.1
 Pillow==6.1.0
@@ -30,8 +34,10 @@ Serializer==0.2.1
 simplejson==3.16.0
 six==1.12.0
 sqlparse==0.3.0
+swapper==1.1.2.post1
 tablib==0.14.0
 urllib3==1.25.7
+validate-email==1.3
 view==0.1
 xlrd==1.2.0
 xlwt==1.3.0
