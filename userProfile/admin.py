@@ -16,6 +16,14 @@ class AddressAdmin(MaterialModelAdmin):
 class UserProfileAdmin(MaterialModelAdmin):
     icon_name ='face'
 
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        # obj.user = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
 class OtpAdmin(MaterialModelAdmin):
     pass
     # icon_name = 'otp'

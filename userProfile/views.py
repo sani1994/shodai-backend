@@ -1,4 +1,6 @@
 import random
+
+import serializer
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render
@@ -19,7 +21,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from userProfile.models import UserProfile, Otp
 from django.core.mail import send_mail
 
-from utility.notification import email_notification
+from utility.notification import email_notification, send_sms
 
 
 class UserProfileList(APIView):  # this view returns list of user and create user
@@ -52,6 +54,11 @@ class UserProfileList(APIView):  # this view returns list of user and create use
         serializer = UserProfileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            print(serializer.data['user_type'])
+            if serializer.data['user_type'] == 'RT' or serializer.data['user_type'] == 'PD':
+                sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
+                u = send_sms(serializer.data['mobile_number'],sms_body)
+                print(u)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -188,6 +195,18 @@ class UserRegistration(CreateAPIView):  # user registration class
     models = UserProfile
     serializer_class = UserRegistrationSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        if serializer.data['user_type']== 'RT' or serializer.data['user_type'] == 'PD':
+            sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
+            u = send_sms(serializer.data['mobile_number'], sms_body)
+            print(u)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
 
 def otp_key(number):  # generate OTP code
     if number:
@@ -269,6 +288,12 @@ class RetailerRegistration(APIView):  # Retailer regerstration class
                 """
                 Notification code ends here
                 """
+                '''
+                send sms to retailer.
+                '''
+                sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
+                send_sms(serializer.data['mobile_number'],sms_body)
+
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
