@@ -437,7 +437,11 @@ class AcceptedOrderList(APIView):
                 body = f"Dear Concern,\r\n Retailer phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} accepted an order Order id: {order}.\r\n \r\nThanks and Regards\r\nShodai"
                 email_notification(sub, body)
                 recipient = order_obj.user,
-                notify.send(recipient=recipient,sender=request.user, verb=f"Your Order Acceped by {serializer.data['shop']}")
+                notification_status = notify.send(recipient=recipient,sender=request.user, verb=f"Your Order Acceped by {serializer.data['shop']}")
+                print("Notification recipient:", recipient)
+                print("Notification sender:", request.user)
+                print("Notification status: ", notification_status)
+
                 """
                 Notification code ends here
                 """
