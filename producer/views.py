@@ -561,7 +561,7 @@ class MicroBulkOrderProductsList(APIView):
         if request.user.user_type == 'RT':
             queryset = MicroBulkOrderProducts.objects.all()
         elif request.user.user_type == 'CM':
-            queryset = MicroBulkOrderProducts.objects.filter(customer=request.user)
+            queryset = MicroBulkOrderProducts.objects.filter(micro_bulk_order__customer=request.user)
         serializer = MicroBulkOrderProductsSerializer(queryset, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
