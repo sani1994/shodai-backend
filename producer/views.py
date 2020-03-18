@@ -1,5 +1,6 @@
 import decimal
 
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
@@ -297,7 +298,7 @@ class ProducerFarmDetail(APIView):  # producer farm get,update and delete
                 return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, format=None):
+    def delete(self, request, id, format=None):
         producerFarm = self.get_producerFarm_object(request, id)
         if request.user.is_staff:
             producerFarm.delete()
@@ -479,14 +480,10 @@ class ProducerProductListForCustomer(APIView):  # get bulk order products list f
     def get(self, request):
         if not request.user.user_type == 'PD':
             current_time = timezone.now()
-            bulk_order_product = []
-            queryset = BulkOrderProducts.objects.all()
-            for obj in queryset:
-                if obj.bulk_order.start_date <= current_time <= obj.bulk_order.expire_date:
-                    bulk_order_product.append(obj)
-            if not bulk_order_product:
+            queryset = BulkOrderProducts.objects.filter(bulk_order__start_date__lte=current_time, bulk_order__expire_date__gte = current_time)
+            if not queryset:
                 return Response({'status: No Data Available'}, status=status.HTTP_204_NO_CONTENT)
-            serializer = BulkOrderProductsReadSerializer(bulk_order_product, many=True)
+            serializer = BulkOrderProductsReadSerializer(queryset, many=True)
             if serializer:
                 objects = serializer.data
                 for object in objects:
@@ -498,6 +495,9 @@ class ProducerProductListForCustomer(APIView):  # get bulk order products list f
                     object.pop("product")
                     object.pop('bulk_order')
                     object.pop('unit')
+                    object.pop('created_by')
+                    object.pop('modified_by')
+
                 return Response(objects, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -557,21 +557,20 @@ class MicroBulkOrderProductsList(APIView):
     permission_classes = [GenericAuth]
 
     def get(self, request):
-        queryset = []
-        if request.user.user_type == 'RT':
-            queryset = MicroBulkOrderProducts.objects.all()
-        elif request.user.user_type == 'CM':
-            queryset = MicroBulkOrderProducts.objects.filter(micro_bulk_order__customer=request.user)
-        serializer = MicroBulkOrderProductsSerializer(queryset, many=True)
-        if serializer:
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.user_type != 'PD':
+            data = list(MicroBulkOrderProducts.objects.filter(micro_bulk_order__customer=request.user).values('bulk_order_products__product__product_name','bulk_order_products__available_qty','qty','bulk_order_products__product__product_image'))
+            return JsonResponse(data,safe=False, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
         serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            qty =serializer.data['qty']
+            object = BulkOrderProducts.objects.get(id = serializer.data['bulk_order_products'])
+            if object.available_qty >= qty:
+                object.available_qty -= qty
+                object.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
