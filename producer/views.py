@@ -9,15 +9,9 @@ from producer.serializers import ProducerFarmSerializer, ProducerBulkRequestSeri
     BulkOrderProductsSerializer, BulkOrderSerializer, BulkOrderProductsReadSerializer, MicroBulkOrderSerializer
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, MicroBulkOrderProducts, \
     BulkOrderProducts, BulkOrder, MicroBulkOrder
-from decimal import Decimal
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from datetime import datetime
-
-# Create your views here.
-# from product.models import ProductUnit
-# from product.serializers import ProductUnitSerializer
 from sodai.utils.permission import GenericAuth
 from utility.notification import email_notification
 
@@ -559,7 +553,7 @@ class MicroBulkOrderProductsList(APIView):
     def get(self, request):
         if request.user.user_type != 'PD':
             data = list(MicroBulkOrderProducts.objects.filter(micro_bulk_order__customer=request.user).values('bulk_order_products__product__product_name','bulk_order_products__available_qty','qty','bulk_order_products__product__product_image'))
-            return JsonResponse(data,safe=False, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
         qty = request.data['qty']
