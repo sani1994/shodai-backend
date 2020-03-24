@@ -557,7 +557,8 @@ class MicroBulkOrderProductsList(APIView):
 
     def post(self, request):
         qty = request.data['qty']
-        object = BulkOrderProducts.objects.get(id=request.data['bulk_order_products'])
+        id = int(request.data['bulk_order_products'])
+        object = BulkOrderProducts.objects.get(id=id)
         qty = decimal.Decimal(qty)
         if object.available_qty >= qty:
             serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
