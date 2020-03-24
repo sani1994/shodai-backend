@@ -34,6 +34,7 @@ class Location(BaseModel):
     def __str__(self):
         return self.loc_name
 
+
 class ProductUnit(BaseModel):
     product_unit = models.CharField(max_length=10,unique=True)
     product_unit_bn = models.CharField(max_length=10,unique=True)

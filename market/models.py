@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 from bases.models import BaseModel
 from product.models import Product
-from utility.models import ProductUnit
+
 from utility.models import ProductUnit, Location, Area
 
 
@@ -13,6 +13,16 @@ class WholeSellRate(models.Model):
     unit = models.ForeignKey(ProductUnit,on_delete=models.CASCADE,null=True,blank=True)
     qty = models.FloatField()
     location = models.ForeignKey(Location,on_delete=models.CASCADE,null=True,blank=True)
+
+
+class CommissionRate(BaseModel):
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    percentage = models.DecimalField(decimal_places=2,max_digits=3)
+    polygon = models.ForeignKey(Area,on_delete=models.CASCADE)
+    is_active = models.BooleanField(default = False)
+
+    def __str__(self):
+        return "{} {}".format(self.product.name, self.percentage)
 
 
 class KitchenMarket(BaseModel):
@@ -27,11 +37,6 @@ class KitchenMarket(BaseModel):
     qty = models.FloatField()
 
 
-class CommissionRate(BaseModel):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    percentage = models.DecimalField(decimal_places=2,max_digits=3)
-    polygon = models.ForeignKey(Area,on_delete=models.CASCADE)
-    is_active = models.BooleanField(default = False)
 
 
 
