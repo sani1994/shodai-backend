@@ -557,7 +557,7 @@ class MicroBulkOrderProductsList(APIView):
 
     def post(self, request):
         qty = request.data['qty']
-        id = int(request.data['bulk_order_products'])
+        id = request.post.get('bulk_order_products',False)
         object = BulkOrderProducts.objects.get(id=id)
         qty = decimal.Decimal(qty)
         if object.available_qty >= qty:
