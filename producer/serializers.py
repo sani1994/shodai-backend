@@ -1,3 +1,5 @@
+import decimal
+
 from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, ProducerBusiness, BulkOrderProducts, \
     BulkOrder, MicroBulkOrder, MicroBulkOrderProducts, BulkOrderReqConnector
 from rest_framework import serializers
@@ -188,10 +190,17 @@ class MicroBulkOrderProductsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        obj = MicroBulkOrderProducts.objects.create(**validated_data)
-        obj.created_by = user
-        obj.save()
-        return obj
+        id = validated_data.get('bulk_order_products')
+        qty = decimal.Decimal(validated_data.get('qty'))
+        bulk_order_object = BulkOrderProducts.objects.get(id = id)
+        if bulk_order_object.available_qty >= qty:
+            obj = MicroBulkOrderProducts.objects.create(**validated_data)
+            obj.created_by = user
+            bulk_order_object.available_qty -= qty
+            bulk_order_object.save()
+            obj.save()
+
+            return obj
 
     def update(self, instance, validated_data):
         instance.bulk_order_products = validated_data.pop('bulk_order_products')

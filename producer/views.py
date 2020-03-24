@@ -556,18 +556,10 @@ class MicroBulkOrderProductsList(APIView):
             return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        qty = request.data['qty']
-        id = request.data.get('bulk_order_products',False)
-        object = BulkOrderProducts.objects.get(id=id)
-        qty = decimal.Decimal(qty)
-        if object.available_qty >= qty:
-            serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            object.available_qty -= qty
-            object.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"Insufficient Quantity to order"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 
