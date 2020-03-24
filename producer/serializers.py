@@ -190,16 +190,15 @@ class MicroBulkOrderProductsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        id = validated_data.get('bulk_order_products')
+        object = validated_data.get('bulk_order_products')
         qty = decimal.Decimal(validated_data.get('qty'))
-        bulk_order_object = BulkOrderProducts.objects.get(id = id)
+        bulk_order_object = BulkOrderProducts.objects.get(id = object.id)
         if bulk_order_object.available_qty >= qty:
             obj = MicroBulkOrderProducts.objects.create(**validated_data)
             obj.created_by = user
             bulk_order_object.available_qty -= qty
             bulk_order_object.save()
             obj.save()
-
             return obj
 
     def update(self, instance, validated_data):
