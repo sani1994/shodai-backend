@@ -29,7 +29,7 @@ class ProducerBulkRequestAdmin(MaterialModelAdmin):
 
 class ProducerFarmAdmin(MaterialModelAdmin):
     list_display = ('land_amount', 'type_of_crops_produce', 'product_photo', 'address')
-    readonly_fields = ['created_by', 'modified_by']
+    readonly_fields = ['created_by', 'modified_by','created_on']
 
     # def save_model(self, request, obj, form, change):
     #     print(obj.pk)
@@ -75,7 +75,7 @@ class BulkOrderAdmin(MaterialModelAdmin):
 class BulkOrderProductsAdmin(MaterialModelAdmin):
     list_display = ('product', 'bulk_order')
     list_filter = ('bulk_order',)
-    readonly_fields = ['created_by', 'modified_by','created_on','available_qty']
+    readonly_fields = ['created_by', 'modified_by','created_on']
 
     def save_model(self, request, obj, form, change):
         if obj.id:

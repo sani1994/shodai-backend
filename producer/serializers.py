@@ -190,10 +190,15 @@ class MicroBulkOrderProductsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        obj = MicroBulkOrderProducts.objects.create(**validated_data)
-        obj.created_by = user
-        obj.save()
-        return obj
+        bulk_order_product_object = BulkOrderProducts.objects.get(id = validated_data.get('bulk_order_products').id)
+        if bulk_order_product_object.available_qty >= decimal.Decimal(validated_data.get('qty')):
+            obj = MicroBulkOrderProducts.objects.create(**validated_data)
+            obj.created_by = user
+            obj.save()
+            bulk_order_product_object.available_qty -= obj.qty
+            bulk_order_product_object.save()
+            return obj
+        raise serializers.ValidationError("Insufficient Product Quantity")
 
     def update(self, instance, validated_data):
         instance.bulk_order_products = validated_data.pop('bulk_order_products')

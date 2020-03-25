@@ -156,7 +156,7 @@ class BulkOrderProducts(BaseModel):
         if self.shareable_ref_code is None:
             # time = datetime.now(tz=None)
             unique_code = hex(int(random.randint(10,99))) + str(datetime.now())
-            self.shareable_ref_code = unique_code
+            self.shareable_ref_code = hex(int(datetime.timestamp(datetime.now())))
         if not self.id:
             self.available_qty = self.target_qty
         return super(BulkOrderProducts, self).save(*args, **kwargs)

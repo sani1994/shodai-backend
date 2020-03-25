@@ -556,11 +556,16 @@ class MicroBulkOrderProductsList(APIView):
             return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        print(request.data)
         serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        bulk_order_product_id = serializer.data['bulk_order_products']
+        bulk_order_product_object = get_object_or_404(BulkOrderProducts,id = bulk_order_product_id)
+        data = {
+            "sharable_code": bulk_order_product_object.shareable_ref_code,
+            "available_qty": bulk_order_product_object.available_qty
+        }
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 class MicroBulkOrderProductsDetails(APIView):
