@@ -20,6 +20,7 @@ urlpatterns = [
     path('microbulkorder/<int:id>/', views.MicroBulkOrderDetails.as_view()),
     path('microbulkorderproducts/', views.MicroBulkOrderProductsList.as_view()),
     path('microbulkorderproducts/<int:id>/', views.MicroBulkOrderProductsDetails.as_view()),
+    path('sharable-code-accept/', views.SharableCodeAccept.as_view()), # return bulk_order_product object by taking sharable code
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

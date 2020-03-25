@@ -595,3 +595,13 @@ class MicroBulkOrderProductsDetails(APIView):
         if request.user.is_staff:
             obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SharableCodeAccept(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self,request):
+        sharable_code = request.data['sharable_code']
+        object = get_object_or_404(BulkOrderProducts,shareable_ref_code=sharable_code)
+        serializer = BulkOrderProductsSerializer(object)
+        return Response(serializer.data if serializer else serializer.error_messages, status=status.HTTP_200_OK)
