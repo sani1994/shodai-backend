@@ -556,6 +556,7 @@ class MicroBulkOrderProductsList(APIView):
             return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        print(request.data)
         serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()

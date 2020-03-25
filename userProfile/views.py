@@ -203,7 +203,6 @@ class UserRegistration(CreateAPIView):  # user registration class
         if serializer.data['user_type']== 'RT' or serializer.data['user_type'] == 'PD':
             sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
             u = send_sms(serializer.data['mobile_number'], sms_body)
-            print(u)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
