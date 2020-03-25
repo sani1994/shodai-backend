@@ -562,7 +562,6 @@ class MicroBulkOrderProductsList(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
 class MicroBulkOrderProductsDetails(APIView):
     permission_classes = [GenericAuth]
 

@@ -192,6 +192,7 @@ class MicroBulkOrderProductsSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         obj = MicroBulkOrderProducts.objects.create(**validated_data)
         obj.created_by = user
+        obj.save()
         return obj
 
     def update(self, instance, validated_data):
