@@ -57,7 +57,7 @@ class UserProfileList(APIView):  # this view returns list of user and create use
             print(serializer.data['user_type'])
             if serializer.data['user_type'] == 'RT' or serializer.data['user_type'] == 'PD':
                 sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
-                u = send_sms(serializer.data['mobile_number'],sms_body)
+                u = send_sms(serializer.data['mobile_number'], sms_body)
                 print(u)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -200,11 +200,10 @@ class UserRegistration(CreateAPIView):  # user registration class
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        if serializer.data['user_type']== 'RT' or serializer.data['user_type'] == 'PD':
+        if serializer.data['user_type'] == 'RT' or serializer.data['user_type'] == 'PD':
             sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
             u = send_sms(serializer.data['mobile_number'], sms_body)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
 
 
 def otp_key(number):  # generate OTP code
@@ -283,7 +282,7 @@ class RetailerRegistration(APIView):  # Retailer regerstration class
                 """
                 sub = "Approval Request For Retailer Account"
                 body = f"Dear Concern,\r\n User phone number :{serializer.data['mobile_number']} \r\nUser type: {serializer.data['user_type']} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
-                email_notification(sub,body)
+                email_notification(sub, body)
                 """
                 Notification code ends here
                 """
@@ -291,7 +290,7 @@ class RetailerRegistration(APIView):  # Retailer regerstration class
                 send sms to retailer.
                 '''
                 sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
-                send_sms(serializer.data['mobile_number'],sms_body)
+                send_sms(serializer.data['mobile_number'], sms_body)
 
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
@@ -300,9 +299,59 @@ class RetailerRegistration(APIView):  # Retailer regerstration class
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
+class ChangePassword(APIView):
+    '''
+    :param request: old_password,new_password
+    :return: Change password if the
+    '''
+    permission_classes = [GenericAuth]
+
+    def post(self, request):
+        old_password = request.POST.get("old_password")
+        new_password = request.POST.get("new_password")
+        user_instance = get_object_or_404(UserProfile, mobile_number=request.user.mobile_number)
+        valid = user_instance.check_password(old_password)
+        if not valid:
+            return Response({"status": "Invalid Password"}, status=status.HTTP_404_NOT_FOUND)
+        user_instance.set_password(new_password)
+        user_instance.save()
+        return Response({"status": "Password Changed Successfully"}, status=status.HTTP_200_OK)
+
+
+class ForgetPassword(APIView):
+
+    def get(self, request):
+        '''
+        :param request: mobile_number
+        :return: text message to the given mobile number if it exist.
+        '''
+        mobile_number = request.POST.get("mobile_number")
+        user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
+        if user_instance:
+            sms_body =f"Dear Mr/Mrs,\r\nYour one time password is !@#4567.\r\n[N.B:Please change the password after login"
+            send_sms(mobile_number=user_instance.mobile_number,sms_content=sms_body)
+            return Response({"status": "Message Sent Successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
+
+    def post(self,request):
+        '''
+        :param request:mobile_number, temp_password
+        :return: success message or unsuccess message
+        '''
+        mobile_number = request.POST.get("mobile_number")
+        password = request.POST.get("temp_password")
+        user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
+        if user_instance:
+            user_instance.set_password(password)
+            user_instance.save()
+            return Response({"status": "Password Changed Successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
+
+
 class Home(TemplateView):
     template_name = 'userProfile/index.html'
-
 
 class Download(TemplateView):
     template_name = 'userProfile/download.html'

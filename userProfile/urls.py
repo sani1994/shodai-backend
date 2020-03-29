@@ -21,6 +21,7 @@ urlpatterns = [
     path('retailerregistration/',views.RetailerRegistration.as_view()), #registration for retailer
     path('producerregistration/',views.RetailerRegistration.as_view()) ,#producer registration.. same as retailer so that used same view
     path('', views.Home.as_view()),
-    path('dw', views.Download.as_view(), name = 'download-html')
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-urlpatterns = format_suffix_patterns(urlpatterns)
+    path('dw', views.Download.as_view(), name = 'download-html'),
+    path('change-password/', views.ChangePassword.as_view()),
+    path('forget-password/', views.ForgetPassword.as_view()),
+]
