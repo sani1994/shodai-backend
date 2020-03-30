@@ -24,4 +24,5 @@ urlpatterns = [
     path('dw', views.Download.as_view(), name = 'download-html'),
     path('change-password/', views.ChangePassword.as_view()),
     path('forget-password/', views.ForgetPassword.as_view()),
+    path('forget-password-varification/', views.ForgetPasswordVarification.as_view()),
 ]

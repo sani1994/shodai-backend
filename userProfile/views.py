@@ -320,12 +320,12 @@ class ChangePassword(APIView):
 
 class ForgetPassword(APIView):
 
-    def get(self, request):
+    def post(self, request):
         '''
         :param request: mobile_number
         :return: text message to the given mobile number if it exist.
         '''
-        mobile_number = request.data["mobile_number"]
+        mobile_number = request.post.get("mobile_number")
         user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
         if user_instance:
             sms_body =f"Dear Mr/Mrs,\r\nYour one time password is !@#4567.\r\n[N.B:Please change the password after login"
@@ -334,13 +334,16 @@ class ForgetPassword(APIView):
         else:
             return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
 
+
+class ForgetPasswordVarification(APIView):
+
     def post(self,request):
         '''
         :param request:mobile_number, temp_password
         :return: success message or unsuccess message
         '''
-        mobile_number = request.data["mobile_number"]
-        password = request.data["temp_password"]
+        mobile_number = request.post.get("mobile_number")
+        password = request.post.get["temp_password"]
         user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
         if user_instance:
             user_instance.set_password(password)
