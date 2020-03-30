@@ -343,7 +343,7 @@ class ForgetPasswordVarification(APIView):
         :return: success message or unsuccess message
         '''
         mobile_number = request.POST.get("mobile_number")
-        password = request.POST.get["temp_password"]
+        password = request.POST.get("temp_password")
         user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
         if user_instance:
             user_instance.set_password(password)
