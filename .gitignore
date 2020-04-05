@@ -2,3 +2,17 @@ __pyc__/
 *.pyc
 media/
 static/
+env/
+__pycache__/
+.idea/
+migrations/
+jinibooks/__pycache__/
+.installed.cfg
+bin
+develop-eggs
+dist
+eggs
+parts
+src/*.eggs-info
+lib
+lib64
