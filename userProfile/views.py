@@ -141,7 +141,7 @@ class Login(APIView):  # login with mobile number and passwrd
         try:
             user = UserProfile.objects.get(mobile_number=request.data['mobile_number'])
         except:
-            return Response({"message":"User not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"message":"User not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         if user.user_type == 'CM':  # if user type is customer no need to approve from admin panel. it will be automatically approve here.
             if not user.is_approved:
@@ -163,8 +163,8 @@ class Login(APIView):  # login with mobile number and passwrd
                         "status_code": status.HTTP_202_ACCEPTED,
                     }, status=status.HTTP_202_ACCEPTED)
                 else:
-                    return Response({"message":"Password dosen't match"}, status=status.HTTP_200_OK)
-        return Response({"message": "Profile request is waiting for approval"}, status=status.HTTP_200_OK)
+                    return JsonResponse({"message":"Password dosen't match"}, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+        return JsonResponse({"message": "Profile request is waiting for approval"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class Logout(APIView):  # logout
