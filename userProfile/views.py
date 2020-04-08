@@ -163,7 +163,7 @@ class Login(APIView):  # login with mobile number and passwrd
                         "status_code": status.HTTP_202_ACCEPTED,
                     }, status=status.HTTP_202_ACCEPTED)
                 else:
-                    return JsonResponse({"message":"Password dosen't match"}, status=status.HTTP_400_BAD_REQUEST)
+                    return JsonResponse({"message":"Password dosen't match"}, status=status.HTTP_406_NOT_ACCEPTABLE)
         return JsonResponse({"message": "Profile request is waiting for approval"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
