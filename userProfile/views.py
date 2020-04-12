@@ -141,7 +141,7 @@ class Login(APIView):  # login with mobile number and passwrd
         try:
             user = UserProfile.objects.get(mobile_number=request.data['mobile_number'])
         except:
-            return JsonResponse({"message":"User not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"message": "User not exist"}, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
 
         if user.user_type == 'CM':  # if user type is customer no need to approve from admin panel. it will be automatically approve here.
             if not user.is_approved:
@@ -163,8 +163,9 @@ class Login(APIView):  # login with mobile number and passwrd
                         "status_code": status.HTTP_202_ACCEPTED,
                     }, status=status.HTTP_202_ACCEPTED)
                 else:
-                    return JsonResponse({"message":"Password dosen't match"}, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        return JsonResponse({"message": "Profile request is waiting for approval"}, status=status.HTTP_401_UNAUTHORIZED)
+                    return JsonResponse({"message": "Password dosen't match"},
+                                        status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+        return JsonResponse({"message": "Profile request is waiting for approval"}, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
 
 
 class Logout(APIView):  # logout
@@ -273,30 +274,27 @@ class OtpVerify(APIView):  # to varify otp code against a number
 class RetailerRegistration(APIView):  # Retailer regerstration class
 
     def post(self, request):
-        if request.data:
-            serializer = RetailerRegistrationSreializer(data=request.data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                """
-                To send notification to admin 
-                """
-                sub = "Approval Request For Retailer Account"
-                body = f"Dear Concern,\r\n User phone number :{serializer.data['mobile_number']} \r\nUser type: {serializer.data['user_type']} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
-                email_notification(sub, body)
-                """
-                Notification code ends here
-                """
-                '''
-                send sms to retailer.
-                '''
-                sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
-                send_sms(serializer.data['mobile_number'], sms_body)
+        serializer = RetailerRegistrationSreializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            """
+            To send notification to admin 
+            """
+            sub = "Approval Request For Retailer Account"
+            body = f"Dear Concern,\r\n User phone number :{serializer.data['mobile_number']} \r\nUser type: {serializer.data['user_type']} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
+            email_notification(sub, body)
+            """
+            Notification code ends here
+            """
+            '''
+            send sms to retailer.
+            '''
+            sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
+            send_sms(serializer.data['mobile_number'], sms_body)
 
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message":"User Already Exist"}, status=status.HTTP_200_OK)
 
 
 class ChangePassword(APIView):
@@ -328,8 +326,8 @@ class ForgetPassword(APIView):
         mobile_number = request.POST.get("mobile_number")
         user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
         if user_instance:
-            sms_body =f"Dear Mr/Mrs,\r\nYour one time password is !@#4567.\r\n[N.B:Please change the password after login"
-            send_sms(mobile_number=user_instance.mobile_number,sms_content=sms_body)
+            sms_body = f"Dear Mr/Mrs,\r\nYour one time password is !@#4567.\r\n[N.B:Please change the password after login"
+            send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
             return Response({"status": "Message Sent Successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
@@ -337,7 +335,7 @@ class ForgetPassword(APIView):
 
 class ForgetPasswordVarification(APIView):
 
-    def post(self,request):
+    def post(self, request):
         '''
         :param request:mobile_number, temp_password
         :return: success message or unsuccess message
@@ -355,6 +353,7 @@ class ForgetPasswordVarification(APIView):
 
 class Home(TemplateView):
     template_name = 'userProfile/index.html'
+
 
 class Download(TemplateView):
     template_name = 'userProfile/download.html'

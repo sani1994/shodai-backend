@@ -99,7 +99,6 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
-
         if not validated_data:
             return Response({'Error': "Invalid Data"})
         user = UserProfile.objects.create(
@@ -114,7 +113,6 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
         if user:
             user.set_password(validated_data['password'])
             user.save()
-            print(user.is_retailer)
         return user
 
     class Meta:
