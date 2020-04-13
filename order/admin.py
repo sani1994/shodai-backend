@@ -1,7 +1,7 @@
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from order.models import Order, Vat, OrderProduct, DeliveryCharge
+from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo
 
 
 # Register your models here.
@@ -72,8 +72,21 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
         obj.save()
         return super().save_model(request, obj, form, change)
 
+# class PaymentInfoAdmin(MaterialModelAdmin):
+#     list_display = ['id', 'payment_id', 'order', 'payment_type']
+    # list_filter = ['delivery_charge_inside_dhaka']
+    # readonly_fields = ['created_by', 'modified_by','delivery_charge_outside_dhaka','created_on']
+
+    # def save_model(self, request, obj, form, change):
+    #     if obj.id:
+    #         obj.modified_by = request.user
+    #     obj.created_by = request.user
+    #     obj.save()
+    #     return super().save_model(request, obj, form, change)
+
 
 site.register(Order, OrderAdmin)
 site.register(OrderProduct,OrderProductAdmin)
 site.register(Vat,VatAdmin)
 site.register(DeliveryCharge,DeliveryChargeAdmin)
+site.register(PaymentInfo)

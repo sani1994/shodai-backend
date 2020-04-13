@@ -1,3 +1,4 @@
+import uuid
 from django.contrib.gis.db import models
 from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
@@ -16,7 +17,7 @@ class Order(BaseModel):
     delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
-    long=models.FloatField()
+    long = models.FloatField()
     order_geopoint = models.PointField(null=True)
     
     ORDERED = 'OD'              # ORDER COLLECT FROM CUSTOMER
@@ -52,6 +53,17 @@ class Order(BaseModel):
     # def __int__(self):
     #     return self.order_id
 
+    # @property
+    # def order_count(self): # saikat
+    #     count = self.orders.count()
+    #     # print(count)
+    #     return count
+    
+    # @property
+    # def get_order_products(self):
+    #     order_product = self.orders.all()
+    #     return  order_product
+
     def save(self, *args, **kwargs):
         # self.shop_geopoint.y = self.shop_lat
         # self.shop_geopoint.x = self.shop_long
@@ -62,7 +74,8 @@ class Order(BaseModel):
 
 class OrderProduct(BaseModel):
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    order = models.ForeignKey(Order,on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, related_name='orders', on_delete=models.CASCADE)
+    order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True,) #new
     order_product_price = models.FloatField(blank=False,null=False,default=0)  # product may belong to offer do the price
     order_product_qty = models.FloatField(default=1)
     history = HistoricalRecords()
@@ -70,9 +83,14 @@ class OrderProduct(BaseModel):
     def __str__(self):
         return self.product.product_name
 
+    def save(self, *args, **kwargs): #new
+        self.order_product_id = str(uuid.uuid4())[:8]
+        super(OrderProduct, self).save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Order Product'
         verbose_name_plural = 'Order Product'
+
 
 
 class Vat(BaseModel):
@@ -92,5 +110,28 @@ class DeliveryCharge(BaseModel):
         return '{}'.format(str(self.delivery_charge_inside_dhaka))
 
 
+####### 
+# q= str(uuid.uuid4())[:8]
+# print(q)
+# models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class PaymentInfo(BaseModel):
+    """PaymentInfo object"""
+    payment_id = models.CharField(max_length=100, blank=True, unique=True,)
+    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    currency = models.CharField(max_length=3, blank=True, default='BDT')
+    order = models.ForeignKey(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
+    payment_type = models.CharField(max_length=100, blank=True,)
 
 
+    # def __init__(self):
+    #     super(PaymentInfo, self).__init__()
+    #     self.payment_id = str(uuid.uuid4()[:8])
+
+    def save(self, *args, **kwargs):
+        self.payment_id = str(uuid.uuid4())[:8]
+        self.currency = 'BDT'
+        super(PaymentInfo, self).save(*args, **kwargs)
+
+
+    def __str__(self):
+        return str(self.payment_id)

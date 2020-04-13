@@ -1,23 +1,23 @@
 from xxlimited import Null
-from notifications import notify
+
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
+from django.db.models import Q
 
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
-    DeliveryChargeSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge
+    DeliveryChargeSerializer, PaymentInfoSerializer, PaymentInfoDetailSerializer
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
 
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
-from rest_framework import permissions
+from rest_framework import permissions, serializers, viewsets
 
 # Create your views here.
 from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
-from utility.notification import email_notification
 
 
 class OrderList(APIView):
@@ -28,10 +28,10 @@ class OrderList(APIView):
         if request.user.user_type == 'CM':
             user_id = request.user.id
             orderList = Order.objects.filter(user_id=user_id)
-            serializer = OrderSerializer(orderList,many=True)
+            serializer = OrderSerializer(orderList, many=True)
             if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = Order.objects.all()
         if queryset:
@@ -51,15 +51,6 @@ class OrderList(APIView):
         serializer = OrderSerializer(data=request.data,many=isinstance(request.data,list),context={'request': request})
         if serializer.is_valid():
             serializer.save(user = request.user,created_by = request.user)
-            """
-            To send notification to admin 
-            """
-            sub = "Order Placed"
-            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
-            email_notification(sub,body)
-            """
-            Notification code ends here
-            """
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -121,21 +112,64 @@ class OrderProductList(APIView):
         if request.user.user_type== 'CM':
             response = {
                 'rspns',
+                'payment_id'
                 'status_code',
             }
             responses = []
 
             for data in request.data:
-                serializer = OrderProductSerializer(data=data,context={'request': request.data})
+                serializer = OrderProductSerializer(data=data, context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
-                    response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK}
+                    payment_object = PaymentInfo.objects.create(order_id = int(serializer.data['order']))
+                    payment_object.save()
+                    response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK,'payment_id':payment_object.payment_id}
                     responses.append(response)
                 else:
                     response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
                     responses.append(response)
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+
+# class OrderProductList(APIView):
+
+#     permission_classes = [GenericAuth]
+
+#     def get(self,request):
+#         queryset = OrderProduct.objects.all()
+#         if queryset:
+#             serializer = OrderProductReadSerializer(queryset,many=True,context={'request': request})
+#             if serializer:
+#                 return Response(serializer.data,status=status.HTTP_200_OK)
+#             else:
+#                 return Response({"status": "Not serializable data"}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+#     def post(self,request):
+#         # if request.user.user_type== 'CM':
+#         response = {
+#             'rspns',
+#             'payment_id'
+#             'status_code',
+#         }
+#         responses = []
+
+#         for data in request.data:
+#             serializer = OrderProductSerializer(data=data,context={'request': request.data})
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 order = int(serializer.data['order'])
+#                 payment_object = PaymentInfo.objects.create(order_id=order)
+#                 payment_object.save()
+#                 response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK, 'payment_id': payment_object.payment_id}
+#                 responses.append(response)
+#             else:
+#                 response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
+#                 responses.append(response)
+#             return Response(responses)
+#         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class OrderProductDetail(APIView):
@@ -278,6 +312,7 @@ class OrderdProducts(APIView): # this view returns all the products in a order. 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
+
 class OrderStatusUpdate(APIView):
 
     permission_classes = [GenericAuth]
@@ -294,12 +329,11 @@ class OrderStatusUpdate(APIView):
         if request.user.user_type== 'RT':
             obj = self.get_acceptedOrder_obj(id)
             if obj.user_id == request.user.id:
-                order_obj = self.get_oder_obj(obj.ordr_id)
+                ordr_id = obj.order_id
+                order_obj = self.get_oder_obj(ordr_id)
                 if not order_obj.order_status== 'OD':
                     setattr(order_obj,'order_status',request.data['order_status'])
                     order_obj.save()
-                    recipient = order_obj.user
-                    notify.send(recipient=recipient,sender=request.user, verb=f"Your is now in {order_obj.order_status} state.")
                     return Response({'Order status set to': order_obj.order_status},status=status.HTTP_200_OK)
                 return Response('Cannot update order status',status=status.HTTP_400_BAD_REQUEST )
             return Response({"status": "User Don't have permission to update status"}, status=status.HTTP_403_FORBIDDEN)
@@ -341,3 +375,120 @@ class VatDeliveryChargeList(APIView):
         list.append(data)
         return Response(list,status=status.HTTP_200_OK)
 
+
+###############
+
+
+
+
+#######
+import json
+
+class PaymentInfoViewSet(viewsets.ModelViewSet):
+    """Payment viewset"""
+    pass
+
+class PaymentInfoListCreate(APIView):
+
+    # permission_classes = [GenericAuth]
+    
+    def get(self,request):
+
+        queryset = PaymentInfo.objects.all()
+        if queryset:
+            query = self.request.GET.get("q")
+            if query:
+                queryset = queryset.filter(
+                    Q(payment_id__exact=query)
+                    # Q(id__exact=query)
+                )
+                if queryset:
+                    serializer = PaymentInfoDetailSerializer(queryset, many=True, context={'request': request})
+            
+                    if serializer:
+                        d = json.dumps(serializer.data)
+                        d = json.loads(d)
+                        # print(d[0])
+                        payment = serializer.data[0]
+                        # print(payment['order']['id'])
+                        # order = d[0]['order']['id']
+                        order_product = OrderProduct.objects.filter(order_id=int(payment['order']['id']))
+                        order_products = []
+                        for  p in  order_product:
+                            order_products.append(p.product.product_name)
+                        # print(order_product)
+                        data = {
+                            'status': "success",
+                            'payment_id': payment['payment_id'],
+                            'total_amount': payment['order']['order_total_price'],
+                            'currency': payment['currency'],
+                            'payment_type': payment['payment_type'],
+                            'created_by': payment['order']['created_by']["username"],
+                            'created_on': payment['created_on'],
+                            'order_products': order_products,
+                        }
+                        return Response(data, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    data = {
+                            "status": "failed",
+                            "message": "invalid bill id"
+                        }
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    
+
+            else:   
+                serializer = PaymentInfoSerializer(queryset, many=True, context={'request': request})
+                if serializer:
+                    data = {
+                        "status": "success",
+                        "data": serializer.data,
+                    }
+                    # print(serializer.data["payment_id"])
+                    return Response(data, status=status.HTTP_200_OK)
+                else:
+                    return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+    # def post(self,request,*args,**kwargs):
+    #     serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data,list), context={'request': request})
+    #     if serializer.is_valid():
+    #         serializer.save(user=request.user, created_by=request.user)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# class OrderLatest(APIView):
+
+#     permission_classes = [GenericAuth]
+    
+#     def get(self,request):
+#         user_id = request.user.id
+
+#         queryset = OrderProduct.objects.filter(created_by_id=user_id).order_by('-id')[:1]
+
+#         if queryset:
+#             serializer = OrderProductDetailSerializer(queryset, many=True, context={'request': request})
+#             if serializer:
+#                 d = json.dumps(serializer.data)
+#                 d = json.loads(d)
+
+#                 data = {
+#                     "status": "success",
+#                     "order_product_id": d[0]["order_product_id"],
+#                     "product_name":d[0]["product"][ "product_name"],
+#                     'total':d[0]["order_product_price"],
+#                     "created_by":d[0]["created_by"],
+#                     # "data": serializer.data,
+#                 }
+#                 return Response(data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+ 

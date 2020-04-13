@@ -12,6 +12,8 @@ urlpatterns = [
     path('vat/<int:id>/',views.VatDetail.as_view()), # get,put,delete request for a single object
     path('updateorderstatus/<int:id>/',views.OrderStatusUpdate.as_view()), # give acceptorder id and order_status order of the accepted order will update to the given order status
     path('deliveryCharge/', views.DeliverChargeList.as_view()), # get list of delivery charge
-    path('VDC/', views.VatDeliveryChargeList.as_view()) #get vat and delivery charge togather within this api VD(Vat Delivery Charge)
+    path('VDC/', views.VatDeliveryChargeList.as_view()), #get vat and delivery charge togather within this api VD(Vat Delivery Charge)
+    path('payment/', views.PaymentInfoListCreate.as_view()), 
+    # path('orderlatest/', views.OrderLatest.as_view()),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

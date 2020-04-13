@@ -1,5 +1,5 @@
-from order.models import Order, OrderProduct, Vat, DeliveryCharge
-from rest_framework import serializers
+from order.models import Order, OrderProduct, Vat, DeliveryCharge, PaymentInfo
+from rest_framework import serializers 
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -35,14 +35,14 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderProduct
-        fields = ('id','order_product_price','order_product_qty','product','order')
+        fields = ('id', 'order_product_id', 'order_product_price','order_product_qty','product','order',)
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer): # this serializer has been used to get all the details including foreign key id... this duplication has been made as 'depth=1' is not working for post request in serializer.
 
     class Meta:
         model = OrderProduct
-        fields = ('id','order_product_price','order_product_qty','product','order')
+        fields = ('id', 'order_product_id', 'order_product_price','order_product_qty','product','order')
         depth = 2
 
 
@@ -67,3 +67,28 @@ class DeliveryChargeSerializer(serializers.ModelSerializer):
         model = DeliveryCharge
         fields = '__all__'
 
+
+######## new 
+
+class OrderProductDetailSerializer(OrderProductSerializer):    
+    order = OrderSerializer(read_only=True, many=True)
+
+
+class PaymentInfoSerializer(serializers.ModelSerializer):
+    """Create serializer for PaymentInfo object"""
+    # order = OrderProductSerializer(read_only=True)
+    class Meta:
+        model = PaymentInfo
+        fields = ('id', 'payment_id', 'created_by', 'currency', 'order', 'payment_type', 'created_on')
+
+
+class PaymentInfoDetailSerializer(serializers.ModelSerializer):
+    """Create serializer for PaymentInfo object"""
+    # order = OrderProductReadSerializer(read_only=True)
+    # order_set = OrderSerializer(read_only=True, many=True)
+
+
+    class Meta:
+        model = PaymentInfo
+        fields = ('id', 'payment_id', 'created_by', 'currency', 'order', 'payment_type', 'created_on')
+        depth = 2
