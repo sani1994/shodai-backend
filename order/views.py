@@ -1,11 +1,12 @@
+from django.db.models import Q
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
-    DeliveryChargeSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge
+    DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
 from utility.notification import email_notification
@@ -273,7 +274,7 @@ class OrderStatusUpdate(APIView):
         if request.user.user_type == 'RT':
             obj = get_object_or_404(AcceptedOrder, id=id)
             if obj.user_id == request.user.id:
-                order_obj = get_object_or_404(Order, id=obj.ordr_id)
+                order_obj = get_object_or_404(Order, id=obj.order_id)
                 if not order_obj.order_status == 'OD':
                     setattr(order_obj, 'order_status', request.data['order_status'])
                     order_obj.save()
@@ -320,3 +321,114 @@ class VatDeliveryChargeList(APIView):
         }
         list.append(data)
         return Response(list, status=status.HTTP_200_OK)
+
+
+import json
+
+
+class PaymentInfoViewSet(viewsets.ModelViewSet):
+    """Payment viewset"""
+    pass
+
+
+class PaymentInfoListCreate(APIView):
+
+    # permission_classes = [GenericAuth]
+
+    def get(self, request):
+
+        queryset = PaymentInfo.objects.all()
+        if queryset:
+            query = self.request.GET.get("q")
+            if query:
+                queryset = queryset.filter(
+                    Q(payment_id__exact=query)
+                    # Q(id__exact=query)
+                )
+                if queryset:
+                    serializer = PaymentInfoDetailSerializer(queryset, many=True, context={'request': request})
+
+                    if serializer:
+                        d = json.dumps(serializer.data)
+                        d = json.loads(d)
+                        # print(d[0])
+                        payment = serializer.data[0]
+                        # print(payment['order']['id'])
+                        # order = d[0]['order']['id']
+                        order_product = OrderProduct.objects.filter(order_id=int(payment['order']['id']))
+                        order_products = []
+                        for p in order_product:
+                            order_products.append(p.product.product_name)
+                        # print(order_product)
+                        data = {
+                            'status': "success",
+                            'payment_id': payment['payment_id'],
+                            'total_amount': payment['order']['order_total_price'],
+                            'currency': payment['currency'],
+                            'payment_type': payment['payment_type'],
+                            'created_by': payment['order']['created_by']["username"],
+                            'created_on': payment['created_on'],
+                            'order_products': order_products,
+                        }
+                        return Response(data, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    data = {
+                        "status": "failed",
+                        "message": "invalid bill id"
+                    }
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+            else:
+                serializer = PaymentInfoSerializer(queryset, many=True, context={'request': request})
+                if serializer:
+                    data = {
+                        "status": "success",
+                        "data": serializer.data,
+                    }
+                    # print(serializer.data["payment_id"])
+                    return Response(data, status=status.HTTP_200_OK)
+                else:
+                    return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+    # def post(self,request,*args,**kwargs):
+    #     serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data,list), context={'request': request})
+    #     if serializer.is_valid():
+    #         serializer.save(user=request.user, created_by=request.user)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class OrderLatest(APIView):
+
+#     permission_classes = [GenericAuth]
+
+#     def get(self,request):
+#         user_id = request.user.id
+
+#         queryset = OrderProduct.objects.filter(created_by_id=user_id).order_by('-id')[:1]
+
+#         if queryset:
+#             serializer = OrderProductDetailSerializer(queryset, many=True, context={'request': request})
+#             if serializer:
+#                 d = json.dumps(serializer.data)
+#                 d = json.loads(d)
+
+#                 data = {
+#                     "status": "success",
+#                     "order_product_id": d[0]["order_product_id"],
+#                     "product_name":d[0]["product"][ "product_name"],
+#                     'total':d[0]["order_product_price"],
+#                     "created_by":d[0]["created_by"],
+#                     # "data": serializer.data,
+#                 }
+#                 return Response(data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+

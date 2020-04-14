@@ -1,6 +1,7 @@
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import D
 from django.shortcuts import render
+from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 
 from retailer.serializers import AccountSerializer, ShopSerializer, AcceptedOrderSerializer, \
@@ -15,7 +16,6 @@ from rest_framework import status
 # from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.db.models.functions import Distance
 from datetime import datetime
-from notifications import notify
 # Create your views here.
 
 

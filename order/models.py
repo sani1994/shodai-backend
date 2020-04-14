@@ -8,24 +8,25 @@ from product.models import Product
 from bases.models import BaseModel
 from userProfile.models import Address
 
+
 # Create your models here.
 
 
 class Order(BaseModel):
-    user = models.ForeignKey(UserProfile, models.SET_NULL,blank=True,null=True)
+    user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
     delivery_date_time = models.DateTimeField(auto_now=True)
     delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
     long = models.FloatField()
     order_geopoint = models.PointField(null=True)
-    
-    ORDERED = 'OD'              # ORDER COLLECT FROM CUSTOMER
-    ORDER_ACCEPTED = 'OA'        #ORDER ACCEPTED BY RETAILER OR PRODUCER
-    ORDER_READY = 'RE'          # ORDER IS READY FOR DELIVERY PERSON
-    ORDER_AT_DELIVERY = 'OAD'   # ORDER IS WITH DELIVERY PEROSN
-    ORDER_COMPLETED = 'COM'      # ORDER IS DELIVERED TO CUSTOMER
-    ORDER_CANCELLED = 'CN'      # ORDER IS CANCEL BY CUSTOMER
+
+    ORDERED = 'OD'  # ORDER COLLECT FROM CUSTOMER
+    ORDER_ACCEPTED = 'OA'  # ORDER ACCEPTED BY RETAILER OR PRODUCER
+    ORDER_READY = 'RE'  # ORDER IS READY FOR DELIVERY PERSON
+    ORDER_AT_DELIVERY = 'OAD'  # ORDER IS WITH DELIVERY PEROSN
+    ORDER_COMPLETED = 'COM'  # ORDER IS DELIVERED TO CUSTOMER
+    ORDER_CANCELLED = 'CN'  # ORDER IS CANCEL BY CUSTOMER
     ORDER_STATUS = [
         (ORDERED, 'Ordered'),
         (ORDER_ACCEPTED, 'Order Accepted'),
@@ -35,8 +36,8 @@ class Order(BaseModel):
         (ORDER_CANCELLED, 'Order Cancelled'),
     ]
     order_status = models.CharField(max_length=100, choices=ORDER_STATUS, default=ORDERED)
-    home_delivery = models.BooleanField(default=True,null=False,blank=False)
-    address = models.ForeignKey(Address,on_delete=models.CASCADE,null=True)
+    home_delivery = models.BooleanField(default=True, null=False, blank=False)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True)
 
     FIXED_PRICE = 'FP'
     BIDDING = 'BD'
@@ -44,12 +45,13 @@ class Order(BaseModel):
         (FIXED_PRICE, 'Fixed Price'),
         (BIDDING, 'Biding'),
     ]
-    order_type = models.CharField(max_length=20,choices=ORDER_TYPES,default=FIXED_PRICE)
-    contact_number = models.CharField(max_length=20,null=True,blank=True)
+    order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
+    contact_number = models.CharField(max_length=20, null=True, blank=True)
     history = HistoricalRecords()
 
     def __str__(self):
         return "{}".format(self.id)
+
     # def __int__(self):
     #     return self.order_id
 
@@ -58,7 +60,7 @@ class Order(BaseModel):
     #     count = self.orders.count()
     #     # print(count)
     #     return count
-    
+
     # @property
     # def get_order_products(self):
     #     order_product = self.orders.all()
@@ -68,22 +70,23 @@ class Order(BaseModel):
         # self.shop_geopoint.y = self.shop_lat
         # self.shop_geopoint.x = self.shop_long
         # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
-        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long,self.lat))
+        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)
 
 
 class OrderProduct(BaseModel):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, related_name='orders', on_delete=models.CASCADE)
-    order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True,) #new
-    order_product_price = models.FloatField(blank=False,null=False,default=0)  # product may belong to offer do the price
+    order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True, )  # new
+    order_product_price = models.FloatField(blank=False, null=False,
+                                            default=0)  # product may belong to offer do the price
     order_product_qty = models.FloatField(default=1)
     history = HistoricalRecords()
 
     def __str__(self):
         return self.product.product_name
 
-    def save(self, *args, **kwargs): #new
+    def save(self, *args, **kwargs):  # new
         self.order_product_id = str(uuid.uuid4())[:8]
         super(OrderProduct, self).save(*args, **kwargs)
 
@@ -92,10 +95,9 @@ class OrderProduct(BaseModel):
         verbose_name_plural = 'Order Product'
 
 
-
 class Vat(BaseModel):
-    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE,blank=True,null=True,default=None)
-    vat_amount = models.FloatField(default=0,blank=False,null=False, verbose_name='Vat Amount(%)')
+    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    vat_amount = models.FloatField(default=0, blank=False, null=False, verbose_name='Vat Amount(%)')
     history = HistoricalRecords()
 
     def __str__(self):
@@ -103,8 +105,8 @@ class Vat(BaseModel):
 
 
 class DeliveryCharge(BaseModel):
-    delivery_charge_inside_dhaka = models.FloatField(default=0,verbose_name='Delivery Charge(Dhaka)')
-    delivery_charge_outside_dhaka = models.FloatField(default=0,verbose_name='Delivery Charge(Outside)')
+    delivery_charge_inside_dhaka = models.FloatField(default=0, verbose_name='Delivery Charge(Dhaka)')
+    delivery_charge_outside_dhaka = models.FloatField(default=0, verbose_name='Delivery Charge(Outside)')
 
     def __str__(self):
         return '{}'.format(str(self.delivery_charge_inside_dhaka))
@@ -116,12 +118,11 @@ class DeliveryCharge(BaseModel):
 # models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 class PaymentInfo(BaseModel):
     """PaymentInfo object"""
-    payment_id = models.CharField(max_length=100, blank=True, unique=True,)
+    payment_id = models.CharField(max_length=100, blank=True, unique=True, )
     # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     order = models.ForeignKey(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
-    payment_type = models.CharField(max_length=100, blank=True,)
-
+    payment_type = models.CharField(max_length=100, blank=True, )
 
     # def __init__(self):
     #     super(PaymentInfo, self).__init__()
@@ -131,7 +132,6 @@ class PaymentInfo(BaseModel):
         self.payment_id = str(uuid.uuid4())[:8]
         self.currency = 'BDT'
         super(PaymentInfo, self).save(*args, **kwargs)
-
 
     def __str__(self):
         return str(self.payment_id)
