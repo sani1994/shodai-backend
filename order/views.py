@@ -1,30 +1,20 @@
-from xxlimited import Null
-
-from django.shortcuts import render
+from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
-from django.db.models import Q
-
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
-    DeliveryChargeSerializer, PaymentInfoSerializer, PaymentInfoDetailSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
-
-from django.http import Http404
+    DeliveryChargeSerializer
+from order.models import OrderProduct, Order, Vat, DeliveryCharge
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from datetime import datetime
-from rest_framework import permissions, serializers, viewsets
-
-# Create your views here.
 from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
+from utility.notification import email_notification
 
 
 class OrderList(APIView):
-
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         if request.user.user_type == 'CM':
             user_id = request.user.id
             orderList = Order.objects.filter(user_id=user_id)
@@ -35,56 +25,65 @@ class OrderList(APIView):
 
         queryset = Order.objects.all()
         if queryset:
-            serializer = OrderSerializer(queryset,many=True,context={'request': request})
+            serializer = OrderSerializer(queryset, many=True, context={'request': request})
             if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def post(self,request,*args,**kwargs):
+    def post(self, request, *args, **kwargs):
         if request.data['contact_number'] == "":
-            request.POST._mutable =True
+            request.POST._mutable = True
             request.data['contact_number'] = request.user.mobile_number
             request.POST._mutable = False
-        serializer = OrderSerializer(data=request.data,many=isinstance(request.data,list),context={'request': request})
+        serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
+                                     context={'request': request})
         if serializer.is_valid():
-            serializer.save(user = request.user,created_by = request.user)
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
+            serializer.save(user=request.user, created_by=request.user)
+            """
+            To send notification to admin 
+            """
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
+            email_notification(sub, body)
+            """
+            Notification code ends here
+            """
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OrderDetail(APIView):
-
     permission_classes = [GenericAuth]
 
-    def get_order_object(self,id):
-        obj = Order.objects.filter(id = id).first()
+    def get_order_object(self, id):
+        obj = Order.objects.filter(id=id).first()
         return obj
 
-    def get(self,request,id):
+    def get(self, request, id):
         obj = self.get_order_object(id)
         # if obj.user == request.user or request.user == 'SF':
         serializer = OrderSerializer(obj)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self,request,id):
+    def put(self, request, id):
         obj = self.get_order_object(id)
         if obj:
-            serializer = OrderSerializer(obj,data=request.data,context={'request': request})
+            serializer = OrderSerializer(obj, data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def delete(self,request,id):
+    def delete(self, request, id):
         obj = self.get_order_object(id)
         if obj:
             obj.delete()
@@ -94,25 +93,23 @@ class OrderDetail(APIView):
 
 
 class OrderProductList(APIView):
-
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         queryset = OrderProduct.objects.all()
         if queryset:
-            serializer = OrderProductReadSerializer(queryset,many=True,context={'request': request})
+            serializer = OrderProductReadSerializer(queryset, many=True, context={'request': request})
             if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({"status": "Not serializable data"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def post(self,request):
-        if request.user.user_type== 'CM':
+    def post(self, request):
+        if request.user.user_type == 'CM':
             response = {
                 'rspns',
-                'payment_id'
                 'status_code',
             }
             responses = []
@@ -121,66 +118,23 @@ class OrderProductList(APIView):
                 serializer = OrderProductSerializer(data=data, context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
-                    payment_object = PaymentInfo.objects.create(order_id = int(serializer.data['order']))
-                    payment_object.save()
-                    response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK,'payment_id':payment_object.payment_id}
+                    response = {'rspns': serializer.data, 'status_code': status.HTTP_200_OK}
                     responses.append(response)
                 else:
-                    response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
+                    response = {'rspns': serializer.errors, 'status_code': status.HTTP_400_BAD_REQUEST}
                     responses.append(response)
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-# class OrderProductList(APIView):
-
-#     permission_classes = [GenericAuth]
-
-#     def get(self,request):
-#         queryset = OrderProduct.objects.all()
-#         if queryset:
-#             serializer = OrderProductReadSerializer(queryset,many=True,context={'request': request})
-#             if serializer:
-#                 return Response(serializer.data,status=status.HTTP_200_OK)
-#             else:
-#                 return Response({"status": "Not serializable data"}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-
-#     def post(self,request):
-#         # if request.user.user_type== 'CM':
-#         response = {
-#             'rspns',
-#             'payment_id'
-#             'status_code',
-#         }
-#         responses = []
-
-#         for data in request.data:
-#             serializer = OrderProductSerializer(data=data,context={'request': request.data})
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 order = int(serializer.data['order'])
-#                 payment_object = PaymentInfo.objects.create(order_id=order)
-#                 payment_object.save()
-#                 response= {'rspns': serializer.data,'status_code': status.HTTP_200_OK, 'payment_id': payment_object.payment_id}
-#                 responses.append(response)
-#             else:
-#                 response = {'rspns': serializer.errors,'status_code': status.HTTP_400_BAD_REQUEST}
-#                 responses.append(response)
-#             return Response(responses)
-#         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
-
 class OrderProductDetail(APIView):
-
     permission_classes = [GenericAuth]
 
-    def get_orderproduct_obj(self,id):
-        obj = OrderProduct.objects.filter(id = id).first()
+    def get_orderproduct_obj(self, id):
+        obj = OrderProduct.objects.filter(id=id).first()
         return obj
 
-    def get(self,request,id):
+    def get(self, request, id):
         obj = self.get_orderproduct_obj(id)
         if obj:
             serializer = OrderProductReadSerializer(obj)
@@ -191,19 +145,19 @@ class OrderProductDetail(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self,request,id):
+    def put(self, request, id):
         obj = self.get_orderproduct_obj(id)
         if obj:
-            serializer = OrderProductSerializer(obj,data=request.data,context={'request':request})
+            serializer = OrderProductSerializer(obj, data=request.data, context={'request': request})
             if serializer.is_valid():
-                serializer.save(modified_by = request.user)
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                serializer.save(modified_by=request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def delete(self,request,id):
+    def delete(self, request, id):
         obj = self.get_orderproduct_obj(id)
         if obj:
             obj.delete()
@@ -213,61 +167,59 @@ class OrderProductDetail(APIView):
 
 
 class VatList(APIView):
-
     permission_classes = [GenericAuth]
 
-    def get(self,request):
+    def get(self, request):
         queryset = Vat.objects.all()
         if queryset:
-            serializer = VatSerializer(queryset,many=True)
+            serializer = VatSerializer(queryset, many=True)
             if serializer:
-                return Response (serializer.data,status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def post(self,request):
+    def post(self, request):
         serializer = VatSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(created_by = request.user)
-            return Response (serializer.data,status=status.HTTP_200_OK)
+            serializer.save(created_by=request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VatDetail(APIView):
-
     permission_classes = [GenericAuth]
 
-    def get_vat_object(self,id):
+    def get_vat_object(self, id):
         obj = Vat.objects.filter(id=id).first()
         return obj
 
-    def get(self,request,id):
+    def get(self, request, id):
         obj = self.get_vat_object(id)
         if obj:
-            serializer =  VatSerializer(obj)
+            serializer = VatSerializer(obj)
             if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self,request,id):
+    def put(self, request, id):
         obj = self.get_vat_object(id)
         if obj:
-            serializer = VatSerializer(obj,data=request.data)
+            serializer = VatSerializer(obj, data=request.data)
             if serializer.is_valid():
-                serializer.save(modified_by = request.user)
-                return Response(serializer.data,status=status.HTTP_200_OK)
+                serializer.save(modified_by=request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def delete(self,requst,id):
+    def delete(self, requst, id):
         obj = self.get_vat_object(id)
         if obj:
             obj.delete()
@@ -276,7 +228,8 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class OrderdProducts(APIView): # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
+class OrderdProducts(
+    APIView):  # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
 
     permission_classes = [GenericAuth]
 
@@ -284,8 +237,8 @@ class OrderdProducts(APIView): # this view returns all the products in a order. 
     #     obj = Order.objects.get(id = id)
     #     return obj
 
-    def get(self,request,id):
-        obj = get_object_or_404(Order,id=id)
+    def get(self, request, id):
+        obj = get_object_or_404(Order, id=id)
         if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
             orderProducts = []
             orderProductList = obj.orderproduct_set.all()  # get all orderd products of individual product
@@ -294,53 +247,46 @@ class OrderdProducts(APIView): # this view returns all the products in a order. 
             if orderProductSerializer and orderSerializer:
                 orderProductLists = orderProductSerializer.data
                 for orderProduct in orderProductLists:
-                    orderProduct['product']['product_unit']= orderProduct['product']['product_unit']['product_unit']
+                    orderProduct['product']['product_unit'] = orderProduct['product']['product_unit']['product_unit']
                     orderProduct['product']['product_meta'] = orderProduct['product']['product_meta']['name']
                     # orderProduct['product'].pop('created_by')
                     # orderProduct['product'].pop('modified_by')
                     product = orderProduct['product']
-                    product['order_price']= orderProduct['order_product_price']
+                    product['order_price'] = orderProduct['order_product_price']
                     product['order_qty'] = orderProduct['order_product_qty']
                     # product['product_unit'] = orderProduct['product']['product_unit'].product_unit
                     # print(orderProduct['product']['product_unit']['product_unit'])
                     orderProducts.append(product)
                 order = orderSerializer.data
-                order['orderProducts']=orderProducts
+                order['orderProducts'] = orderProducts
                 return Response(order, status=status.HTTP_200_OK)
             else:
-                return Response({orderProductSerializer.errors + orderSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({orderProductSerializer.errors + orderSerializer.errors},
+                                status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-
 class OrderStatusUpdate(APIView):
-
     permission_classes = [GenericAuth]
 
-    def get_acceptedOrder_obj(self,id):
-        obj = AcceptedOrder.objects.get(id=id)
-        return obj
-
-    def get_oder_obj(self,id):
-        obj = Order.objects.get(id=id)
-        return obj
-
-    def post(self,request,id):
-        if request.user.user_type== 'RT':
-            obj = self.get_acceptedOrder_obj(id)
+    def post(self, request, id):
+        if request.user.user_type == 'RT':
+            obj = get_object_or_404(AcceptedOrder, id=id)
             if obj.user_id == request.user.id:
-                ordr_id = obj.order_id
-                order_obj = self.get_oder_obj(ordr_id)
-                if not order_obj.order_status== 'OD':
-                    setattr(order_obj,'order_status',request.data['order_status'])
+                order_obj = get_object_or_404(Order, id=obj.ordr_id)
+                if not order_obj.order_status == 'OD':
+                    setattr(order_obj, 'order_status', request.data['order_status'])
                     order_obj.save()
-                    return Response({'Order status set to': order_obj.order_status},status=status.HTTP_200_OK)
-                return Response('Cannot update order status',status=status.HTTP_400_BAD_REQUEST )
+                    recipient = order_obj.user
+                    notify.send(recipient=recipient, sender=request.user,
+                                verb=f"Your is now in {order_obj.order_status} state.")
+                    return Response({'Order status set to': order_obj.order_status}, status=status.HTTP_200_OK)
+                return Response('Cannot update order status', status=status.HTTP_400_BAD_REQUEST)
             return Response({"status": "User Don't have permission to update status"}, status=status.HTTP_403_FORBIDDEN)
         elif request.user.user_type == 'CM':
-            order_obj = get_object_or_404(Order,id = id)
+            order_obj = get_object_or_404(Order, id=id)
             if order_obj.user == request.user:
-                setattr(order_obj,'order_status',request.data['order_status'])  #set status in order
+                setattr(order_obj, 'order_status', request.data['order_status'])  # set status in order
                 order_obj.save()
                 return Response({'Order status set to': order_obj.order_status}, status=status.HTTP_200_OK)
             return Response('Cannot update order status', status=status.HTTP_400_BAD_REQUEST)
@@ -349,10 +295,10 @@ class OrderStatusUpdate(APIView):
 
 class DeliverChargeList(APIView):
 
-    def get(self,request):
+    def get(self, request):
         queryset = DeliveryCharge.objects.all()
         if queryset:
-            serializer = DeliveryChargeSerializer(queryset,many=True)
+            serializer = DeliveryChargeSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response('{No data found}', status=status.HTTP_204_NO_CONTENT)
 
@@ -362,133 +308,15 @@ class VatDeliveryChargeList(APIView):
     this view returns vat and delivery charge as objects in return
     '''
 
-    def get(self,request):
+    def get(self, request):
         vatqueryset = Vat.objects.all()
-        vat_serializer = VatSerializer(vatqueryset,many=True)
+        vat_serializer = VatSerializer(vatqueryset, many=True)
         delivery_queryset = DeliveryCharge.objects.all()
-        delivery_serializer = DeliveryChargeSerializer(delivery_queryset,many=True)
+        delivery_serializer = DeliveryChargeSerializer(delivery_queryset, many=True)
         list = []
         data = {
-            'vat':vat_serializer.data[0]['vat_amount'],
+            'vat': vat_serializer.data[0]['vat_amount'],
             'delivery_charge': delivery_serializer.data[0]['delivery_charge_inside_dhaka']
         }
         list.append(data)
-        return Response(list,status=status.HTTP_200_OK)
-
-
-###############
-
-
-
-
-#######
-import json
-
-class PaymentInfoViewSet(viewsets.ModelViewSet):
-    """Payment viewset"""
-    pass
-
-class PaymentInfoListCreate(APIView):
-
-    # permission_classes = [GenericAuth]
-    
-    def get(self,request):
-
-        queryset = PaymentInfo.objects.all()
-        if queryset:
-            query = self.request.GET.get("q")
-            if query:
-                queryset = queryset.filter(
-                    Q(payment_id__exact=query)
-                    # Q(id__exact=query)
-                )
-                if queryset:
-                    serializer = PaymentInfoDetailSerializer(queryset, many=True, context={'request': request})
-            
-                    if serializer:
-                        d = json.dumps(serializer.data)
-                        d = json.loads(d)
-                        # print(d[0])
-                        payment = serializer.data[0]
-                        # print(payment['order']['id'])
-                        # order = d[0]['order']['id']
-                        order_product = OrderProduct.objects.filter(order_id=int(payment['order']['id']))
-                        order_products = []
-                        for  p in  order_product:
-                            order_products.append(p.product.product_name)
-                        # print(order_product)
-                        data = {
-                            'status': "success",
-                            'payment_id': payment['payment_id'],
-                            'total_amount': payment['order']['order_total_price'],
-                            'currency': payment['currency'],
-                            'payment_type': payment['payment_type'],
-                            'created_by': payment['order']['created_by']["username"],
-                            'created_on': payment['created_on'],
-                            'order_products': order_products,
-                        }
-                        return Response(data, status=status.HTTP_200_OK)
-                    else:
-                        return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    data = {
-                            "status": "failed",
-                            "message": "invalid bill id"
-                        }
-                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
-                    
-
-            else:   
-                serializer = PaymentInfoSerializer(queryset, many=True, context={'request': request})
-                if serializer:
-                    data = {
-                        "status": "success",
-                        "data": serializer.data,
-                    }
-                    # print(serializer.data["payment_id"])
-                    return Response(data, status=status.HTTP_200_OK)
-                else:
-                    return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-
-    # def post(self,request,*args,**kwargs):
-    #     serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data,list), context={'request': request})
-    #     if serializer.is_valid():
-    #         serializer.save(user=request.user, created_by=request.user)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-# class OrderLatest(APIView):
-
-#     permission_classes = [GenericAuth]
-    
-#     def get(self,request):
-#         user_id = request.user.id
-
-#         queryset = OrderProduct.objects.filter(created_by_id=user_id).order_by('-id')[:1]
-
-#         if queryset:
-#             serializer = OrderProductDetailSerializer(queryset, many=True, context={'request': request})
-#             if serializer:
-#                 d = json.dumps(serializer.data)
-#                 d = json.loads(d)
-
-#                 data = {
-#                     "status": "success",
-#                     "order_product_id": d[0]["order_product_id"],
-#                     "product_name":d[0]["product"][ "product_name"],
-#                     'total':d[0]["order_product_price"],
-#                     "created_by":d[0]["created_by"],
-#                     # "data": serializer.data,
-#                 }
-#                 return Response(data, status=status.HTTP_200_OK)
-#             else:
-#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
- 
+        return Response(list, status=status.HTTP_200_OK)
