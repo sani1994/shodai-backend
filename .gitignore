@@ -16,3 +16,5 @@ parts
 src/*.eggs-info
 lib
 lib64
+.idea
+*/migrations
