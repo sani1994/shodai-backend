@@ -17,7 +17,6 @@ from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
@@ -27,7 +26,7 @@ SECRET_KEY = '3)*6hzohkg8$(c+=8zr(je6rz_--l5bcem3$@#n!!&t&#rkug_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['shod.ai','www.shod.ai','127.0.0.1']
+ALLOWED_HOSTS = ['shod.ai', 'www.shod.ai', '127.0.0.1']
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 REST_FRAMEWORK = {
@@ -41,7 +40,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120), #To increase the jwt token life time
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),  # To increase the jwt token life time
 }
 
 # Application definition
@@ -62,7 +61,7 @@ INSTALLED_APPS = [
     'django_elasticsearch_dsl',
     # 'material.admin',
     # for djnago material admin site
-    
+
     'userProfile',
     'bases',
     'order',
@@ -91,8 +90,7 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
-
-ELASTICSEARCH_DSL={
+ELASTICSEARCH_DSL = {
     'default': {
         'hosts': 'localhost:9200'
     },
@@ -103,7 +101,7 @@ ROOT_URLCONF = 'sodai.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,7 +116,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sodai.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
@@ -128,8 +125,8 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'shodai',
         'USER': 'postgres',
-        'PASSWORD' : '9876',
-        'HOST' : 'localhost'
+        'PASSWORD': '9876',
+        'HOST': 'localhost'
     }
 }
 
@@ -151,7 +148,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -166,7 +162,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
@@ -177,9 +172,8 @@ STATIC_URL = '/static/'
 # ]
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = '/media/'
-MEDIA_ROOT=os.path.join(BASE_DIR, "media")
 
 # for email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
