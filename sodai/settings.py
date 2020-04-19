@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'import_export',
-    'django_elasticsearch_dsl',
+    # 'django_elasticsearch_dsl',
     # 'material.admin',
     # for djnago material admin site
 
@@ -124,8 +124,8 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'shodai',
-        'USER': 'postgres',
-        'PASSWORD': '9876',
+        'USER': 'admin',
+        'PASSWORD': '',
         'HOST': 'localhost'
     }
 }
@@ -165,12 +165,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
+
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # STATICFILES_DIR = [
 #     os.path.join(BASE_DIR,'/static/'),
 # ]
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = '/media/'

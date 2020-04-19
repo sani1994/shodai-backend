@@ -56,5 +56,7 @@ urlpatterns = [
     path('', include('search.urls')),
     path('notifications/', include(notifications.urls, namespace='notifications')),
 ]
+
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

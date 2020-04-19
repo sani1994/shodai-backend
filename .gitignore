@@ -1,9 +1,13 @@
-__pyc__/
 *.pyc
+*.log
+*.pot
+__pycache__/
+/__pycache__/
+__pyc__/
 media/
 static/
 env/
-__pycache__/
+venv
 .idea/
 migrations/
 */__pycache__/*
