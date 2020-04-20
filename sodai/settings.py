@@ -185,3 +185,8 @@ EMAIL_HOST_USER = "noreply@shod.ai"
 EMAIL_HOST_PASSWORD = 'shodai123456'
 DEFAULT_FROM_EMAIL = 'testing@testing.com'
 EMAIL_PORT = 587
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
