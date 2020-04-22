@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.relations import HyperlinkedIdentityField
 
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
-
+from utility.serializers import ProductUnitSerializer
 
 class ShopCategorySerializer(serializers.ModelSerializer):
 
@@ -69,8 +69,10 @@ class ProductSerializer(serializers.ModelSerializer):
     #     instance.modified_by = validated_data.pop('modified_by')
     #     instance.save()
     #     return instance
+
+    product_unit = productUnitSerializer(read_only=True, many=False)
     
     class Meta:
         model = Product
-        fields = [ 'id','product_name','product_name_bn', 'product_image','product_unit', 'product_price','product_meta','product_last_price','is_approved','product_description','product_description_bn']
+        fields = [ 'id','product_name', 'product_name_bn', 'product_image', 'product_unit', 'product_price', 'product_meta', 'product_last_price', 'is_approved', 'product_description', 'product_description_bn']
         read_only = 'product_last_price'
