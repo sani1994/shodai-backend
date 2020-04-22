@@ -70,7 +70,7 @@ class ProductSerializer(serializers.ModelSerializer):
     #     instance.save()
     #     return instance
 
-    product_unit = productUnitSerializer(read_only=True, many=False)
+    product_unit = ProductUnitSerializer(read_only=True)
     
     class Meta:
         model = Product
