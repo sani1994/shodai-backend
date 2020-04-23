@@ -70,9 +70,16 @@ class ProductSerializer(serializers.ModelSerializer):
     #     instance.save()
     #     return instance
 
-    product_unit = ProductUnitSerializer(read_only=True)
+    # product_unit = ProductUnitSerializer(read_only=True)
     
     class Meta:
         model = Product
         fields = [ 'id','product_name', 'product_name_bn', 'product_image', 'product_unit', 'product_price', 'product_meta', 'product_last_price', 'is_approved', 'product_description', 'product_description_bn']
+        read_only = 'product_last_price'
+
+class LatestProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = [ 'id','product_name', 'product_name_bn', 'product_image', 'product_unit', 'product_unit_name', 'product_price', 'product_meta', 'product_last_price', 'is_approved', 'product_description', 'product_description_bn']
         read_only = 'product_last_price'
