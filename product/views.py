@@ -318,13 +318,13 @@ class ProductMetaDetails(APIView):      # get product meta id to get all the pro
 
 
 class RecentlyAddedProductList(APIView):  # return list of recently added products
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     def get(self,request):
         queryset = Product.objects.all().order_by('-created_on')[:10]
         serializer = LatestProductSerializer(queryset, many=True)
         if serializer:
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
