@@ -306,7 +306,7 @@ class ProductMetaDetails(APIView):      # get product meta id to get all the pro
         obj = ProductMeta.objects.filter(id=id).first()
         if obj:
             productList = obj.product_set.all()
-            serializer = ProductSerializer(productList,many=True)
+            serializer = LatestProductSerializer(productList, many=True)
             if serializer:
                 return Response(serializer.data,status=status.HTTP_200_OK)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
