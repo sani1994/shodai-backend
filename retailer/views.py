@@ -438,8 +438,8 @@ class AcceptedOrderList(APIView):
                 # email_notification(sub, body)
                 recipient_id = order_obj.user_id
                 recipient = UserProfile.objects.get(id = recipient_id)
-                notify.send(recipient=recipient,sender=request.user, verb=f"Your Order Acceped by {serializer.data['shop']}")
-                notify.send(recipient=recipient,sender=request.user, verb=f"Your Order Acceped by {serializer.data['shop']}")
+                notify.send(recipient=recipient, sender=request.user, verb=f"Your Order Acceped by {serializer.data['shop']}")
+                notify.send(recipient=recipient, sender=request.user, verb=f"Your Order Acceped by {serializer.data['shop']}")
                 """
                 Notification code ends here
                 """

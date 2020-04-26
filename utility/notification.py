@@ -3,9 +3,9 @@ from requests import post
 from sodai import settings
 
 
-def email_notification(subject,body):
+def email_notification(subject, body):
     target_user = ['rana@shod.ai', 'shishir@shod.ai', 'support@shod.ai']
-    return send_mail(subject,body,settings.EMAIL_HOST_USER, target_user)
+    return send_mail(subject, body, settings.EMAIL_HOST_USER, target_user)
 
 
 def send_sms(mobile_number, sms_content):
