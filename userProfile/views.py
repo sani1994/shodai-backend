@@ -199,20 +199,20 @@ class UserRegistration(CreateAPIView):  # user registration class
     def create(self, request, *args, **kwargs):
         mobile_number = request.data['mobile_number']
         # print(mobile_number)
-        if UserProfile.objects.filter(mobile_number=mobile_number).exists():
-            return Response({"message":"This mobile number already taken"}, status=status.HTTP_200_OK)
-            # user_NID
-        else:
+        # if UserProfile.objects.filter(mobile_number=mobile_number).exists():
+        #     return Response({"message":"This mobile number already taken"}, status=status.HTTP_200_OK)
+        #     # user_NID
+        # else:
 
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            if serializer.data['user_type'] == 'RT' or serializer.data['user_type'] == 'PD':
-                sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
-                u = send_sms(serializer.data['mobile_number'], sms_body)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        if serializer.data['user_type'] == 'RT' or serializer.data['user_type'] == 'PD':
+            sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
+            u = send_sms(serializer.data['mobile_number'], sms_body)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 def otp_key(number):  # generate OTP code
