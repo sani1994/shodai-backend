@@ -70,9 +70,13 @@ class DeliveryChargeSerializer(serializers.ModelSerializer):
 
 ######## new 
 
-class OrderProductDetailSerializer(OrderProductSerializer):    
-    order = OrderSerializer(read_only=True, many=True)
+class OrderProductDetailSerializer(serializers.ModelSerializer):    
+    # order = OrderSerializer(read_only=True)
 
+    class Meta:
+        model = OrderProduct
+        fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'created_by', 'product', 'order',)
+        depth = 1
 
 class PaymentInfoSerializer(serializers.ModelSerializer):
     """Create serializer for PaymentInfo object"""

@@ -2,7 +2,7 @@ from django.db.models import Q
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
-    DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer
+    DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderProductDetailSerializer
 from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -456,32 +456,34 @@ class PaymentInfoListCreate(APIView):
     #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class OrderLatest(APIView):
+class OrderLatest(APIView):
 
-#     permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
-#     def get(self,request):
-#         user_id = request.user.id
+    def get(self, request):
+        user_id = request.user.id
+        # user_id = 1
+        queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
 
-#         queryset = OrderProduct.objects.filter(created_by_id=user_id).order_by('-id')[:1]
-
-#         if queryset:
-#             serializer = OrderProductDetailSerializer(queryset, many=True, context={'request': request})
-#             if serializer:
-#                 d = json.dumps(serializer.data)
-#                 d = json.loads(d)
-
-#                 data = {
-#                     "status": "success",
-#                     "order_product_id": d[0]["order_product_id"],
-#                     "product_name":d[0]["product"][ "product_name"],
-#                     'total':d[0]["order_product_price"],
-#                     "created_by":d[0]["created_by"],
-#                     # "data": serializer.data,
-#                 }
-#                 return Response(data, status=status.HTTP_200_OK)
-#             else:
-#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+        if queryset:
+            serializer = OrderProductDetailSerializer(queryset, many=True, context={'request': request})
+            if serializer:
+                # d = json.dumps(serializer.data)
+                # d = json.loads(d)
+                d = serializer.data
+                # for i in range():
+                #     print(i)
+                data = {
+                    "status": "success",
+                    "order_product_id": d[0]["order_product_id"],
+                    "product_name":d[0]["product"][ "product_name"],
+                    'total': d[0]["order_product_price"],
+                    "created_by": d[0]["created_by"]["username"],
+                    # "data": serializer.data,
+                }
+                return Response(serializer.data , status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 

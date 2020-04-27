@@ -21,7 +21,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# SECRET_KEY = '3)*6hzohkg8$(c+=8zr(je6rz_--l5bcem3$@#n!!&t&#rkug_'
 
+# # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True
+
+# ALLOWED_HOSTS = ['shod.ai', 'www.shod.ai', '127.0.0.1']
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
