@@ -1,0 +1,88 @@
+body {
+  font-family: "Roboto", "sans-serif";
+}
+#banner {
+  background-image: url("../images/bg-landing-min.jpg");
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+}
+
+p {
+  color: #576375;
+}
+
+.subTitle {
+  margin: 50px 0;
+}
+.buttonWrap .btn-primary {
+  margin-right: 20px;
+}
+.buttonWrap {
+  padding-bottom: 30px;
+}
+footer {
+  text-align: center;
+  padding: 30px 0;
+  background-color: #2c2e31;
+}
+footer p {
+  margin: 0;
+}
+.logo {
+  text-align: center;
+  padding-right: 50px;
+}
+.logo img {
+  width: 180px;
+  margin: 10px 0;
+}
+.btn.btn-primary {
+  color: #333;
+}
+.btn:not(.btn-outlined) {
+  background: #d7dd1c;
+  border-color: #d7dd1c;
+}
+.btn-outline-primary {
+  border-color: #d7dd1c;
+  color: #333;
+}
+.btn-primary:hover,
+.btn:active {
+  background-color: #cdd318 !important;
+  border-color: #d7dd1c !important;
+  color: #333;
+}
+#app {
+  text-align: center;
+  padding: 120px 0;
+}
+#app h1 {
+  margin-bottom: 20px;
+}
+
+@media screen and (max-width: 990px) {
+  #banner {
+    max-height: auto;
+    height: auto;
+    padding-bottom: 30px;
+  }
+  .logo {
+    padding-right: 0;
+  }
+  h1 {
+    font-size: 30px;
+  }
+}
