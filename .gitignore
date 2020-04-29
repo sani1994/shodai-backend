@@ -4,7 +4,7 @@
 /__pycache__/
 __pyc__/
 media/
-/static
+static/
 env/
 venv
 .idea/
