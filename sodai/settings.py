@@ -22,7 +22,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 REST_FRAMEWORK = {
@@ -176,13 +175,12 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATIC_ROOT = ''
-STATICFILES_DIRS = ( os.path.join('static'), )
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = ''
 
-# STATICFILES_DIR = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'sodai/static'),
+]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
