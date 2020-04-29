@@ -20,6 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
+# SECURITY WARNING: keep the secret key used in production secret!
+
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
@@ -174,14 +176,17 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = ''
+STATICFILES_DIRS = ( os.path.join('static'), )
 
 # STATICFILES_DIR = [
-#     os.path.join(BASE_DIR,'/static/'),
+#     os.path.join(BASE_DIR, 'static'),
 # ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
