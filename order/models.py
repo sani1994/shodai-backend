@@ -120,6 +120,8 @@ class PaymentInfo(BaseModel):
     """PaymentInfo object"""
     payment_id = models.CharField(max_length=100, blank=True, unique=True, )
     # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
+    bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     order = models.ForeignKey(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
     payment_type = models.CharField(max_length=100, blank=True, )
@@ -130,6 +132,9 @@ class PaymentInfo(BaseModel):
 
     def save(self, *args, **kwargs):
         self.payment_id = str(uuid.uuid4())[:8]
+        self.transaction_id = str(uuid.uuid4())[:8]
+        self.bill_id = str(uuid.uuid4())[:8]
+
         self.currency = 'BDT'
         super(PaymentInfo, self).save(*args, **kwargs)
 

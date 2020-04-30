@@ -332,13 +332,21 @@ class ForgetPassword(APIView):
         :return: text message to the given mobile number if it exist.
         '''
         mobile_number = request.POST.get("mobile_number")
-        user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
-        if user_instance:
-            sms_body = f"Dear Mr/Mrs,\r\nYour one time password is !@#4567.\r\n[N.B:Please change the password after login"
-            send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
-            return Response({"status": "Message Sent Successfully"}, status=status.HTTP_200_OK)
+        if mobile_number:
+            # user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
+            user_instance = UserProfile.objects.filter(mobile_number=mobile_number)
+            # if user_instance. 
+            if not user_instance:
+                return Response({"status": "User not available"}, status=status.HTTP_200_OK)
+
+            else:
+                # print(user_instance[0].mobile_number)
+              
+                sms_body = f"Dear Mr/Mrs,\r\nYour one time password is !@#4567.\r\n[N.B:Please change the password after login"
+                send_sms(mobile_number=user_instance[0].mobile_number, sms_content=sms_body)
+                return Response({"status": "Message Sent Successfully"}, status=status.HTTP_200_OK)
         else:
-            return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"status": "User not available"}, status=status.HTTP_200_OK)
 
 
 class ForgetPasswordVarification(APIView):
