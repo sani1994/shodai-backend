@@ -35,7 +35,7 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderProduct
-        fields = ('id', 'order_product_id', 'order_product_price','order_product_qty','product','order',)
+        fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'product', 'order',)
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer): # this serializer has been used to get all the details including foreign key id... this duplication has been made as 'depth=1' is not working for post request in serializer.
@@ -83,8 +83,8 @@ class PaymentInfoSerializer(serializers.ModelSerializer):
     # order = OrderProductSerializer(read_only=True)
     class Meta:
         model = PaymentInfo
-        fields = ('id', 'payment_id', 'created_by', 'currency', 'order', 'payment_type', 'created_on')
-
+        fields = ('id', 'payment_id', 'transaction_id', 'bill_id', 'created_by', 'currency', 'order', 'payment_type', 'created_on')
+        read_only = ('id', )
 
 class PaymentInfoDetailSerializer(serializers.ModelSerializer):
     """Create serializer for PaymentInfo object"""

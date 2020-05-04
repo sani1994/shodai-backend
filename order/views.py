@@ -447,13 +447,45 @@ class PaymentInfoListCreate(APIView):
 
         return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    # def post(self,request,*args,**kwargs):
-    #     serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data,list), context={'request': request})
-    #     if serializer.is_valid():
-    #         serializer.save(user=request.user, created_by=request.user)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
+        if serializer.is_valid():
+            serializer.save(created_by=request.user)
+            order = serializer.data['order']
+            order_product = OrderProduct.objects.filter(order_id=order)
+            # print(order)
+            data = {
+                    'status': "success",
+                    'payment_id': serializer.data['payment_id'],
+                    "payment_initiated_on": serializer.data['created_on'],
+                    "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
+                }
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PaymentInfoCreate(APIView):
+
+    # permission_classes = [GenericAuth]
+
+    
+    def post(self, request, *args, **kwargs):
+        serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
+        if serializer.is_valid():
+            serializer.save(created_by=request.user)
+            order = serializer.data['order']
+            order_product = OrderProduct.objects.filter(order_id=order)
+            # print(order)
+            data = {
+                    'status': "success",
+                    'payment_id': serializer.data['payment_id'],
+                    "payment_initiated_on": serializer.data['created_on'],
+                    "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
+                }
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OrderLatest(APIView):
@@ -463,10 +495,16 @@ class OrderLatest(APIView):
     def get(self, request):
         user_id = request.user.id
         # user_id = 1
-        queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
+        # queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
+        order = Order.objects.filter(created_by_id=user_id, order_status='OD')[:1]
+       
+        if order:
+            product = OrderProduct.objects.filter(order= order)
+            orderproduct = OrderProductSerializer(product, many=True, context={'request': request}).data
+            print(product)
+            print(order[0].id)
+            serializer = OrderSerializer(order, many=True, context={'request': request})
 
-        if queryset:
-            serializer = OrderProductDetailSerializer(queryset, many=True, context={'request': request})
             if serializer:
                 # d = json.dumps(serializer.data)
                 # d = json.loads(d)
@@ -475,13 +513,14 @@ class OrderLatest(APIView):
                 #     print(i)
                 data = {
                     "status": "success",
-                    "order_product_id": d[0]["order_product_id"],
-                    "product_name":d[0]["product"][ "product_name"],
-                    'total': d[0]["order_product_price"],
-                    "created_by": d[0]["created_by"]["username"],
-                    # "data": serializer.data,
+                    # "order_product_id": d[0]["order_product_id"],
+                    # "product_name":d[0]["product"][ "product_name"],
+                    # 'total': d[0]["order_product_price"],
+                    # "created_by": d[0]["created_by"]["username"],
+                    "order": serializer.data,
+                    "products": orderproduct 
                 }
-                return Response(serializer.data , status=status.HTTP_200_OK)
+                return Response(data , status=status.HTTP_200_OK)
             else:
                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
         else:

@@ -188,16 +188,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST = "smtp.yandex.com"
-EMAIL_HOST_USER = "noreply@shod.ai"
-EMAIL_HOST_PASSWORD = 'shodai123456'
-DEFAULT_FROM_EMAIL = 'testing@testing.com'
-EMAIL_PORT = 587
-
 try:
     from .local_settings import *
 except ImportError:

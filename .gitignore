@@ -3,7 +3,6 @@
 *.pot
 /__pycache__/
 __pyc__/
-media/
 static/
 env/
 venv
