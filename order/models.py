@@ -123,7 +123,7 @@ class PaymentInfo(BaseModel):
     transaction_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     currency = models.CharField(max_length=3, blank=True, default='BDT')
-    order = models.ForeignKey(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
+    order = models.OneToOneField(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
     payment_type = models.CharField(max_length=100, blank=True, )
 
     # def __init__(self):

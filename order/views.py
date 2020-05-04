@@ -385,16 +385,16 @@ class PaymentInfoViewSet(viewsets.ModelViewSet):
 
 class PaymentInfoListCreate(APIView):
 
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     def get(self, request):
 
         queryset = PaymentInfo.objects.all()
         if queryset:
-            query = self.request.GET.get("q")
+            query = self.request.GET.get("bill_id")
             if query:
                 queryset = queryset.filter(
-                    Q(payment_id__exact=query)
+                    Q(bill_id__exact=query)
                     # Q(id__exact=query)
                 )
                 if queryset:
@@ -469,7 +469,7 @@ class PaymentInfoListCreate(APIView):
 
 class PaymentInfoCreate(APIView):
 
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     
     def post(self, request, *args, **kwargs):
@@ -500,31 +500,47 @@ class OrderLatest(APIView):
         user_id = request.user.id
         # user_id = 1
         # queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
-        order = Order.objects.filter(created_by_id=user_id, order_status='OD')[:1]
-       
+        order = Order.objects.filter(created_by_id=user_id)[:1]
+
         if order:
-            product = OrderProduct.objects.filter(order= order)
+            product = OrderProduct.objects.filter(order=order)
+            payment = PaymentInfo.objects.filter(order_id=order)
+   
             orderproduct = OrderProductSerializer(product, many=True, context={'request': request}).data
-            print(product)
-            print(order[0].id)
+        
             serializer = OrderSerializer(order, many=True, context={'request': request})
 
             if serializer:
                 # d = json.dumps(serializer.data)
                 # d = json.loads(d)
                 d = serializer.data
-                # for i in range():
-                #     print(i)
+       
+
+                if payment:
+
+                    for payment in payment:
+                        payment_id = payment.payment_id
+                        transaction_id = payment.transaction_id
+                        bill_id = payment.bill_id
+
+                    data = {
+                        "status": "success",
+                        "payment_id": payment_id,
+                        "transaction_id": transaction_id,
+                        "bill_id": bill_id,
+                        "order": serializer.data,
+                        "products": orderproduct 
+                    }
+                    return Response(data , status=status.HTTP_200_OK)
+
+                
                 data = {
                     "status": "success",
-                    # "order_product_id": d[0]["order_product_id"],
-                    # "product_name":d[0]["product"][ "product_name"],
-                    # 'total': d[0]["order_product_price"],
-                    # "created_by": d[0]["created_by"]["username"],
                     "order": serializer.data,
                     "products": orderproduct 
                 }
                 return Response(data , status=status.HTTP_200_OK)
+
             else:
                 return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
         else:
