@@ -424,13 +424,13 @@ class PaymentInfoListCreate(APIView):
                         }
                         return Response(data, status=status.HTTP_200_OK)
                     else:
-                        return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
                 else:
                     data = {
                         "status": "failed",
                         "message": "invalid bill id"
                     }
-                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(data, status=status.HTTP_200_OK)
 
 
             else:
@@ -443,9 +443,9 @@ class PaymentInfoListCreate(APIView):
                     # print(serializer.data["payment_id"])
                     return Response(data, status=status.HTTP_200_OK)
                 else:
-                    return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
 
-        return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
@@ -462,7 +462,9 @@ class PaymentInfoListCreate(APIView):
                 }
             return Response(data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_200_OK)
+        
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
 class PaymentInfoCreate(APIView):
@@ -487,6 +489,8 @@ class PaymentInfoCreate(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 class OrderLatest(APIView):
 
@@ -522,7 +526,9 @@ class OrderLatest(APIView):
                 }
                 return Response(data , status=status.HTTP_200_OK)
             else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
         else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
+
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
