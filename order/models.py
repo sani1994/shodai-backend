@@ -14,10 +14,10 @@ from userProfile.models import Address
 
 class Order(BaseModel):
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
-    payment_id = models.CharField(max_length=100, blank=True, unique=True, default='83c6be05')
+    payment_id = models.CharField(max_length=100, blank=True, unique=True)
     # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transaction_id = models.CharField(max_length=100, default='83d6ae05', null=True, blank=True, unique=True,)
-    bill_id = models.CharField(max_length=100, null=True, default='83c6ae05', blank=True, unique=True,)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
+    bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField(auto_now=True)
     delivery_place = models.CharField(max_length=100)
