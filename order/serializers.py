@@ -83,7 +83,7 @@ class PaymentInfoSerializer(serializers.ModelSerializer):
     # order = OrderProductSerializer(read_only=True)
     class Meta:
         model = PaymentInfo
-        fields = ('id', 'payment_id', 'transaction_id', 'bill_id', 'created_by', 'currency', 'order', 'payment_type', 'created_on')
+        fields = ('id', 'order', 'payment_type', 'created_on')
         read_only = ('id', )
 
 class PaymentInfoDetailSerializer(serializers.ModelSerializer):
@@ -94,5 +94,5 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentInfo
-        fields = ('id', 'payment_id', 'created_by', 'currency', 'order', 'payment_type', 'created_on')
+        fields = ('id', 'order', 'created_on')
         depth = 2
