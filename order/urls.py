@@ -14,7 +14,7 @@ urlpatterns = [
     path('deliveryCharge/', views.DeliverChargeList.as_view()), # get list of delivery charge
     path('VDC/', views.VatDeliveryChargeList.as_view()), #get vat and delivery charge togather within this api VD(Vat Delivery Charge)
     path('payment/', views.PaymentInfoListCreate.as_view()), 
-    path('payment/create/', views.PaymentInfoCreate.as_view()), 
+    # path('payment/create/', views.PaymentInfoCreate.as_view()), 
     path('latestorder/', views.OrderLatest.as_view()),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
