@@ -95,7 +95,7 @@ class ProducerBusiness(BaseModel):
         return self.user.first_name
 
     def save(self, *args, **kwargs):
-        self.productbusiness_geopoint = Point(self.long,self.lat)
+        self.productbusiness_geopoint = Point(self.long, self.lat)
         super(ProducerBusiness, self).save(*args, **kwargs)
 
 

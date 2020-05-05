@@ -393,10 +393,8 @@ class PaymentInfoListCreate(APIView):
         if queryset:
             query = self.request.GET.get("bill_id")
             if query:
-                queryset = queryset.filter(
-                    Q(bill_id__exact=query)
-                    # Q(id__exact=query)
-                )
+                queryset = PaymentInfo.objects.filter(order__bill_id__exact=query)
+                print(queryset)
                 if queryset:
                     serializer = PaymentInfoDetailSerializer(queryset, many=True, context={'request': request})
 
@@ -414,10 +412,11 @@ class PaymentInfoListCreate(APIView):
                         # print(order_product)
                         data = {
                             'status': "success",
-                            'payment_id': payment['payment_id'],
+                            'payment_id': payment['order']['payment_id'],
+                            'bill_id': payment['order']['bill_id'],
                             'total_amount': payment['order']['order_total_price'],
-                            'currency': payment['currency'],
-                            'payment_type': payment['payment_type'],
+                            'currency': payment['order']['currency'],
+                            # 'payment_type': payment['payment_type'],
                             'created_by': payment['order']['created_by']["username"],
                             'created_on': payment['created_on'],
                             'order_products': order_products,
@@ -447,24 +446,24 @@ class PaymentInfoListCreate(APIView):
 
         return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
-    def post(self, request, *args, **kwargs):
-        serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
-        if serializer.is_valid():
-            serializer.save(created_by=request.user)
-            order = serializer.data['order']
-            order_product = OrderProduct.objects.filter(order_id=order)
-            # print(order)
-            data = {
-                    'status': "success",
-                    'payment_id': serializer.data['payment_id'],
-                    "payment_initiated_on": serializer.data['created_on'],
-                    "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
-                }
-            return Response(data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_200_OK)
+    # def post(self, request, *args, **kwargs):
+    #     serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
+    #     if serializer.is_valid():
+    #         serializer.save(created_by=request.user)
+    #         order = serializer.data['order']
+    #         order_product = OrderProduct.objects.filter(order_id=order)
+    #         # print(order)
+    #         data = {
+    #                 'status': "success",
+    #                 'payment_id': serializer.data['payment_id'],
+    #                 "payment_initiated_on": serializer.data['created_on'],
+    #                 "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
+    #             }
+    #         return Response(data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_200_OK)
         
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
 class PaymentInfoCreate(APIView):
@@ -500,11 +499,11 @@ class OrderLatest(APIView):
         user_id = request.user.id
         # user_id = 1
         # queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
-        order = Order.objects.filter(created_by_id=user_id)[:1]
+        order = Order.objects.filter(user=request.user)[:1]
 
         if order:
             product = OrderProduct.objects.filter(order=order)
-            payment = PaymentInfo.objects.filter(order_id=order)
+            # payment = PaymentInfo.objects.filter(order_id=order)
    
             orderproduct = OrderProductSerializer(product, many=True, context={'request': request}).data
         
@@ -516,22 +515,22 @@ class OrderLatest(APIView):
                 d = serializer.data
        
 
-                if payment:
+                # if payment:
 
-                    for payment in payment:
-                        payment_id = payment.payment_id
-                        transaction_id = payment.transaction_id
-                        bill_id = payment.bill_id
+                #     for payment in payment:
+                #         payment_id = payment.payment_id
+                #         transaction_id = payment.transaction_id
+                #         bill_id = payment.bill_id
 
-                    data = {
-                        "status": "success",
-                        "payment_id": payment_id,
-                        "transaction_id": transaction_id,
-                        "bill_id": bill_id,
-                        "order": serializer.data,
-                        "products": orderproduct 
-                    }
-                    return Response(data , status=status.HTTP_200_OK)
+                #     data = {
+                #         "status": "success",
+                #         "payment_id": payment_id,
+                #         "transaction_id": transaction_id,
+                #         "bill_id": bill_id,
+                #         "order": serializer.data,
+                #         "products": orderproduct 
+                #     }
+                #     return Response(data , status=status.HTTP_200_OK)
 
                 
                 data = {

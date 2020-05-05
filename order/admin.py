@@ -10,7 +10,7 @@ from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo
 class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id')
     # list_display = ('id','user','order_status', 'home_delivery')
-    readonly_fields = ['created_by', 'modified_by','user','created_on',]
+    readonly_fields = ['created_by', 'modified_by', 'created_on',]
 
     def _products(self,obj):
         return obj.offerproduct_set.all().count()

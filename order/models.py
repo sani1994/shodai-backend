@@ -14,6 +14,11 @@ from userProfile.models import Address
 
 class Order(BaseModel):
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
+    payment_id = models.CharField(max_length=100, blank=True, unique=True, default='83c6be05')
+    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    transaction_id = models.CharField(max_length=100, default='83d6ae05', null=True, blank=True, unique=True,)
+    bill_id = models.CharField(max_length=100, null=True, default='83c6ae05', blank=True, unique=True,)
+    currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField(auto_now=True)
     delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)
@@ -70,6 +75,11 @@ class Order(BaseModel):
         # self.shop_geopoint.y = self.shop_lat
         # self.shop_geopoint.x = self.shop_long
         # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
+        self.payment_id = str(uuid.uuid4())[:8]
+        self.transaction_id = str(uuid.uuid4())[:8]
+        self.bill_id = str(uuid.uuid4())[:8]
+        self.currency = 'BDT'
+
         self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)
 
@@ -118,25 +128,25 @@ class DeliveryCharge(BaseModel):
 # models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 class PaymentInfo(BaseModel):
     """PaymentInfo object"""
-    payment_id = models.CharField(max_length=100, blank=True, unique=True, )
+    # payment_id = models.CharField(max_length=100, blank=True, unique=True, )
     # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transaction_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
-    bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
-    currency = models.CharField(max_length=3, blank=True, default='BDT')
+    # transaction_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
+    # bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
+    # currency = models.CharField(max_length=3, blank=True, default='BDT')
     order = models.OneToOneField(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
-    payment_type = models.CharField(max_length=100, blank=True, )
+    # payment_type = models.CharField(max_length=100, blank=True,)
 
     # def __init__(self):
     #     super(PaymentInfo, self).__init__()
     #     self.payment_id = str(uuid.uuid4()[:8])
 
-    def save(self, *args, **kwargs):
-        self.payment_id = str(uuid.uuid4())[:8]
-        self.transaction_id = str(uuid.uuid4())[:8]
-        self.bill_id = str(uuid.uuid4())[:8]
+    # def save(self, *args, **kwargs):
+    #     self.payment_id = str(uuid.uuid4())[:8]
+    #     self.transaction_id = str(uuid.uuid4())[:8]
+    #     self.bill_id = str(uuid.uuid4())[:8]
 
-        self.currency = 'BDT'
-        super(PaymentInfo, self).save(*args, **kwargs)
+    #     self.currency = 'BDT'
+    #     super(PaymentInfo, self).save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.payment_id)
+        return str(self.order)

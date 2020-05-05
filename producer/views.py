@@ -47,7 +47,7 @@ class PeroducerBulkRequestList(APIView):  # get producer bulk request(producer's
         """
         sub = "Approval Request For Producer Product"
         body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted {serializer.data['product_name']}\r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
-        email_notification(sub,body)
+        email_notification(sub, body)
         """
         Notification code ends here
         """
@@ -552,11 +552,11 @@ class MicroBulkOrderProductsList(APIView):
 
     def get(self, request):
         if request.user.user_type != 'PD':
-            data = list(MicroBulkOrderProducts.objects.filter(micro_bulk_order__customer=request.user).values('bulk_order_products__product__product_name','bulk_order_products__available_qty','qty','bulk_order_products__product__product_image'))
+            data = list(MicroBulkOrderProducts.objects.filter(micro_bulk_order__customer=request.user).values('bulk_order_products__product__product_name', 'bulk_order_products__available_qty', 'qty', 'bulk_order_products__product__product_image'))
             return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        print(request.data)
+        # print(request.data)
         serializer = MicroBulkOrderProductsSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -603,6 +603,6 @@ class SharableCodeAccept(APIView):
 
     def get(self,request):
         sharable_code = request.data['sharable_code']
-        object = get_object_or_404(BulkOrderProducts,shareable_ref_code=sharable_code)
+        object = get_object_or_404(BulkOrderProducts, shareable_ref_code=sharable_code)
         serializer = BulkOrderProductsSerializer(object)
         return Response(serializer.data if serializer else serializer.error_messages, status=status.HTTP_200_OK)
