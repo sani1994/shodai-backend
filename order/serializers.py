@@ -1,6 +1,7 @@
 from order.models import Order, OrderProduct, Vat, DeliveryCharge, PaymentInfo
 from rest_framework import serializers 
 
+from userProfile.serializers import UserProfileSerializer
 
 class OrderSerializer(serializers.ModelSerializer):
 
@@ -70,20 +71,21 @@ class DeliveryChargeSerializer(serializers.ModelSerializer):
 
 ######## new 
 
-class OrderProductDetailSerializer(serializers.ModelSerializer):    
+class OrderDetailSerializer(serializers.ModelSerializer):    
     # order = OrderSerializer(read_only=True)
-
+    user = UserProfileSerializer(read_only=True)
+    products = OrderProductSerializer(read_only=True, many=True)
     class Meta:
-        model = OrderProduct
-        fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'created_by', 'product', 'order',)
-        depth = 1
+        model = Order
+        fields = '__all__'
+        # depth = 1
 
 class PaymentInfoSerializer(serializers.ModelSerializer):
     """Create serializer for PaymentInfo object"""
     # order = OrderProductSerializer(read_only=True)
     class Meta:
         model = PaymentInfo
-        fields = ('id', 'order',  'created_on')
+        fields = ('__all__')
         read_only = ('id', )
 
 class PaymentInfoDetailSerializer(serializers.ModelSerializer):
@@ -94,5 +96,5 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentInfo
-        fields = ('id', 'order', 'created_on')
-        depth = 2
+        fields = ('__all__')
+        read_only = ('id', )

@@ -2,7 +2,7 @@ from django.db.models import Q
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
-    DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderProductDetailSerializer
+    DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer
 from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -375,6 +375,7 @@ class VatDeliveryChargeList(APIView):
         return Response(list, status=status.HTTP_200_OK)
 
 
+############
 import json
 
 
@@ -389,39 +390,38 @@ class PaymentInfoListCreate(APIView):
 
     def get(self, request):
 
-        queryset = PaymentInfo.objects.all()
+        queryset = Order.objects.all().order_by('-id')
         if queryset:
             query = self.request.GET.get("bill_id")
             if query:
-                queryset = PaymentInfo.objects.filter(order__bill_id__exact=query)
+                queryset = Order.objects.filter(bill_id__exact=query)
                 print(queryset)
                 if queryset:
-                    serializer = PaymentInfoDetailSerializer(queryset, many=True, context={'request': request})
+                    serializer = OrderDetailSerializer(queryset, many=True, context={'request': request})
 
                     if serializer:
                         d = json.dumps(serializer.data)
                         d = json.loads(d)
                         # print(d[0])
                         payment = serializer.data[0]
-                        # print(payment['order']['id'])
-                        # order = d[0]['order']['id']
-                        order_product = OrderProduct.objects.filter(order_id=int(payment['order']['id']))
-                        order_products = []
-                        for p in order_product:
-                            order_products.append(p.product.product_name)
-                        # print(order_product)
-                        data = {
-                            'status': "success",
-                            'payment_id': payment['order']['payment_id'],
-                            'bill_id': payment['order']['bill_id'],
-                            'total_amount': payment['order']['order_total_price'],
-                            'currency': payment['order']['currency'],
-                            # 'payment_type': payment['payment_type'],
-                            'created_by': payment['order']['created_by']["username"],
-                            'created_on': payment['created_on'],
-                            'order_products': order_products,
-                        }
-                        return Response(data, status=status.HTTP_200_OK)
+                       
+                        # order_product = OrderProduct.objects.filter(order_id=int(payment['order']['id']))
+                        # order_products = []
+                        # for p in order_product:
+                        #     order_products.append(p.product.product_name)
+                        # # print(order_product)
+                        # data = {
+                        #     'status': "success",
+                        #     'payment_id': payment['order']['payment_id'],
+                        #     'bill_id': payment['order']['bill_id'],
+                        #     'total_amount': payment['order']['order_total_price'],
+                        #     'currency': payment['order']['currency'],
+                        #     # 'payment_type': payment['payment_type'],
+                        #     'created_by': payment['order']['created_by']["username"],
+                        #     'created_on': payment['created_on'],
+                        #     'order_products': order_products,
+                        # }
+                        return Response(serializer.data, status=status.HTTP_200_OK)
                     else:
                         return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
                 else:
@@ -433,7 +433,7 @@ class PaymentInfoListCreate(APIView):
 
 
             else:
-                serializer = PaymentInfoSerializer(queryset, many=True, context={'request': request})
+                serializer = OrderDetailSerializer(queryset, many=True, context={'request': request})
                 if serializer:
                     data = {
                         "status": "success",
@@ -446,50 +446,40 @@ class PaymentInfoListCreate(APIView):
 
         return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
-    def post(self, request, *args, **kwargs):
-        serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
-        if serializer.is_valid():
-            serializer.save(created_by=request.user)
-            order = serializer.data['order']
-            order_product = OrderProduct.objects.filter(order_id=order)
-            # print(order)
-            # data = {
-            #         'status': "success",
-            #         # 'payment_id': serializer.data['payment_id'],
-            #         "payment_initiated_on": serializer.data['created_on'],
-            #         "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
-            #     }
-            return Response( serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_200_OK)
+    # def post(self, request, *args, **kwargs):
+    #     serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
+    #     if serializer.is_valid():
+    #         serializer.save(created_by=request.user)
+    #         order = serializer.data['order']
+    #         order_product = OrderProduct.objects.filter(order_id=order)
+    #         # print(order)
+    #         # data = {
+    #         #         'status': "success",
+    #         #         # 'payment_id': serializer.data['payment_id'],
+    #         #         "payment_initiated_on": serializer.data['created_on'],
+    #         #         "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
+    #         #     }
+    #         return Response( serializer.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_200_OK)
         
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
+
+
+class PaymentInfoCreate(APIView):
+
+    permission_classes = [GenericAuth]
+
+    def post(self, request, *args, **kwargs):
+        serializer = PaymentInfoSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save(created_by=request.user) 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
-
-# class PaymentInfoCreate(APIView):
-
-#     permission_classes = [GenericAuth]
-
-    
-#     def post(self, request, *args, **kwargs):
-#         serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
-#         if serializer.is_valid():
-#             serializer.save(created_by=request.user)
-#             order = serializer.data['order']
-#             order_product = OrderProduct.objects.filter(order_id=order)
-#             # print(order)
-#             data = {
-#                     'status': "success",
-#                     'payment_id': serializer.data['payment_id'],
-#                     "payment_initiated_on": serializer.data['created_on'],
-#                     "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
-#                 }
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        
-#         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 class OrderLatest(APIView):
 
@@ -499,15 +489,14 @@ class OrderLatest(APIView):
         user_id = request.user.id
         # user_id = 1
         # queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
-        order = Order.objects.filter(user=request.user)[:1]
+        order = Order.objects.filter(user=request.user).order_by('-id')[:1]
 
         if order:
-            product = OrderProduct.objects.filter(order=order)
-            # payment = PaymentInfo.objects.filter(order_id=order)
+            # product = OrderProduct.objects.filter(order=order)
    
-            orderproduct = OrderProductSerializer(product, many=True, context={'request': request}).data
+            # orderproduct = OrderProductSerializer(product, many=True, context={'request': request}).data
         
-            serializer = OrderSerializer(order, many=True, context={'request': request})
+            serializer = OrderDetailSerializer(order, many=True, context={'request': request})
 
             if serializer:
                 # d = json.dumps(serializer.data)
@@ -536,7 +525,7 @@ class OrderLatest(APIView):
                 data = {
                     "status": "success",
                     "order": serializer.data,
-                    "products": orderproduct 
+                    # "products": orderproduct 
                 }
                 return Response(data , status=status.HTTP_200_OK)
 

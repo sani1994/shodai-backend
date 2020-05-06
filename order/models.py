@@ -66,10 +66,10 @@ class Order(BaseModel):
     #     # print(count)
     #     return count
 
-    # @property
-    # def get_order_products(self):
-    #     order_product = self.orders.all()
-    #     return  order_product
+    @property
+    def products(self):
+        order_product = self.orders.all()
+        return  order_product
 
     def save(self, *args, **kwargs):
         # self.shop_geopoint.y = self.shop_lat
@@ -128,12 +128,13 @@ class DeliveryCharge(BaseModel):
 # models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 class PaymentInfo(BaseModel):
     """PaymentInfo object"""
-    # payment_id = models.CharField(max_length=100, blank=True, unique=True, )
+    payment_id = models.CharField(max_length=100, null=True, blank=True)
+    order_id = models.CharField(max_length=20, null=True, blank=True)
     # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    # transaction_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
-    # bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True,)
+    bill_id = models.CharField(max_length=100, null=True, blank=True)
     # currency = models.CharField(max_length=3, blank=True, default='BDT')
-    order = models.OneToOneField(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
+    # order = models.OneToOneField(Order, related_name='payment_orders', on_delete=models.CASCADE, blank=True, null=True)
     # payment_type = models.CharField(max_length=100, blank=True,)
 
     # def __init__(self):
@@ -149,4 +150,4 @@ class PaymentInfo(BaseModel):
     #     super(PaymentInfo, self).save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.order)
+        return str(self.order_id) + str(self.payment_id)
