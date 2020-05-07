@@ -386,8 +386,6 @@ class PaymentInfoViewSet(viewsets.ModelViewSet):
 
 class PaymentInfoListCreate(APIView):
 
-    # permission_classes = [GenericAuth]
-
     def get(self, request):
 
         queryset = Order.objects.all().order_by('-id')
@@ -404,12 +402,7 @@ class PaymentInfoListCreate(APIView):
                         # d = json.loads(d)
                         # print(d[0])
                         payment = serializer.data[0]
-                        # print(d['payment_id'])
-                        # order_product = OrderProduct.objects.filter(order_id=int(payment['order']['id']))
-                        # order_products = []
-                        # for p in order_product:
-                        #     order_products.append(p.product.product_name)
-                        # # print(order_product)
+                  
                         data = {
                             'status': "success",
                             'payment_id': payment['payment_id'],
@@ -445,26 +438,6 @@ class PaymentInfoListCreate(APIView):
                     return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
 
         return Response({"status": "No content"}, status=status.HTTP_200_OK)
-
-    # def post(self, request, *args, **kwargs):
-    #     serializer = PaymentInfoSerializer(data=request.data, many=isinstance(request.data, list), context={'request': request})
-    #     if serializer.is_valid():
-    #         serializer.save(created_by=request.user)
-    #         order = serializer.data['order']
-    #         order_product = OrderProduct.objects.filter(order_id=order)
-    #         # print(order)
-    #         # data = {
-    #         #         'status': "success",
-    #         #         # 'payment_id': serializer.data['payment_id'],
-    #         #         "payment_initiated_on": serializer.data['created_on'],
-    #         #         "payment_url": "​https://sandbox.sslcommerz.com/EasyCheckOut/testcde8f60fb3f8e38f5cad7bdc3b1ffda1e2​"
-    #         #     }
-    #         return Response( serializer.data, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response(serializer.errors, status=status.HTTP_200_OK)
-        
-    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
-
 
 class PaymentInfoCreate(APIView):
 
