@@ -75,6 +75,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     # order = OrderSerializer(read_only=True)
     user = UserProfileSerializer(read_only=True)
     products = OrderProductSerializer(read_only=True, many=True)
+    created_on = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+
     class Meta:
         model = Order
         fields = '__all__'

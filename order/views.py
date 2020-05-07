@@ -402,6 +402,8 @@ class PaymentInfoListCreate(APIView):
                         # d = json.loads(d)
                         # print(d[0])
                         payment = serializer.data[0]
+                        year = payment['created_on']
+
                   
                         data = {
                             'status': "success",
@@ -411,7 +413,7 @@ class PaymentInfoListCreate(APIView):
                             'currency': payment['currency'],
                             # 'payment_type': payment['payment_type'],
                             'created_by': payment['user']["username"],
-                            'created_on': payment['created_on'],
+                            'created_on': year,
                             # 'order_products': payment['products'],
                             'bill_info':  {
                                             "type": "product_purchase",
