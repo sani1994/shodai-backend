@@ -437,7 +437,7 @@ class PaymentInfoListCreate(APIView):
                 if serializer:
                     data = {
                         "status": "success",
-                        "data": serializer.data,
+                        # "data": serializer.data,
                     }
                     # print(serializer.data["payment_id"])
                     return Response(data, status=status.HTTP_200_OK)
