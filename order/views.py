@@ -412,7 +412,11 @@ class PaymentInfoListCreate(APIView):
                             # 'payment_type': payment['payment_type'],
                             'created_by': payment['user']["username"],
                             'created_on': payment['created_on'],
-                            'order_products': payment['products'],
+                            # 'order_products': payment['products'],
+                            'bill_info':  {
+                                            "type": "product_purchase",
+                                            'order_products': payment['products']
+                            }
                         }
                         return Response(data, status=status.HTTP_200_OK)
                     else:
