@@ -2,7 +2,8 @@ from django.db.models import Q
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
-    DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer
+    DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
+    OrderDetailPaymentSerializer
 from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -34,14 +35,19 @@ class OrderList(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
+
     def post(self, request, *args, **kwargs):
         if request.data['contact_number'] == "":
             request.POST._mutable = True
             request.data['contact_number'] = request.user.mobile_number
             request.POST._mutable = False
+        print(request.data['delivery_date_time'])
         serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
                                      context={'request': request})
         if serializer.is_valid():
+            # print(serializer.data)
+            print(serializer.data[0]['delivery_date_time'])
+
             serializer.save(user=request.user, created_by=request.user)
             """
             To send notification to admin 
@@ -289,7 +295,7 @@ class OrderdProducts(APIView):  # this view returns all the products in a order.
 
     def get(self, request, id):
         obj = get_object_or_404(Order, id=id)
-        print(obj)
+        # print(obj)
         if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
             orderProducts = []
             # orderProductList = obj.orderproduct_set.all()  # get all orderd products of individual product
@@ -378,12 +384,6 @@ class VatDeliveryChargeList(APIView):
 ############
 import json
 
-
-class PaymentInfoViewSet(viewsets.ModelViewSet):
-    """Payment viewset"""
-    pass
-
-
 class PaymentInfoListCreate(APIView):
 
     def get(self, request):
@@ -395,7 +395,7 @@ class PaymentInfoListCreate(APIView):
                 queryset = Order.objects.filter(bill_id__exact=query)
                 print(queryset)
                 if queryset:
-                    serializer = OrderDetailSerializer(queryset, many=True, context={'request': request})
+                    serializer = OrderDetailPaymentSerializer(queryset, many=True, context={'request': request})
 
                     if serializer:
                         # d = json.dumps(serializer.data)
@@ -438,7 +438,6 @@ class PaymentInfoListCreate(APIView):
                         "status": "success",
                         # "data": serializer.data,
                     }
-                    # print(serializer.data["payment_id"])
                     return Response(data, status=status.HTTP_200_OK)
                 else:
                     return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
@@ -460,8 +459,10 @@ class PaymentInfoCreate(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
-class OrderLatest(APIView):
+import requests
 
+class OrderLatest(APIView):
+    """"""
     permission_classes = [GenericAuth]
 
     def get(self, request):
@@ -480,33 +481,48 @@ class OrderLatest(APIView):
             if serializer:
                 # d = json.dumps(serializer.data)
                 # d = json.loads(d)
-                d = serializer.data
-       
+                d = serializer.data       
 
-                # if payment:
-
-                #     for payment in payment:
-                #         payment_id = payment.payment_id
-                #         transaction_id = payment.transaction_id
-                #         bill_id = payment.bill_id
-
-                #     data = {
-                #         "status": "success",
-                #         "payment_id": payment_id,
-                #         "transaction_id": transaction_id,
-                #         "bill_id": bill_id,
-                #         "order": serializer.data,
-                #         "products": orderproduct 
-                #     }
-                #     return Response(data , status=status.HTTP_200_OK)
-
-                
-                data = {
-                    "status": "success",
-                    "order": serializer.data,
-                    # "products": orderproduct 
+                products = []
+                for product in d[0]['products']:
+                    products.append(product)
+                category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
+                # serializer.data[0]["invoice_number"]
+                body = {
+                    "project_id": "shodai",
+                    "project_secret": "5h0d41p4ym3n7", 
+                    "bill_id": serializer.data[0]["bill_id"],
+                    "user_id": str(serializer.data[0]["user"]['id']),
+                    "product_name": str([p["product"]["product_name"] for p in products]),
+                    "product_category": str(category),   
+                    "product_profile": "general",
+                    "invoice_number": serializer.data[0]["invoice_number"], 
+                    "customer_name": serializer.data[0]["user"]['username'] if serializer.data[0]["user"]['username'] else '',
+                    "customer_email":  serializer.data[0]["user"]['email'] if serializer.data[0]["user"]['email'] else '',
+                    "customer_mobile":  serializer.data[0]["user"]["mobile_number"],
+                    "customer_address": serializer.data[0]["delivery_place"], 
+                    "customer_city": serializer.data[0]['address']["city"] if serializer.data[0]['address']["city"] else 'Dhaka', 
+                    "customer_country": serializer.data[0]['address']["country"] if serializer.data[0]['address']["country"] else 'BD'
                 }
-                return Response(data , status=status.HTTP_200_OK)
+         
+                data=json.dumps(body)
+                # data = json.loads(data)
+                response = requests.post("http://dev.finder-lbs.com:8009/online_payment/ssl", data=data)
+                content = response.json()
+
+                if content["status"] ==  "success":
+
+                    payment_id = content["payment_id"]
+                    # print(content["payment_id"])
+
+                    order_id = int(serializer.data[0]["id"])
+                    bill_id = serializer.data[0]["bill_id"]
+
+                    if payment_id:
+                        payment = PaymentInfo(payment_id=payment_id, order_id=order_id, bill_id=bill_id)
+                        payment.save()
+
+                return Response(content , status=status.HTTP_200_OK)
 
             else:
                 return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
@@ -515,3 +531,5 @@ class OrderLatest(APIView):
 
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
+
+

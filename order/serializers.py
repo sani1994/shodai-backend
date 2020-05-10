@@ -1,9 +1,13 @@
 from order.models import Order, OrderProduct, Vat, DeliveryCharge, PaymentInfo
 from rest_framework import serializers 
 
+from userProfile.models import Address
+from userProfile.serializers import AddressSerializer
 from userProfile.serializers import UserProfileSerializer
 
 class OrderSerializer(serializers.ModelSerializer):
+    # created_on = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    # delivery_date_time = serializers.DateTimeField(input_formats="%Y-%m-%d %H:%M%p")
 
     def update(self,instance,validated_data):
         user = self.context['request'].user
@@ -43,7 +47,7 @@ class OrderProductReadSerializer(serializers.ModelSerializer): # this serializer
 
     class Meta:
         model = OrderProduct
-        fields = ('id', 'order_product_id', 'order_product_price','order_product_qty','product','order')
+        fields = ('id', 'order_product_id', 'order_product_price','order_product_qty', 'product', 'order')
         depth = 2
 
 
@@ -71,7 +75,34 @@ class DeliveryChargeSerializer(serializers.ModelSerializer):
 
 ######## new 
 
+# class OrderProductDetailSerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = OrderProduct
+#         fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'product', 'order',)
+
+class OrderProductDetailsSerializer(serializers.ModelSerializer): 
+
+    class Meta:
+        model = OrderProduct
+        fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'product')
+        depth = 2
+
+
 class OrderDetailSerializer(serializers.ModelSerializer):    
+    # order = OrderSerializer(read_only=True)
+    user = UserProfileSerializer(read_only=True)
+    # products = OrderProductSerializer(read_only=True, many=True)
+    products = OrderProductDetailsSerializer(read_only=True, many=True)
+    address = AddressSerializer(read_only=True)
+    created_on = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    # delivery_date_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    class Meta:
+        model = Order
+        fields = '__all__'
+        # depth = 2
+
+class OrderDetailPaymentSerializer(serializers.ModelSerializer):    
     # order = OrderSerializer(read_only=True)
     user = UserProfileSerializer(read_only=True)
     products = OrderProductSerializer(read_only=True, many=True)
@@ -80,7 +111,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
-        # depth = 1
 
 class PaymentInfoSerializer(serializers.ModelSerializer):
     """Create serializer for PaymentInfo object"""
@@ -100,3 +130,5 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
         model = PaymentInfo
         fields = ('__all__')
         read_only = ('id', )
+
+
