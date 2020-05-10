@@ -505,7 +505,7 @@ class OrderLatest(APIView):
         user_id = request.user.id
         # user_id = 1
         # queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
-        order = Order.objects.filter(user=request.user).order_by('-id')[:1]
+        order = Order.objects.filter(user=request.user, order_status='OD').order_by('-id')[:1]
 
         if order:
             # product = OrderProduct.objects.filter(order=order)
@@ -522,23 +522,43 @@ class OrderLatest(APIView):
                 products = []
                 for product in d[0]['products']:
                     products.append(product)
-                category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
                 # serializer.data[0]["invoice_number"]
-                body = {
-                    "project_id": "shodai",
-                    "project_secret": "5h0d41p4ym3n7", 
-                    "bill_id": serializer.data[0]["bill_id"],
-                    "user_id": str(serializer.data[0]["user"]['id']),
-                    "product_name": str([p["product"]["product_name"] for p in products]),
-                    "product_category": str(category),   
-                    "product_profile": "general",
-                    "invoice_number": serializer.data[0]["invoice_number"], 
-                    "customer_name": serializer.data[0]["user"]['username'] if serializer.data[0]["user"]['username'] else '',
-                    "customer_email":  serializer.data[0]["user"]['email'] if serializer.data[0]["user"]['email'] else '',
-                    "customer_mobile":  serializer.data[0]["user"]["mobile_number"],
-                    "customer_address": serializer.data[0]["delivery_place"], 
-                    "customer_city": serializer.data[0]['address']["city"] if serializer.data[0]['address']["city"] else 'Dhaka', 
-                    "customer_country": serializer.data[0]['address']["country"] if serializer.data[0]['address']["country"] else 'BD'
+                # body = {
+                #     "project_id": "shodai",
+                #     "project_secret": "5h0d41p4ym3n7", 
+                #     "bill_id": "e2ca07d5",
+                #     "user_id": str(serializer.data[0]["user"]['id']),
+                #     "product_name": str([p["product"]["product_name"] for p in products]),
+                #     "product_category": str(category),   
+                #     "product_profile": "general",
+                #     "invoice_number": serializer.data[0]["invoice_number"], 
+                #     "customer_name": serializer.data[0]["user"]['username'] if serializer.data[0]["user"]['username'] else 'None',
+                #     "customer_email":  serializer.data[0]["user"]['email'] if serializer.data[0]["user"]['email'] else 'None',
+                #     "customer_mobile":  serializer.data[0]["user"]["mobile_number"],
+                #     "customer_address": serializer.data[0]["delivery_place"], 
+                #     "customer_city": serializer.data[0]['address']["city"] if serializer.data[0]['address']["city"] else 'Dhaka', 
+                #     "customer_country": serializer.data[0]['address']["country"] if serializer.data[0]['address']["country"] else 'BD'
+                # }
+
+                category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
+
+                product_name = [p["product"]["product_name"] for p in products]
+                
+                body = { 
+                    "project_id": "shodai", 
+                    "project_secret": "5h0d41p4ym3n7",
+                    "bill_id": serializer.data[0]["bill_id"], 
+                    "user_id": str(d[0]["user"]['id']),  
+                    "product_name": ' '.join(product_name) if product_name else "None",  
+                    "product_category":  str(category[0]) if category else "None",  
+                    "product_profile": "general",  
+                    "invoice_number": d[0]["invoice_number"], 
+                    "customer_name": d[0]["user"]['username'] if d[0]["user"]['username'] else 'None',
+                    "customer_email":  d[0]["user"]['email'] if d[0]["user"]['email'] else 'None',
+                    "customer_mobile":  d[0]["user"]["mobile_number"],
+                    "customer_address": d[0]["delivery_place"], 
+                    "customer_city": d[0]['address']["city"] if d[0]['address']["city"] else 'Dhaka', 
+                    "customer_country": d[0]['address']["country"] if d[0]['address']["country"] else 'BD'
                 }
          
                 data=json.dumps(body)
@@ -546,19 +566,18 @@ class OrderLatest(APIView):
                 response = requests.post("http://dev.finder-lbs.com:8009/online_payment/ssl", data=data)
                 content = response.json()
 
-                if content["status"] ==  "success":
+                if response.status_code == 200:
+                    if content["status"]=='succes':
 
-                    payment_id = content["payment_id"]
-                    # print(content["payment_id"])
+                        payment_id = content["payment_id"]
+                        # print(content["payment_id"])
 
-                    order_id = int(serializer.data[0]["id"])
-                    bill_id = serializer.data[0]["bill_id"]
-
-                    if payment_id:
+                        order_id = int(serializer.data[0]["id"])
+                        bill_id = serializer.data[0]["bill_id"]
                         payment = PaymentInfo(payment_id=payment_id, order_id=order_id, bill_id=bill_id)
                         payment.save()
 
-                return Response(content , status=status.HTTP_200_OK)
+                return Response(content, status=status.HTTP_200_OK)
 
             else:
                 return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
