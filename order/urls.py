@@ -16,6 +16,6 @@ urlpatterns = [
     path('payment/', views.PaymentInfoListCreate.as_view()), 
     path('payment/create/', views.PaymentInfoCreate.as_view()), 
     path('latestorder/', views.OrderLatest.as_view()),
-    path('transaction/', views.TransactionIdCreate.as_view()),
+    # path('transaction/', views.TransactionIdCreate.as_view()),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
