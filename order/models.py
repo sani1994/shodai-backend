@@ -24,7 +24,7 @@ class Order(BaseModel):
     order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
     long = models.FloatField()
-    order_geopoint = models.PointField(null=True)
+    order_geopoint = models.PointField(null=True, blank=True)
 
     ORDERED = 'OD'  # ORDER COLLECT FROM CUSTOMER
     ORDER_ACCEPTED = 'OA'  # ORDER ACCEPTED BY RETAILER OR PRODUCER
@@ -76,13 +76,13 @@ class Order(BaseModel):
         # self.shop_geopoint.x = self.shop_long
         # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
         self.payment_id = str(uuid.uuid4())[:8]
-        self.transaction_id = str(uuid.uuid4())[:8]
+        self.invoice_number = str(uuid.uuid4())[:8]
         self.bill_id = str(uuid.uuid4())[:8]
         self.currency = 'BDT'
 
         # self.delivery_date_time = self.delivery_date_time.strftime("%Y-%m-%d %H:%M%p")
 
-        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
+        self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)
 
 
