@@ -13,90 +13,90 @@ from sodai.utils.permission import GenericAuth
 from utility.notification import email_notification
 
 
-class OrderList(APIView):
-
-    permission_classes = [GenericAuth]
-
-    def get(self,request):
-        if request.user.user_type == 'CM':
-            user_id = request.user.id
-            orderList = Order.objects.filter(user_id=user_id)
-            serializer = OrderSerializer(orderList, many=True)
-            if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-        queryset = Order.objects.all()
-        if queryset:
-            serializer = OrderSerializer(queryset,many=True,context={'request': request})
-            if serializer:
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-
-    def post(self,request,*args,**kwargs):
-        if request.data['contact_number'] == "":
-            request.POST._mutable =True
-            request.data['contact_number'] = request.user.mobile_number
-            request.POST._mutable = False
-        serializer = OrderSerializer(data=request.data,many=isinstance(request.data,list),context={'request': request})
-        if serializer.is_valid():
-            serializer.save(user = request.user,created_by = request.user)
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-
 # class OrderList(APIView):
+
 #     permission_classes = [GenericAuth]
 
-#     def get(self, request):
+#     def get(self,request):
 #         if request.user.user_type == 'CM':
 #             user_id = request.user.id
 #             orderList = Order.objects.filter(user_id=user_id)
 #             serializer = OrderSerializer(orderList, many=True)
 #             if serializer:
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#                 return Response(serializer.data,status=status.HTTP_200_OK)
+#             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 #         queryset = Order.objects.all()
 #         if queryset:
-#             serializer = OrderSerializer(queryset, many=True, context={'request': request})
+#             serializer = OrderSerializer(queryset,many=True,context={'request': request})
 #             if serializer:
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
+#                 return Response(serializer.data,status=status.HTTP_200_OK)
 #             else:
 #                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
 #         else:
 #             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-
-#     def post(self, request, *args, **kwargs):
+#     def post(self,request,*args,**kwargs):
 #         if request.data['contact_number'] == "":
-#             request.POST._mutable = True
+#             request.POST._mutable =True
 #             request.data['contact_number'] = request.user.mobile_number
 #             request.POST._mutable = False
-#         # print(request.data['delivery_date_time'])
-#         serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
-#                                      context={'request': request})
+#         serializer = OrderSerializer(data=request.data, many=isinstance(request.data,list), context={'request': request})
 #         if serializer.is_valid():
-#             # print(serializer.data)
-#             # print(serializer.data[0]['delivery_date_time'])
-
-#             serializer.save(user=request.user, created_by=request.user)
-#             """
-#             To send notification to admin 
-#             """
-#             sub = "Order Placed"
-#             body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
-#             email_notification(sub, body)
-#             """
-#             Notification code ends here
-#             """
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#             serializer.save(user = request.user,created_by = request.user)
+#             return Response(serializer.data,status=status.HTTP_201_CREATED)
 #         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderList(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self, request):
+        if request.user.user_type == 'CM':
+            user_id = request.user.id
+            orderList = Order.objects.filter(user_id=user_id)
+            serializer = OrderSerializer(orderList, many=True)
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = Order.objects.all()
+        if queryset:
+            serializer = OrderSerializer(queryset, many=True, context={'request': request})
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+
+    def post(self, request, *args, **kwargs):
+        if request.data['contact_number'] == "":
+            request.POST._mutable = True
+            request.data['contact_number'] = request.user.mobile_number
+            request.POST._mutable = False
+        # print(request.data['delivery_date_time'])
+        serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
+                                     context={'request': request})
+        if serializer.is_valid():
+            # print(serializer.data)
+            # print(serializer.data[0]['delivery_date_time'])
+
+            serializer.save(user=request.user, created_by=request.user)
+            """
+            To send notification to admin 
+            """
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
+            email_notification(sub, body)
+            """
+            Notification code ends here
+            """
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OrderDetail(APIView):
@@ -539,7 +539,7 @@ class OrderLatest(APIView):
                 #     "customer_city": serializer.data[0]['address']["city"] if serializer.data[0]['address']["city"] else 'Dhaka', 
                 #     "customer_country": serializer.data[0]['address']["country"] if serializer.data[0]['address']["country"] else 'BD'
                 # }
-
+                # if d[0]['address']:
                 category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
 
                 product_name = [p["product"]["product_name"] for p in products]
@@ -557,8 +557,8 @@ class OrderLatest(APIView):
                     "customer_email":  d[0]["user"]['email'] if d[0]["user"]['email'] else 'None',
                     "customer_mobile":  d[0]["user"]["mobile_number"],
                     "customer_address": d[0]["delivery_place"], 
-                    "customer_city": d[0]['address']["city"] if d[0]['address']["city"] else 'Dhaka', 
-                    "customer_country": d[0]['address']["country"] if d[0]['address']["country"] else 'BD'
+                    "customer_city": d[0]['address']["city"] if d[0]['address'] else 'Dhaka', 
+                    "customer_country": d[0]['address']["country"] if d[0]['address'] else 'BD'
                 }
          
                 data=json.dumps(body)
