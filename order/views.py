@@ -547,7 +547,7 @@ class OrderLatest(APIView):
                 body = { 
                     "project_id": "shodai", 
                     "project_secret": "5h0d41p4ym3n7",
-                    "bill_id": "1f2c6375", 
+                    "bill_id": d[0]["bill_id"], 
                     "user_id": str(d[0]["user"]['id']),  
                     "product_name": ' '.join(product_name) if product_name else "None",  
                     "product_category":  str(category[0]) if category else "None",  

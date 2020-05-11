@@ -128,17 +128,6 @@ WSGI_APPLICATION = 'sodai.wsgi.application'
 # }
 
 
-# DATABASES = {
-#     'default': {
-#         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'NAME': 'shodai',
-#         'USER': 'postgres',
-#         'PASSWORD' : '9876',
-#         'HOST' : 'localhost'
-#     }
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
