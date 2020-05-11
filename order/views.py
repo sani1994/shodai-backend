@@ -547,7 +547,7 @@ class OrderLatest(APIView):
                 body = { 
                     "project_id": "shodai", 
                     "project_secret": "5h0d41p4ym3n7",
-                    "bill_id": serializer.data[0]["bill_id"], 
+                    "bill_id": "1f2c6375", 
                     "user_id": str(d[0]["user"]['id']),  
                     "product_name": ' '.join(product_name) if product_name else "None",  
                     "product_category":  str(category[0]) if category else "None",  
@@ -567,7 +567,7 @@ class OrderLatest(APIView):
                 content = response.json()
 
                 if response.status_code == 200:
-                    if content["status"]=='succes':
+                    if content["status"]=="success":
 
                         payment_id = content["payment_id"]
                         # print(content["payment_id"])
