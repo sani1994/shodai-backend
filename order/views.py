@@ -3,7 +3,7 @@ from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
-    OrderDetailPaymentSerializer
+    OrderDetailPaymentSerializer,  TransactionIdSerializer
 from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -587,4 +587,18 @@ class OrderLatest(APIView):
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
+
+class  TransactionIdCreate(APIView):
+
+    # permission_classes = [GenericAuth]
+
+    def post(self, request, *args, **kwargs):
+        serializer = TransactionIdSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 

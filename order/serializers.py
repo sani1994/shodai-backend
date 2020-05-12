@@ -1,4 +1,4 @@
-from order.models import Order, OrderProduct, Vat, DeliveryCharge, PaymentInfo
+from order.models import Order, OrderProduct, Vat, DeliveryCharge, PaymentInfo, TransactionId
 from rest_framework import serializers 
 
 from userProfile.models import Address
@@ -133,3 +133,10 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
         read_only = ('id', )
 
 
+class TransactionIdSerializer(serializers.ModelSerializer):
+    """Create serializer for TransactionId object"""
+
+    class Meta:
+        model = TransactionId
+        fields = ('__all__')
+        read_only = ('id', )

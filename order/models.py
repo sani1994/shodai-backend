@@ -128,6 +128,7 @@ class DeliveryCharge(BaseModel):
 # q= str(uuid.uuid4())[:8]
 # print(q)
 # models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
 class PaymentInfo(models.Model):
     """PaymentInfo object"""
     payment_id = models.CharField(max_length=100, null=True, blank=True)
@@ -136,4 +137,11 @@ class PaymentInfo(models.Model):
     create_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.order_id) + str(self.payment_id)
+        return str(self.order_id) + " " + str(self.payment_id)
+
+class TransactionId(models.Model):
+    transaction_id = models.CharField(max_length=100, null=True, blank=True,)
+    create_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.transaction_id)
