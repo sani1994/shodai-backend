@@ -15,6 +15,7 @@ class AddressAdmin(MaterialModelAdmin):
 
 class UserProfileAdmin(MaterialModelAdmin):
     icon_name ='face'
+    list_display = ('id', 'username', 'user_type')
 
     def save_model(self, request, obj, form, change):
         if obj.id:
