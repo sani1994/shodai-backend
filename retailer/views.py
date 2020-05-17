@@ -510,28 +510,29 @@ class ShopProductList(APIView):
     def get(self,request):
 
         if request.user.user_type == 'RT':
-            product_list = ShopProduct.objects.filter(created_by=request.user)
+            product_list = ShopProduct.objects.filter(user=request.user)
             serializer = ShopProductSerializer(product_list, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-    # def post(self,request):
-    #     if request.user.user_type == 'RT':
-    #         serializer = ShopProductSerializer(data= request.data, context={'request':request})
-    #         serializer.is_valid(raise_exception=True)
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
     def post(self,request):
         if request.user.user_type == 'RT':
             serializer = ShopProductSerializer(data= request.data, context={'request':request})
-            serializer.is_valid()
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+    # def post(self,request):
+
+    #     if request.user.user_type == 'RT':
+    #         serializer = ShopProductSerializer(data=request.data, context={'request':request})
+    #         serializer.is_valid()
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ShopPeroductDetail(APIView):
@@ -542,9 +543,9 @@ class ShopPeroductDetail(APIView):
         serializer = ShopProductSerializer(product)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
-    def put(self,request,id):
+    def put(self, request, id):
         product = get_object_or_404(ShopProduct, id=id)
-        serializer = ShopProductSerializer(product,data=request.data,context={'request':request})
+        serializer = ShopProductSerializer(product, data=request.data, context={'request':request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data,status=status.HTTP_200_OK)
