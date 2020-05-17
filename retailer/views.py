@@ -228,9 +228,9 @@ class ShopList(APIView):
         else:
             obj = Shop.objects.all()
             if obj:
-                serializer = ShopSerializer(obj,many=True)
+                serializer = ShopSerializer(obj, many=True)
                 if serializer:
-                    return Response(serializer.data,status=status.HTTP_200_OK)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
                 else:
                     return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -238,7 +238,7 @@ class ShopList(APIView):
 
     def post(self,request):
         if request.user.user_type == 'RT':
-            serializer = ShopSerializer(data=request.data,context={'request': request})
+            serializer = ShopSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data,status=status.HTTP_200_OK)
@@ -508,13 +508,20 @@ class ShopProductList(APIView):
     #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
     
     def get(self,request):
-        if request.user.user_type == 'RT':
-            
-            product_list = ShopProduct.objects.filter(created_by=request.user)
-            serializer = ShopProductSerializer(product_list, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+        # if request.user.user_type == 'RT':
+        product_list = ShopProduct.objects.filter(created_by=request.user)
+
+        if product_list:
+            serializer = ShopProductSerializer(product_list, many=True)
+            if  serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response("No content.", status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response("No available products in list.", status=status.HTTP_204_NO_CONTENT)
+
+        return Response("No available products in shop.", status=status.HTTP_204_NO_CONTENT)
 
     # def post(self,request):
     #     if request.user.user_type == 'RT':
@@ -528,7 +535,7 @@ class ShopProductList(APIView):
         if request.user.user_type == 'RT':
             serializer = ShopProductSerializer(data= request.data, context={'request':request})
             serializer.is_valid()
-            serializer.save(created_by=request.user)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
