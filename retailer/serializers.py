@@ -71,12 +71,12 @@ class AcceptedOrderReadSerializer(serializers.ModelSerializer):
 
 class ShopProductSerializer(serializers.ModelSerializer):
 
-    def create(self, validated_data):
-        shop = Shop.objects.get(user= self.context['request'].user)
-        return ShopProduct.objects.create(shop=shop,**validated_data,created_by = self.context['request'].user)
+    # def create(self, validated_data):
+    #     shop = Shop.objects.get(user= self.context['request'].user)
+    #     return ShopProduct.objects.create(shop=shop,**validated_data,created_by = self.context['request'].user)
 
     def update(self, instance, validated_data):
-        return ShopProduct.objects.update(instance,**validated_data,modified_by = self.context['request'].user)
+        return ShopProduct.objects.update(instance,**validated_data, modified_by = self.context['request'].user)
 
     class Meta:
         model = ShopProduct

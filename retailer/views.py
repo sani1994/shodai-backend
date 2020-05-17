@@ -516,12 +516,21 @@ class ShopProductList(APIView):
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
+    # def post(self,request):
+    #     if request.user.user_type == 'RT':
+    #         serializer = ShopProductSerializer(data= request.data, context={'request':request})
+    #         serializer.is_valid(raise_exception=True)
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
     def post(self,request):
         if request.user.user_type == 'RT':
             serializer = ShopProductSerializer(data= request.data, context={'request':request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.is_valid()
+            serializer.save(created_by=request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
