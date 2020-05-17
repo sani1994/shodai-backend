@@ -28,7 +28,7 @@ class Shop(BaseModel):
     user = models.OneToOneField(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
     # shodai_products = models.ManyToManyField(Product)
     shop_name = models.CharField(max_length= 100,null=False,blank=False)
-    shop_type = models.ForeignKey(ShopCategory,on_delete=models.CASCADE)
+    shop_type = models.ForeignKey(ShopCategory, on_delete=models.CASCADE)
     shop_lat = models.FloatField(null=True,blank=True)
     shop_long = models.FloatField(null=True,blank=True)
     shop_geopoint = gis_models.PointField(null=True)
@@ -49,14 +49,14 @@ class Shop(BaseModel):
         # self.shop_geopoint.y = self.shop_lat
         # self.shop_geopoint.x = self.shop_long
         # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
-        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.shop_long,self.shop_lat))
+        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.shop_long, self.shop_lat))
         super(Shop, self).save(*args, **kwargs)
 
 
 class AcceptedOrder(BaseModel):
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,blank=True,null=True)
-    shop = models.ForeignKey(Shop,on_delete=models.CASCADE,blank=True,null=True)   # to track the order by shop, shop has been added as a foreign key
-    order = models.ForeignKey(Order,on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, blank=True, null=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, blank=True, null=True)   # to track the order by shop, shop has been added as a foreign key
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
     order_product = models.ForeignKey(OrderProduct,on_delete=models.CASCADE,null=True)
     history = HistoricalRecords()
 
@@ -65,8 +65,8 @@ class AcceptedOrder(BaseModel):
 
 
 class ShopProduct(BaseModel):
-    product = models.ForeignKey(Product,on_delete=models.PROTECT,verbose_name='Shodai Product')
-    shop = models.ForeignKey(Shop,on_delete=models.CASCADE,blank=True,null=True)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT,verbose_name='Shodai Product')
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, blank=True, null=True)
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
     product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)

@@ -139,6 +139,8 @@ class PaymentInfo(models.Model):
     def __str__(self):
         return str(self.order_id) + " " + str(self.payment_id)
 
+
+
 class TransactionId(models.Model):
     transaction_id = models.CharField(max_length=100, null=True, blank=True,)
     create_on = models.DateTimeField(auto_now=True)
