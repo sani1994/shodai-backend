@@ -20,13 +20,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3)*6hzohkg8$(c+=8zr(je6rz_--l5bcem3$@#n!!&t&#rkug_'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['shod.ai','www.shod.ai','127.0.0.1']
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
@@ -121,16 +114,16 @@ WSGI_APPLICATION = 'sodai.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'shodai',
-        'USER': 'admin',
-        'PASSWORD': '',
-        'HOST': 'localhost'
-    }
-}
+# DATABASES = {
+#     'default': {
+#         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'shodai',
+#         'USER': 'admin',
+#         'PASSWORD': '',
+#         'HOST': 'localhost'
+#     }
+# }
 
 
 # Password validation
@@ -188,14 +181,3 @@ try:
     from .local_settings import *
 except ImportError:
     pass
-
-
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST = "smtp.yandex.com"
-EMAIL_HOST_USER = "noreply@shod.ai"
-EMAIL_HOST_PASSWORD = 'shodai123456'
-DEFAULT_FROM_EMAIL = 'testing@testing.com'
-EMAIL_PORT = 587
