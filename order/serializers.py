@@ -133,10 +133,10 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
         read_only = ('id', )
 
 
-class TransactionIdSerializer(serializers.ModelSerializer):
-    """Create serializer for TransactionId object"""
+# class TransactionIdSerializer(serializers.ModelSerializer):
+#     """Create serializer for TransactionId object"""
 
-    class Meta:
-        model = TransactionId
-        fields = ('__all__')
-        read_only = ('id', )
+#     class Meta:
+#         model = TransactionId
+#         fields = ('__all__')
+#         read_only = ('id', )

@@ -419,8 +419,10 @@ class VatDeliveryChargeList(APIView):
 
 ############
 import json
+import requests
 
 class PaymentInfoListCreate(APIView):
+    """ Check Order Using bill_id """
 
     def get(self, request):
 
@@ -436,7 +438,6 @@ class PaymentInfoListCreate(APIView):
                     if serializer:
                         # d = json.dumps(serializer.data)
                         # d = json.loads(d)
-                        # print(d[0])
                         payment = serializer.data[0]
                         year = payment['created_on']
 
@@ -447,10 +448,8 @@ class PaymentInfoListCreate(APIView):
                             'bill_id': payment['bill_id'],
                             'total_amount': payment['order_total_price'],
                             'currency': payment['currency'],
-                            # 'payment_type': payment['payment_type'],
                             'created_by': payment['user']["username"],
                             'created_on': year,
-                            # 'order_products': payment['products'],
                             'bill_info':  {
                                             "type": "product_purchase",
                                             'order_products': payment['products']
@@ -480,31 +479,31 @@ class PaymentInfoListCreate(APIView):
 
         return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
-class PaymentInfoCreate(APIView):
+# class PaymentInfoCreate(APIView):
 
-    permission_classes = [GenericAuth]
+#     permission_classes = [GenericAuth]
 
-    def post(self, request, *args, **kwargs):
-        serializer = PaymentInfoSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save(created_by=request.user) 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request, *args, **kwargs):
+#         serializer = PaymentInfoSerializer(data=request.data, context={'request': request})
+#         if serializer.is_valid():
+#             serializer.save(created_by=request.user) 
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
+#         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
-import requests
 
 class OrderLatest(APIView):
-    """"""
+    """Get the latest `order` than get all require data and send a post to ssl,
+       If Post status is `success` than create a PaymentInfo object.
+    """
     permission_classes = [GenericAuth]
 
     def get(self, request):
         user_id = request.user.id
-        # user_id = 1
-        # queryset = OrderProduct.objects.filter(created_by_id=user_id, order__order_status='OD').order_by('-id')
+      
         order = Order.objects.filter(user=request.user, order_status='OD').order_by('-id')[:1]
 
         if order:
@@ -523,23 +522,7 @@ class OrderLatest(APIView):
                 for product in d[0]['products']:
                     products.append(product)
                 # serializer.data[0]["invoice_number"]
-                # body = {
-                #     "project_id": "shodai",
-                #     "project_secret": "5h0d41p4ym3n7", 
-                #     "bill_id": "e2ca07d5",
-                #     "user_id": str(serializer.data[0]["user"]['id']),
-                #     "product_name": str([p["product"]["product_name"] for p in products]),
-                #     "product_category": str(category),   
-                #     "product_profile": "general",
-                #     "invoice_number": serializer.data[0]["invoice_number"], 
-                #     "customer_name": serializer.data[0]["user"]['username'] if serializer.data[0]["user"]['username'] else 'None',
-                #     "customer_email":  serializer.data[0]["user"]['email'] if serializer.data[0]["user"]['email'] else 'None',
-                #     "customer_mobile":  serializer.data[0]["user"]["mobile_number"],
-                #     "customer_address": serializer.data[0]["delivery_place"], 
-                #     "customer_city": serializer.data[0]['address']["city"] if serializer.data[0]['address']["city"] else 'Dhaka', 
-                #     "customer_country": serializer.data[0]['address']["country"] if serializer.data[0]['address']["country"] else 'BD'
-                # }
-                # if d[0]['address']:
+           
                 category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
 
                 product_name = [p["product"]["product_name"] for p in products]
@@ -570,7 +553,6 @@ class OrderLatest(APIView):
                     if content["status"]=="success":
 
                         payment_id = content["payment_id"]
-                        # print(content["payment_id"])
 
                         order_id = int(serializer.data[0]["id"])
                         bill_id = serializer.data[0]["bill_id"]
@@ -588,17 +570,17 @@ class OrderLatest(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
-class  TransactionIdCreate(APIView):
+# class  TransactionIdCreate(APIView):
 
-    # permission_classes = [GenericAuth]
+#     # permission_classes = [GenericAuth]
 
-    def post(self, request, *args, **kwargs):
-        serializer = TransactionIdSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save() 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request, *args, **kwargs):
+#         serializer = TransactionIdSerializer(data=request.data, context={'request': request})
+#         if serializer.is_valid():
+#             serializer.save() 
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
+#         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
