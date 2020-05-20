@@ -77,12 +77,44 @@ class ShopProduct(BaseModel):
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):
+        return str(self.product.id) + self.product.product_name
+
+    @property
+    def product_name(self):
+        # product_name = self.product.product_name
+        # product_name_bn = self.product.product_name_bn
+
+        # product = [
+        #     product_name,
+        #     product_name_bn
+        # ]
         return self.product.product_name
+
+    @property
+    def product_name_bn(self):
+
+        return self.product.product_name_bn
+
+    @property
+    def  product_description(self):
+            
+        return self.product.product_description
+
+    @property
+    def  product_description_bn(self):
+ 
+        return self.product.product_description_bn
+
+    @property
+    def  product_unit_name(self):
+ 
+        return self.product_unit.product_unit
+
 
     def save(self, *args, **kwargs):
         if not self.product_price:
             self.product_price = self.product.product_price
-        return super(ShopProduct,self).save(*args,**kwargs)
+        return super(ShopProduct, self).save(*args,**kwargs)
 
 
 

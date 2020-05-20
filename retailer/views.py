@@ -5,7 +5,7 @@ from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 
 from retailer.serializers import AccountSerializer, ShopSerializer, AcceptedOrderSerializer, \
-    AcceptedOrderReadSerializer, ShopProductSerializer
+    AcceptedOrderReadSerializer, ShopProductSerializer, ShopProductGetSerializer
 from retailer.models import Account, Shop, AcceptedOrder, ShopProduct
 from order.models import Order
 
@@ -511,7 +511,9 @@ class ShopProductList(APIView):
 
         if request.user.user_type == 'RT':
             product_list = ShopProduct.objects.filter(user=request.user)
-            serializer = ShopProductSerializer(product_list, many=True)
+
+            serializer = ShopProductGetSerializer(product_list, many=True)
+    
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)

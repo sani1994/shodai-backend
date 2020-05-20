@@ -1,5 +1,6 @@
 from retailer.models import Account, Shop, AcceptedOrder, ShopProduct
 from rest_framework import serializers
+from product.serializers import RetailerProductSerializer, ProductUnitSerializer
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -19,7 +20,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = [ 'id','user_id', 'bank_name', 'account_no', 'account_name']
+        fields = [ 'id', 'user_id', 'bank_name', 'account_no', 'account_name']
         depth = 1
 
 
@@ -69,7 +70,10 @@ class AcceptedOrderReadSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+#########
 class ShopProductSerializer(serializers.ModelSerializer):
+
+    # product = RetailerProductSerializer(read_only=True)
 
     # def create(self, validated_data):
     #     shop = Shop.objects.get(user= self.context['request'].user)
@@ -82,3 +86,14 @@ class ShopProductSerializer(serializers.ModelSerializer):
         model = ShopProduct
         # fields = ('id','product','shop','product_image','product_unit','product_price','product_stock')
         fields = '__all__'
+
+class ShopProductGetSerializer(serializers.ModelSerializer):
+
+    # product = RetailerProductSerializer(read_only=True)
+    # product_unit = ProductUnitSerializer(read_only=True)
+
+  
+    class Meta:
+        model = ShopProduct
+        fields = ('id', 'user', 'product', 'shop', 'product_image', 'product_unit_name', 'product_name', 'product_name_bn', 'product_description', 'product_description_bn', 'product_price', 'product_stock')
+        # fields = ('__all__')
