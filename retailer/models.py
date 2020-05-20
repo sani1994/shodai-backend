@@ -68,16 +68,27 @@ class ShopProduct(BaseModel):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='retailer', null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name='Shodai Product')
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, blank=True, null=True)
-    product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
+    # product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
+    product_image = models.CharField(max_length=255, blank=True, null=True)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
-    product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
-    product_stock = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True)
+    product_price = models.DecimalField(decimal_places=2, max_digits=7,blank=True, null=True)
+    product_stock = models.DecimalField(decimal_places=2, max_digits=7,blank=True, null=True)
     history = HistoricalRecords()
     product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.product.id) + self.product.product_name
+
+
+    def save(self, *args, **kwargs):
+        if not self.product_image:
+            self.product_image = self.product.product_image.url
+
+        if not self.product_price:
+            self.product_price = self.product.product_price
+
+        return super(ShopProduct, self).save(*args,**kwargs)
 
     @property
     def product_name(self):
@@ -111,10 +122,6 @@ class ShopProduct(BaseModel):
         return self.product_unit.product_unit
 
 
-    def save(self, *args, **kwargs):
-        if not self.product_price:
-            self.product_price = self.product.product_price
-        return super(ShopProduct, self).save(*args,**kwargs)
 
 
 

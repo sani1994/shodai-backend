@@ -21,6 +21,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 
+
+
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 REST_FRAMEWORK = {
