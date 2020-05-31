@@ -89,7 +89,7 @@ class Order(BaseModel):
 class OrderProduct(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, related_name='orders', on_delete=models.CASCADE)
-    order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True, )  # new
+    # order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True, )  # new
     order_product_price = models.FloatField(blank=False, null=False,
                                             default=0)  # product may belong to offer do the price
     order_product_qty = models.FloatField(default=1)

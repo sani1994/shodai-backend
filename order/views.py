@@ -427,11 +427,16 @@ class PaymentInfoListCreate(APIView):
     def get(self, request):
 
         queryset = Order.objects.all().order_by('-id')
+
         if queryset:
             query = self.request.GET.get("bill_id")
-            if query:
+            query_invoice = self.request.GET.get("invoice_number")
+
+            if query or query_invoice:
                 queryset = Order.objects.filter(bill_id__exact=query)
-                print(queryset)
+                queryset_invoice = Order.objects.filter(invoice_number__exact=query_invoice)
+
+                # print(queryset)
                 if queryset:
                     serializer = OrderDetailPaymentSerializer(queryset, many=True, context={'request': request})
 
@@ -458,6 +463,37 @@ class PaymentInfoListCreate(APIView):
                         return Response(data, status=status.HTTP_200_OK)
                     else:
                         return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
+    
+
+            
+                elif queryset_invoice:
+                    serializer = OrderDetailPaymentSerializer(queryset_invoice, many=True, context={'request': request})
+
+                    if serializer:
+                        # d = json.dumps(serializer.data)
+                        # d = json.loads(d)
+                        payment = serializer.data[0]
+                        year = payment['created_on']
+
+                  
+                        data = {
+                            'status': "success",
+                            # 'payment_id': payment['payment_id'],
+                            # 'bill_id': payment['bill_id'],
+                            'total_amount': payment['order_total_price'],
+                            'created_on': year,
+                            # 'created_by': payment['user']["username"],
+                            "invoice_details": {
+                            "type": "order_payment",
+                            "user_id": str(payment['user']["id"]),
+                            "order_id": str(payment["id"]),
+                            "order_products": payment['products']
+                            
+                        }
+                    }
+                        return Response(data, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
                 else:
                     data = {
                         "status": "failed",
@@ -466,6 +502,7 @@ class PaymentInfoListCreate(APIView):
                     return Response(data, status=status.HTTP_200_OK)
 
 
+            
             else:
                 serializer = OrderDetailSerializer(queryset, many=True, context={'request': request})
                 if serializer:

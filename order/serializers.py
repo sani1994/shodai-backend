@@ -41,14 +41,14 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderProduct
-        fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'product', 'order',)
+        fields = ('id', 'order_product_price', 'order_product_qty', 'product', 'order',)
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer): # this serializer has been used to get all the details including foreign key id... this duplication has been made as 'depth=1' is not working for post request in serializer.
 
     class Meta:
         model = OrderProduct
-        fields = ('id', 'order_product_id', 'order_product_price','order_product_qty', 'product', 'order')
+        fields = ('id', 'order_product_price','order_product_qty', 'product', 'order')
         depth = 2
 
 
@@ -80,13 +80,13 @@ class DeliveryChargeSerializer(serializers.ModelSerializer):
 
 #     class Meta:
 #         model = OrderProduct
-#         fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'product', 'order',)
+#         fields = ('id', 'order_product_price', 'order_product_qty', 'product', 'order',)
 
 class OrderProductDetailsSerializer(serializers.ModelSerializer): 
 
     class Meta:
         model = OrderProduct
-        fields = ('id', 'order_product_id', 'order_product_price', 'order_product_qty', 'product')
+        fields = ('id', 'order_product_price', 'order_product_qty', 'product')
         depth = 2
 
 

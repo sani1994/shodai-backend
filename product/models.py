@@ -2,7 +2,7 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 from bases.models import BaseModel
 from django.db.models.signals import pre_save
-# Create your models here.
+
 from utility.models import ProductUnit
 
 
