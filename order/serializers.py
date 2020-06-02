@@ -155,5 +155,6 @@ class TimeSlotSerializer(serializers.ModelSerializer):
     """Create serializer for TimeSlot object"""
     class Meta:
         model = TimeSlot
-        fields = ('id', 'start', 'end', 'allow')
-        read_only = ('id', )
+        # fields = ('id', 'start', 'end', 'allow', 'slot')
+        fields = ('slot',)
+        # read_only = ('id', )

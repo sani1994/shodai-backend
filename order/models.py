@@ -159,4 +159,4 @@ class TimeSlot(models.Model):
 
     @property
     def slot(self):
-        return self.start + '-' + self.end
+        return self.start + ' - ' + self.end
