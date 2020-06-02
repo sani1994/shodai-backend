@@ -1,10 +1,11 @@
+import datetime
 from django.db.models import Q
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
-    OrderDetailPaymentSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo
+    OrderDetailPaymentSerializer, TimeSlotSerializer
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, TimeSlot
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -13,40 +14,20 @@ from sodai.utils.permission import GenericAuth
 from utility.notification import email_notification
 
 
-# class OrderList(APIView):
+class TimeSlotList(APIView):
 
-#     permission_classes = [GenericAuth]
-
-#     def get(self,request):
-#         if request.user.user_type == 'CM':
-#             user_id = request.user.id
-#             orderList = Order.objects.filter(user_id=user_id)
-#             serializer = OrderSerializer(orderList, many=True)
-#             if serializer:
-#                 return Response(serializer.data,status=status.HTTP_200_OK)
-#             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-#         queryset = Order.objects.all()
-#         if queryset:
-#             serializer = OrderSerializer(queryset,many=True,context={'request': request})
-#             if serializer:
-#                 return Response(serializer.data,status=status.HTTP_200_OK)
-#             else:
-#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-
-#     def post(self,request,*args,**kwargs):
-#         if request.data['contact_number'] == "":
-#             request.POST._mutable =True
-#             request.data['contact_number'] = request.user.mobile_number
-#             request.POST._mutable = False
-#         serializer = OrderSerializer(data=request.data, many=isinstance(request.data,list), context={'request': request})
-#         if serializer.is_valid():
-#             serializer.save(user = request.user,created_by = request.user)
-#             return Response(serializer.data,status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+        
+        queryset = TimeSlot.objects.filter(allow=True)
+        if queryset:
+            serializer = TimeSlotSerializer(queryset, many=True)
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+        
 
 
 class OrderList(APIView):
@@ -81,8 +62,6 @@ class OrderList(APIView):
         serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
                                      context={'request': request})
         if serializer.is_valid():
-            # print(serializer.data)
-            # print(serializer.data[0]['delivery_date_time'])
 
             serializer.save(user=request.user, created_by=request.user)
             """
@@ -98,6 +77,87 @@ class OrderList(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# class OrderList(APIView):
+#     permission_classes = [GenericAuth]
+
+#     def get(self, request):
+#         if request.user.user_type == 'CM':
+#             user_id = request.user.id
+#             orderList = Order.objects.filter(user_id=user_id)
+#             serializer = OrderSerializer(orderList, many=True)
+#             if serializer:
+#                 return Response(serializer.data, status=status.HTTP_200_OK)
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         queryset = Order.objects.all()
+#         if queryset:
+#             serializer = OrderSerializer(queryset, many=True, context={'request': request})
+#             if serializer:
+#                 return Response(serializer.data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+   
+    # def post(self, request, *args, **kwargs):
+    #     now = datetime.datetime.now()
+    #     year = now.year
+    #     month = now.month
+    #     day = now.day
+    #     day_range = day + 6
+    #     hour = now.hour 
+
+    #     if day_range > 30 :
+    #         day_range = day_range - 30
+        
+    #     if request.data['contact_number'] == "":
+    #         request.POST._mutable = True
+    #         request.data['contact_number'] = request.user.mobile_number
+    #         request.POST._mutable = False
+
+    #     date = request.data['delivery_date_time']
+    #     delivery_year = int(date[:4])
+    #     delivery_month = int(date[5:7])
+    #     delivery_day = int(date[8:10])
+    #     delivery_hour = int(date[11:13])
+    #     # if year == delivery_year and month == delivery_month 
+
+    #     bad_time = [1, 2, 3, 4, 5, 6, 7, 22, 23, 24]
+
+    #     if day_range >= delivery_day:
+
+    #         if delivery_hour not in bad_time:
+
+    #             serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
+    #                                         context={'request': request})
+    #             if serializer.is_valid():
+        
+    #                 serializer.save(user=request.user, created_by=request.user)
+    #                 # print(serializer.data['delivery_date_time'])
+
+    #                 """
+    #                 To send notification to admin 
+    #                 """
+    #                 sub = "Order Placed"
+    #                 body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
+    #                 email_notification(sub, body)
+    #                 """
+    #                 Notification code ends here
+    #                 """
+    #                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #             else:
+    #                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    #         else:
+    #             return Response({"status": "This is not a vaild delivery time, Please Select a vaild time."}, status=status.HTTP_204_NO_CONTENT)
+        
+    #     else:
+    #         return Response({"status": f"Select a vaild date from {day} to {day_range}"}, status=status.HTTP_204_NO_CONTENT)
+            
 
 class OrderDetail(APIView):
     permission_classes = [GenericAuth]
@@ -160,6 +220,7 @@ class OrderProductList(APIView):
             for data in request.data:
                 serializer = OrderProductSerializer(data=data, context={'request': request.data})
                 if serializer.is_valid():
+                    # print(serializer.data)
                     serializer.save()
                     response = {'rspns': serializer.data, 'status_code': status.HTTP_200_OK}
                     responses.append(response)
@@ -481,6 +542,7 @@ class PaymentInfoListCreate(APIView):
                             # 'payment_id': payment['payment_id'],
                             # 'bill_id': payment['bill_id'],
                             'total_amount': payment['order_total_price'],
+                            "currency": "BDT" ,
                             'created_on': year,
                             # 'created_by': payment['user']["username"],
                             "invoice_details": {
@@ -497,7 +559,7 @@ class PaymentInfoListCreate(APIView):
                 else:
                     data = {
                         "status": "failed",
-                        "message": "invalid bill id"
+                        "message": "invalid invoice number"
                     }
                     return Response(data, status=status.HTTP_200_OK)
 

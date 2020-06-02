@@ -1,10 +1,16 @@
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo
+from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot
 
 
 # Register your models here.
+
+class TimeSlotAdmin(MaterialModelAdmin):
+    list_display = ('start', 'end', 'allow',)
+    list_filter = ('allow',)
+    # list_editable = ('allow',)
+    list_per_page = 10
 
 
 class OrderAdmin(MaterialModelAdmin):
@@ -24,7 +30,7 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' %obj.product)
         return list
 
-    list_display = ('id','user','order_status', 'home_delivery',order_products)
+    list_display = ('id', 'user', 'order_status', 'delivery_date_time', 'home_delivery', order_products)
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -84,7 +90,7 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
     #     obj.save()
     #     return super().save_model(request, obj, form, change)
 
-
+site.register(TimeSlot, TimeSlotAdmin)
 site.register(Order, OrderAdmin)
 site.register(OrderProduct,OrderProductAdmin)
 site.register(Vat,VatAdmin)

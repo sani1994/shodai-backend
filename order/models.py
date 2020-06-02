@@ -19,7 +19,7 @@ class Order(BaseModel):
     invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     currency = models.CharField(max_length=3, blank=True, default='BDT')
-    delivery_date_time = models.DateTimeField(auto_now=True)
+    delivery_date_time = models.DateTimeField()
     delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
@@ -147,3 +147,16 @@ class TransactionId(models.Model):
 
     def __str__(self):
         return str(self.transaction_id)
+
+
+class TimeSlot(models.Model):
+    start = models.CharField(max_length=10)
+    end = models.CharField(max_length=10)
+    allow = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.start + '-' + self.end
+
+    @property
+    def slot(self):
+        return self.start + '-' + self.end

@@ -1,4 +1,12 @@
-from order.models import Order, OrderProduct, Vat, DeliveryCharge, PaymentInfo, TransactionId
+from order.models import (
+                        Order, 
+                        OrderProduct, 
+                        Vat, 
+                        DeliveryCharge, 
+                        PaymentInfo, 
+                        TransactionId,
+                        TimeSlot
+                        )
 from rest_framework import serializers 
 
 from userProfile.models import Address
@@ -8,6 +16,8 @@ from userProfile.serializers import UserProfileSerializer
 class OrderSerializer(serializers.ModelSerializer):
     # created_on = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     # delivery_date_time = serializers.DateTimeField(input_formats="%Y-%m-%d %H:%M%p")
+    # delivery_date_time =  serializers.DateTimeField(input_formats=["%Y-%m-%d%H:%M:%S%p"])
+
 
     def update(self,instance,validated_data):
         user = self.context['request'].user
@@ -24,7 +34,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
-        # read_only = ('id', )
+        read_only = ('id', )
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
@@ -140,3 +150,10 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
 #         model = TransactionId
 #         fields = ('__all__')
 #         read_only = ('id', )
+
+class TimeSlotSerializer(serializers.ModelSerializer):
+    """Create serializer for TimeSlot object"""
+    class Meta:
+        model = TimeSlot
+        fields = ('id', 'start', 'end', 'allow')
+        read_only = ('id', )
