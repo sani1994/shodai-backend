@@ -68,9 +68,9 @@ class OrderList(APIView):
             """
             To send notification to admin 
             """
-            # sub = "Order Placed"
-            # body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
-            # email_notification(sub, body)
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
+            email_notification(sub, body)
             """
             Notification code ends here
             """
