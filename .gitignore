@@ -8,7 +8,6 @@ static/
 env/
 venv
 .idea/
-migrations/
 */__pycache__/*
 .installed.cfg
 bin

@@ -39,7 +39,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderProductSerializer(serializers.ModelSerializer):
 
-    def update(self,instance,validated_data):
+    def update(self, instance, validated_data):
         product = self.validated_data.pop('product')
         order = self.validated_data.pop('order')
 

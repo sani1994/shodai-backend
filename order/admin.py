@@ -7,7 +7,7 @@ from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, 
 # Register your models here.
 
 class TimeSlotAdmin(MaterialModelAdmin):
-    list_display = ('start', 'end', 'allow',)
+    list_display = ('start', 'end', 'time', 'allow',)
     list_filter = ('allow',)
     # list_editable = ('allow',)
     list_per_page = 10
@@ -78,21 +78,14 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
         obj.save()
         return super().save_model(request, obj, form, change)
 
-# class PaymentInfoAdmin(MaterialModelAdmin):
-#     list_display = ['id', 'payment_id', 'order', 'payment_type']
-    # list_filter = ['delivery_charge_inside_dhaka']
-    # readonly_fields = ['created_by', 'modified_by','delivery_charge_outside_dhaka','created_on']
+class PaymentInfoAdmin(MaterialModelAdmin):
+    list_display = ['id', 'payment_id', 'order_id']
+    list_filter = ['order_id']
 
-    # def save_model(self, request, obj, form, change):
-    #     if obj.id:
-    #         obj.modified_by = request.user
-    #     obj.created_by = request.user
-    #     obj.save()
-    #     return super().save_model(request, obj, form, change)
 
 site.register(TimeSlot, TimeSlotAdmin)
 site.register(Order, OrderAdmin)
-site.register(OrderProduct,OrderProductAdmin)
-site.register(Vat,VatAdmin)
-site.register(DeliveryCharge,DeliveryChargeAdmin)
-site.register(PaymentInfo)
+site.register(OrderProduct, OrderProductAdmin)
+site.register(Vat, VatAdmin)
+site.register(DeliveryCharge, DeliveryChargeAdmin)
+site.register(PaymentInfo, PaymentInfoAdmin)

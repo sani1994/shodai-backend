@@ -132,13 +132,26 @@ class DeliveryCharge(BaseModel):
 
 class PaymentInfo(models.Model):
     """PaymentInfo object"""
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
+    CANCELLED = 'CANCELLED'
+    INITIATED = 'INITIATED'
+    PAYMENT_STATUS = [
+        (SUCCESS, 'Success'),
+        (FAILED, 'Failed'),
+        (CANCELLED, 'Cancelled'),
+        (INITIATED, 'Initiated')
+    ]
     payment_id = models.CharField(max_length=100, null=True, blank=True)
     order_id = models.CharField(max_length=20, null=True, blank=True)
     bill_id = models.CharField(max_length=100, null=True, blank=True)
+    invoice_number = models.CharField(max_length=100, null=True, blank=True)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default=FAILED)
     create_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.order_id) + " " + str(self.payment_id)
+        return 'OrderId: ' + str(self.order_id) + "  " + "PaymentId: " + str(self.payment_id)
 
 
 
@@ -153,6 +166,7 @@ class TransactionId(models.Model):
 class TimeSlot(models.Model):
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
+    time = models.TimeField(auto_now=True)
     allow = models.BooleanField(default=True)
 
     def __str__(self):
