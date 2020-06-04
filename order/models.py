@@ -166,7 +166,7 @@ class TransactionId(models.Model):
 class TimeSlot(models.Model):
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
-    time = models.TimeField(auto_now=True)
+    time = models.TimeField()
     allow = models.BooleanField(default=True)
 
     def __str__(self):
