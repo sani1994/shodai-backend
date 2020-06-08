@@ -17,6 +17,8 @@ from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
+AUTH_USER_MODEL = 'userProfile.UserProfile'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
@@ -36,7 +38,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),  # To increase the jwt token life time
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60*48),  # To increase the jwt token life time
 }
 
 # Application definition
@@ -182,6 +184,5 @@ try:
     from .local_settings import *
 except ImportError:
     pass
-
 
 

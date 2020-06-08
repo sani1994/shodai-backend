@@ -86,11 +86,6 @@ class DeliveryChargeSerializer(serializers.ModelSerializer):
 
 ######## new 
 
-# class OrderProductDetailSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = OrderProduct
-#         fields = ('id', 'order_product_price', 'order_product_qty', 'product', 'order',)
 
 class OrderProductDetailsSerializer(serializers.ModelSerializer): 
 
@@ -142,14 +137,6 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
         fields = ('__all__')
         read_only = ('id', )
 
-
-# class TransactionIdSerializer(serializers.ModelSerializer):
-#     """Create serializer for TransactionId object"""
-
-#     class Meta:
-#         model = TransactionId
-#         fields = ('__all__')
-#         read_only = ('id', )
 
 class TimeSlotSerializer(serializers.ModelSerializer):
     """Create serializer for TimeSlot object"""

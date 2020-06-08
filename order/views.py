@@ -333,53 +333,6 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-# class OrderdProducts(APIView):  # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
-
-#     permission_classes = [GenericAuth]
-
-#     # def get_order_object(self,id):
-#     #     obj = Order.objects.get(id = id)
-#     #     return obj
-
-#     def get(self, request, id):
-#         obj = get_object_or_404(Order, id=id)
-#         # obj = Order.objects.get(pk=id).orderproduct_set.all()
-#         # orderProductList = obj.orderproduct_set.all()
-#         orderProductList = OrderProduct.objects.filter(order_id=obj)
-
-#         print(obj.id)
-#         print(orderProductList)
-
-
-#         # if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
-#         #     orderProducts = []
-#         #     # orderProductList = obj.orderproduct_set.all()  # get all orderd products of individual product
-#         #     orderProductList = obj.orderproduct_set.all()  # get all orderd products of individual product
-#         #     orderProductSerializer = OrderProductReadSerializer(orderProductList, many=True)
-#         #     orderSerializer = OrderSerializer(obj)
-#         #     if orderProductSerializer and orderSerializer:
-#         #         orderProductLists = orderProductSerializer.data
-#         #         for orderProduct in orderProductLists:
-#         #             orderProduct['product']['product_unit'] = orderProduct['product']['product_unit']['product_unit']
-#         #             orderProduct['product']['product_meta'] = orderProduct['product']['product_meta']['name']
-#         #             # orderProduct['product'].pop('created_by')
-#         #             # orderProduct['product'].pop('modified_by')
-#         #             product = orderProduct['product']
-#         #             product['order_price'] = orderProduct['order_product_price']
-#         #             product['order_qty'] = orderProduct['order_product_qty']
-#         #             # product['product_unit'] = orderProduct['product']['product_unit'].product_unit
-#         #             # print(orderProduct['product']['product_unit']['product_unit'])
-#         #             orderProducts.append(product)
-#         #         order = orderSerializer.data
-#         #         order['orderProducts'] = orderProducts
-#         #         return Response(order, status=status.HTTP_200_OK)
-#         #     else:
-#         #         return Response({orderProductSerializer.errors + orderSerializer.errors},
-#         #                         status=status.HTTP_400_BAD_REQUEST)
-
-
-#         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
 
 
 
@@ -579,19 +532,6 @@ class PaymentInfoListCreate(APIView):
 
         return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
-# class PaymentInfoCreate(APIView):
-
-#     permission_classes = [GenericAuth]
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = PaymentInfoSerializer(data=request.data, context={'request': request})
-#         if serializer.is_valid():
-#             serializer.save(created_by=request.user) 
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
 
@@ -675,19 +615,3 @@ class OrderLatest(APIView):
 
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
-
-
-# class  TransactionIdCreate(APIView):
-
-#     # permission_classes = [GenericAuth]
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = TransactionIdSerializer(data=request.data, context={'request': request})
-#         if serializer.is_valid():
-#             serializer.save() 
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
-

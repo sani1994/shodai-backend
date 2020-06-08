@@ -155,15 +155,8 @@ class PaymentInfo(models.Model):
 
 
 
-class TransactionId(models.Model):
-    transaction_id = models.CharField(max_length=100, null=True, blank=True,)
-    create_on = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return str(self.transaction_id)
-
-
 class TimeSlot(models.Model):
+    """TimeSlot for the order Time Slot"""
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
     time = models.TimeField()
