@@ -5,7 +5,7 @@ import qrcode
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
     ProductMetaSerializer, LatestProductSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
-
+from utility.models import ProductUnit
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,7 +20,7 @@ from sodai.utils.permission import GenericAuth
 class ProductList(APIView):
     # permission_classes = (IsAuthenticated,)
 
-    permission_classes = [GenericAuth]
+    # permission_classes = [GenericAuth]
 
     ## list of Prodect
 
@@ -29,11 +29,11 @@ class ProductList(APIView):
         serializer = ProductSerializer(products, many=True)
         if serializer:
             datas = serializer.data
-            for data in datas:
-                for product in products:
-                    data['product_unit'] = product.product_unit.product_unit
-                    data['product_meta'] = product.product_meta.name
-            return Response(datas,status=status.HTTP_200_OK)
+       
+            for data in range(len(datas)):
+                datas[data]['product_unit'] = ProductUnit.objects.get(id=int(datas[data]['product_unit'])).product_unit
+                datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
+            return Response(datas, status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
@@ -74,7 +74,7 @@ class ProductDetail(APIView):
             serializer = ProductSerializer(product, data=request.data)
             if serializer.is_valid():
                 serializer.save(modified_by = request.user)
-                print(serializer.data)
+                # print(serializer.data)
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -36,12 +36,14 @@ class Location(BaseModel):
 
 
 class ProductUnit(BaseModel):
-    product_unit = models.CharField(max_length=10,unique=True)
-    product_unit_bn = models.CharField(max_length=10,unique=True)
+    product_unit = models.CharField(max_length=10, unique=True)
+    product_unit_bn = models.CharField(max_length=10, unique=True)
     history = HistoricalRecords()
 
     def __str__(self):
         return self.product_unit
+
+        
 
     class Meta:
         verbose_name = 'Product Unit'

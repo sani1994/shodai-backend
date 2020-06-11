@@ -69,7 +69,8 @@ class Product(BaseModel):
     @property
     def product_unit_name(self):
         return self.product_unit.product_unit
-
+        
+    @property
     def product_meta_name(self):
         return self.product_meta.name
 

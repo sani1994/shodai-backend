@@ -4,7 +4,6 @@ from order.models import (
                         Vat, 
                         DeliveryCharge, 
                         PaymentInfo, 
-                        TransactionId,
                         TimeSlot
                         )
 from rest_framework import serializers 

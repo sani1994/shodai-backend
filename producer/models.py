@@ -9,7 +9,6 @@ from product.models import ProductCategory, Product
 from userProfile.models import Address, UserProfile
 from bases.models import BaseModel
 from django.contrib.gis.db import models
-# Create your models here.
 from utility.models import ProductUnit
 from django.contrib.gis.geos import Point
 
@@ -20,23 +19,30 @@ class ProducerBulkRequest(BaseModel):  # producer product
     '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     product_name = models.CharField(max_length=200, null=False, blank=False)
-    product_name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='পন্যের নাম')
+    product_name_bn = models.CharField(max_length=100, null=True, blank=True, 
+                                        verbose_name='পন্যের নাম')
     product_image = models.ImageField(upload_to='producer/product', null=True, blank=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
-    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='producer_unit', null=True, blank=True)
+    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, 
+                            related_name='producer_unit',
+                            null=True, 
+                            blank=True)
     production_time = models.DateTimeField(null=True, blank=True)
     unit_price = models.FloatField(null=False, blank=False)
     quantity = models.FloatField(blank=True, null=True)
-    history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
     general_price = models.FloatField(null=True, blank=True)
     general_qty = models.FloatField(blank=True, null=True)
-    general_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='general_unit', blank=True,
-                                     null=True)
+    general_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, 
+                                    related_name='general_unit', 
+                                    blank=True, null=True
+                                    )
     offer_price = models.FloatField(null=True, blank=True)
     offer_qty = models.FloatField(blank=True, null=True)
-    offer_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='offer_unit', blank=True,
-                                   null=True)
+    offer_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, 
+                                    related_name='offer_unit', 
+                                    blank=True,
+                                    null=True)
     PENDING = 'Pending'
     ACCEPTED = 'Accepted'
     REQUEST_STATUS = [
@@ -44,6 +50,7 @@ class ProducerBulkRequest(BaseModel):  # producer product
         (ACCEPTED, 'Accepted'),
     ]
     status = models.CharField(choices=REQUEST_STATUS, default=PENDING, max_length=20)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.product_name
@@ -88,8 +95,8 @@ class ProducerBusiness(BaseModel):
     long = models.FloatField(blank=True, null=True)
     product_business_geopoint = models.PointField(null=True)
     address = models.CharField(max_length=300, blank=True, null=True)
-    history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.user.first_name
@@ -190,7 +197,7 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     '''
     bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE)
     micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE)
-    qty = models.DecimalField(decimal_places=2,default=0, max_digits=5)
+    qty = models.DecimalField(decimal_places=2, default=0, max_digits=5)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
