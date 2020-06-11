@@ -20,7 +20,7 @@ from sodai.utils.permission import GenericAuth
 class ProductList(APIView):
     # permission_classes = (IsAuthenticated,)
 
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     ## list of Prodect
 
