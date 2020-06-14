@@ -64,12 +64,12 @@ class OrderList(APIView):
             request.POST._mutable = False
         # print(request.data['delivery_date_time'])
         
-        total = float(request.data['order_total_price'])
-        order_vat = (total * vat) / 100 
-        if total > 0.0 and order_vat > 0 and delivery_charge > 0:
-            request.POST._mutable = True
-            request.data['order_total_price'] = total +  order_vat + delivery_charge
-            request.POST._mutable = False
+        # total = float(request.data['order_total_price'])
+        # order_vat = (total * vat) / 100 
+        # if total > 0.0 and order_vat > 0 and delivery_charge > 0:
+        #     request.POST._mutable = True
+        #     request.data['order_total_price'] = total +  order_vat + delivery_charge
+        #     request.POST._mutable = False
 
         serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
                                      context={'request': request})
