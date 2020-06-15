@@ -18,6 +18,7 @@ from datetime import timedelta
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -184,4 +185,3 @@ try:
     from .local_settings import *
 except ImportError:
     pass
-

@@ -14,21 +14,6 @@ from sodai.utils.permission import GenericAuth
 from utility.notification import email_notification
 
 
-class TimeSlotList(APIView):
-
-    def get(self, request):
-        
-        queryset = TimeSlot.objects.filter(allow=True)
-        if queryset:
-            serializer = TimeSlotSerializer(queryset, many=True)
-            if serializer:
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-        
-
 
 class OrderList(APIView):
     permission_classes = [GenericAuth]
@@ -206,7 +191,6 @@ class OrderDetail(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-
 class OrderProductList(APIView):
     permission_classes = [GenericAuth]
 
@@ -241,7 +225,6 @@ class OrderProductList(APIView):
                     responses.append(response)
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
 
 class OrderProductDetail(APIView):
     permission_classes = [GenericAuth]
@@ -280,7 +263,6 @@ class OrderProductDetail(APIView):
             return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-
 
 class VatList(APIView):
     permission_classes = [GenericAuth]
@@ -344,9 +326,6 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-
-
-
 class OrderdProducts(APIView):  # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
 
     permission_classes = [GenericAuth]
@@ -384,7 +363,6 @@ class OrderdProducts(APIView):  # this view returns all the products in a order.
                 return Response({orderProductSerializer.errors + orderSerializer.errors},
                                 status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
 
 
 class OrderStatusUpdate(APIView):
@@ -443,7 +421,6 @@ class VatDeliveryChargeList(APIView):
         return Response(list, status=status.HTTP_200_OK)
 
 
-############
 import json
 import requests
 
@@ -544,8 +521,6 @@ class PaymentInfoListCreate(APIView):
         return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
 
-
-
 class OrderLatest(APIView):
     """Get the latest `order` than get all require data and send a post to ssl,
        If Post status is `success` than create a PaymentInfo object.
@@ -626,3 +601,19 @@ class OrderLatest(APIView):
 
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
+
+
+class TimeSlotList(APIView):
+
+    def get(self, request):
+        
+        queryset = TimeSlot.objects.filter(allow=True)
+        if queryset:
+            serializer = TimeSlotSerializer(queryset, many=True)
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+        
