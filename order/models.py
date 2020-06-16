@@ -143,7 +143,7 @@ class PaymentInfo(models.Model):
         (INITIATED, 'Initiated')
     ]
     payment_id = models.CharField(max_length=100, null=True, blank=True)
-    order_id = models.CharField(max_length=20, null=True, blank=True)
+    order_id = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
     bill_id = models.CharField(max_length=100, null=True, blank=True)
     invoice_number = models.CharField(max_length=100, null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
@@ -159,6 +159,7 @@ class TimeSlot(models.Model):
     """TimeSlot for the order Time Slot"""
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
+    day = models.CharField(max_length=100, default="Today")
     time = models.TimeField()
     allow = models.BooleanField(default=True)
 
@@ -167,4 +168,4 @@ class TimeSlot(models.Model):
 
     @property
     def slot(self):
-        return self.start + ' - ' + self.end
+        return self.start + ' - ' + self.end + " | " + self.day 
