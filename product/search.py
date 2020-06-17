@@ -1,1 +1,0 @@
-from elasticsearch_dsl.connections import create_connection

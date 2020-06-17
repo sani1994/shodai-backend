@@ -97,7 +97,6 @@ class UserCreateMutation(graphene.Mutation):
                                         verification_code=randint(100000, 999999)
                                         )
             user_instance.set_password(input.password)
-            user_instance.is_customer = True
             user_instance.is_approved = True
             user_instance.save()
             token = get_token(user_instance)
@@ -165,10 +164,6 @@ class RetailerProducerCreateMutation(graphene.Mutation):
                                         verification_code=randint(100000, 999999)
                                         )
             user_instance.set_password(input.password)
-            if user_instance.user_type == "RT":
-                user_instance.is_retailer = True
-            elif user_instance.user_type == "PD":
-                user_instance.is_producer = True
             user_instance.save()
 
             """
