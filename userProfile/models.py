@@ -1,7 +1,7 @@
 import qrcode
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils import timezone 
+from django.utils import timezone
 
 # from bases.models import BaseModel
 # Create your models here.
@@ -46,6 +46,9 @@ class UserProfile(AbstractUser):
     is_sales = models.BooleanField(default=False)
     is_delivery = models.BooleanField(default=False)
     is_third_party = models.BooleanField(default=False)
+    verification_code = models.CharField(max_length=6, null=True)
+    code_valid_till = models.DateTimeField(blank=True, null=True)
+    pin_verified = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -55,7 +58,7 @@ class UserProfile(AbstractUser):
         ''' On save, update timestamps '''
         if not self.id:
             self.created_on = timezone.now()
-            if self.user_type=='RT':
+            if self.user_type == 'RT':
                 self.is_retailer = True
             if self.user_type == 'CM':
                 self.is_customer = True
@@ -76,7 +79,6 @@ class UserProfile(AbstractUser):
 
 
 class Address(models.Model):
-
     road = models.CharField(max_length=30, blank=True, null=True)
     city = models.CharField(max_length=30, blank=True, null=True)
     district = models.CharField(max_length=30, blank=True, null=True)
@@ -90,22 +92,21 @@ class Address(models.Model):
 
 
 class Otp(models.Model):
-     mobile_number = models.CharField(max_length=11,unique=True)
-     otp_code = models.CharField(max_length=10,blank=True,null=True)
-     count = models.IntegerField(default=0,help_text='Number of otp sent')
-     history = HistoricalRecords()
+    mobile_number = models.CharField(max_length=11, unique=True)
+    otp_code = models.CharField(max_length=10, blank=True, null=True)
+    count = models.IntegerField(default=0, help_text='Number of otp sent')
+    history = HistoricalRecords()
 
-     def __str__(self):
-         return str(self.mobile_number) + 'is sent' + str(self.otp_code)
+    def __str__(self):
+        return str(self.mobile_number) + 'is sent' + str(self.otp_code)
 
 
 class BlackListedToken(models.Model):
     token = models.CharField(max_length=1000, unique=True)
     user = models.ForeignKey(
-    UserProfile, related_name="token_user", on_delete=models.CASCADE)
+        UserProfile, related_name="token_user", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     history = HistoricalRecords()
 
     class Meta:
         verbose_name_plural = "BlackListed Tokens"
-

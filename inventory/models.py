@@ -9,13 +9,13 @@ from retailer.models import Shop
 
 
 class ShopInventory(BaseModel):
-    shop = models.ForeignKey(Shop,on_delete=models.CASCADE)
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     # stock_balance = models.DecimalField(max_digits=8,decimal_places=2,default=0)
-    incoming = models.DecimalField(max_digits=8,decimal_places=2,default=0)
-    outgoing= models.DecimalField(max_digits=8,decimal_places=2,default=0)
-    debit= models.DecimalField(max_digits=8,decimal_places=2,default=0)
-    credit= models.DecimalField(max_digits=8,decimal_places=2,default=0)
+    incoming = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    outgoing = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    debit = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    credit = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     # money_balance= models.DecimalField(max_digits=8,decimal_places=2,default=0)
     history = HistoricalRecords()
 
@@ -33,6 +33,6 @@ class ShopInventory(BaseModel):
 
         return self.money_balance
 
-class ShopInventoryHistory(BaseModel): #write serializer
-    shop_history = ShopInventory()
 
+class ShopInventoryHistory(BaseModel):  # write serializer
+    shop_history = ShopInventory()

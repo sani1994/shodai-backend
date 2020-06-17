@@ -14,21 +14,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.user_type = validated_data.get('user_type', instance.user_type)
         instance.mobile_number = validated_data.get('mobile_number', instance.mobile_number)
-        instance.user_image = validated_data.get('user_image',instance.user_image)
+        instance.user_image = validated_data.get('user_image', instance.user_image)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
         instance.ref_code = validated_data.get('ref_code', instance.ref_code)
         instance.pin_code = validated_data.get('pin_code', instance.pin_code)
-        instance.password = validated_data.get('password',instance.password)
+        instance.password = validated_data.get('password', instance.password)
         instance.is_approved = False
         instance.save()
         return instance
-    
+
     class Meta:
         model = UserProfile
         fields = '__all__'
-
 
     # def create(self,validated_data):
     #     user = UserProfile.objects.create(
@@ -47,9 +46,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class AddressSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
-        user= self.context['request'].user.id
+        user = self.context['request'].user.id
         user_instance = UserProfile.objects.filter(id=user).first()
-        return Address.objects.create(**validated_data,user=user_instance)
+        return Address.objects.create(**validated_data, user=user_instance)
 
     def update(self, instance, validated_data):
         instance.road = validated_data.get('road', instance.road)
@@ -64,7 +63,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-        fields = ['id','road', 'city', 'district', 'country', 'zip_code','user_id']
+        fields = ['id', 'road', 'city', 'district', 'country', 'zip_code', 'user_id']
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -74,8 +73,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if not validated_data:
             return Response({'Error': "Invalid Data"})
         user = UserProfile.objects.create(
-            user_type= validated_data['user_type'],
-            mobile_number = validated_data['mobile_number'],
+            user_type=validated_data['user_type'],
+            mobile_number=validated_data['mobile_number'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             email=validated_data['email'],
@@ -91,8 +90,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
     class Meta:
-        model=UserProfile
-        fields= ('user_type','mobile_number','first_name','last_name','email','password')
+        model = UserProfile
+        fields = ('user_type', 'mobile_number', 'first_name', 'last_name', 'email', 'password')
 
 
 class RetailerRegistrationSreializer(serializers.ModelSerializer):
@@ -102,8 +101,8 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
         if not validated_data:
             return Response({'Error': "Invalid Data"})
         user = UserProfile.objects.create(
-            user_type= validated_data['user_type'],
-            mobile_number = validated_data['mobile_number'],
+            user_type=validated_data['user_type'],
+            mobile_number=validated_data['mobile_number'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             email=validated_data['email'],
@@ -117,4 +116,4 @@ class RetailerRegistrationSreializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ('id','user_type','mobile_number','first_name','last_name','email','user_NID','password')
+        fields = ('id', 'user_type', 'mobile_number', 'first_name', 'last_name', 'email', 'user_NID', 'password')

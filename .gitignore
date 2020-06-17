@@ -1,7 +1,10 @@
 *.pyc
 *.log
 *.pot
-/__pycache__/
+*.idea
+*.vscode
+*.DS_Store
+*__pycache__
 __pyc__/
 media/
 static/
@@ -19,4 +22,5 @@ src/*.eggs-info
 lib
 lib64
 .idea
-*/migrations
+*.pgsql
+*.sqlite3

@@ -14,14 +14,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 import notifications.urls
+from django.conf.urls import url
 from django.contrib import admin
 from django.conf import settings
 # from django.template.context_processors import static
 from django.urls import path, include
+from django.views.decorators.csrf import csrf_exempt
+from graphene_django.views import GraphQLView
 from rest_framework import routers
 from django.conf.urls.static import static
 
 # from sodai import settings
+
+from .schema import schema
 
 # for django matreial admin site
 
@@ -70,8 +75,13 @@ urlpatterns = [
     path('admin/', include('material.admin.urls')),
     path('', include('search.urls')),
     path('notifications/', include(notifications.urls, namespace='notifications')),
+
+    # Graphql
+    url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL,
+                          document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

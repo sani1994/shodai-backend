@@ -23,7 +23,7 @@ AUTH_USER_MODEL = 'userProfile.UserProfile'
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 
-
+ALLOWED_HOSTS = ['shod.ai', 'www.shod.ai', '127.0.0.1', 'dev.shod.ai']
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 REST_FRAMEWORK = {
@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'import_export',
-    # 'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl',
     # 'material.admin',
     # for djnago material admin site
 
@@ -75,9 +75,23 @@ INSTALLED_APPS = [
     'delivery',
     'search',
     'notifications',
+
+    'graphene_django',
+    'django_filters',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
+    'graphene_gis',
+    'corsheaders',
 ]
 
+GRAPHQL_JWT = {
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_LONG_RUNNING_REFRESH_TOKEN': True,
+    'JWT_EXPIRATION_DELTA': timedelta(days=5),
+    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=10),
+}
+SECRET_KEY = "shodainq&-i=vyk*(bpl&2(j)^(ph6ygw5uphj+6dt$as8ycga%=4zf5web"
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -117,16 +131,16 @@ WSGI_APPLICATION = 'sodai.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'NAME': 'shodai',
-#         'USER': 'admin',
-#         'PASSWORD' : '',
-#         'HOST' : 'localhost'
-#     }
-# }
+DATABASES = {
+    'default': {
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'shodai',
+        'USER': 'postgres',
+        'PASSWORD': '9876',
+        'HOST': 'localhost'
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -170,15 +184,44 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # STATIC_ROOT = ''
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'sodai/static'),
-]
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+DEBUG = True
+# for email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST = "smtp.yandex.com"
+EMAIL_HOST_USER = "noreply@shod.ai"
+EMAIL_HOST_PASSWORD = 'shodai123456'
+DEFAULT_FROM_EMAIL = 'testing@testing.com'
+EMAIL_PORT = 587
+
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+GRAPHENE = {
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
+}
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '/sodai/'),
+]
 
 
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+if DEBUG:
+    CORS_ORIGIN_WHITELIST = [
+        'http://localhost:3000',
+        'https://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://127.0.0.1:3000',
+    ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 try:
     from .local_settings import *

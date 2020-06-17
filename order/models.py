@@ -14,13 +14,11 @@ from userProfile.models import Address
 
 class Order(BaseModel):
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
-    payment_id = models.CharField(max_length=100, blank=True, unique=True)
-    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True,)
-    bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
+    payment_id = models.CharField(max_length=100, blank=True, unique=True, )
+    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True, )
+    bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')
-    # delivery_date_time = models.DateTimeField()
-    delivery_date_time = models.CharField(max_length=100)
+    delivery_date_time = models.DateTimeField()
     delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
@@ -125,7 +123,7 @@ class DeliveryCharge(BaseModel):
         return '{}'.format(str(self.delivery_charge_inside_dhaka))
 
 
-####### 
+#######
 # q= str(uuid.uuid4())[:8]
 # print(q)
 # models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -143,7 +141,8 @@ class PaymentInfo(models.Model):
         (INITIATED, 'Initiated')
     ]
     payment_id = models.CharField(max_length=100, null=True, blank=True)
-    order_id = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
+    # order_id = models.CharField(max_length=20, null=True, blank=True)
+    order = models.ForeignKey(Order, related_name='payment', on_delete=models.CASCADE, blank=True, null=True)
     bill_id = models.CharField(max_length=100, null=True, blank=True)
     invoice_number = models.CharField(max_length=100, null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
@@ -154,9 +153,24 @@ class PaymentInfo(models.Model):
         return 'OrderId: ' + str(self.order_id) + "  " + "PaymentId: " + str(self.payment_id)
 
 
+class TransactionId(models.Model):
+    transaction_id = models.CharField(max_length=100, null=True, blank=True, )
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
+    CANCELLED = 'CANCELLED'
+    PAYMENT_STATUS = [
+        (SUCCESS, 'Success'),
+        (FAILED, 'Failed'),
+        (CANCELLED, 'Cancelled'),
+    ]
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default=FAILED)
+    create_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.transaction_id)
+
 
 class TimeSlot(models.Model):
-    """TimeSlot for the order Time Slot"""
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
     day = models.CharField(max_length=100, default="Today")
@@ -168,4 +182,4 @@ class TimeSlot(models.Model):
 
     @property
     def slot(self):
-        return self.start + ' - ' + self.end + " | " + self.day 
+        return self.start + ' - ' + self.end + " | " + self.day

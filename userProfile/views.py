@@ -229,7 +229,10 @@ class OtpCode(APIView):  # OTP code class to generate OTP code
         mobile_number = request.data['mobile_number']
         if mobile_number:
             mobile_number = str(mobile_number)
-            obj = Otp.objects.get(mobile_number=mobile_number)
+            try:
+                obj = Otp.objects.get(mobile_number=mobile_number)
+            except Otp.DoesNotExist:
+                obj = None
             if obj:
                 # obj.counter = 0
                 # obj.save()

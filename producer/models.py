@@ -19,13 +19,13 @@ class ProducerBulkRequest(BaseModel):  # producer product
     '''
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     product_name = models.CharField(max_length=200, null=False, blank=False)
-    product_name_bn = models.CharField(max_length=100, null=True, blank=True, 
+    product_name_bn = models.CharField(max_length=100, null=True, blank=True,
                                         verbose_name='পন্যের নাম')
     product_image = models.ImageField(upload_to='producer/product', null=True, blank=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
-    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, 
+    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
                             related_name='producer_unit',
-                            null=True, 
+                            null=True,
                             blank=True)
     production_time = models.DateTimeField(null=True, blank=True)
     unit_price = models.FloatField(null=False, blank=False)
@@ -33,14 +33,14 @@ class ProducerBulkRequest(BaseModel):  # producer product
     is_approved = models.BooleanField(default=False)
     general_price = models.FloatField(null=True, blank=True)
     general_qty = models.FloatField(blank=True, null=True)
-    general_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, 
-                                    related_name='general_unit', 
+    general_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
+                                    related_name='general_unit',
                                     blank=True, null=True
                                     )
     offer_price = models.FloatField(null=True, blank=True)
     offer_qty = models.FloatField(blank=True, null=True)
-    offer_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, 
-                                    related_name='offer_unit', 
+    offer_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
+                                    related_name='offer_unit',
                                     blank=True,
                                     null=True)
     PENDING = 'Pending'
@@ -195,8 +195,8 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     '''
     This is the model for the Products against the Micro Bulk Order
     '''
-    bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE)
-    micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE)
+    bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE, null=True)
+    micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE, null=True)
     qty = models.DecimalField(decimal_places=2, default=0, max_digits=5)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
 

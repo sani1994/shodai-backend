@@ -1,7 +1,7 @@
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from utility.models import Area, CityCountry, Location, ProductUnit, Remarks
+from utility.models import Area, CityCountry, Location, ProductUnit, Remarks, Message
 
 
 class AreaAdmin(MaterialModelAdmin):
@@ -33,8 +33,14 @@ class RemarksAdmin(MaterialModelAdmin):
     pass
 
 
-site.register(Area,AreaAdmin)
-site.register(CityCountry,CityCountryAdmin)
-site.register(Location,LocationAdmin)
-site.register(ProductUnit,ProductUnitAdmin)
+class MessageAdmin(MaterialModelAdmin):
+    list_display = ('message', 'screen_name')
+    readonly_fields = ["created_by", "modified_by", ]
+
+
+site.register(Area, AreaAdmin)
+site.register(CityCountry, CityCountryAdmin)
+site.register(Location, LocationAdmin)
+site.register(ProductUnit, ProductUnitAdmin)
 site.register(Remarks)
+site.register(Message, MessageAdmin)
