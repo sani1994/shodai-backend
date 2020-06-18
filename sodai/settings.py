@@ -23,6 +23,7 @@ AUTH_USER_MODEL = 'userProfile.UserProfile'
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 
+
 ALLOWED_HOSTS = ['shod.ai', 'www.shod.ai', '127.0.0.1',]
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
@@ -185,3 +186,4 @@ try:
     from .local_settings import *
 except ImportError:
     pass
+
