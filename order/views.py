@@ -436,40 +436,39 @@ class PaymentInfoListCreate(APIView):
             query_invoice = self.request.GET.get("invoice_number")
 
             if query or query_invoice:
-                queryset = Order.objects.filter(bill_id__exact=query)
+                # queryset = Order.objects.filter(bill_id__exact=query)
                 queryset_invoice = Order.objects.filter(invoice_number__exact=query_invoice)
 
-                # print(queryset)
-                if queryset:
-                    serializer = OrderDetailPaymentSerializer(queryset, many=True, context={'request': request})
+                # if queryset:
+                #     serializer = OrderDetailPaymentSerializer(queryset, many=True, context={'request': request})
 
-                    if serializer:
-                        # d = json.dumps(serializer.data)
-                        # d = json.loads(d)
-                        payment = serializer.data[0]
-                        year = payment['created_on']
+                #     if serializer:
+                #         # d = json.dumps(serializer.data)
+                #         # d = json.loads(d)
+                #         payment = serializer.data[0]
+                #         year = payment['created_on']
 
                   
-                        data = {
-                            'status': "success",
-                            'payment_id': payment['payment_id'],
-                            'bill_id': payment['bill_id'],
-                            'total_amount': payment['order_total_price'],
-                            'currency': payment['currency'],
-                            'created_by': payment['user']["username"],
-                            'created_on': year,
-                            'bill_info':  {
-                                            "type": "product_purchase",
-                                            'order_products': payment['products']
-                            }
-                        }
-                        return Response(data, status=status.HTTP_200_OK)
-                    else:
-                        return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
+                #         data = {
+                #             'status': "success",
+                #             'payment_id': payment['payment_id'],
+                #             'bill_id': payment['bill_id'],
+                #             'total_amount': payment['order_total_price'],
+                #             'currency': payment['currency'],
+                #             'created_by': payment['user']["username"],
+                #             'created_on': year,
+                #             'bill_info':  {
+                #                             "type": "product_purchase",
+                #                             'order_products': payment['products']
+                #             }
+                #         }
+                #         return Response(data, status=status.HTTP_200_OK)
+                #     else:
+                #         return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
     
 
             
-                elif queryset_invoice:
+                if queryset_invoice:
                     serializer = OrderDetailPaymentSerializer(queryset_invoice, many=True, context={'request': request})
 
                     if serializer:
@@ -552,7 +551,7 @@ class OrderLatest(APIView):
                 category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
 
                 product_name = [p["product"]["product_name"] for p in products]
-                
+                # d[0]["invoice_number"]
                 body = { 
                     "project_id": "shodai", 
                     "project_secret": "5h0d41p4ym3n7",
@@ -561,7 +560,7 @@ class OrderLatest(APIView):
                     "product_name": ' '.join(product_name) if product_name else "None",  
                     "product_category":  str(category[0]) if category else "None",  
                     "product_profile": "general",  
-                    "invoice_number": d[0]["invoice_number"], 
+                    "invoice_number":"3669a2f2" , 
                     "customer_name": d[0]["user"]['username'] if d[0]["user"]['username'] else 'None',
                     "customer_email":  d[0]["user"]['email'] if d[0]["user"]['email'] else 'None',
                     "customer_mobile":  d[0]["user"]["mobile_number"],
@@ -569,11 +568,12 @@ class OrderLatest(APIView):
                     "customer_city": d[0]['address']["city"] if d[0]['address'] else 'Dhaka', 
                     "customer_country": d[0]['address']["country"] if d[0]['address'] else 'BD'
                 }
-         
+                # print(body)
                 data=json.dumps(body)
                 # data = json.loads(data)
                 response = requests.post("http://dev.finder-lbs.com:8009/online_payment/ssl", data=data)
                 content = response.json()
+                # print(content)
 
                 if response.status_code == 200:
                     if content["status"]=="success":
@@ -585,7 +585,7 @@ class OrderLatest(APIView):
                         invoice_number = serializer.data[0]["invoice_number"]
                         payment = PaymentInfo(
                                 payment_id=payment_id, 
-                                order_id=order_id, 
+                                payment=int(order_id), 
                                 bill_id=bill_id, 
                                 invoice_number=invoice_number,
                                 payment_status="INITIATED" 
