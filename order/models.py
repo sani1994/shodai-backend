@@ -143,7 +143,7 @@ class PaymentInfo(models.Model):
         (INITIATED, 'Initiated')
     ]
     payment_id = models.CharField(max_length=100, null=True, blank=True)
-    order_id = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
+    order_id = models.ForeignKey(Order, related_name='payment', on_delete=models.CASCADE, blank=True, null=True)
     bill_id = models.CharField(max_length=100, null=True, blank=True)
     invoice_number = models.CharField(max_length=100, null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
