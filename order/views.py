@@ -585,7 +585,7 @@ class OrderLatest(APIView):
                         invoice_number = serializer.data[0]["invoice_number"]
                         payment = PaymentInfo(
                                 payment_id=payment_id, 
-                                payment=int(order_id), 
+                                order_id=int(order_id), 
                                 bill_id=bill_id, 
                                 invoice_number=invoice_number,
                                 payment_status="INITIATED" 
