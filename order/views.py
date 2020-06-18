@@ -560,7 +560,7 @@ class OrderLatest(APIView):
                     "product_name": ' '.join(product_name) if product_name else "None",  
                     "product_category":  str(category[0]) if category else "None",  
                     "product_profile": "general",  
-                    "invoice_number":"3669a2f2" , 
+                    "invoice_number":d[0]["invoice_number"], 
                     "customer_name": d[0]["user"]['username'] if d[0]["user"]['username'] else 'None',
                     "customer_email":  d[0]["user"]['email'] if d[0]["user"]['email'] else 'None',
                     "customer_mobile":  d[0]["user"]["mobile_number"],
