@@ -581,11 +581,12 @@ class OrderLatest(APIView):
                         payment_id = content["payment_id"]
 
                         order_id = int(serializer.data[0]["id"])
+                        order = Order.objects.get(id=order_id)
                         bill_id = serializer.data[0]["bill_id"]
                         invoice_number = serializer.data[0]["invoice_number"]
                         payment = PaymentInfo(
                                 payment_id=payment_id, 
-                                order_id=int(order_id), 
+                                order_id=order, 
                                 bill_id=bill_id, 
                                 invoice_number=invoice_number,
                                 payment_status="INITIATED" 
