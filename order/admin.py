@@ -1,4 +1,8 @@
+import csv
+
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
+from django.http import HttpResponse
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot
@@ -13,10 +17,40 @@ class TimeSlotAdmin(MaterialModelAdmin):
     list_per_page = 10
 
 
+class OrderProductInline(admin.TabularInline):
+    model = OrderProduct
+    fields = ['product', 'order_product_qty']
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id',)
-    # list_display = ('id','user','order_status', 'home_delivery')
-    readonly_fields = ['created_by', 'modified_by', 'created_on', ]
+
+    actions = ["export_as_csv"]
+
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = "Export Selected"
 
     def _products(self, obj):
         return obj.offerproduct_set.all().count()
@@ -29,7 +63,14 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' % obj.product)
         return list
 
+    readonly_fields = ['user', 'invoice_number', 'delivery_date_time', 'delivery_place', 'address', order_products]
     list_display = ('id', 'user', 'order_status', 'home_delivery', 'delivery_date_time', order_products,)
+    inlines = [OrderProductInline]
+    fieldsets = (
+        ('Order Detail View', {
+            'fields': ('user', 'invoice_number', 'delivery_date_time', 'delivery_place', 'address')
+        }),
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -40,7 +81,16 @@ class OrderAdmin(MaterialModelAdmin):
 
 
 class OrderProductAdmin(MaterialModelAdmin):
-    list_display = ('product', 'order_id', 'order_product_price', 'order_product_qty')
+    def order_date(self):
+        dates = []
+        objs = Order.objects.filter(pk=self.order.id)
+        for obj in objs:
+            datetime = obj.delivery_date_time
+            date, time = str(datetime).split(' ', 1)
+            dates.append('%s' % date)
+        return dates
+
+    list_display = ('product', 'order_id', 'order_product_price', 'order_product_qty', order_date)
     list_filter = ('order',)
     readonly_fields = ['created_by', 'modified_by', 'created_on']
 

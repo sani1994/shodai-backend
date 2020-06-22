@@ -141,12 +141,11 @@ class PaymentInfo(models.Model):
         (INITIATED, 'Initiated')
     ]
     payment_id = models.CharField(max_length=100, null=True, blank=True)
-    # order_id = models.CharField(max_length=20, null=True, blank=True)
     order = models.ForeignKey(Order, related_name='payment', on_delete=models.CASCADE, blank=True, null=True)
     bill_id = models.CharField(max_length=100, null=True, blank=True)
     invoice_number = models.CharField(max_length=100, null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default=FAILED)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default=INITIATED)
     create_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
