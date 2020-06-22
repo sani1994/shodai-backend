@@ -35,10 +35,11 @@ class ProductCategory(BaseModel):
 
 class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny name)
     name = models.CharField(max_length=100)
-    name_bn = models.CharField(max_length=100,null=True,blank=True,verbose_name='নাম')
+    name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='নাম')
     img = models.ImageField(upload_to="pictures/productmeta/", blank=True, null=True)
-    product_category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
-    shop_category = models.ForeignKey(ShopCategory,on_delete=models.CASCADE,verbose_name='Product Type')
+    product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    shop_category = models.ForeignKey(ShopCategory, on_delete=models.CASCADE, verbose_name='Product Type')
+    vat_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Vat Amount(%)')
     history = HistoricalRecords()
 
     def __str__(self):
@@ -51,20 +52,43 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
-    product_name_bn = models.CharField(max_length=100,null=True,blank=True,verbose_name= 'পন্যের নাম')
+    product_name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name= 'পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
-    product_description = models.CharField(max_length=200,default=" ")
+    product_description = models.CharField(max_length=200, default=" ")
     product_description_bn = models.CharField(max_length=200, default=" ")
-    product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,default=None)
-    product_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True, null=True)
-    product_price_bn = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,verbose_name='পন্যের মুল্য')
+    product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, default=None)
+    product_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    product_price_bn = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True, verbose_name='পন্যের মুল্য')
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
-    product_last_price = models.DecimalField(decimal_places=2,max_digits=7,default=0.00)
+    product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)
+    price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True)
     history = HistoricalRecords()
+
+
+    def save(self, *args, **kwargs):
+
+        if self.product_meta.vat_amount:
+            self.price_with_vat = float(self.product_price) + (float(self.product_price) * self.product_meta.vat_amount) / 100 
+            super(Product, self).save(*args, **kwargs)
+        else:
+            self.price_with_vat = self.product_price 
+            super(Product, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.product_name
+    
+    @property
+    def product_price_with_vat(self):
+        if self.product_meta.vat:
+            return self.product_price + (self.product_price * self.product_meta.vat_amount) / 100 
+        return self.product_price
+
+    @property
+    def vat_amount(self):
+        if self.product_meta.vat_amount:
+            return (self.product_price * self.product_meta.vat_amount) / 100 
+        return 0.0
 
     @property
     def product_unit_name(self):
