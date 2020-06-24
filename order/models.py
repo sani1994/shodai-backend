@@ -162,7 +162,7 @@ class TimeSlot(models.Model):
     day = models.CharField(max_length=100, default="Today")
     time = models.TimeField()
     allow = models.BooleanField(default=True)
-    slot = models.CharField(max_length=100, default="1PM - 4PM | Today", blank=True, null=True)
+    slot = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.slot
