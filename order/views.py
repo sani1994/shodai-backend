@@ -38,58 +38,58 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-    def post(self, request, *args, **kwargs):
-        # print(request.data['order_total_price'])
-        # vat = Vat.objects.get(id=1).vat_amount
-        delivery_charge = DeliveryCharge.objects.get(id=1).delivery_charge_inside_dhaka
+    # def post(self, request, *args, **kwargs):
+    #     # print(request.data['order_total_price'])
+    #     # vat = Vat.objects.get(id=1).vat_amount
+    #     delivery_charge = DeliveryCharge.objects.get(id=1).delivery_charge_inside_dhaka
 
-        datetime = request.data['delivery_date_time'].split('||')
-        slot = datetime[0]
-        date = datetime[1]
-        time = TimeSlot.objects.filter(slot=slot)
+    #     datetime = request.data['delivery_date_time'].split('||')
+    #     slot = datetime[0]
+    #     date = datetime[1]
+    #     time = TimeSlot.objects.filter(slot=slot)
+
+    #     for t in time:
+    #         # print(t.time)
+    #         year = date.split('-')[2]
+    #         month = date.split('-')[1]
+    #         day = date.split('-')[0]
+    #         date = year + '-' + month + '-' +  day
+    #         request.POST._mutable = True
+    #         request.data['delivery_date_time'] = date + ' ' + str(t.time)
+    #         request.POST._mutable = False
+
+    #     # print(request.data['delivery_date_time'])
+
+    #     if request.data['contact_number'] == "":
+    #         request.POST._mutable = True
+    #         request.data['contact_number'] = request.user.mobile_number
+    #         request.POST._mutable = False
+    #     # print(request.data['delivery_date_time'])
         
-        for t in time:
-            # print(t.time)
-            year = date.split('-')[2]
-            month = date.split('-')[1]
-            day = date.split('-')[0]
-            date = year + '-' + month + '-' +  day
-            request.POST._mutable = True
-            request.data['delivery_date_time'] = date + ' ' + str(t.time)
-            request.POST._mutable = False
+    #     total = float(request.data['order_total_price'])
+    #     # order_vat = (total * vat) / 100 
+    #     if total > 0.0 and delivery_charge > 0:
+    #         request.POST._mutable = True
+    #         request.data['order_total_price'] =  total + delivery_charge #total +  order_vat 
+    #         request.POST._mutable = False
 
-        # print(request.data['delivery_date_time'])
+    #     serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
+    #                                  context={'request': request})
+    #     if serializer.is_valid():
 
-        if request.data['contact_number'] == "":
-            request.POST._mutable = True
-            request.data['contact_number'] = request.user.mobile_number
-            request.POST._mutable = False
-        # print(request.data['delivery_date_time'])
-        
-        total = float(request.data['order_total_price'])
-        # order_vat = (total * vat) / 100 
-        if total > 0.0 and delivery_charge > 0:
-            request.POST._mutable = True
-            request.data['order_total_price'] =  total + delivery_charge #total +  order_vat 
-            request.POST._mutable = False
-
-        serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
-                                     context={'request': request})
-        if serializer.is_valid():
-
-            serializer.save(user=request.user, created_by=request.user)
-            """
-            To send notification to admin 
-            """
-            sub = "Order Placed"
-            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
-            email_notification(sub, body)
-            """
-            Notification code ends here
-            """
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #         serializer.save(user=request.user, created_by=request.user)
+    #         """
+    #         To send notification to admin 
+    #         """
+    #         sub = "Order Placed"
+    #         body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
+    #         email_notification(sub, body)
+    #         """
+    #         Notification code ends here
+    #         """
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # class OrderList(APIView):
