@@ -19,7 +19,7 @@ class TimeSlotAdmin(MaterialModelAdmin):
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct
-    fields = ['product', 'order_product_qty']
+    fields = ['product', 'order_product_qty', 'order_product_price']
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -63,12 +63,12 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' % obj.product)
         return list
 
-    readonly_fields = ['user', 'delivery_date_time', 'delivery_place', 'address', order_products]
+    readonly_fields = ['user', 'invoice_number', 'order_total_price', 'delivery_date_time', 'delivery_place', 'address', order_products]
     list_display = ('id', 'user', 'order_status', 'home_delivery', 'delivery_date_time', order_products,)
     inlines = [OrderProductInline]
     fieldsets = (
         ('Order Detail View', {
-            'fields': ('user', 'invoice_number', 'delivery_date_time', 'delivery_place', 'address')
+            'fields': ('user', 'invoice_number', 'order_total_price', 'delivery_date_time', 'delivery_place', 'address')
         }),
     )
 

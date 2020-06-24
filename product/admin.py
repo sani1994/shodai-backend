@@ -14,8 +14,8 @@ from import_export.admin import ImportExportModelAdmin
 
 class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_name', 'product_meta', 'is_approved')
-    list_display = ('id', 'product_name', 'product_price', 'is_approved')
-    readonly_fields = ["created_by", "modified_by", ]
+    list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
+    readonly_fields = ["created_by", "modified_by", 'price_with_vat']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -73,7 +73,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 class ProductMetaAdmin(admin.ModelAdmin):
     readonly_fields = ["created_by", "modified_by", ]
     list_display = ('name','product_category','shop_category')
-    list_filter = ('product_category','shop_category')
+    list_filter = ('product_category','shop_category', 'vat_amount')
 
     def save_model(self, request, obj, form, change):
         if obj.id:
