@@ -4,8 +4,8 @@ from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
-    OrderDetailPaymentSerializer, TimeSlotSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, TimeSlot
+    OrderDetailPaymentSerializer, #TimeSlotSerializer
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, #TimeSlot
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -621,17 +621,17 @@ class OrderLatest(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
-class TimeSlotList(APIView):
+# class TimeSlotList(APIView):
 
-    def get(self, request):
+#     def get(self, request):
         
-        queryset = TimeSlot.objects.filter(allow=True)
-        if queryset:
-            serializer = TimeSlotSerializer(queryset, many=True)
-            if serializer:
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+#         queryset = TimeSlot.objects.filter(allow=True)
+#         if queryset:
+#             serializer = TimeSlotSerializer(queryset, many=True)
+#             if serializer:
+#                 return Response(serializer.data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
         

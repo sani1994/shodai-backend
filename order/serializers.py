@@ -4,7 +4,7 @@ from order.models import (
                         Vat, 
                         DeliveryCharge, 
                         PaymentInfo, 
-                        TimeSlot
+                        # TimeSlot
                         )
 from rest_framework import serializers 
 
@@ -145,10 +145,10 @@ class PaymentInfoDetailSerializer(serializers.ModelSerializer):
         read_only = ('id', )
 
 
-class TimeSlotSerializer(serializers.ModelSerializer):
-    """Create serializer for TimeSlot object"""
-    class Meta:
-        model = TimeSlot
-        # fields = ('id', 'start', 'end', 'allow', 'slot')
-        fields = ('slot',)
-        # read_only = ('id', )
+# class TimeSlotSerializer(serializers.ModelSerializer):
+#     """Create serializer for TimeSlot object"""
+#     class Meta:
+#         model = TimeSlot
+#         # fields = ('id', 'start', 'end', 'allow', 'slot')
+#         fields = ('slot',)
+#         # read_only = ('id', )
