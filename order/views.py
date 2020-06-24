@@ -4,8 +4,8 @@ from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
-    OrderDetailPaymentSerializer #TimeSlotSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo #TimeSlot
+    OrderDetailPaymentSerializer, TimeSlotSerializer
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, TimeSlot
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -38,58 +38,57 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-    # def post(self, request, *args, **kwargs):
-    #     # print(request.data['order_total_price'])
-    #     # vat = Vat.objects.get(id=1).vat_amount
-    #     delivery_charge = DeliveryCharge.objects.get(id=1).delivery_charge_inside_dhaka
+    def post(self, request, *args, **kwargs):
+        # print(request.data['order_total_price'])
+        # vat = Vat.objects.get(id=1).vat_amount
+        delivery_charge = DeliveryCharge.objects.get(id=1).delivery_charge_inside_dhaka
 
-    #     datetime = request.data['delivery_date_time'].split('||')
-    #     slot = datetime[0]
-    #     date = datetime[1]
-    #     time = TimeSlot.objects.filter(slot=slot)
+        datetime = request.data['delivery_date_time'].split('||')
+        slot = datetime[0]
+        date = datetime[1]
+        time = TimeSlot.objects.filter(slot=slot)
+        for t in time:
+            # print(t.time)
+            year = date.split('-')[2]
+            month = date.split('-')[1]
+            day = date.split('-')[0]
+            date = year + '-' + month + '-' +  day
+            request.POST._mutable = True
+            request.data['delivery_date_time'] = date + ' ' + str(t.time)
+            request.POST._mutable = False
 
-    #     for t in time:
-    #         # print(t.time)
-    #         year = date.split('-')[2]
-    #         month = date.split('-')[1]
-    #         day = date.split('-')[0]
-    #         date = year + '-' + month + '-' +  day
-    #         request.POST._mutable = True
-    #         request.data['delivery_date_time'] = date + ' ' + str(t.time)
-    #         request.POST._mutable = False
+        # print(request.data['delivery_date_time'])
 
-    #     # print(request.data['delivery_date_time'])
-
-    #     if request.data['contact_number'] == "":
-    #         request.POST._mutable = True
-    #         request.data['contact_number'] = request.user.mobile_number
-    #         request.POST._mutable = False
-    #     # print(request.data['delivery_date_time'])
+        if request.data['contact_number'] == "":
+            request.POST._mutable = True
+            request.data['contact_number'] = request.user.mobile_number
+            request.POST._mutable = False
+        # print(request.data['delivery_date_time'])
         
-    #     total = float(request.data['order_total_price'])
-    #     # order_vat = (total * vat) / 100 
-    #     if total > 0.0 and delivery_charge > 0:
-    #         request.POST._mutable = True
-    #         request.data['order_total_price'] =  total + delivery_charge #total +  order_vat 
-    #         request.POST._mutable = False
+        total = float(request.data['order_total_price'])
+        # order_vat = (total * vat) / 100 
+        if total > 0.0 and delivery_charge > 0:
+            request.POST._mutable = True
+            request.data['order_total_price'] =  total + delivery_charge #total +  order_vat 
+            request.POST._mutable = False
 
-    #     serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
-    #                                  context={'request': request})
-    #     if serializer.is_valid():
+        serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
+                                     context={'request': request})
+        if serializer.is_valid():
 
-    #         serializer.save(user=request.user, created_by=request.user)
-    #         """
-    #         To send notification to admin 
-    #         """
-    #         sub = "Order Placed"
-    #         body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
-    #         email_notification(sub, body)
-    #         """
-    #         Notification code ends here
-    #         """
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save(user=request.user, created_by=request.user)
+            """
+            To send notification to admin 
+            """
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
+            email_notification(sub, body)
+            """
+            Notification code ends here
+            """
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # class OrderList(APIView):
@@ -621,17 +620,17 @@ class OrderLatest(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
 
-# class TimeSlotList(APIView):
+class TimeSlotList(APIView):
 
-#     def get(self, request):
+    def get(self, request):
         
-#         queryset = TimeSlot.objects.filter(allow=True)
-#         if queryset:
-#             serializer = TimeSlotSerializer(queryset, many=True)
-#             if serializer:
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
-#             else:
-#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+        queryset = TimeSlot.objects.filter(allow=True)
+        if queryset:
+            serializer = TimeSlotSerializer(queryset, many=True)
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
         
