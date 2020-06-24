@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
     OrderDetailPaymentSerializer #TimeSlotSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, #TimeSlot
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo #TimeSlot
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
