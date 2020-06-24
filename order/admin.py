@@ -7,7 +7,7 @@ from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, 
 # Register your models here.
 
 class TimeSlotAdmin(MaterialModelAdmin):
-    list_display = ('start', 'end', 'time', 'allow',)
+    list_display = ('start', 'end', 'time', 'allow', 'slot')
     list_filter = ('allow',)
     # list_editable = ('allow',)
     list_per_page = 10

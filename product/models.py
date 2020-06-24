@@ -39,7 +39,7 @@ class ProductMeta(BaseModel): # Prodect Meta (original product name with comapny
     img = models.ImageField(upload_to="pictures/productmeta/", blank=True, null=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     shop_category = models.ForeignKey(ShopCategory, on_delete=models.CASCADE, verbose_name='Product Type')
-    vat_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Vat Amount(%)')
+    vat_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Vat Amount(%)') # Here vat amount 15 is 15%
     history = HistoricalRecords()
 
     def __str__(self):
@@ -62,7 +62,7 @@ class Product(BaseModel):
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)
-    price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True)
+    price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True, verbose_name='Product Price With Vat') # Product Price with vat
     history = HistoricalRecords()
 
 

@@ -19,8 +19,8 @@ class Order(BaseModel):
     invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     currency = models.CharField(max_length=3, blank=True, default='BDT')
-    # delivery_date_time = models.DateTimeField()
-    delivery_date_time = models.CharField(max_length=100)
+    delivery_date_time = models.DateTimeField()
+    # delivery_date_time = models.CharField(max_length=100)
     delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)
     lat = models.FloatField()
@@ -162,10 +162,15 @@ class TimeSlot(models.Model):
     day = models.CharField(max_length=100, default="Today")
     time = models.TimeField()
     allow = models.BooleanField(default=True)
+    slot = models.CharField(max_length=100, default="1PM - 4PM | Today")
 
     def __str__(self):
-        return self.start + '-' + self.end
+        return self.slot
+    
+    def save(self, *args, **kwargs):
+        self.slot = self.start + ' - ' + self.end + " | " + self.day 
+        super(TimeSlot, self).save(*args, **kwargs)
 
-    @property
-    def slot(self):
-        return self.start + ' - ' + self.end + " | " + self.day 
+    # @property
+    # def slot(self):
+    #     return slot + " | " + self.day 

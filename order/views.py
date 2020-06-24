@@ -40,8 +40,25 @@ class OrderList(APIView):
 
     def post(self, request, *args, **kwargs):
         # print(request.data['order_total_price'])
-        vat = Vat.objects.get(id=1).vat_amount
+        # vat = Vat.objects.get(id=1).vat_amount
         delivery_charge = DeliveryCharge.objects.get(id=1).delivery_charge_inside_dhaka
+
+        datetime = request.data['delivery_date_time'].split('||')
+        slot = datetime[0]
+        date = datetime[1]
+        time = TimeSlot.objects.filter(slot=slot)
+        
+        for t in time:
+            # print(t.time)
+            year = date.split('-')[2]
+            month = date.split('-')[1]
+            day = date.split('-')[0]
+            date = year + '-' + month + '-' +  day
+            request.POST._mutable = True
+            request.data['delivery_date_time'] = date + ' ' + str(t.time)
+            request.POST._mutable = False
+
+        # print(request.data['delivery_date_time'])
 
         if request.data['contact_number'] == "":
             request.POST._mutable = True
@@ -50,8 +67,8 @@ class OrderList(APIView):
         # print(request.data['delivery_date_time'])
         
         total = float(request.data['order_total_price'])
-        order_vat = (total * vat) / 100 
-        if total > 0.0 and order_vat > 0 and delivery_charge > 0:
+        # order_vat = (total * vat) / 100 
+        if total > 0.0 and delivery_charge > 0:
             request.POST._mutable = True
             request.data['order_total_price'] =  total + delivery_charge #total +  order_vat 
             request.POST._mutable = False
