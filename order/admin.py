@@ -6,11 +6,11 @@ from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, 
 
 # Register your models here.
 
-# class TimeSlotAdmin(MaterialModelAdmin):
-#     list_display = ('start', 'end', 'time', 'allow', 'slot')
-#     list_filter = ('allow',)
-#     # list_editable = ('allow',)
-#     list_per_page = 10
+class TimeSlotAdmin(MaterialModelAdmin):
+    list_display = ('start', 'end', 'time', 'allow', 'slot')
+    list_filter = ('allow',)
+    # list_editable = ('allow',)
+    list_per_page = 10
 
 
 class OrderAdmin(MaterialModelAdmin):
@@ -83,7 +83,7 @@ class PaymentInfoAdmin(MaterialModelAdmin):
     list_filter = ['order_id']
 
 
-# site.register(TimeSlot, TimeSlotAdmin)
+site.register(TimeSlot, TimeSlotAdmin)
 site.register(Order, OrderAdmin)
 site.register(OrderProduct, OrderProductAdmin)
 site.register(Vat, VatAdmin)
