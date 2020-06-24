@@ -1,7 +1,7 @@
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot
+from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, #TimeSlot
 
 
 # Register your models here.
