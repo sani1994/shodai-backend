@@ -80,6 +80,7 @@ class OrderAdmin(MaterialModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+
 class OrderProductAdmin(MaterialModelAdmin):
     def order_date(self):
         dates = []
