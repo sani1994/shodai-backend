@@ -172,7 +172,7 @@ class TransactionId(models.Model):
 class TimeSlot(models.Model):
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
-    day = models.CharField(max_length=100, default="Today")
+    # day = models.CharField(max_length=100, default="Today")
     time = models.TimeField()
     allow = models.BooleanField(default=True)
 

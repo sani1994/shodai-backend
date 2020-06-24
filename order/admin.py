@@ -63,7 +63,7 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' % obj.product)
         return list
 
-    readonly_fields = ['user', 'invoice_number', 'delivery_date_time', 'delivery_place', 'address', order_products]
+    readonly_fields = ['user', 'delivery_date_time', 'delivery_place', 'address', order_products]
     list_display = ('id', 'user', 'order_status', 'home_delivery', 'delivery_date_time', order_products,)
     inlines = [OrderProductInline]
     fieldsets = (
@@ -85,8 +85,7 @@ class OrderProductAdmin(MaterialModelAdmin):
         dates = []
         objs = Order.objects.filter(pk=self.order.id)
         for obj in objs:
-            datetime = obj.delivery_date_time
-            date, time = str(datetime).split(' ', 1)
+            date, time = str(obj.delivery_date_time).split(' ', 1)
             dates.append('%s' % date)
         return dates
 

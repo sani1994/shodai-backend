@@ -8,7 +8,7 @@ from graphql_relay.utils import unbase64
 
 from utility.notification import email_notification
 from .queries import OrderType, OrderProductType
-from ..models import Order, OrderProduct, PaymentInfo, TransactionId
+from ..models import Order, OrderProduct, PaymentInfo, TransactionId, DeliveryCharge
 from product.models import Product
 from userProfile.models import Address
 
@@ -45,12 +45,14 @@ class OrderProductInput(graphene.InputObjectType):
 
 class OrderInput(graphene.InputObjectType):
     delivery_date_time = graphene.DateTime(required=True)
-    delivery_place = graphene.String()
+    delivery_place = graphene.String(required=True)
+    netPayAble_amount = graphene.String(required=True)
+    vat_amount = graphene.String(required=True)
     order_total_price = graphene.String(required=True)
     lat = graphene.Float(required=True)
-    long = graphene.Float()
+    long = graphene.Float(required=True)
     home_delivery = graphene.Boolean(required=True)
-    address = graphene.Int()
+    address = graphene.Int(required=True)
     order_type = graphene.NonNull(OrderTypeEnum)
     contact_number = graphene.String()
     products = graphene.List(OrderProductInput)
@@ -88,20 +90,16 @@ class CreateOrder(graphene.Mutation):
                                        lat=input.lat,
                                        long=input.long,
                                        order_status="OD",
-                                       order_type=input.order_type, )
+                                       order_type=input.order_type,
+                                       contact_number=input.contact_number if input.contact_number else user.mobile_number
+                                       )
                 order_instance.address = Address.objects.get(id=input.address)
-                if input.contact_number == "":
-                    order_instance.contact_number = user.mobile_number
-                else:
-                    order_instance.contact_number = input.contact_number
                 order_instance.save()
+                datetime = order_instance.delivery_date_time.strftime("%m/%d/%Y, %H:%M:%S")
 
-                sub = "Order Placed"
-                body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
-                       f"posted an order Order id: {order_instance.pk}.\r\n \r\nThanks and Regards\r\nShodai "
-                email_notification(sub, body)
                 product_list = input.products
                 print(product_list)
+                product_list_detail = []
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
@@ -109,6 +107,24 @@ class CreateOrder(graphene.Mutation):
                                                 order=Order.objects.get(pk=order_instance.pk),
                                                 order_product_price=product.product_price,
                                                 order_product_qty=p.order_product_qty, )
+                    product_list_detail.append(product.product_name + " " + str(p.order_product_qty) + " " +
+                                               product.product_unit.product_unit + ",")
+
+                print(product_list_detail)
+                sub = "Order Placed"
+                body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
+                       f"posted an order with the following details" \
+                       f" \r\nOrder id: {order_instance.pk}." \
+                       f" \r\nOrdered product list with quantity: {' '.join(product_list_detail)}." \
+                       f" \r\nOrder delivery date and time: {datetime}." \
+                       f" \r\nOrder delivery area: {order_instance.delivery_place}." \
+                       f" \r\nOrder delivery address: {order_instance.address}." \
+                       f" \r\nOrder net payable amount: {input.netPayAble_amount}." \
+                       f" \r\nOrder vat amount: {input.vat_amount}." \
+                       f" \r\nOrder delivery charge: {DeliveryCharge.objects.get()}." \
+                       f" \r\nOrder total price: {order_instance.order_total_price}." \
+                       f"\r\n \r\nThanks and Regards\r\nShodai "
+                email_notification(sub, body)
                 return CreateOrder(order=order_instance)
             else:
                 raise Exception('Unauthorized request!')
@@ -159,12 +175,7 @@ class PaymentMutation(graphene.Mutation):
             if user.user_type == 'CM':
                 address = Address.objects.get(pk=kwargs["address_id"], user=user)
                 obj = Order.objects.get(pk=kwargs["order_id"], user=user)
-                order_product = OrderProduct.objects.all()
-                order_product_list = list()
-                for o in order_product:
-                    if str(o.order.pk) == str(kwargs.get('order_id')):
-                        order_product_list.append(o)
-
+                order_product_list = OrderProduct.objects.filter(order=obj)
                 products = [op.product for op in order_product_list]
                 product_name = [p.product_name for p in products]
                 category = [p.product_meta.product_category.type_of_product for p in products]
