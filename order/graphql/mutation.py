@@ -86,6 +86,8 @@ class CreateOrder(graphene.Mutation):
                 order_instance = Order(user=user,
                                        delivery_date_time=input.delivery_date_time,
                                        delivery_place=input.delivery_place,
+                                       total_vat=input.total_vat,
+                                       net_pay_able_amount=input.netPayAble_amount,
                                        order_total_price=input.order_total_price,
                                        lat=input.lat,
                                        long=input.long,
