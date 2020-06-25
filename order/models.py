@@ -91,6 +91,10 @@ class OrderProduct(BaseModel):
     # order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True, )  # new
     order_product_price = models.FloatField(blank=False, null=False,
                                             default=0)  # product may belong to offer do the price
+    order_product_price_with_vat = models.FloatField(blank=False, null=False,
+                                                     default=0)  # added to track price with vat
+    vat_amount = models.FloatField(default=0, blank=True, null=True,
+                                   verbose_name='Vat Amount(%)')  # Here vat amount 15 is 15%; added to track vat
     order_product_qty = models.FloatField(default=1)
     history = HistoricalRecords()
 

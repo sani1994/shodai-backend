@@ -63,7 +63,8 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' % obj.product)
         return list
 
-    readonly_fields = ['user', 'invoice_number', 'order_total_price', 'delivery_date_time', 'delivery_place', 'address', order_products]
+    readonly_fields = ['user', 'invoice_number', 'order_total_price', 'delivery_date_time', 'delivery_place', 'address',
+                       order_products]
     list_display = ('id', 'user', 'order_status', 'home_delivery', 'delivery_date_time', order_products,)
     inlines = [OrderProductInline]
     fieldsets = (
@@ -80,7 +81,6 @@ class OrderAdmin(MaterialModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-
 class OrderProductAdmin(MaterialModelAdmin):
     def order_date(self):
         dates = []
@@ -90,9 +90,12 @@ class OrderProductAdmin(MaterialModelAdmin):
             dates.append('%s' % date)
         return dates
 
-    list_display = ('product', 'order_id', 'order_product_price', 'order_product_qty', order_date)
+    list_display = (
+        'product', 'order_id', 'order_product_price', 'order_product_price_with_vat', 'order_product_qty',
+        order_date)
     list_filter = ('order',)
-    readonly_fields = ['created_by', 'modified_by', 'created_on']
+    readonly_fields = ['product', 'order', 'order_product_price', 'order_product_price_with_vat', 'vat_amount',
+                       'order_product_qty', 'created_by', 'modified_by', 'created_on']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
