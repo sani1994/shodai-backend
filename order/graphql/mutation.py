@@ -106,6 +106,8 @@ class CreateOrder(graphene.Mutation):
                     OrderProduct.objects.create(product=product,
                                                 order=Order.objects.get(pk=order_instance.pk),
                                                 order_product_price=product.product_price,
+                                                order_product_price_with_vat=product.price_with_vat,
+                                                vat_amount=product.product_meta.vat_amount,
                                                 order_product_qty=p.order_product_qty, )
                     product_list_detail.append(product.product_name + " " + str(p.order_product_qty) + " " +
                                                product.product_unit.product_unit + ",")
@@ -149,6 +151,8 @@ class CreateOrderProduct(graphene.Mutation):
                 order_product_instance = OrderProduct(product=product,
                                                       order=Order.objects.get(pk=input.order_id),
                                                       order_product_price=product.product_price,
+                                                      order_product_price_with_vat=product.price_with_vat,
+                                                      vat_amount=product.product_meta.vat_amount,
                                                       order_product_qty=input.order_product_qty, )
                 order_product_instance.save()
                 return CreateOrderProduct(order_product=order_product_instance)

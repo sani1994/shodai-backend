@@ -7,7 +7,6 @@
 *__pycache__
 __pyc__/
 media/
-migrations/
 static/
 env/
 venv
@@ -25,4 +24,3 @@ lib64
 .idea
 *.pgsql
 *.sqlite3
-*/migrations
