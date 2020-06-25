@@ -46,7 +46,9 @@ class OrderList(APIView):
         datetime = request.data['delivery_date_time'].split('||')
         slot = datetime[0]
         date = datetime[1]
-        time = TimeSlot.objects.filter(slot=slot)
+        print(slot)
+        print(slot.replace(' ', ''))
+        time = TimeSlot.objects.filter(slot=slot.replace(' ', ''))
         for t in time:
             # print(t.time)
             year = date.split('-')[2]

@@ -2,6 +2,7 @@ import uuid
 from django.contrib.gis.db import models
 from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
+from django.utils.translation import ugettext_lazy as _
 from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
@@ -53,13 +54,16 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
+    # # to store total vat amount of an order
+    # total_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
+    #                                 verbose_name='Total Vat')  # new
+    # # to store net payable amount of an order
+    # net_pay_able_amount = models.FloatField(blank=False, null=False, default=0)  # new
+
     history = HistoricalRecords()
 
     def __str__(self):
         return "{}".format(self.id)
-
-    # def __int__(self):
-    #     return self.order_id
 
     # @property
     # def order_count(self): # saikat
@@ -90,9 +94,12 @@ class Order(BaseModel):
 class OrderProduct(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, related_name='orders', on_delete=models.CASCADE)
-    # order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True, )  # new
     order_product_price = models.FloatField(blank=False, null=False,
                                             default=0)  # product may belong to offer do the price
+    order_product_price_with_vat = models.FloatField(blank=False, null=False,
+                                                     default=0)  # added to track price with vat
+    vat_amount = models.FloatField(default=0, blank=True, null=True,
+                                   verbose_name='Vat Amount(%)')
     order_product_qty = models.FloatField(default=1)
     history = HistoricalRecords()
 
@@ -100,7 +107,8 @@ class OrderProduct(BaseModel):
         return self.product.product_name
 
     def save(self, *args, **kwargs):  # new
-        self.order_product_id = str(uuid.uuid4())[:8]
+        self.order_product_price_with_vat = self.product.price_with_vat
+        self.vat_amount = self.product.product_meta.vat_amount
         super(OrderProduct, self).save(*args, **kwargs)
 
     class Meta:
@@ -159,16 +167,16 @@ class TimeSlot(models.Model):
     """TimeSlot for the order Time Slot"""
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
-    day = models.CharField(max_length=100, default="Today")
+    # day = models.CharField(max_length=100, default="Today")
     time = models.TimeField()
     allow = models.BooleanField(default=True)
-    slot = models.CharField(max_length=100, blank=True, null=True)
+    slot = models.CharField(max_length=100, blank=True, null=True, help_text=_("Auto Save"))
 
     def __str__(self):
         return self.slot
     
     def save(self, *args, **kwargs):
-        self.slot = self.start + ' - ' + self.end + " | " + self.day 
+        self.slot = self.start + '-' + self.end 
         super(TimeSlot, self).save(*args, **kwargs)
 
     # @property

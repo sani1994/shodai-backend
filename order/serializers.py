@@ -17,7 +17,6 @@ class OrderSerializer(serializers.ModelSerializer):
     # delivery_date_time = serializers.DateTimeField(input_formats="%Y-%m-%d %H:%M%p")
     # delivery_date_time =  serializers.DateTimeField(input_formats=["%Y-%m-%d%H:%M:%S%p"])
 
-
     def update(self,instance,validated_data):
         user = self.context['request'].user
 
