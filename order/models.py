@@ -51,11 +51,6 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
-    # to store total vat amount of an order
-    total_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
-                                    verbose_name='Total Vat')  # new
-    # to store net payable amount of an order
-    net_pay_able_amount = models.FloatField(blank=False, null=False, default=0)  # new
     history = HistoricalRecords()
 
     def __str__(self):
@@ -93,7 +88,6 @@ class Order(BaseModel):
 class OrderProduct(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, related_name='orders', on_delete=models.CASCADE)
-    # order_product_id = models.CharField(max_length=100, blank=True, null=True, unique=True, )  # new
     order_product_price = models.FloatField(blank=False, null=False,
                                             default=0)  # product may belong to offer do the price
     order_product_price_with_vat = models.FloatField(blank=False, null=False,
@@ -107,7 +101,6 @@ class OrderProduct(BaseModel):
         return self.product.product_name
 
     def save(self, *args, **kwargs):  # new
-        self.order_product_id = str(uuid.uuid4())[:8]
         super(OrderProduct, self).save(*args, **kwargs)
 
     class Meta:

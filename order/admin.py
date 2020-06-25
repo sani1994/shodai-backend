@@ -37,18 +37,17 @@ class OrderAdmin(MaterialModelAdmin):
     actions = ["export_as_csv"]
 
     def export_as_csv(self, request, queryset):
-        meta = self.model._meta
-        field_names = ['id', 'user', 'invoice_number', 'net_pay_able_amount', 'total_vat', 'order_total_price',
+        field_names = ['id', 'user', 'invoice_number', 'order_total_price',
                        'delivery_date_time', 'delivery_place', 'address']
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        response['Content-Disposition'] = 'attachment; filename=order.csv'
         writer = csv.writer(response)
 
         writer.writerow(field_names)
         for obj in queryset:
-            row = writer.writerow([getattr(obj, field) for field in field_names])
-
+            row = writer.writerow(
+                [getattr(obj, field) for field in field_names])
         return response
 
     export_as_csv.short_description = "Export Selected"
@@ -64,7 +63,7 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' % obj.product)
         return list
 
-    readonly_fields = ['user', 'invoice_number', 'net_pay_able_amount', 'total_vat', 'order_total_price',
+    readonly_fields = ['user', 'invoice_number', 'order_total_price',
                        'delivery_date_time', 'delivery_place', 'address', order_products]
     list_display = ('id', 'user', 'order_status', 'home_delivery', 'delivery_date_time', order_products,)
     inlines = [OrderProductInline]
