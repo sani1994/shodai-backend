@@ -47,7 +47,7 @@ class OrderInput(graphene.InputObjectType):
     delivery_date_time = graphene.DateTime(required=True)
     delivery_place = graphene.String(required=True)
     netPayAble_amount = graphene.String(required=True)
-    vat_amount = graphene.String(required=True)
+    total_vat = graphene.String(required=True)
     order_total_price = graphene.String(required=True)
     lat = graphene.Float(required=True)
     long = graphene.Float(required=True)
@@ -122,7 +122,7 @@ class CreateOrder(graphene.Mutation):
                        f" \r\nOrder delivery area: {order_instance.delivery_place}." \
                        f" \r\nOrder delivery address: {order_instance.address}." \
                        f" \r\nOrder net payable amount: {input.netPayAble_amount}." \
-                       f" \r\nOrder vat amount: {input.vat_amount}." \
+                       f" \r\nOrder vat amount: {input.total_vat}." \
                        f" \r\nOrder delivery charge: {DeliveryCharge.objects.get()}." \
                        f" \r\nOrder total price: {order_instance.order_total_price}." \
                        f"\r\n \r\nThanks and Regards\r\nShodai "

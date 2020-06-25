@@ -38,7 +38,8 @@ class OrderAdmin(MaterialModelAdmin):
 
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
-        field_names = [field.name for field in meta.fields]
+        field_names = ['id', 'user', 'invoice_number', 'order_total_price', 'delivery_date_time',
+                       'delivery_place', 'address']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)

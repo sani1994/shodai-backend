@@ -51,6 +51,11 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
+    # to store total vat amount of an order
+    total_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
+                                    verbose_name='Total Vat')  # new
+    # to store net payable amount of an order
+    net_pay_able_amount = models.FloatField(blank=False, null=False, default=0)  # new
     history = HistoricalRecords()
 
     def __str__(self):
