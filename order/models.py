@@ -2,6 +2,7 @@ import uuid
 from django.contrib.gis.db import models
 from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
+from django.utils.translation import ugettext_lazy as _
 from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
@@ -51,13 +52,16 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
+    # # to store total vat amount of an order
+    # total_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
+    #                                 verbose_name='Total Vat')  # new
+    # # to store net payable amount of an order
+    # net_pay_able_amount = models.FloatField(blank=False, null=False, default=0)  # new
+
     history = HistoricalRecords()
 
     def __str__(self):
         return "{}".format(self.id)
-
-    # def __int__(self):
-    #     return self.order_id
 
     # @property
     # def order_count(self): # saikat
@@ -101,6 +105,8 @@ class OrderProduct(BaseModel):
         return self.product.product_name
 
     def save(self, *args, **kwargs):  # new
+        self.order_product_price_with_vat = self.product.price_with_vat
+        self.vat_amount = self.product.product_meta.vat_amount
         super(OrderProduct, self).save(*args, **kwargs)
 
     class Meta:
@@ -143,7 +149,7 @@ class PaymentInfo(models.Model):
         (INITIATED, 'Initiated')
     ]
     payment_id = models.CharField(max_length=100, null=True, blank=True)
-    order = models.ForeignKey(Order, related_name='payment', on_delete=models.CASCADE, blank=True, null=True)
+    order_id = models.ForeignKey(Order, related_name='payment', on_delete=models.CASCADE, blank=True, null=True)
     bill_id = models.CharField(max_length=100, null=True, blank=True)
     invoice_number = models.CharField(max_length=100, null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
@@ -177,10 +183,15 @@ class TimeSlot(models.Model):
     # day = models.CharField(max_length=100, default="Today")
     time = models.TimeField()
     allow = models.BooleanField(default=True)
+    slot = models.CharField(max_length=100, blank=True, null=True, help_text=_("Auto Save"))
 
     def __str__(self):
-        return self.start + '-' + self.end
+        return self.slot
 
-    @property
-    def slot(self):
-        return self.start + ' - ' + self.end + " | " + self.day
+    def save(self, *args, **kwargs):
+        self.slot = self.start + '-' + self.end
+        super(TimeSlot, self).save(*args, **kwargs)
+
+    # @property
+    # def slot(self):
+    #     return self.start + ' - ' + self.end + " | " + self.day

@@ -308,13 +308,19 @@ class ProductMetaDetails(APIView):  # get product meta id to get all the product
             productList = obj.product_set.all()
             serializer = LatestProductSerializer(productList, many=True)
             if serializer:
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                datas = serializer.data
+                for data in range(len(datas)):
+                    datas[data]['product_unit'] = ProductUnit.objects.get(id=int(datas[data]['product_unit'])).product_unit
+                    datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
+
+                return Response(datas, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({
                 "Status": "No content",
                 "details": "Content not available"
             }, status=status.HTTP_204_NO_CONTENT)
+
 
 
 class RecentlyAddedProductList(APIView):  # return list of recently added products

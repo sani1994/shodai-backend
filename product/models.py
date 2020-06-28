@@ -40,8 +40,7 @@ class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapn
     img = models.ImageField(upload_to="pictures/productmeta/", blank=True, null=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     shop_category = models.ForeignKey(ShopCategory, on_delete=models.CASCADE, verbose_name='Product Type')
-    vat_amount = models.FloatField(default=0, blank=True, null=True,
-                                   verbose_name='Vat Amount(%)')  # Here vat amount 15 is 15%
+    vat_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Vat Amount(%)')  # Here vat amount 15 is 15%
     history = HistoricalRecords()
 
     def __str__(self):
@@ -54,20 +53,17 @@ class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapn
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
-    slug = models.SlugField(unique=True, null=True, blank=True)
     product_name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_description = models.CharField(max_length=200, default=" ")
     product_description_bn = models.CharField(max_length=200, default=" ")
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, default=None)
     product_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
-    product_price_bn = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True,
-                                           verbose_name='পন্যের মুল্য')
+    product_price_bn = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True, verbose_name='পন্যের মুল্য')
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)
-    price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
-                                         verbose_name='Product Price With Vat')  # Product Price with vat
+    price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True, verbose_name='Product Price With Vat')  # Product Price with vat
     history = HistoricalRecords()
 
     def save(self, *args, **kwargs):
@@ -77,11 +73,22 @@ class Product(BaseModel):
             super(Product, self).save(*args, **kwargs)
         else:
             self.price_with_vat = self.product_price
-        self.slug = slugify(self.product_name)
         super(Product, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.product_name
+
+    @property
+    def product_price_with_vat(self):
+        if self.product_meta.vat:
+            return self.product_price + (self.product_price * self.product_meta.vat_amount) / 100
+        return self.product_price
+
+    @property
+    def vat_amount(self):
+        if self.product_meta.vat_amount:
+            return (self.product_price * self.product_meta.vat_amount) / 100
+        return 0.0
 
     @property
     def product_price_with_vat(self):

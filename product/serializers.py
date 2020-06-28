@@ -20,7 +20,7 @@ class ShopCategorySerializer(serializers.ModelSerializer):
     class Meta:
 
         model = ShopCategory
-        fields = ('id','type_of_shop','url')
+        fields = ('id', 'type_of_shop', 'url')
         # fields = '__all__'
 
 
@@ -28,7 +28,7 @@ class ProductCategorySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.type_of_product = validated_data.get('type_of_product', instance.type_of_product)
-        instance.img = validated_data.get('img',instance.img)
+        instance.img = validated_data.get('img', instance.img)
         instance.modified_by = validated_data.pop('modified_by')
         instance.save()
         return instance
@@ -74,17 +74,22 @@ class ProductSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Product
-        fields = [ 'id', 'product_name', 'product_name_bn', 'product_image', 'product_unit',
-                    'product_price', 'product_meta', 
+        fields = [ 'id', 'product_name', 'product_name_bn', 'product_image', 
+                    'product_unit', 'product_price', 'product_meta', 
                     'product_last_price', 'is_approved', 
-                    'product_description', 'product_description_bn']
+                    'product_description', 'product_description_bn',
+                    'price_with_vat']
         read_only = 'product_last_price'
 
 class LatestProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = [ 'id','product_name', 'product_name_bn', 'product_image', 'product_unit', 'product_unit_name', 'product_price', 'product_meta', 'product_last_price', 'is_approved', 'product_description', 'product_description_bn']
+        fields = [  'id','product_name', 'product_name_bn', 
+                    'product_image', 'product_unit', 'product_unit_name', 
+                    'product_price', 'product_meta', 'product_last_price', 
+                    'is_approved', 'product_description', 'product_description_bn', 
+                    'price_with_vat']
         read_only = 'product_last_price'
 
 
@@ -96,5 +101,7 @@ class RetailerProductSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Product
-        fields = ('id', 'product_name', 'product_name_bn', 'product_description', 'product_description_bn')
+        fields = ('id', 'product_name', 'product_name_bn', 
+                'product_description', 'product_description_bn', 
+                'price_with_vat')
         read_only = ('id')
