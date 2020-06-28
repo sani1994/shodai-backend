@@ -582,8 +582,8 @@ class OrderLatest(APIView):
                 product_name = [p["product"]["product_name"] for p in products]
 
                 body = {
-                    "project_id": "shodai",
-                    "project_secret": "5h0d41p4ym3n7",
+                    "project_id": config("PAYMENT_PROJECT_ID", None),
+                    "project_secret": config("PAYMENT_PROJECT_SECRET", None),
                     "invoice_number": d[0]["invoice_number"],
                     "product_name": ' '.join(product_name) if product_name else "None",
                     "product_category": str(category[0]) if category else "None",
@@ -598,8 +598,8 @@ class OrderLatest(APIView):
 
                 data = json.dumps(body)
                 # data = json.loads(data)
-                # print(config("PAYMENT_LINK"))
-                response = requests.post(config("PAYMENT_LINK"), data=data)
+                # print(config("PAYMENT_PROJECT_URL", None))
+                response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
                 content = response.json()
                 # print(content)
 
