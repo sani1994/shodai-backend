@@ -25,6 +25,7 @@ AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 
 ALLOWED_HOSTS = ['shod.ai', 'www.shod.ai', '127.0.0.1', 'dev.shod.ai']
+
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 REST_FRAMEWORK = {
@@ -90,6 +91,7 @@ GRAPHQL_JWT = {
     'JWT_EXPIRATION_DELTA': timedelta(days=5),
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=10),
 }
+
 SECRET_KEY = config("SECRET_KEY", None)
 
 MIDDLEWARE = [
@@ -182,16 +184,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-DEBUG = True
+
+DEBUG = config("DEBUG", cast=bool)
+
 # for email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST = "smtp.yandex.com"
-EMAIL_HOST_USER = "noreply@shod.ai"
-EMAIL_HOST_PASSWORD = 'shodai123456'
-DEFAULT_FROM_EMAIL = 'testing@testing.com'
-EMAIL_PORT = 587
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
+
+
 
 AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
@@ -219,7 +225,7 @@ if DEBUG:
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-try:
-    from .local_settings import *
-except ImportError:
-    pass
+# try:
+#     from .local_settings import *
+# except ImportError:
+#     pass
