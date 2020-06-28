@@ -12,10 +12,8 @@ def email_notification(subject, body):
 def send_sms(mobile_number, sms_content):
     url = "https://portal.adnsms.com/api/v1/secure/send-sms"
     body = {
-        # "api_key": config("OTP_SECRET", None),
-        # "api_secret": config("OTP_API_KEY", None),
-        "api_key": "KEY-ft8r3q3h5jih9ubrcjhl9t7cgyl1uxlk",
-        "api_secret": "zPEO4n!OY1KOdqMq",
+        "api_key": config("OTP_SECRET", None),
+        "api_secret": config("OTP_API_KEY", None),
         "request_type": "single_sms",
         "message_type": "Text",
         "mobile": mobile_number,

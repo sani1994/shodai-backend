@@ -10,6 +10,7 @@ media/
 static/
 env/
 venv
+.env
 .idea/
 */__pycache__/*
 .installed.cfg

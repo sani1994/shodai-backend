@@ -90,8 +90,8 @@ GRAPHQL_JWT = {
     'JWT_EXPIRATION_DELTA': timedelta(days=5),
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=10),
 }
-# SECRET_KEY = config("SECRET_KEY", None)
-SECRET_KEY = "shodainq&-i=vyk*(bpl&2(j)^(ph6ygw5uphj+6dt$as8ycga%=4zf5web"
+SECRET_KEY = config("SECRET_KEY", None)
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
