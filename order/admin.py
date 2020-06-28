@@ -145,8 +145,8 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
 
 
 class PaymentInfoAdmin(MaterialModelAdmin):
-    list_display = ['id', 'payment_id', 'order', 'bill_id', 'invoice_number', 'payment_status', 'transaction_id']
-    list_filter = ['order']
+    list_display = ['id', 'payment_id', 'order_id', 'bill_id', 'invoice_number', 'payment_status', 'transaction_id']
+    list_filter = ['order_id']
     readonly_fields = ['create_on']
 
 

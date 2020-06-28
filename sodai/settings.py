@@ -15,6 +15,8 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from datetime import timedelta
 
+from decouple import config
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
@@ -88,6 +90,7 @@ GRAPHQL_JWT = {
     'JWT_EXPIRATION_DELTA': timedelta(days=5),
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=10),
 }
+# SECRET_KEY = config("SECRET_KEY", None)
 SECRET_KEY = "shodainq&-i=vyk*(bpl&2(j)^(ph6ygw5uphj+6dt$as8ycga%=4zf5web"
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -101,11 +104,6 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'localhost:9200'
-    },
-}
 
 ROOT_URLCONF = 'sodai.urls'
 
@@ -134,10 +132,10 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'shodai',
-        'USER': 'postgres',
-        'PASSWORD': '9876',
-        'HOST': 'localhost'
+        'NAME': config("DB_NAME", None),
+        'USER': config("DB_USER", None),
+        'PASSWORD': config("DB_PASSWORD", None),
+        'HOST': config("DB_URL", "localhost"),
     }
 }
 

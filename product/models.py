@@ -53,6 +53,7 @@ class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapn
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
     product_name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_description = models.CharField(max_length=200, default=" ")
@@ -73,6 +74,8 @@ class Product(BaseModel):
             super(Product, self).save(*args, **kwargs)
         else:
             self.price_with_vat = self.product_price
+
+        self.slug = slugify(self.product_name)
         super(Product, self).save(*args, **kwargs)
 
     def __str__(self):

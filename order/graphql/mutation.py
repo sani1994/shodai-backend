@@ -2,6 +2,7 @@ import json
 
 import graphene
 import requests
+from decouple import config
 
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
@@ -185,8 +186,8 @@ class PaymentMutation(graphene.Mutation):
                 category = [p.product_meta.product_category.type_of_product for p in products]
 
                 body = {
-                    "project_id": "shodai-web",
-                    "project_secret": "5h0d41p4ym3n7w3b",
+                    "project_id": config("PAYMENT_PROJECT_ID", None),
+                    "project_secret": config("PAYMENT_PROJECT_SECRET", None),
                     "invoice_number": obj.invoice_number,
                     "product_name": ' '.join(product_name) if product_name else "None",
                     "product_category": ' '.join(category) if category else "None",
@@ -212,7 +213,7 @@ class PaymentMutation(graphene.Mutation):
                         bill_id = obj.bill_id
                         invoice_number = obj.invoice_number
                         payment = PaymentInfo(payment_id=payment_id,
-                                              order=Order.objects.get(pk=order_id),
+                                              order_id=Order.objects.get(pk=order_id),
                                               bill_id=bill_id,
                                               invoice_number=invoice_number,
                                               payment_status="INITIATED")
