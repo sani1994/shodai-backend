@@ -88,6 +88,13 @@ class Order(BaseModel):
         self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)
 
+    @property
+    def get_order_product_details(self):
+        orders = OrderProduct.objects.filter(order=self)
+        product_dict = {'Product_name': [op.product.product_name for op in orders],
+                        'order_product_qty': [op.order_product_qty for op in orders]}
+        return product_dict
+
 
 class OrderProduct(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -186,7 +193,7 @@ class TimeSlot(models.Model):
     slot = models.CharField(max_length=100, blank=True, null=True, help_text=_("Auto Save"))
 
     def __str__(self):
-        return self.slot
+        return self.start + '-' + self.end
 
     def save(self, *args, **kwargs):
         self.slot = self.start + '-' + self.end

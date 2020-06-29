@@ -201,7 +201,8 @@ class PaymentMutation(graphene.Mutation):
                 }
                 print(body)
                 data = json.dumps(body)
-                response = requests.post("http://dev.finder-lbs.com:8009/online_payment/ssl", data=data)
+                project_url = config("PAYMENT_PROJECT_URL", None),
+                response = requests.post(project_url, data=data)
                 content = response.json()
                 print(content)
                 if response.status_code == 200:
