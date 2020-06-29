@@ -24,7 +24,7 @@ AUTH_USER_MODEL = 'userProfile.UserProfile'
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 
-ALLOWED_HOSTS = ['shod.ai', 'www.shod.ai', '127.0.0.1', 'dev.shod.ai']
+ALLOWED_HOSTS = config("ALLOWED_HOSTS").replace(" ", "").split(',')
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
@@ -216,12 +216,7 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 if DEBUG:
-    CORS_ORIGIN_WHITELIST = [
-        'http://localhost:3000',
-        'https://localhost:3000',
-        'http://127.0.0.1:3000',
-        'https://127.0.0.1:3000',
-    ]
+    CORS_ORIGIN_WHITELIST = config("CORS_ORIGIN_WHITELIST").replace(" ", "").split(',')
 
 CORS_ORIGIN_ALLOW_ALL = True
 
