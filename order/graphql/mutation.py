@@ -203,6 +203,7 @@ class PaymentMutation(graphene.Mutation):
                 data = json.dumps(body)
                 project_url = config("PAYMENT_PROJECT_URL", None),
                 response = requests.post(project_url, data=data)
+                response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
                 content = response.json()
                 print(content)
                 if response.status_code == 200:

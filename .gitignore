@@ -4,7 +4,8 @@
 *.idea
 *.vscode
 *.DS_Store
-*__pycache__
+migrations/
+__pycache__/
 __pyc__/
 media/
 static/
@@ -12,6 +13,7 @@ env/
 venv
 .env
 .idea/
+*/migrations
 */__pycache__/*
 .installed.cfg
 bin

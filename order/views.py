@@ -1,5 +1,6 @@
 import datetime
 from django.db.models import Q
+from decouple import config
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
@@ -59,8 +60,8 @@ class OrderList(APIView):
         datetime = request.data['delivery_date_time'].split('||')
         slot = datetime[0]
         date = datetime[1]
-        print(slot)
-        print(slot.replace(' ', ''))
+        # print(slot)
+        # print(slot.replace(' ', ''))
         time = TimeSlot.objects.filter(slot=slot.replace(' ', ''))
         for t in time:
             # print(t.time)
@@ -581,8 +582,8 @@ class OrderLatest(APIView):
                 product_name = [p["product"]["product_name"] for p in products]
 
                 body = {
-                    "project_id": "shodai",
-                    "project_secret": "5h0d41p4ym3n7",
+                    "project_id": config("PAYMENT_PROJECT_ID", None),
+                    "project_secret": config("PAYMENT_PROJECT_SECRET", None),
                     "invoice_number": d[0]["invoice_number"],
                     "product_name": ' '.join(product_name) if product_name else "None",
                     "product_category": str(category[0]) if category else "None",
@@ -597,7 +598,8 @@ class OrderLatest(APIView):
 
                 data = json.dumps(body)
                 # data = json.loads(data)
-                response = requests.post("http://dev.finder-lbs.com:8009/online_payment/ssl", data=data)
+                # print(config("PAYMENT_PROJECT_URL", None))
+                response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
                 content = response.json()
                 # print(content)
 
