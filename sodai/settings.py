@@ -24,7 +24,7 @@ AUTH_USER_MODEL = 'userProfile.UserProfile'
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS").replace(" ", "").split(',')
+ALLOWED_HOSTS=['shod.ai', 'www.shod.ai', '127.0.0.1', 'dev.shod.ai']
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 

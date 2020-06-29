@@ -201,8 +201,6 @@ class PaymentMutation(graphene.Mutation):
                 }
                 print(body)
                 data = json.dumps(body)
-                project_url = config("PAYMENT_PROJECT_URL", None),
-                response = requests.post(project_url, data=data)
                 response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
                 content = response.json()
                 print(content)
@@ -214,6 +212,7 @@ class PaymentMutation(graphene.Mutation):
                         print(order_id)
                         bill_id = obj.bill_id
                         invoice_number = obj.invoice_number
+                        print(invoice_number)
                         payment = PaymentInfo(payment_id=payment_id,
                                               order_id=Order.objects.get(pk=order_id),
                                               bill_id=bill_id,
@@ -222,6 +221,7 @@ class PaymentMutation(graphene.Mutation):
                         payment.save()
 
                         url = content["payment_url"]
+                        print(url)
                         return PaymentMutation(status="success", message="Payment successful", url=url)
                     else:
                         return PaymentMutation(status="success", message="Payment failed", content=content)
