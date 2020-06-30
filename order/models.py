@@ -137,6 +137,11 @@ class OrderProduct(BaseModel):
         verbose_name = 'Order Product'
         verbose_name_plural = 'Order Product'
 
+    @property
+    def order_product_unit(self):
+        order_product_unit = self.product.product_unit.product_unit
+        return order_product_unit
+
 
 class Vat(BaseModel):
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE, blank=True, null=True, default=None)
