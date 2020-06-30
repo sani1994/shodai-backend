@@ -38,9 +38,8 @@ class OrderAdmin(MaterialModelAdmin):
 
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'user', 'invoice_number', 'order_total_price',
-                       'delivery_date_time', 'delivery_place', 'address', ]
-        field_names1 = ['get_order_product_details', 'id', 'user', 'invoice_number', 'order_total_price',
-                        'delivery_date_time', 'delivery_place', 'address', ]
+                       'delivery_date_time', 'delivery_place', 'address',
+                       'order_product_name', 'order_product_unit', 'order_product_quantity']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=order.csv'
@@ -48,12 +47,7 @@ class OrderAdmin(MaterialModelAdmin):
 
         writer.writerow(field_names)
         for obj in queryset:
-            for field in field_names1:
-                if field == "get_order_product_details":
-                    print(obj.get_order_product_details)
-                    row = writer.writerow(getattr(obj, field))
-                else:
-                    row = writer.writerow([getattr(obj, field) for field in field_names])
+            row = writer.writerow([getattr(obj, field) for field in field_names])
         return response
 
     export_as_csv.short_description = "Export Selected"
@@ -97,10 +91,9 @@ class OrderProductAdmin(MaterialModelAdmin):
             dates.append('%s' % date)
         return dates
 
-    list_display = (
-        'product', 'order_id', 'order_product_price', 'order_product_price_with_vat', 'order_product_qty',
-        order_date)
-    list_filter = ('order',)
+    list_display = ('product', 'order_id', 'order_product_price', 'order_product_qty',
+                    order_date)
+    list_filter = ('order', )
     readonly_fields = ['product', 'order', 'order_product_price', 'order_product_price_with_vat', 'vat_amount',
                        'order_product_qty', 'created_by', 'modified_by', 'created_on']
 

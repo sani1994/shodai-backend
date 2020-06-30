@@ -68,7 +68,7 @@ class OrderList(APIView):
             year = date.split('-')[2]
             month = date.split('-')[1]
             day = date.split('-')[0]
-            date = year + '-' + month + '-' +  day
+            date = year + '-' + month + '-' + day
             request.POST._mutable = True
             request.data['delivery_date_time'] = date + ' ' + str(t.time)
             request.POST._mutable = False
@@ -85,7 +85,7 @@ class OrderList(APIView):
         # order_vat = (total * vat) / 100
         if total > 0.0 and delivery_charge > 0:
             request.POST._mutable = True
-            request.data['order_total_price'] =  total + delivery_charge #total +  order_vat
+            request.data['order_total_price'] = total + delivery_charge  # total +  order_vat
             request.POST._mutable = False
 
         serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
@@ -221,6 +221,7 @@ class OrderDetail(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
+
 class OrderProductList(APIView):
     permission_classes = [GenericAuth]
 
@@ -255,6 +256,7 @@ class OrderProductList(APIView):
                     responses.append(response)
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
 
 class OrderProductDetail(APIView):
     permission_classes = [GenericAuth]
@@ -293,6 +295,7 @@ class OrderProductDetail(APIView):
             return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+
 
 class VatList(APIView):
     permission_classes = [GenericAuth]
@@ -356,7 +359,8 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class OrderdProducts(APIView):  # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
+class OrderdProducts(
+    APIView):  # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
 
     permission_classes = [GenericAuth]
 
@@ -480,7 +484,6 @@ class PaymentInfoListCreate(APIView):
                 #         payment = serializer.data[0]
                 #         year = payment['created_on']
 
-
                 #         data = {
                 #             'status': "success",
                 #             'payment_id': payment['payment_id'],
@@ -498,8 +501,6 @@ class PaymentInfoListCreate(APIView):
                 #     else:
                 #         return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
 
-
-
                 if queryset_invoice:
                     serializer = OrderDetailPaymentSerializer(queryset_invoice, many=True, context={'request': request})
 
@@ -507,25 +508,24 @@ class PaymentInfoListCreate(APIView):
                         # d = json.dumps(serializer.data)
                         # d = json.loads(d)
                         payment = serializer.data[0]
-                        year = payment['created_on']
-
+                        year = payment['created_on'] - datetime.timedelta(hours=6)
 
                         data = {
                             'status': "success",
                             # 'payment_id': payment['payment_id'],
                             # 'bill_id': payment['bill_id'],
                             'total_amount': payment['order_total_price'],
-                            "currency": "BDT" ,
+                            "currency": "BDT",
                             'created_on': year,
                             # 'created_by': payment['user']["username"],
                             "invoice_details": {
-                            "type": "order_payment",
-                            "user_id": str(payment['user']["id"]),
-                            "order_id": str(payment["id"]),
-                            "order_products": payment['products']
+                                "type": "order_payment",
+                                "user_id": str(payment['user']["id"]),
+                                "order_id": str(payment["id"]),
+                                "order_products": payment['products']
 
+                            }
                         }
-                    }
                         return Response(data, status=status.HTTP_200_OK)
                     else:
                         return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)

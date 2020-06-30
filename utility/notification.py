@@ -6,7 +6,7 @@ from sodai import settings
 
 def email_notification(subject, body):
     # target_user = ['rana@shod.ai', 'shishir@shod.ai', 'support@shod.ai', 'mohua@finder-lbs.com']
-    target_user = ['nowrin.mahmud87@gmail.com']
+    target_user = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
     return send_mail(subject, body, settings.EMAIL_HOST_USER, target_user)
 
 

@@ -24,7 +24,7 @@ AUTH_USER_MODEL = 'userProfile.UserProfile'
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 
-ALLOWED_HOSTS=['shod.ai', 'www.shod.ai', '127.0.0.1', 'dev.shod.ai']
+ALLOWED_HOSTS = config("ALLOWED_HOSTS").replace(" ", "").split(',')
 
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
@@ -165,7 +165,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Dhaka'
 
 USE_I18N = True
 

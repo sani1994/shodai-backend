@@ -89,11 +89,28 @@ class Order(BaseModel):
         super(Order, self).save(*args, **kwargs)
 
     @property
-    def get_order_product_details(self):
+    def order_product_name(self):
         orders = OrderProduct.objects.filter(order=self)
-        product_dict = {'Product_name': [op.product.product_name for op in orders],
-                        'order_product_qty': [op.order_product_qty for op in orders]}
-        return product_dict
+        order_product_detail = []
+        [order_product_detail.append(op.product.product_name + "\n") for op in orders]
+        order_product = f"{''.join(order_product_detail)}"
+        return order_product
+
+    @property
+    def order_product_unit(self):
+        orders = OrderProduct.objects.filter(order=self)
+        order_product_detail = []
+        [order_product_detail.append(op.product.product_unit.product_unit + "\n") for op in orders]
+        order_product = f"{''.join(order_product_detail)}"
+        return order_product
+
+    @property
+    def order_product_quantity(self):
+        orders = OrderProduct.objects.filter(order=self)
+        order_product_detail = []
+        [order_product_detail.append(str(op.order_product_qty) + "\n") for op in orders]
+        order_product = f"{''.join(order_product_detail)}"
+        return order_product
 
 
 class OrderProduct(BaseModel):

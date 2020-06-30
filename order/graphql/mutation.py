@@ -111,14 +111,14 @@ class CreateOrder(graphene.Mutation):
                                                 vat_amount=product.product_meta.vat_amount,
                                                 order_product_qty=p.order_product_qty, )
                     product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
-                                               + str(p.order_product_qty) + ",")
+                                               + str(p.order_product_qty) + "\n")
 
                 print(product_list_detail)
                 sub = "Order Placed"
                 body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
                        f"posted an order with the following details" \
                        f" \r\nOrder id: {order_instance.pk}." \
-                       f" \r\nOrdered product list with quantity: {' '.join(product_list_detail)}." \
+                       f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
                        f" \r\nOrder delivery date and time: {datetime}." \
                        f" \r\nOrder delivery area: {order_instance.delivery_place}." \
                        f" \r\nOrder delivery address: {order_instance.address}." \
@@ -207,9 +207,7 @@ class PaymentMutation(graphene.Mutation):
                 if response.status_code == 200:
                     if content["status"] == "success":
                         payment_id = content["payment_id"]
-                        print(content["payment_id"])
                         order_id = obj.pk
-                        print(order_id)
                         bill_id = obj.bill_id
                         invoice_number = obj.invoice_number
                         print(invoice_number)
@@ -221,7 +219,6 @@ class PaymentMutation(graphene.Mutation):
                         payment.save()
 
                         url = content["payment_url"]
-                        print(url)
                         return PaymentMutation(status="success", message="Payment successful", url=url)
                     else:
                         return PaymentMutation(status="success", message="Payment failed", content=content)
