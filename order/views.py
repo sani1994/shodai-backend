@@ -509,7 +509,10 @@ class PaymentInfoListCreate(APIView):
                         # d = json.loads(d)
                         payment = serializer.data[0]
                         print(payment['created_on'])
-                        year = payment['created_on'] - datetime.timedelta(hours=6)
+                        year = payment['created_on']
+                        time = datetime.datetime.strptime(year, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(hours=6)
+                        print(time)
+                        year = time.strftime("%Y-%m-%d %H:%M:%S")
                         print(year)
                         data = {
                             'status': "success",
