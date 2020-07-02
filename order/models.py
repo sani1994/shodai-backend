@@ -21,7 +21,7 @@ class Order(BaseModel):
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField()
     delivery_place = models.CharField(max_length=100)
-    order_total_price = models.FloatField(default=0)
+    order_total_price = models.FloatField(default=0)  # storing price+vat+delivery_charge
     lat = models.FloatField()
     long = models.FloatField()
     order_geopoint = models.PointField(null=True, blank=True)

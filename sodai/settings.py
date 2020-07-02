@@ -220,3 +220,5 @@ CORS_ORIGIN_ALLOW_ALL = True
 #     from .local_settings import *
 # except ImportError:
 #     pass
+
+FORCE_SCRIPT_NAME = '/v1'
