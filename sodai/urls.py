@@ -44,7 +44,6 @@ site.favicon = staticfiles('./static/')
 site.main_bg_color = '#088A3F'
 site.main_hover_color = 'black'
 
-
 # site.profile_picture  = staticfiles('./static/userProfile/images/logo.png')
 site.profile_picture = staticfiles('../media/shodai.jpg')
 # site.profile_picture = "https://lh3.googleusercontent.com/cANBRUuBPtOAV7kZ_YdaD1y3Lvqh94T81gJyDHPg74j-cr5F5b2EysO7VYt7oZIi2y6fYYQEXJNA1IngwQaWElDqgjM6PmTm2vBwLKSh8HKlEB8QBldnOaJky2DdJaFXl5MauPskl1UABOWceON08mENeJqL1T-W4uQH3P6UXsuOMA9fWmwx6DQN6LDQPNzsUKkXFHRIfohG_7GDd5_iIlouJ7wwsZwqG18m6X6dE8g0lVvYp9ORNxY8ol_Ssy-q-ipmFYyZnETaJvCGKvh-J_C8VQqZIxe_oElWggCMzOlal0wNTSdeBgJZ3_bX9duM0TS7jj9FV_Rufaev8XWL8C7mMCAoPxxmjqznXXnJ-rIZYhCX-zcnRoe2qr-8yFTPiZvNjfDUUnS0JTCF25viDw4X5-FYkg1ZYvlUyONSdvBuOuvrym9K2_24YkoXnxoTgoX9Gp9PmGZ2XKITXuGzfsaagX0MDwb-DsA_ddQ_LYenpA-pVQUqI7vijDh83mM63eYwHB9RP7BUIO2kxIbR6Z68c-8WnXXgwVzYUdXuVeYuIOw4KxtFzRqlmPdaAtQ-_LUrxDWfWmHZMhYFxbXz75WrZ5HyZo_ATFZ9-HmAqJdTKRENCehiTsmhVbZFWFfZ5BYjdVcqAlvi_-ZFt95xk0NldY59c55vCKwca3p0bCJREZUP7OvEG_xvzgqy=w910-h903-no"
@@ -65,19 +64,21 @@ site.login_bg_color = '#088A3F'
 ##################################################
 
 urlpatterns = [
-    path('', include('order.urls')),
-    path('', include('product.urls')),
-    path('', include('producer.urls')),
-    path('', include('retailer.urls')),
-    path('', include('userProfile.urls')),
-    path('', include('offer.urls')),
-    path('', include('utility.urls')),
-    path('admin/', include('material.admin.urls')),
-    path('', include('search.urls')),
-    path('notifications/', include(notifications.urls, namespace='notifications')),
+    url(r'^v1/', include([
+        path('', include('order.urls')),
+        path('', include('product.urls')),
+        path('', include('producer.urls')),
+        path('', include('retailer.urls')),
+        path('', include('userProfile.urls')),
+        path('', include('offer.urls')),
+        path('', include('utility.urls')),
+        path('', include('search.urls')),
+        path('notifications/', include(notifications.urls, namespace='notifications')),
 
-    # Graphql
-    url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
+        # Graphql
+        url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
+    ])),
+    path('admin/', include('material.admin.urls')),
 ]
 
 if settings.DEBUG:

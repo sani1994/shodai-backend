@@ -12,10 +12,11 @@ from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, 
 # Register your models here.
 
 class TimeSlotAdmin(MaterialModelAdmin):
-    list_display = ('start', 'end', 'time', 'allow', 'slot')
+    list_display = ('slot', 'start', 'end', 'time', 'allow')
     list_filter = ('allow',)
     # list_editable = ('allow',)
     list_per_page = 10
+    readonly_fields = ['slot']
 
 
 class OrderProductInline(admin.TabularInline):
@@ -164,7 +165,8 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
 class PaymentInfoAdmin(MaterialModelAdmin):
     list_display = ['id', 'payment_id', 'order_id', 'bill_id', 'invoice_number', 'payment_status', 'transaction_id']
     list_filter = ['order_id']
-    readonly_fields = ['create_on']
+    readonly_fields = ['id', 'create_on', 'payment_id', 'order_id', 'bill_id', 'invoice_number',
+                       'payment_status', 'transaction_id']
 
 
 def save_model(self, request, obj, form, change):

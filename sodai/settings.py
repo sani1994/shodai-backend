@@ -40,7 +40,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60*48),  # To increase the jwt token life time
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60 * 48),  # To increase the jwt token life time
 }
 
 # Application definition
@@ -105,7 +105,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
-
 
 ROOT_URLCONF = 'sodai.urls'
 
@@ -197,8 +196,6 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
 
-
-
 AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
@@ -211,7 +208,6 @@ GRAPHENE = {
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, '/sodai/'),
 ]
-
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
