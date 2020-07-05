@@ -121,7 +121,7 @@ class OrderDetailPaymentSerializer(serializers.ModelSerializer):
     # order = OrderSerializer(read_only=True)
     user = UserProfileSerializer(read_only=True)
     products = OrderProductSerializer(read_only=True, many=True)
-    created_on = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    created_on = serializers.DateTimeField(format=None)
 
     class Meta:
         model = Order

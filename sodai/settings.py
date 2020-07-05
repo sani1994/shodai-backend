@@ -185,6 +185,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEBUG = config("DEBUG", cast=bool)
+APPEND_SLASH = False
 
 # for email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -193,7 +194,6 @@ EMAIL_USE_SSL = False
 EMAIL_HOST = "smtp.yandex.com"
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
 
 AUTHENTICATION_BACKENDS = [
@@ -220,5 +220,3 @@ CORS_ORIGIN_ALLOW_ALL = True
 #     from .local_settings import *
 # except ImportError:
 #     pass
-
-FORCE_SCRIPT_NAME = '/v1'

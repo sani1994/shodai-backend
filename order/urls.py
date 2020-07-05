@@ -13,8 +13,8 @@ urlpatterns = [
     path('updateorderstatus/<int:id>/',views.OrderStatusUpdate.as_view()), # give acceptorder id and order_status order of the accepted order will update to the given order status
     path('deliveryCharge/', views.DeliverChargeList.as_view()), # get list of delivery charge
     path('VDC/', views.VatDeliveryChargeList.as_view()), #get vat and delivery charge togather within this api VD(Vat Delivery Charge)
-    path('payment/', views.PaymentInfoListCreate.as_view()), 
-    # path('payment/create/', views.PaymentInfoCreate.as_view()), 
+    path('payment', views.PaymentInfoListCreate.as_view()), 
+    # path('payment/create/', views.PaymentInfoCreate.as_view()),
     path('latestorder/', views.OrderLatest.as_view()),
     path('slot/', views.TimeSlotList.as_view()),
     # path('transaction/', views.TransactionIdCreate.as_view()),

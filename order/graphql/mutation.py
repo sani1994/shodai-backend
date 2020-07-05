@@ -47,7 +47,7 @@ class OrderProductInput(graphene.InputObjectType):
 class OrderInput(graphene.InputObjectType):
     delivery_date_time = graphene.DateTime(required=True)
     delivery_place = graphene.String(required=True)
-    netPayAble_amount = graphene.String(required=True)
+    net_pay_able_amount = graphene.String(required=True)
     total_vat = graphene.String(required=True)
     order_total_price = graphene.String(required=True)
     lat = graphene.Float(required=True)
@@ -87,7 +87,7 @@ class CreateOrder(graphene.Mutation):
                 order_instance = Order(user=user,
                                        delivery_date_time=input.delivery_date_time,
                                        delivery_place=input.delivery_place,
-                                       order_total_price=input.netPayAble_amount,
+                                       order_total_price=input.net_pay_able_amount,
                                        lat=input.lat,
                                        long=input.long,
                                        order_status="OD",
@@ -125,7 +125,7 @@ class CreateOrder(graphene.Mutation):
                        f" \r\nOrder total price: {order_instance.order_total_price}." \
                        f" \r\nOrder vat amount: {input.total_vat}." \
                        f" \r\nOrder delivery charge: {DeliveryCharge.objects.get()}." \
-                       f" \r\nOrder net payable amount: {input.netPayAble_amount}." \
+                       f" \r\nOrder net payable amount: {input.net_pay_able_amount}." \
                        f"\r\n \r\nThanks and Regards\r\nShodai "
                 email_notification(sub, body)
                 return CreateOrder(order=order_instance)
