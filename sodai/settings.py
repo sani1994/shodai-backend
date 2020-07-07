@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'delivery',
     'search',
     'notifications',
+    'customerService',
 
     'graphene_django',
     'django_filters',
