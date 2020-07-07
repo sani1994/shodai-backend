@@ -57,7 +57,7 @@ class Query(graphene.ObjectType):
             if token:
                 raise Exception('Invalid or expired token!')
             else:
-                return Order.objects.filter(user=user)
+                return Order.objects.filter(user=user).order_by('-created_on')
 
     def resolve_order_by_id(self, info, **kwargs):
         user = info.context.user
