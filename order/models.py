@@ -14,9 +14,10 @@ from userProfile.models import Address
 
 
 class Order(BaseModel):
+    """Create order object"""
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
     payment_id = models.CharField(max_length=100, blank=True, unique=True, )
-    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True, )
+    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True,)
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField()
@@ -52,22 +53,10 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
-    # # to store total vat amount of an order
-    # total_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
-    #                                 verbose_name='Total Vat')  # new
-    # # to store net payable amount of an order
-    # net_pay_able_amount = models.FloatField(blank=False, null=False, default=0)  # new
-
     history = HistoricalRecords()
 
     def __str__(self):
         return "{}".format(self.id)
-
-    # @property
-    # def order_count(self): # saikat
-    #     count = self.orders.count()
-    #     # print(count)
-    #     return count
 
     @property
     def products(self):
@@ -82,14 +71,12 @@ class Order(BaseModel):
         self.invoice_number = str(uuid.uuid4())[:8]
         self.bill_id = str(uuid.uuid4())[:8]
         self.currency = 'BDT'
-
-        # self.delivery_date_time = self.delivery_date_time.strftime("%Y-%m-%d %H:%M%p")
-
         self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)
 
 
 class OrderProduct(BaseModel):
+    """Create order product object"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, related_name='orders', on_delete=models.CASCADE)
     order_product_price = models.FloatField(blank=False, null=False,
@@ -104,8 +91,11 @@ class OrderProduct(BaseModel):
     def __str__(self):
         return self.product.product_name
 
-    def save(self, *args, **kwargs):  # new
-        self.order_product_price_with_vat = self.product.price_with_vat
+    def save(self, *args, **kwargs): 
+        """Save order_product_price_with_vat field using price_with_vat from product object.
+           Save order_product_price_with_vat field using price_with_vat from product object
+        """
+        self.order_product_price_with_vat = self.product.price_with_vat 
         self.vat_amount = self.product.product_meta.vat_amount
         super(OrderProduct, self).save(*args, **kwargs)
 
@@ -115,6 +105,7 @@ class OrderProduct(BaseModel):
 
 
 class Vat(BaseModel):
+    """Vat object (now not needed)"""
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE, blank=True, null=True, default=None)
     vat_amount = models.FloatField(default=0, blank=False, null=False, verbose_name='Vat Amount(%)')
     history = HistoricalRecords()
@@ -124,17 +115,13 @@ class Vat(BaseModel):
 
 
 class DeliveryCharge(BaseModel):
+    """Delivery Charge object"""
     delivery_charge_inside_dhaka = models.FloatField(default=0, verbose_name='Delivery Charge(Dhaka)')
     delivery_charge_outside_dhaka = models.FloatField(default=0, verbose_name='Delivery Charge(Outside)')
 
     def __str__(self):
         return '{}'.format(str(self.delivery_charge_inside_dhaka))
 
-
-#######
-# q= str(uuid.uuid4())[:8]
-# print(q)
-# models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 class PaymentInfo(models.Model):
     """PaymentInfo object"""
@@ -174,13 +161,12 @@ class TransactionId(models.Model):
     create_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.transaction_id)
+        return str(self.transaction_id) 
 
 
 class TimeSlot(models.Model):
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
-    # day = models.CharField(max_length=100, default="Today")
     time = models.TimeField()
     allow = models.BooleanField(default=True)
     slot = models.CharField(max_length=100, blank=True, null=True, help_text=_("Auto Save"))
@@ -192,6 +178,3 @@ class TimeSlot(models.Model):
         self.slot = self.start + '-' + self.end
         super(TimeSlot, self).save(*args, **kwargs)
 
-    # @property
-    # def slot(self):
-    #     return self.start + ' - ' + self.end + " | " + self.day

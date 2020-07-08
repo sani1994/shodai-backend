@@ -13,7 +13,6 @@ from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, 
 class TimeSlotAdmin(MaterialModelAdmin):
     list_display = ('start', 'end', 'time', 'allow', 'slot')
     list_filter = ('allow',)
-    # list_editable = ('allow',)
     list_per_page = 10
 
 
@@ -129,19 +128,6 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
         obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
-
-
-# class PaymentInfoAdmin(MaterialModelAdmin):
-#     list_display = ['id', 'payment_id', 'order', 'payment_type']
-# list_filter = ['delivery_charge_inside_dhaka']
-# readonly_fields = ['created_by', 'modified_by','delivery_charge_outside_dhaka','created_on']
-
-# def save_model(self, request, obj, form, change):
-#     if obj.id:
-#         obj.modified_by = request.user
-#     obj.created_by = request.user
-#     obj.save()
-#     return super().save_model(request, obj, form, change)
 
 
 class PaymentInfoAdmin(MaterialModelAdmin):

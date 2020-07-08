@@ -16,9 +16,8 @@ from utility.notification import email_notification
 
 
 class TimeSlotList(APIView):
-
+    """`Get` time slot that are allowed"""
     def get(self, request):
-
         queryset = TimeSlot.objects.filter(allow=True)
         if queryset:
             serializer = TimeSlotSerializer(queryset, many=True)
@@ -31,6 +30,7 @@ class TimeSlotList(APIView):
 
 
 class OrderList(APIView):
+    """Here customer can `get` and `post` order"""
     permission_classes = [GenericAuth]
 
     def get(self, request):
@@ -53,18 +53,14 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self, request, *args, **kwargs):
-        # print(request.data['order_total_price'])
-        # vat = Vat.objects.get(id=1).vat_amount
         delivery_charge = DeliveryCharge.objects.get(id=1).delivery_charge_inside_dhaka
 
         datetime = request.data['delivery_date_time'].split('||')
         slot = datetime[0]
         date = datetime[1]
-        # print(slot)
-        # print(slot.replace(' ', ''))
+        
         time = TimeSlot.objects.filter(slot=slot.replace(' ', ''))
         for t in time:
-            # print(t.time)
             year = date.split('-')[2]
             month = date.split('-')[1]
             day = date.split('-')[0]
@@ -73,19 +69,16 @@ class OrderList(APIView):
             request.data['delivery_date_time'] = date + ' ' + str(t.time)
             request.POST._mutable = False
 
-        # print(request.data['delivery_date_time'])
-
         if request.data['contact_number'] == "":
             request.POST._mutable = True
             request.data['contact_number'] = request.user.mobile_number
             request.POST._mutable = False
-        # print(request.data['delivery_date_time'])
 
         total = float(request.data['order_total_price'])
-        # order_vat = (total * vat) / 100
+
         if total > 0.0 and delivery_charge > 0:
             request.POST._mutable = True
-            request.data['order_total_price'] =  total + delivery_charge #total +  order_vat
+            request.data['order_total_price'] =  total + delivery_charge 
             request.POST._mutable = False
 
         serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
@@ -107,86 +100,8 @@ class OrderList(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class OrderList(APIView):
-#     permission_classes = [GenericAuth]
-
-#     def get(self, request):
-#         if request.user.user_type == 'CM':
-#             user_id = request.user.id
-#             orderList = Order.objects.filter(user_id=user_id)
-#             serializer = OrderSerializer(orderList, many=True)
-#             if serializer:
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#         queryset = Order.objects.all()
-#         if queryset:
-#             serializer = OrderSerializer(queryset, many=True, context={'request': request})
-#             if serializer:
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
-#             else:
-#                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
-
-
-# def post(self, request, *args, **kwargs):
-#     now = datetime.datetime.now()
-#     year = now.year
-#     month = now.month
-#     day = now.day
-#     day_range = day + 6
-#     hour = now.hour
-
-#     if day_range > 30 :
-#         day_range = day_range - 30
-
-#     if request.data['contact_number'] == "":
-#         request.POST._mutable = True
-#         request.data['contact_number'] = request.user.mobile_number
-#         request.POST._mutable = False
-
-#     date = request.data['delivery_date_time']
-#     delivery_year = int(date[:4])
-#     delivery_month = int(date[5:7])
-#     delivery_day = int(date[8:10])
-#     delivery_hour = int(date[11:13])
-#     # if year == delivery_year and month == delivery_month
-
-#     bad_time = [1, 2, 3, 4, 5, 6, 7, 22, 23, 24]
-
-#     if day_range >= delivery_day:
-
-#         if delivery_hour not in bad_time:
-
-#             serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
-#                                         context={'request': request})
-#             if serializer.is_valid():
-
-#                 serializer.save(user=request.user, created_by=request.user)
-#                 # print(serializer.data['delivery_date_time'])
-
-#                 """
-#                 To send notification to admin
-#                 """
-#                 sub = "Order Placed"
-#                 body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
-#                 email_notification(sub, body)
-#                 """
-#                 Notification code ends here
-#                 """
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-#             else:
-#                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#         else:
-#             return Response({"status": "This is not a vaild delivery time, Please Select a vaild time."}, status=status.HTTP_204_NO_CONTENT)
-
-#     else:
-#         return Response({"status": f"Select a vaild date from {day} to {day_range}"}, status=status.HTTP_204_NO_CONTENT)
-
-
 class OrderDetail(APIView):
+    """Here customer can `get` a order user by id then can `put`, and `delete` a order"""
     permission_classes = [GenericAuth]
 
     def get_order_object(self, id):
@@ -195,7 +110,6 @@ class OrderDetail(APIView):
 
     def get(self, request, id):
         obj = self.get_order_object(id)
-        # if obj.user == request.user or request.user == 'SF':
         serializer = OrderSerializer(obj)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -222,6 +136,7 @@ class OrderDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 class OrderProductList(APIView):
+    """Here customer can `get` and `post` order product"""
     permission_classes = [GenericAuth]
 
     def get(self, request):
@@ -257,6 +172,7 @@ class OrderProductList(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 class OrderProductDetail(APIView):
+    """Here customer can see order product detail by product id"""
     permission_classes = [GenericAuth]
 
     def get_orderproduct_obj(self, id):
@@ -356,17 +272,14 @@ class VatDetail(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class OrderdProducts(APIView):  # this view returns all the products in a order. this has been commented out as it has marged with "Orderdetail" view in get function.
-
+class OrderdProducts(APIView):  
+    """this view returns all the products in a order. this has been commented out as
+       it has marged with "Orderdetail" view in get function.
+    """
     permission_classes = [GenericAuth]
-
-    # def get_order_object(self,id):
-    #     obj = Order.objects.get(id = id)
-    #     return obj
 
     def get(self, request, id):
         obj = get_object_or_404(Order, id=id)
-        # print(obj)
         if obj.user == request.user or request.user.user_type == 'SF' or request.user.user_type == 'RT':
             orderProducts = []
             # orderProductList = obj.orderproduct_set.all()  # get all orderd products of individual product
@@ -468,47 +381,15 @@ class PaymentInfoListCreate(APIView):
             query_invoice = self.request.GET.get("invoice_number")
 
             if query or query_invoice:
-                # queryset = Order.objects.filter(bill_id__exact=query)
                 queryset_invoice = Order.objects.filter(invoice_number__exact=query_invoice)
-
-                # if queryset:
-                #     serializer = OrderDetailPaymentSerializer(queryset, many=True, context={'request': request})
-
-                #     if serializer:
-                #         # d = json.dumps(serializer.data)
-                #         # d = json.loads(d)
-                #         payment = serializer.data[0]
-                #         year = payment['created_on']
-
-
-                #         data = {
-                #             'status': "success",
-                #             'payment_id': payment['payment_id'],
-                #             'bill_id': payment['bill_id'],
-                #             'total_amount': payment['order_total_price'],
-                #             'currency': payment['currency'],
-                #             'created_by': payment['user']["username"],
-                #             'created_on': year,
-                #             'bill_info':  {
-                #                             "type": "product_purchase",
-                #                             'order_products': payment['products']
-                #             }
-                #         }
-                #         return Response(data, status=status.HTTP_200_OK)
-                #     else:
-                #         return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
-
-
 
                 if queryset_invoice:
                     serializer = OrderDetailPaymentSerializer(queryset_invoice, many=True, context={'request': request})
 
                     if serializer:
-                        # d = json.dumps(serializer.data)
-                        # d = json.loads(d)
+                      
                         payment = serializer.data[0]
                         year = payment['created_on']
-
 
                         data = {
                             'status': "success",
@@ -561,10 +442,6 @@ class OrderLatest(APIView):
         order = Order.objects.filter(user=request.user, order_status='OD').order_by('-id')[:1]
 
         if order:
-            # product = OrderProduct.objects.filter(order=order)
-
-            # orderproduct = OrderProductSerializer(product, many=True, context={'request': request}).data
-
             serializer = OrderDetailSerializer(order, many=True, context={'request': request})
 
             if serializer and serializer.data[0]["id"]:
@@ -597,11 +474,9 @@ class OrderLatest(APIView):
                 }
 
                 data = json.dumps(body)
-                # data = json.loads(data)
-                # print(config("PAYMENT_PROJECT_URL", None))
+            
                 response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
                 content = response.json()
-                # print(content)
 
                 if response.status_code == 200:
                     if content["status"] == "success":
