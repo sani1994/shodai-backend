@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 from utility.messaging import otp_text, send_sms_otp
 from utility.notification import send_sms, email_notification
 from .queries import UserType, AddressType
-from ..models import UserProfile, Address
+from ..models import UserProfile, Address, BlackListedToken
 from graphql_jwt.shortcuts import get_token, create_refresh_token
 
 
@@ -123,13 +123,22 @@ class UserUpdateMutation(graphene.Mutation):
         if not user.is_authenticated:
             raise Exception('Must Log in to update information')
         else:
-            user_instance = UserProfile.objects.get(username=user.mobile_number)
-            user_instance.email = input.email if input.email else user.email
-            user_instance.first_name = input.first_name if input.first_name else user.first_name
-            user_instance.last_name = input.last_name if input.last_name else user.last_name
-            user_instance.modified_on = timezone.now()
-            user_instance.save()
-            return UserUpdateMutation(user=user_instance)
+            token = info.context.headers['Authorization'].split(' ')[1]
+            print(token)
+            try:
+                token = BlackListedToken.objects.get(token=token)
+            except BlackListedToken.DoesNotExist as e:
+                token = None
+            if token:
+                raise Exception('Invalid or expired token!')
+            else:
+                user_instance = UserProfile.objects.get(username=user.mobile_number)
+                user_instance.email = input.email if input.email else user.email
+                user_instance.first_name = input.first_name if input.first_name else user.first_name
+                user_instance.last_name = input.last_name if input.last_name else user.last_name
+                user_instance.modified_on = timezone.now()
+                user_instance.save()
+                return UserUpdateMutation(user=user_instance)
 
 
 class RetailerProducerCreateMutation(graphene.Mutation):
@@ -206,18 +215,27 @@ class AddressCreateMutation(graphene.Mutation):
         if user.is_anonymous:
             raise Exception('Must Log In!')
         else:
-            if user.user_type == 'CM':
-                address_instance = Address(road=input.road,
-                                           city=input.city,
-                                           district=input.district,
-                                           country=input.country,
-                                           zip_code=input.zip_code,
-                                           user=user,
-                                           )
-                address_instance.save()
-                return AddressCreateMutation(address=address_instance)
+            token = info.context.headers['Authorization'].split(' ')[1]
+            print(token)
+            try:
+                token = BlackListedToken.objects.get(token=token)
+            except BlackListedToken.DoesNotExist as e:
+                token = None
+            if token:
+                raise Exception('Invalid or expired token!')
             else:
-                raise Exception('Unauthorized request!')
+                if user.user_type == 'CM':
+                    address_instance = Address(road=input.road,
+                                               city=input.city,
+                                               district=input.district,
+                                               country=input.country,
+                                               zip_code=input.zip_code,
+                                               user=user,
+                                               )
+                    address_instance.save()
+                    return AddressCreateMutation(address=address_instance)
+                else:
+                    raise Exception('Unauthorized request!')
 
 
 class AddressUpdateMutation(graphene.Mutation):
@@ -233,18 +251,27 @@ class AddressUpdateMutation(graphene.Mutation):
         if user.is_anonymous:
             raise Exception('Must Log In!')
         else:
-            if user.user_type == 'CM':
-                address = Address.objects.get(id=input.id, user=user)
-                address.road = input.road if input.road else address.road
-                address.city = input.city if input.city else address.city
-                address.district = input.district if input.district else address.district
-                address.country = input.country if input.country else address.country
-                address.zip_code = input.zip_code if input.zip_code else address.zip_code
-                address.user = user
-                address.save()
-                return AddressUpdateMutation(address=address, ok=True)
+            token = info.context.headers['Authorization'].split(' ')[1]
+            print(token)
+            try:
+                token = BlackListedToken.objects.get(token=token)
+            except BlackListedToken.DoesNotExist as e:
+                token = None
+            if token:
+                raise Exception('Invalid or expired token!')
             else:
-                raise Exception('Unauthorized request!')
+                if user.user_type == 'CM':
+                    address = Address.objects.get(id=input.id, user=user)
+                    address.road = input.road if input.road else address.road
+                    address.city = input.city if input.city else address.city
+                    address.district = input.district if input.district else address.district
+                    address.country = input.country if input.country else address.country
+                    address.zip_code = input.zip_code if input.zip_code else address.zip_code
+                    address.user = user
+                    address.save()
+                    return AddressUpdateMutation(address=address, ok=True)
+                else:
+                    raise Exception('Unauthorized request!')
 
 
 class AddressDeleteMutation(graphene.Mutation):
@@ -259,12 +286,21 @@ class AddressDeleteMutation(graphene.Mutation):
         if user.is_anonymous:
             raise Exception('Must Log In!')
         else:
-            if user.user_type == 'CM':
-                obj = Address.objects.get(pk=kwargs["id"], user=user)
-                obj.delete()
-                return cls(ok=True)
+            token = info.context.headers['Authorization'].split(' ')[1]
+            print(token)
+            try:
+                token = BlackListedToken.objects.get(token=token)
+            except BlackListedToken.DoesNotExist as e:
+                token = None
+            if token:
+                raise Exception('Invalid or expired token!')
             else:
-                raise Exception('Unauthorized request!')
+                if user.user_type == 'CM':
+                    obj = Address.objects.get(pk=kwargs["id"], user=user)
+                    obj.delete()
+                    return cls(ok=True)
+                else:
+                    raise Exception('Unauthorized request!')
 
 
 class ForgotPasswordMutation(graphene.Mutation):
@@ -301,14 +337,23 @@ class ChangePasswordMutation(graphene.Mutation):
     def mutate(cls, root, info, **kwargs):
         user_instance = info.context.user
         if user_instance.is_authenticated:
-            old_password = kwargs.get('old_password')
-            new_password = kwargs.get('new_password')
-            valid = user_instance.check_password(old_password)
-            if not valid:
-                return cls(msg="Invalid Password")
-            user_instance.set_password(new_password)
-            user_instance.save()
-            return cls(msg="Password Changed Successfully")
+            token = info.context.headers['Authorization'].split(' ')[1]
+            print(token)
+            try:
+                token = BlackListedToken.objects.get(token=token)
+            except BlackListedToken.DoesNotExist as e:
+                token = None
+            if token:
+                raise Exception('Invalid or expired token!')
+            else:
+                old_password = kwargs.get('old_password')
+                new_password = kwargs.get('new_password')
+                valid = user_instance.check_password(old_password)
+                if not valid:
+                    return cls(msg="Invalid Password")
+                user_instance.set_password(new_password)
+                user_instance.save()
+                return cls(msg="Password Changed Successfully")
         else:
             raise Exception('Authentication credentials were not provided')
 

@@ -157,16 +157,7 @@ class Query(graphene.ObjectType):
                 if flag:
                     return None
                 else:
-                    token = info.context.headers['Authorization'].split(' ')[1]
-                    print(token)
-                    try:
-                        token = BlackListedToken.objects.get(token=token)
-                    except BlackListedToken.DoesNotExist as e:
-                        token = None
-                    if token:
-                        raise Exception('Invalid or expired token!')
-                    else:
-                        raise Exception('An error occurred while sending the sms!')
+                    raise Exception('An error occurred while sending the sms!')
 
     def resolve_address_list_by_user(self, info):
         user = info.context.user
