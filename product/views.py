@@ -13,16 +13,14 @@ from rest_framework import status
 from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
 
-# Create your views here.
 from sodai.utils.permission import GenericAuth
 
 
 class ProductList(APIView):
+    """Get all product and create a product"""
     # permission_classes = (IsAuthenticated,)
 
     permission_classes = [GenericAuth]
-
-    ## list of Prodect
 
     def get(self, request, format=None):
         products = Product.objects.filter(is_approved=True)
@@ -49,7 +47,7 @@ class ProductList(APIView):
 class ProductDetail(APIView):
     permission_classes = [GenericAuth]
     """
-    Retrieve, update and delete Orders
+    Retrieve, update and delete products
     """
 
     def get_product_object(self, id):
@@ -88,6 +86,7 @@ class ProductDetail(APIView):
 
 
 class ProductMetaList(APIView):
+    """Get all product meta and crete product meta"""
     permission_classes = [GenericAuth]
 
     ## list of Prodect Meta (original product name with comapny name)
@@ -112,7 +111,7 @@ class ProductMetaList(APIView):
 class ProductMetaDetail(
     APIView):  # this mathod dont work because couldnt update and retriev object of productMea object
     """
-    Retrieve, update and delete Orders
+    Retrieve, update and delete product meta
     """
     permission_classes = [GenericAuth]
 
