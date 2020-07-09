@@ -3,6 +3,8 @@ from django.core.mail import send_mail
 from requests import post
 from sodai import settings
 
+otp_text = "{} - OTP for Shodai Login. Valid for next five (5) minutes."
+
 
 def email_notification(subject, body):
     # target_user = ['rana@shod.ai', 'shishir@shod.ai', 'support@shod.ai', 'mohua@finder-lbs.com']
@@ -13,9 +15,9 @@ def email_notification(subject, body):
 def send_sms(mobile_number, sms_content):
     url = "https://portal.adnsms.com/api/v1/secure/send-sms"
     body = {
-        "api_key": config("OTP_SECRET", None),
-        "api_secret": config("OTP_API_KEY", None),
-        "request_type": "single_sms",
+        "api_key": config("OTP_API_KEY", None),
+        "api_secret": config("OTP_SECRET", None),
+        "request_type": "OTP",
         "message_type": "Text",
         "mobile": mobile_number,
         "message_body": sms_content

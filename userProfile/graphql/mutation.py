@@ -7,8 +7,7 @@ from random import randint
 
 from django.utils.crypto import get_random_string
 
-from utility.messaging import otp_text, send_sms_otp
-from utility.notification import send_sms, email_notification
+from utility.notification import send_sms, email_notification, otp_text
 from .queries import UserType, AddressType
 from ..models import UserProfile, Address, BlackListedToken
 from graphql_jwt.shortcuts import get_token, create_refresh_token
@@ -102,7 +101,7 @@ class UserCreateMutation(graphene.Mutation):
             token = get_token(user_instance)
             refresh_token = create_refresh_token(user_instance)
             otp_code = user_instance.verification_code
-            otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
+            otp_flag = send_sms(user_instance.mobile_number, otp_text.format(
                 otp_code))
             otp_status = "OTP send successfully" if otp_flag else "OTP failed"
             return UserCreateMutation(user=user_instance,
@@ -318,10 +317,13 @@ class ForgotPasswordMutation(graphene.Mutation):
             sms_body = f"Dear Mr/Mrs,\r\nYour one time password is " + temp_password + ".\r\n[N.B:Please change the " \
                                                                                        "password after " \
                                                                                        f"login] "
-            send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
-            user_instance.set_password(temp_password)
-            user_instance.save()
-            return cls(msg="Message Sent Successfully")
+            sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
+            if sms_flag:
+                user_instance.set_password(temp_password)
+                user_instance.save()
+                return cls(msg="Message Sent Successfully")
+            else:
+                return cls(msg="An error occurred while sending the sms")
         else:
             return cls(msg="User not available")
 

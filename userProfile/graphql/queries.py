@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from graphene_django.types import DjangoObjectType
 
-from utility.messaging import send_sms_otp, otp_text
+from utility.notification import send_sms, otp_text
 from ..models import UserProfile, Address, BlackListedToken
 from datetime import timedelta
 from django.utils import timezone
@@ -152,7 +152,7 @@ class Query(graphene.ObjectType):
                     user.save()
 
                 # send sms from here.
-                flag = send_sms_otp(user.mobile_number, otp_text.format(
+                flag = send_sms(user.mobile_number, otp_text.format(
                     otp_code))  # Send OTP message from here
                 if flag:
                     return None
