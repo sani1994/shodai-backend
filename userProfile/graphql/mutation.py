@@ -193,7 +193,7 @@ class RetailerProducerCreateMutation(graphene.Mutation):
             token = get_token(user_instance)
             refresh_token = create_refresh_token(user_instance)
             otp_code = user_instance.verification_code
-            otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
+            otp_flag = send_sms(user_instance.mobile_number, otp_text.format(
                 otp_code))
             otp_status = "OTP send successfully" if otp_flag else "OTP failed"
             return UserCreateMutation(user=user_instance,

@@ -47,6 +47,7 @@ class ProductConnection(relay.Connection):
 
 class Query(graphene.ObjectType):
     products_by_category = relay.ConnectionField(ProductConnection, category=graphene.Int())
+    products_by_meta = relay.ConnectionField(ProductConnection, meta_id=graphene.Int())
     search_product = DjangoFilterConnectionField(ProductNode)
     all_products_pagination = relay.ConnectionField(ProductConnection)
     all_products = graphene.List(ProductType)
@@ -58,15 +59,11 @@ class Query(graphene.ObjectType):
 
     def resolve_products_by_category(root, info, **kwargs):
         category = kwargs.get('category')
-        products = Product.objects.all()
-        payload = list()
-        for product in products:
-            meta = product.product_meta
-            cat = meta.product_category.id
-            if cat == category:
-                payload.append(product)
+        return Product.objects.filter(product_meta__product_category__pk=category)
 
-        return payload
+    def resolve_products_by_meta(root, info, **kwargs):
+        meta_id = kwargs.get('meta_id')
+        return Product.objects.filter(product_meta__pk=meta_id)
 
     def resolve_all_products_pagination(root, info, **kwargs):
         return Product.objects.all()
@@ -84,4 +81,4 @@ class Query(graphene.ObjectType):
         return ShopCategory.objects.all()
 
     def resolve_recently_added_product_list(self, info):
-        return Product.objects.all().order_by('-created_on')[:10]
+        return Product.objects.all().order_by('-created_on')[:20]
