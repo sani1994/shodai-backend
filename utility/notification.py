@@ -1,3 +1,6 @@
+import logging
+
+import requests
 from decouple import config
 from django.core.mail import send_mail
 from requests import post
@@ -41,9 +44,10 @@ def send_sms_otp(mobile_number, sms_content):
         "message_body": sms_content
     }
 
-    response = post(url, data=body).json()
-
+    response = requests.post(url, data=body).json()
+    logging.info("otp sending response: {}".format(response))
     if response["api_response_message"] == "SUCCESS":
-        return 'success'
+        return True
     else:
-        return 'failed'
+        logging.critical("otp error for {}".format(mobile_number))
+        return False

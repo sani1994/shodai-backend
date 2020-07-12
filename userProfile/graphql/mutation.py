@@ -7,7 +7,7 @@ from random import randint
 
 from django.utils.crypto import get_random_string
 
-from utility.notification import send_sms, email_notification, otp_text
+from utility.notification import send_sms, email_notification, otp_text, send_sms_otp
 from .queries import UserType, AddressType
 from ..models import UserProfile, Address, BlackListedToken
 from graphql_jwt.shortcuts import get_token, create_refresh_token
@@ -101,7 +101,7 @@ class UserCreateMutation(graphene.Mutation):
             token = get_token(user_instance)
             refresh_token = create_refresh_token(user_instance)
             otp_code = user_instance.verification_code
-            otp_flag = send_sms(user_instance.mobile_number, otp_text.format(
+            otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                 otp_code))
             otp_status = "OTP send successfully" if otp_flag else "OTP failed"
             return UserCreateMutation(user=user_instance,
@@ -193,7 +193,7 @@ class RetailerProducerCreateMutation(graphene.Mutation):
             token = get_token(user_instance)
             refresh_token = create_refresh_token(user_instance)
             otp_code = user_instance.verification_code
-            otp_flag = send_sms(user_instance.mobile_number, otp_text.format(
+            otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                 otp_code))
             otp_status = "OTP send successfully" if otp_flag else "OTP failed"
             return UserCreateMutation(user=user_instance,
@@ -318,7 +318,7 @@ class ForgotPasswordMutation(graphene.Mutation):
                                                                                        "password after " \
                                                                                        f"login] "
             sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
-            if sms_flag:
+            if sms_flag == 'success':
                 user_instance.set_password(temp_password)
                 user_instance.save()
                 return cls(msg="Message Sent Successfully")
