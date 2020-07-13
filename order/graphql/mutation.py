@@ -108,7 +108,6 @@ class CreateOrder(graphene.Mutation):
                     datetime = order_instance.delivery_date_time.strftime("%m/%d/%Y, %H:%M:%S")
 
                     product_list = input.products
-                    print(product_list)
                     product_list_detail = []
                     for p in product_list:
                         product_id = from_global_id(p.product_id)
@@ -122,7 +121,6 @@ class CreateOrder(graphene.Mutation):
                         product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                    + str(p.order_product_qty) + "\n")
 
-                    print(product_list_detail)
                     sub = "Order Placed"
                     body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
                            f"posted an order with the following details" \

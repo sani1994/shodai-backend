@@ -18,6 +18,7 @@ class AddressAdmin(MaterialModelAdmin):
 class UserProfileAdmin(MaterialModelAdmin):
     icon_name = 'face'
     list_display = ('mobile_number', 'user_type', 'first_name', 'last_name', 'is_approved')
+    exclude = ['password',]
 
     def save_model(self, request, obj, form, change):
         if obj.id:

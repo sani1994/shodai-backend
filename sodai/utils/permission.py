@@ -2,7 +2,9 @@ from django.contrib.auth.models import Permission
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from sodai.utils.helper import get_user_object
-from userProfile.models import BlackListedToken,UserProfile
+from userProfile.models import BlackListedToken, UserProfile
+
+
 # from userProfile.views import GET
 
 
@@ -16,7 +18,7 @@ class GenericAuth(IsAuthenticated):
 
         try:
             is_blacklisted = BlackListedToken.objects.get(
-                user=get_user_object(username=username),token=token)
+                user=get_user_object(username=username), token=token)
 
             if is_blacklisted:
                 return False
