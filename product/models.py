@@ -73,8 +73,8 @@ class Product(BaseModel):
     def save(self, *args, **kwargs):
         """calculte price_with_vat using vat field from product meta object"""
         if self.product_meta.vat_amount:
-            self.price_with_vat = float(self.product_price) + (
-                    float(self.product_price) * self.product_meta.vat_amount) / 100
+            price = float(self.product_price) + (float(self.product_price) * self.product_meta.vat_amount) / 100 
+            self.price_with_vat = round(price)
             super(Product, self).save(*args, **kwargs)
         else:
             self.price_with_vat = self.product_price

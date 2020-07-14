@@ -504,17 +504,3 @@ class OrderLatest(APIView):
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
 
-
-class TimeSlotList(APIView):
-
-    def get(self, request):
-
-        queryset = TimeSlot.objects.filter(allow=True)
-        if queryset:
-            serializer = TimeSlotSerializer(queryset, many=True)
-            if serializer:
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
