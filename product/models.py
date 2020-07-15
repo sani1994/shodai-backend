@@ -54,7 +54,7 @@ class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapn
 
 class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True)
-    slug = models.SlugField(unique=True, null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
     product_name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_description = models.CharField(max_length=400, default=" ")

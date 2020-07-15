@@ -20,8 +20,8 @@ class ProductAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-            old_obj = get_object_or_404(Product,id = obj.id)
-            obj.product_last_price = old_obj.product_price
+            old_obj = get_object_or_404(Product, id=obj.id)
+            # obj.product_last_price = old_obj.product_price
             obj.save()
         obj.created_by = request.user
         obj.save()
@@ -72,8 +72,8 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 
 class ProductMetaAdmin(admin.ModelAdmin):
     readonly_fields = ["created_by", "modified_by", ]
-    list_display = ('name','product_category','shop_category', 'vat_amount')
-    list_filter = ('product_category','shop_category')
+    list_display = ('name', 'product_category', 'shop_category', 'vat_amount')
+    list_filter = ('product_category', 'shop_category')
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -86,5 +86,5 @@ class ProductMetaAdmin(admin.ModelAdmin):
 site.register(Product, ProductAdmin)
 site.register(ShopCategory, ShopCategoryAdmin)
 site.register(ProductCategory, ProductCategoryAdmin)
-site.register(ProductMeta,ProductMetaAdmin)
+site.register(ProductMeta, ProductMetaAdmin)
 # site.register(ProductUnit, ProductUnitAdmin)
