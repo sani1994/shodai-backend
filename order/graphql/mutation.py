@@ -309,6 +309,7 @@ class TransactionMutation(graphene.Mutation):
                     invoice = InvoiceInfo.objects.get(invoice_number=invoice_number)
                     invoice.paid_status = True
                     invoice.transaction_id = transaction_id
+                    invoice.save()
                     return TransactionMutation(transaction_id=transaction_id,
                                                invoice_number=invoice_number,
                                                payment_status=payment_status,

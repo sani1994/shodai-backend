@@ -3,7 +3,7 @@ from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter
 
 from userProfile.models import BlackListedToken
-from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot
+from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo
 
 
 class OrderType(DjangoObjectType):
@@ -31,6 +31,11 @@ class TimeSlotType(DjangoObjectType):
         model = TimeSlot
 
 
+class InvoiceInfoType(DjangoObjectType):
+    class Meta:
+        model = InvoiceInfo
+
+
 class Query(graphene.ObjectType):
     order_list = graphene.List(OrderType)
     order_list_of_user = graphene.List(OrderType)
@@ -39,6 +44,7 @@ class Query(graphene.ObjectType):
     vat_by_product_meta = graphene.Field(VatType, product_meta_id=graphene.Int())
     delivery_charge = graphene.Field(DeliveryChargeType)
     delivery_time_slots = graphene.List(TimeSlotType)
+    invoice_by_order = graphene.Field(InvoiceInfoType, order_id=graphene.Int())
 
     def resolve_order_list(self, info):
         return Order.objects.all()
@@ -115,3 +121,20 @@ class Query(graphene.ObjectType):
 
     def resolve_delivery_time_slots(self, info):
         return TimeSlot.objects.all()
+
+    def resolve_invoice_by_order(self, info, **kwargs):
+        user = info.context.user
+        if not user.is_authenticated:
+            raise Exception('Must Log in to see order')
+        else:
+            token = info.context.headers['Authorization'].split(' ')[1]
+            print(token)
+            try:
+                token = BlackListedToken.objects.get(token=token)
+            except BlackListedToken.DoesNotExist as e:
+                token = None
+            if token:
+                raise Exception('Invalid or expired token!')
+            else:
+                order_id = kwargs.get('order_id')
+                return InvoiceInfo.objects.get(order_number__pk=order_id, user=user)
