@@ -20,7 +20,7 @@ class ProductAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-            old_obj = get_object_or_404(Product, id=obj.id)
+            # old_obj = get_object_or_404(Product, id=obj.id)
             # obj.product_last_price = old_obj.product_price
             obj.save()
         obj.created_by = request.user

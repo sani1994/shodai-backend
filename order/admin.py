@@ -6,7 +6,7 @@ from django.contrib.admin import SimpleListFilter
 from django.http import HttpResponse
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot
+from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
 
 
 # Register your models here.
@@ -154,13 +154,41 @@ class PaymentInfoAdmin(MaterialModelAdmin):
     readonly_fields = ['id', 'create_on', 'payment_id', 'order_id', 'bill_id', 'invoice_number',
                        'payment_status', 'transaction_id']
 
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
 
-def save_model(self, request, obj, form, change):
-    if obj.id:
-        obj.modified_by = request.user
-    obj.created_by = request.user
-    obj.save()
-    return super().save_model(request, obj, form, change)
+
+class InvoiceInfoAdmin(MaterialModelAdmin):
+    list_display = ['id', 'invoice_number', 'order_number', 'delivery_date_time',
+                    'paid_status', ]
+
+    list_filter = ['created_on', 'delivery_date_time']
+    readonly_fields = ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount',
+                       'order_number', 'billing_person_contact_number', 'delivery_date_time',
+                       'invoice_number', 'transaction_id']
+
+    fieldsets = (
+        ('Order Detail View', {
+            'fields': ('invoice_number', 'order_number', 'net_payable_amount', 'delivery_date_time',
+                       'discount_amount', 'discount_description', 'paid_status', 'payment_method',
+                       'currency', 'transaction_id', 'created_on', 'created_by', 'modified_by')
+        }),
+        ('User Detail View', {
+            'fields': ('user', 'billing_person_name', 'billing_person_email', 'billing_person_contact_number',
+                       'delivery_address',)
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
 
 
 site.register(TimeSlot, TimeSlotAdmin)
@@ -169,3 +197,4 @@ site.register(OrderProduct, OrderProductAdmin)
 site.register(Vat, VatAdmin)
 site.register(DeliveryCharge, DeliveryChargeAdmin)
 site.register(PaymentInfo, PaymentInfoAdmin)
+site.register(InvoiceInfo, InvoiceInfoAdmin)
