@@ -9,7 +9,7 @@ from graphql_relay.utils import unbase64
 
 from utility.notification import email_notification
 from .queries import OrderType, OrderProductType
-from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge
+from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo
 from product.models import Product
 from userProfile.models import Address, BlackListedToken
 
@@ -26,6 +26,11 @@ class OrderStatusEnum(graphene.Enum):
 class OrderTypeEnum(graphene.Enum):
     FIXED_PRICE = "FP"
     BIDDING = "BD"
+
+
+class PaymentMethodEnum(graphene.Enum):
+    ONLINE_PAYMENT = 'SSLCOMMERZ'
+    CASH_ON_DELIVERY = 'COD'
 
 
 class PaymentStatusEnum(graphene.Enum):
@@ -57,6 +62,7 @@ class OrderInput(graphene.InputObjectType):
     order_type = graphene.NonNull(OrderTypeEnum)
     contact_number = graphene.String()
     products = graphene.List(OrderProductInput)
+    payment_method = graphene.NonNull(PaymentMethodEnum)
 
 
 class OrderProductInputA(graphene.InputObjectType):
@@ -135,6 +141,21 @@ class CreateOrder(graphene.Mutation):
                            f" \r\nOrder net payable amount: {input.net_pay_able_amount}." \
                            f"\r\n \r\nThanks and Regards\r\nShodai "
                     email_notification(sub, body)
+                    # Create InvoiceInfo Instance
+                    billing_person_name = user.first_name + " " + user.last_name
+                    InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                               billing_person_name=billing_person_name,
+                                               billing_person_email=user.email,
+                                               billing_person_contact_number=order_instance.contact_number,
+                                               delivery_address=order_instance.address.road,
+                                               delivery_date_time=order_instance.delivery_date_time,
+                                               delivery_charge=DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
+                                               net_payable_amount=input.net_pay_able_amount,
+                                               payment_method=input.payment_method,
+                                               order_number=order_instance,
+                                               user=user,
+                                               created_by=user)
+
                     return CreateOrder(order=order_instance)
                 else:
                     raise Exception('Unauthorized request!')
@@ -285,6 +306,9 @@ class TransactionMutation(graphene.Mutation):
                     payment_info.transaction_id = transaction_id
                     payment_info.payment_status = "SUCCESS"
                     payment_info.save()
+                    invoice = InvoiceInfo.objects.get(invoice_number=invoice_number)
+                    invoice.paid_status = True
+                    invoice.transaction_id = transaction_id
                     return TransactionMutation(transaction_id=transaction_id,
                                                invoice_number=invoice_number,
                                                payment_status=payment_status,
