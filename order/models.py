@@ -17,7 +17,7 @@ class Order(BaseModel):
     """Create order object"""
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
     payment_id = models.CharField(max_length=100, blank=True, unique=True, )
-    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True,)
+    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField()
@@ -176,23 +176,6 @@ class PaymentInfo(models.Model):
         return 'OrderId: ' + str(self.order_id) + "  " + "PaymentId: " + str(self.payment_id)
 
 
-class TransactionId(models.Model):
-    transaction_id = models.CharField(max_length=100, null=True, blank=True, )
-    SUCCESS = 'SUCCESS'
-    FAILED = 'FAILED'
-    CANCELLED = 'CANCELLED'
-    PAYMENT_STATUS = [
-        (SUCCESS, 'Success'),
-        (FAILED, 'Failed'),
-        (CANCELLED, 'Cancelled'),
-    ]
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default=FAILED)
-    create_on = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return str(self.transaction_id)
-
-
 class TimeSlot(models.Model):
     start = models.CharField(max_length=10)
     end = models.CharField(max_length=10)
@@ -206,3 +189,34 @@ class TimeSlot(models.Model):
     def save(self, *args, **kwargs):
         self.slot = self.start + '-' + self.end
         super(TimeSlot, self).save(*args, **kwargs)
+
+
+class InvoiceInfo(models.Model):
+    invoice_number = models.CharField(max_length=100, unique=True, null=False, blank=False, default="")
+    invoice_date_time = models.DateTimeField()
+    billing_person_name = models.CharField(max_length=20, null=True, blank=True)
+    billing_person_email = models.EmailField(blank=True, null=True)
+    billing_person_contact_number = models.CharField(max_length=20, null=True, blank=True)
+    delivery_address = models.CharField(max_length=30)
+    delivery_date_time = models.DateTimeField()
+    delivery_charge = models.FloatField(default=0)
+    discount_amount = models.FloatField(default=0)
+    discount_description = models.CharField(max_length=100, default="")
+    Net_payable_amount = models.FloatField(default=0)
+    paid_status = models.BooleanField(default=False, null=False, blank=False)
+    ONLINE_PAYMENT = 'SSL'
+    CASH_ON_DELIVERY = 'CAD'
+    BKASH = 'BKASH'
+    PAYMENT_METHOD = [
+        (ONLINE_PAYMENT, 'SSL'),
+        (CASH_ON_DELIVERY, 'Cad'),
+        (BKASH, 'Bkash'),
+    ]
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD, default=CASH_ON_DELIVERY)
+    currency = models.CharField(max_length=3, blank=True, default='BDT')
+    order_number = models.ForeignKey(Order, related_name='invoice', blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
+    payment_info = models.ForeignKey(PaymentInfo, related_name='payment', blank=True, null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return 'OrderId: ' + str(self.order_id) + "  " + "InvoiceNumber: " + str(self.invoice_number)
