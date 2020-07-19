@@ -32,6 +32,18 @@ class OrderProductInline(admin.TabularInline):
         return False
 
 
+class InvoiceInfoInline(admin.TabularInline):
+    model = InvoiceInfo
+    readonly_fields = ['invoice_number']
+    fields = ['invoice_number', 'paid_status', 'payment_method']
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id',)
 
@@ -67,7 +79,7 @@ class OrderAdmin(MaterialModelAdmin):
     readonly_fields = ['user', 'invoice_number', 'order_total_price',
                        'delivery_date_time', 'delivery_place', 'address', order_products]
     list_display = ('id', 'user', 'order_status', 'home_delivery', 'delivery_date_time', order_products,)
-    inlines = [OrderProductInline]
+    inlines = [OrderProductInline, InvoiceInfoInline]
     fieldsets = (
         ('Order Detail View', {
             'fields': ('user', 'invoice_number', 'order_total_price', 'delivery_date_time', 'delivery_place',
@@ -194,7 +206,7 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
         if obj:
             return ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount',
                     'order_number', 'billing_person_name', 'billing_person_email', 'currency',
-                    'billing_person_mobile_number', 'delivery_date_time',
+                    'billing_person_mobile_number', 'delivery_date_time', 'delivery_address'
                     'delivery_contact_number', 'invoice_number', 'transaction_id']
         else:
             return []
