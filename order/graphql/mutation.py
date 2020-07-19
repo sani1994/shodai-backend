@@ -127,6 +127,24 @@ class CreateOrder(graphene.Mutation):
                         product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                    + str(p.order_product_qty) + "\n")
 
+                    # Create InvoiceInfo Instance
+                    billing_person_name = user.first_name + " " + user.last_name
+                    invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                                         billing_person_name=billing_person_name,
+                                                         billing_person_email=user.email,
+                                                         billing_person_mobile_number=user.mobile_number,
+                                                         order_contact_number=order_instance.contact_number,
+                                                         delivery_address=order_instance.address.road,
+                                                         delivery_date_time=order_instance.delivery_date_time,
+                                                         delivery_charge=DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
+                                                         net_payable_amount=input.net_pay_able_amount,
+                                                         payment_method=input.payment_method,
+                                                         order_number=order_instance,
+                                                         user=user,
+                                                         created_by=user)
+                    """
+                    To send notification to admin
+                    """
                     sub = "Order Placed"
                     body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
                            f"posted an order with the following details" \
@@ -139,23 +157,10 @@ class CreateOrder(graphene.Mutation):
                            f" \r\nOrder vat amount: {input.total_vat}." \
                            f" \r\nOrder delivery charge: {DeliveryCharge.objects.get()}." \
                            f" \r\nOrder net payable amount: {input.net_pay_able_amount}." \
+                           f" \r\nOrder payment method: {input.payment_method}." \
+                           f" \r\nOrder payment method: {invoice.paid_status}." \
                            f"\r\n \r\nThanks and Regards\r\nShodai "
                     email_notification(sub, body)
-                    # Create InvoiceInfo Instance
-                    billing_person_name = user.first_name + " " + user.last_name
-                    InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                               billing_person_name=billing_person_name,
-                                               billing_person_email=user.email,
-                                               billing_person_contact_number=order_instance.contact_number,
-                                               delivery_address=order_instance.address.road,
-                                               delivery_date_time=order_instance.delivery_date_time,
-                                               delivery_charge=DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
-                                               net_payable_amount=input.net_pay_able_amount,
-                                               payment_method=input.payment_method,
-                                               order_number=order_instance,
-                                               user=user,
-                                               created_by=user)
-
                     return CreateOrder(order=order_instance)
                 else:
                     raise Exception('Unauthorized request!')

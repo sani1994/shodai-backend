@@ -6,7 +6,7 @@ from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
     OrderDetailPaymentSerializer, TimeSlotSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, TimeSlot
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -53,7 +53,7 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self, request, *args, **kwargs):
-        delivery_charge = DeliveryCharge.objects.get(id=1).delivery_charge_inside_dhaka
+        delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
 
         datetime = request.data['delivery_date_time'].split('||')
         slot = datetime[0]
@@ -95,6 +95,22 @@ class OrderList(APIView):
             """
             Notification code ends here
             """
+            # Create InvoiceInfo Instance
+            order_instance = Order.objects.get(id=serializer.data['id'])
+            billing_person_name = request.user.first_name + " " + request.user.last_name
+            InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                       billing_person_name=billing_person_name,
+                                       billing_person_email=request.user.email,
+                                       billing_person_mobile_number=request.user.mobile_number,
+                                       order_contact_number=order_instance.contact_number,
+                                       delivery_address=order_instance.address.road,
+                                       delivery_date_time=order_instance.delivery_date_time,
+                                       delivery_charge=delivery_charge,
+                                       net_payable_amount=order_instance.order_total_price,
+                                       payment_method='SSLCommerz',
+                                       order_number=order_instance,
+                                       user=request.user,
+                                       created_by=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
