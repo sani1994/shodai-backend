@@ -175,13 +175,13 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
     list_filter = ['created_on', 'delivery_date_time']
     # readonly_fields = ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount',
     #                    'order_number', 'billing_person_mobile_number', 'delivery_date_time',
-    #                    'order_contact_number', 'invoice_number', 'transaction_id']
+    #                    'delivery_contact_number', 'invoice_number', 'transaction_id']
 
     fieldsets = (
         ('Order Detail View', {
             'fields': ('invoice_number', 'order_number', 'net_payable_amount', 'delivery_date_time',
                        'discount_amount', 'discount_description', 'paid_status', 'payment_method',
-                       'currency', 'transaction_id', 'order_contact_number',
+                       'currency', 'transaction_id', 'delivery_contact_number',
                        'created_on', 'created_by', 'modified_by')
         }),
         ('User Detail View', {
@@ -195,7 +195,7 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
             return ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount',
                     'order_number', 'billing_person_name', 'billing_person_email', 'currency',
                     'billing_person_mobile_number', 'delivery_date_time',
-                    'order_contact_number', 'invoice_number', 'transaction_id']
+                    'delivery_contact_number', 'invoice_number', 'transaction_id']
         else:
             return []
 

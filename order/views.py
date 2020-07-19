@@ -102,7 +102,7 @@ class OrderList(APIView):
                                        billing_person_name=billing_person_name,
                                        billing_person_email=request.user.email,
                                        billing_person_mobile_number=request.user.mobile_number,
-                                       order_contact_number=order_instance.contact_number,
+                                       delivery_contact_number=order_instance.contact_number,
                                        delivery_address=order_instance.address.road,
                                        delivery_date_time=order_instance.delivery_date_time,
                                        delivery_charge=delivery_charge,
@@ -519,4 +519,3 @@ class OrderLatest(APIView):
             return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
-

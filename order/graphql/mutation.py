@@ -133,7 +133,7 @@ class CreateOrder(graphene.Mutation):
                                                          billing_person_name=billing_person_name,
                                                          billing_person_email=user.email,
                                                          billing_person_mobile_number=user.mobile_number,
-                                                         order_contact_number=order_instance.contact_number,
+                                                         delivery_contact_number=order_instance.contact_number,
                                                          delivery_address=order_instance.address.road,
                                                          delivery_date_time=order_instance.delivery_date_time,
                                                          delivery_charge=DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
@@ -158,7 +158,7 @@ class CreateOrder(graphene.Mutation):
                            f" \r\nOrder delivery charge: {DeliveryCharge.objects.get()}." \
                            f" \r\nOrder net payable amount: {input.net_pay_able_amount}." \
                            f" \r\nOrder payment method: {input.payment_method}." \
-                           f" \r\nOrder payment method: {invoice.paid_status}." \
+                           f" \r\nOrder payment status: {invoice.paid_status}." \
                            f"\r\n \r\nThanks and Regards\r\nShodai "
                     email_notification(sub, body)
                     return CreateOrder(order=order_instance)
