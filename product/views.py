@@ -210,8 +210,7 @@ class ProductCategoryDetail(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ShopCategoryList(
-    APIView):  # shop_category must be in unique formate to make the connection with shop model of retailer
+class ShopCategoryList(APIView):  # shop_category must be in unique formate to make the connection with shop model of retailer
 
     permission_classes = [GenericAuth]
 

@@ -63,6 +63,13 @@ class Order(BaseModel):
         order_product = self.orders.all()
         return order_product
 
+    @property
+    def paid_status(self):
+        status = InvoiceInfo.objects.get(order_number_id=self.id).paid_status
+        if status==True:
+            return 'Paid Status'
+        return 'Not Paid Status'
+
     def save(self, *args, **kwargs):
         # self.shop_geopoint.y = self.shop_lat
         # self.shop_geopoint.x = self.shop_long

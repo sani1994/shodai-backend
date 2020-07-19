@@ -11,9 +11,8 @@ from rest_framework import serializers
 from userProfile.models import Address
 from userProfile.serializers import AddressSerializer
 from userProfile.serializers import UserProfileSerializer
-
-
 class OrderSerializer(serializers.ModelSerializer):
+
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
@@ -29,8 +28,14 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = '__all__'
-        read_only = ('id', )
+        fields = (
+            "id", "created_on", "modified_on", "payment_id", "invoice_number", 
+            "bill_id", "currency", "delivery_date_time", "delivery_place", "order_total_price", 
+            "lat", "long", "order_geopoint", "order_status", "home_delivery", "order_type",
+            "contact_number", "created_by", "modified_by", "user", "address", "paid_status",
+        )
+
+        read_only = ('id', "paid_status")
 
 
 class OrderSerializerDetail(serializers.ModelSerializer):
