@@ -8,9 +8,9 @@ from product.models import Product, ProductMeta
 @registry.register_document
 class ProductDocument(Document):
     product_meta = fields.NestedField(properties={
-        'name':fields.TextField(),
-        'pk':fields.IntegerField(),
-    },include_in_root = True)
+        'name': fields.TextField(),
+        'pk': fields.IntegerField(),
+    }, include_in_root=True)
 
     class Index:
         name = 'products'
@@ -28,7 +28,6 @@ class ProductDocument(Document):
         """If related_models is set, define how to retrieve the Product instance(s) from the related model."""
         if isinstance(related_instance, ProductMeta):
             return related_instance.product_set.all()
-
 
 # @registry.register_document
 # class ProductMetaDocument(Document):

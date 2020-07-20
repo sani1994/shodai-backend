@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework_elasticsearch import es_views, es_filters
 
 from product.serializers import ProductSerializer
-from search.ducument import ProductDocument
+from search.document import ProductDocument
 from search.serializers import ElasticSearchProductSerializer
 from elasticsearch_dsl.query import Q
 
