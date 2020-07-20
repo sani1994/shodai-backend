@@ -83,7 +83,7 @@ class ProductMetaAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-
+site.register(Product, ProductAdmin)
 site.register(ShopCategory, ShopCategoryAdmin)
 site.register(ProductCategory, ProductCategoryAdmin)
 site.register(ProductMeta, ProductMetaAdmin)
