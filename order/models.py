@@ -214,10 +214,10 @@ class InvoiceInfo(BaseModel):
     net_payable_amount = models.FloatField(default=0, null=False, blank=False)
     paid_status = models.BooleanField(default=False, null=False, blank=False)
     ONLINE_PAYMENT = 'SSLCOMMERZ'
-    CASH_ON_DELIVERY = 'COD'
+    CASH_ON_DELIVERY = 'CASH_ON_DELIVERY'
     PAYMENT_METHOD = [
         (ONLINE_PAYMENT, 'SSLCommerz'),
-        (CASH_ON_DELIVERY, 'Cod'),
+        (CASH_ON_DELIVERY, 'CashOnDelivery'),
     ]
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD, default=CASH_ON_DELIVERY)
     currency = models.CharField(max_length=3, blank=True, default='BDT')

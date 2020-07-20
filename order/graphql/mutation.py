@@ -30,7 +30,7 @@ class OrderTypeEnum(graphene.Enum):
 
 class PaymentMethodEnum(graphene.Enum):
     ONLINE_PAYMENT = 'SSLCOMMERZ'
-    CASH_ON_DELIVERY = 'COD'
+    CASH_ON_DELIVERY = 'CASH_ON_DELIVERY'
 
 
 class PaymentStatusEnum(graphene.Enum):
