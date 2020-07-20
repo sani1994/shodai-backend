@@ -101,13 +101,19 @@ class OrderList(APIView):
                 billing_person_name = request.user.first_name + " " + request.user.last_name
             else:
                 billing_person_name = request.user.username
+            if order_instance.address:
+                if order_instance.address.road:
+                    address = order_instance.address.road
+            else:
+                if order_instance.delivery_place:
+                    address = order_instance.delivery_place
 
             InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
                                        billing_person_name=billing_person_name,
                                        billing_person_email=request.user.email,
                                        billing_person_mobile_number=request.user.mobile_number,
                                        delivery_contact_number=order_instance.contact_number,
-                                       delivery_address=order_instance.address.road,
+                                       delivery_address=address,
                                        delivery_date_time=order_instance.delivery_date_time,
                                        delivery_charge=delivery_charge,
                                        net_payable_amount=order_instance.order_total_price,
