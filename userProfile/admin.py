@@ -19,6 +19,7 @@ class UserProfileAdmin(MaterialModelAdmin):
     icon_name = 'face'
     list_display = ('mobile_number', 'user_type', 'first_name', 'last_name', 'is_approved')
     exclude = ['password', ]
+    search_fields = ['mobile_number', 'first_name', 'last_name']
 
     def has_add_permission(self, request, obj=None):
         return False

@@ -16,6 +16,7 @@ class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_name', 'product_meta', 'is_approved')
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
+    search_fields = ['product_name']
 
     def save_model(self, request, obj, form, change):
         if obj.id:

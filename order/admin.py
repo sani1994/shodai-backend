@@ -78,7 +78,8 @@ class OrderAdmin(MaterialModelAdmin):
 
     readonly_fields = ['user', 'invoice_number', 'order_total_price',
                        'delivery_date_time', 'delivery_place', 'address', order_products]
-    list_display = ('id', 'user', 'order_status', 'home_delivery', 'delivery_date_time', order_products,)
+    list_display = ('id', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products,)
+    search_fields = ['id', 'invoice_number']
     inlines = [OrderProductInline, InvoiceInfoInline]
     fieldsets = (
         ('Order Detail View', {
@@ -171,6 +172,7 @@ class PaymentInfoAdmin(MaterialModelAdmin):
     list_filter = ['order_id']
     readonly_fields = ['id', 'create_on', 'payment_id', 'order_id', 'bill_id', 'invoice_number',
                        'payment_status', 'transaction_id']
+    search_fields = ['transaction_id', 'order_id__pk', 'invoice_number']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -184,6 +186,8 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
     list_display = ['id', 'invoice_number', 'order_number', 'delivery_date_time',
                     'paid_status', ]
 
+    search_fields = ['invoice_number', 'order_number__pk']
+    list_editable = ('paid_status',)
     list_filter = ['created_on', 'delivery_date_time']
     # readonly_fields = ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount',
     #                    'order_number', 'billing_person_mobile_number', 'delivery_date_time',
@@ -204,9 +208,9 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount',
-                    'order_number', 'billing_person_name', 'billing_person_email', 'currency',
-                    'billing_person_mobile_number', 'delivery_date_time', 'delivery_address'
+            return ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount', 'discount_amount',
+                    'order_number', 'billing_person_name', 'billing_person_email', 'currency', 'discount_description',
+                    'billing_person_mobile_number', 'delivery_date_time', 'delivery_address',
                     'delivery_contact_number', 'invoice_number', 'transaction_id']
         else:
             return []
