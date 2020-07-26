@@ -34,13 +34,15 @@ class OrderProductInline(admin.TabularInline):
 
 class InvoiceInfoInline(admin.TabularInline):
     model = InvoiceInfo
-    readonly_fields = ['invoice_number']
     fields = ['invoice_number', 'paid_status', 'payment_method']
 
     def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
         return False
 
 
@@ -168,11 +170,14 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
 
 
 class PaymentInfoAdmin(MaterialModelAdmin):
-    list_display = ['id', 'payment_id', 'order_id', 'bill_id', 'invoice_number', 'payment_status', 'transaction_id']
+    list_display = ['id', 'order_id', 'invoice_number', 'payment_status', 'transaction_id']
     list_filter = ['order_id']
-    readonly_fields = ['id', 'create_on', 'payment_id', 'order_id', 'bill_id', 'invoice_number',
-                       'payment_status', 'transaction_id']
+    readonly_fields = ['id', 'order_id', 'invoice_number', 'payment_status', 'transaction_id',
+                       'bill_id', 'payment_id', 'create_on']
     search_fields = ['transaction_id', 'order_id__pk', 'invoice_number']
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -183,8 +188,7 @@ class PaymentInfoAdmin(MaterialModelAdmin):
 
 
 class InvoiceInfoAdmin(MaterialModelAdmin):
-    list_display = ['id', 'invoice_number', 'order_number', 'delivery_date_time',
-                    'paid_status', ]
+    list_display = ['id', 'invoice_number', 'order_number', 'paid_status', 'paid_on']
 
     search_fields = ['invoice_number', 'order_number__pk']
     list_editable = ('paid_status',)
@@ -195,23 +199,25 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
 
     fieldsets = (
         ('Order Detail View', {
-            'fields': ('invoice_number', 'order_number', 'net_payable_amount', 'delivery_date_time',
-                       'discount_amount', 'discount_description', 'paid_status', 'payment_method',
-                       'currency', 'transaction_id', 'delivery_contact_number',
-                       'created_on', 'created_by', 'modified_by')
+            'fields': ('invoice_number', 'order_number', 'delivery_charge', 'discount_amount',
+                       'discount_description', 'net_payable_amount')
         }),
         ('User Detail View', {
             'fields': ('user', 'billing_person_name', 'billing_person_email', 'billing_person_mobile_number',
-                       'delivery_address',)
+                       'delivery_address', 'delivery_contact_number')
+        }),
+        ('Invoice Detail View', {
+            'fields': ('paid_status', 'payment_method', 'transaction_id', 'paid_on')
         }),
     )
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount', 'discount_amount',
-                    'order_number', 'billing_person_name', 'billing_person_email', 'currency', 'discount_description',
-                    'billing_person_mobile_number', 'delivery_date_time', 'delivery_address',
-                    'delivery_contact_number', 'invoice_number', 'transaction_id']
+            return ['invoice_number', 'order_number', 'delivery_charge', 'discount_amount',
+                    'discount_description', 'net_payable_amount',
+                    'user', 'billing_person_name', 'billing_person_email', 'billing_person_mobile_number',
+                    'delivery_address', 'delivery_contact_number',
+                    'transaction_id', 'paid_on']
         else:
             return []
 
