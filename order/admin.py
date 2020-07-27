@@ -213,7 +213,7 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
                        'delivery_address', 'delivery_contact_number')
         }),
         ('Invoice Detail View', {
-            'fields': ('paid_status', 'payment_method', 'transaction_id', 'created_on', 'paid_on',
+            'fields': ('paid_status', 'payment_method', 'transaction_id', 'created_on', 'modified_on', 'paid_on',
                        'created_by', 'modified_by')
         }),
     )
@@ -223,10 +223,10 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
             return ['invoice_number', 'order_number', 'delivery_charge', 'discount_amount', 'currency',
                     'discount_description', 'net_payable_amount', 'created_on', 'created_by', 'modified_by',
                     'user', 'billing_person_name', 'billing_person_email', 'billing_person_mobile_number',
-                    'delivery_address', 'delivery_contact_number', 'delivery_date_time',
+                    'delivery_address', 'delivery_contact_number', 'delivery_date_time', 'modified_on',
                     'transaction_id', 'paid_on']
         else:
-            return ['created_on', 'created_by', 'modified_by']
+            return ['created_on', 'modified_on', 'created_by', 'modified_by']
 
     def save_model(self, request, obj, form, change):
         if obj.id:

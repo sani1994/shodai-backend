@@ -313,10 +313,15 @@ class ForgotPasswordMutation(graphene.Mutation):
         mobile_number = kwargs.get('mobile_number')
         user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
         if user_instance:
+            if user_instance.first_name and user_instance.last_name:
+                client_name = user_instance.first_name + " " + user_instance.last_name
+            else:
+                client_name = user_instance.username
             temp_password = get_random_string(length=6)
-            sms_body = f"Dear Mr/Mrs,\r\nYour one time password is " + temp_password + ".\r\n[N.B:Please change the " \
-                                                                                       "password after " \
-                                                                                       f"login] "
+            sms_body = f"Dear " + client_name + \
+                       ",\r\n\nWe have created a new password " + temp_password + \
+                       " based on your forget password request." \
+                       ".\r\n\n[N.B:Please change your password after login] "
             sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
             if sms_flag == 'success':
                 user_instance.set_password(temp_password)
@@ -369,3 +374,4 @@ class Mutation(graphene.ObjectType):
     delete_address = AddressDeleteMutation.Field()
     change_password = ChangePasswordMutation.Field()
     forgot_password = ForgotPasswordMutation.Field()
+

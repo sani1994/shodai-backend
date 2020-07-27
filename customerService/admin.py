@@ -13,5 +13,11 @@ class CustomerQueryAdmin(MaterialModelAdmin):
     list_per_page = 10
     readonly_fields = ['subject', 'name', 'contact_number', 'email', 'created_on', 'message']
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 site.register(CustomerQuery, CustomerQueryAdmin)

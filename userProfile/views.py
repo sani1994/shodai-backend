@@ -4,6 +4,7 @@ import serializer
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render
+from django.utils.crypto import get_random_string
 from django.views.generic import TemplateView
 from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
@@ -165,7 +166,8 @@ class Login(APIView):  # login with mobile number and passwrd
                 else:
                     return JsonResponse({"message": "Password dosen't match"},
                                         status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        return JsonResponse({"message": "Profile request is waiting for approval"}, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+        return JsonResponse({"message": "Profile request is waiting for approval"},
+                            status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
 
 
 class Logout(APIView):  # logout
@@ -305,7 +307,7 @@ class RetailerRegistration(APIView):  # Retailer regerstration class
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({"message":"User Already Exist"}, status=status.HTTP_200_OK)
+            return Response({"message": "User Already Exist"}, status=status.HTTP_200_OK)
 
 
 class ChangePassword(APIView):
@@ -344,12 +346,25 @@ class ForgetPassword(APIView):
 
             else:
                 # print(user_instance[0].mobile_number)
-              
-                sms_body = f"Dear Mr/Mrs,\r\nYour one time password is !@#4567.\r\n[N.B:Please change the password after login"
-                send_sms(mobile_number=user_instance[0].mobile_number, sms_content=sms_body)
-                return Response({"status": "Message Sent Successfully"}, status=status.HTTP_200_OK)
+                temp_password = get_random_string(length=6)
+                if user_instance.first_name and user_instance.last_name:
+                    client_name = user_instance.first_name + " " + user_instance.last_name
+                else:
+                    client_name = user_instance.username
+                sms_body = f"Dear " + client_name + \
+                           ",\r\n\nWe have created a new password " + temp_password + \
+                           " based on your forget password request." \
+                           ".\r\n\n[N.B:Please change your password after login] "
+                sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
+                if sms_flag == 'success':
+                    user_instance.set_password(temp_password)
+                    user_instance.save()
+                    return Response({"status": "Message Sent Successfully"}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"status": "An error occurred while sending the sms"},
+                                    status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"status": "User not available"}, status=status.HTTP_200_OK)
+            return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class ForgetPasswordVarification(APIView):
