@@ -4,6 +4,7 @@ import datetime
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.http import HttpResponse
+from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
@@ -89,6 +90,15 @@ class OrderAdmin(MaterialModelAdmin):
                        'address')
         }),
     )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -191,40 +201,38 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
     list_display = ['id', 'invoice_number', 'order_number', 'paid_status', 'paid_on']
 
     search_fields = ['invoice_number', 'order_number__pk']
-    list_editable = ('paid_status',)
     list_filter = ['created_on', 'delivery_date_time']
-    # readonly_fields = ['created_on', 'created_by', 'modified_by', 'user', 'net_payable_amount',
-    #                    'order_number', 'billing_person_mobile_number', 'delivery_date_time',
-    #                    'delivery_contact_number', 'invoice_number', 'transaction_id']
 
     fieldsets = (
         ('Order Detail View', {
-            'fields': ('invoice_number', 'order_number', 'delivery_charge', 'discount_amount',
-                       'discount_description', 'net_payable_amount')
+            'fields': ('invoice_number', 'order_number', 'delivery_charge', 'discount_amount', 'currency',
+                       'discount_description', 'net_payable_amount', 'delivery_date_time',)
         }),
         ('User Detail View', {
             'fields': ('user', 'billing_person_name', 'billing_person_email', 'billing_person_mobile_number',
                        'delivery_address', 'delivery_contact_number')
         }),
         ('Invoice Detail View', {
-            'fields': ('paid_status', 'payment_method', 'transaction_id', 'paid_on')
+            'fields': ('paid_status', 'payment_method', 'transaction_id', 'created_on', 'paid_on',
+                       'created_by', 'modified_by')
         }),
     )
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return ['invoice_number', 'order_number', 'delivery_charge', 'discount_amount',
-                    'discount_description', 'net_payable_amount',
+            return ['invoice_number', 'order_number', 'delivery_charge', 'discount_amount', 'currency',
+                    'discount_description', 'net_payable_amount', 'created_on', 'created_by', 'modified_by',
                     'user', 'billing_person_name', 'billing_person_email', 'billing_person_mobile_number',
-                    'delivery_address', 'delivery_contact_number',
+                    'delivery_address', 'delivery_contact_number', 'delivery_date_time',
                     'transaction_id', 'paid_on']
         else:
-            return []
+            return ['created_on', 'created_by', 'modified_by']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
         obj.created_by = request.user
+        obj.created_on = timezone.now()
         obj.save()
         return super().save_model(request, obj, form, change)
 

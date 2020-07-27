@@ -20,6 +20,7 @@ class ProductUnitAdmin(MaterialModelAdmin):
     list_display = ('product_unit',)
     list_filter = ('product_unit',)
     readonly_fields = ["created_by", "modified_by", ]
+    search_fields = ['product_unit']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
