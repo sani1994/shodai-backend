@@ -233,6 +233,9 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
             obj.modified_by = request.user
         obj.created_by = request.user
         obj.created_on = timezone.now()
+        if obj.paid_status:
+            obj.paid_on = timezone.now()
+            obj.save()
         obj.save()
         return super().save_model(request, obj, form, change)
 

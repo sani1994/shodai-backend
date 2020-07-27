@@ -3,6 +3,7 @@ import json
 import graphene
 import requests
 from decouple import config
+from django.utils import timezone
 
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
@@ -314,6 +315,7 @@ class TransactionMutation(graphene.Mutation):
                     invoice = InvoiceInfo.objects.get(invoice_number=invoice_number)
                     invoice.paid_status = True
                     invoice.transaction_id = transaction_id
+                    invoice.paid_on = timezone.now()
                     invoice.save()
                     return TransactionMutation(transaction_id=transaction_id,
                                                invoice_number=invoice_number,
