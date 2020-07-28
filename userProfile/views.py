@@ -339,7 +339,7 @@ class ForgetPassword(APIView):
         mobile_number = request.POST.get("mobile_number")
         if mobile_number:
             # user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
-            user_instance = UserProfile.objects.filter(mobile_number=mobile_number)
+            user_instance = UserProfile.objects.get(mobile_number=mobile_number)
             # if user_instance. 
             if not user_instance:
                 return Response({"status": "User not available"}, status=status.HTTP_200_OK)
@@ -352,9 +352,9 @@ class ForgetPassword(APIView):
                 else:
                     client_name = user_instance.username
                 sms_body = f"Dear " + client_name + \
-                           ",\r\n\nWe have created a new password " + temp_password + \
-                           " based on your forget password request." \
-                           ".\r\n\n[N.B:Please change your password after login] "
+                           ",\r\nWe have created a new password [" + temp_password + \
+                           "] based on your forget password request." \
+                           "\r\n[N.B:Please change your password after login] "
                 sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
                 if sms_flag == 'success':
                     user_instance.set_password(temp_password)
@@ -378,9 +378,10 @@ class ForgetPasswordVarification(APIView):
         password = request.POST.get("temp_password")
         user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
         if user_instance:
-            user_instance.set_password(password)
-            user_instance.save()
-            return Response({"status": "Password Changed Successfully"}, status=status.HTTP_200_OK)
+            if user_instance.check_password(password):
+                return Response({"status": "Password Changed Successfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Please provide the password sent by sms"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
 

@@ -319,9 +319,9 @@ class ForgotPasswordMutation(graphene.Mutation):
                 client_name = user_instance.username
             temp_password = get_random_string(length=6)
             sms_body = f"Dear " + client_name + \
-                       ",\r\n\nWe have created a new password " + temp_password + \
-                       " based on your forget password request." \
-                       ".\r\n\n[N.B:Please change your password after login] "
+                       ",\r\nWe have created a new password [" + temp_password + \
+                       "] based on your forget password request." \
+                       "\r\n[N.B:Please change your password after login] "
             sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
             if sms_flag == 'success':
                 user_instance.set_password(temp_password)
