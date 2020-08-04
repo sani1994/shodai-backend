@@ -229,15 +229,24 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
             return ['created_on', 'modified_on', 'created_by', 'modified_by']
 
     def save_model(self, request, obj, form, change):
-        if obj.id:
-            obj.modified_by = request.user
-        obj.created_by = request.user
-        obj.created_on = timezone.now()
-        if obj.paid_status:
-            obj.paid_on = timezone.now()
+        if obj:
+            if obj.id:
+                obj.modified_by = request.user
+            if obj.paid_status:
+                obj.paid_on = timezone.now()
+                obj.save()
             obj.save()
-        obj.save()
-        return super().save_model(request, obj, form, change)
+            return super().save_model(request, obj, form, change)
+        else:
+            if obj.id:
+                obj.modified_by = request.user
+            obj.created_by = request.user
+            obj.created_on = timezone.now()
+            if obj.paid_status:
+                obj.paid_on = timezone.now()
+                obj.save()
+            obj.save()
+            return super().save_model(request, obj, form, change)
 
 
 site.register(TimeSlot, TimeSlotAdmin)
