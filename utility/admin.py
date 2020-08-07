@@ -17,7 +17,7 @@ class LocationAdmin(MaterialModelAdmin):
 
 
 class ProductUnitAdmin(MaterialModelAdmin):
-    list_display = ('product_unit',)
+    list_display = ('id', 'product_unit',)
     list_filter = ('product_unit',)
     readonly_fields = ["created_by", "modified_by", ]
     search_fields = ['product_unit']

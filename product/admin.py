@@ -62,7 +62,7 @@ class ShopCategoryAdmin(ImportExportModelAdmin):
 
 class ProductCategoryAdmin(admin.ModelAdmin):
     readonly_fields = ["created_by", "modified_by", ]
-    list_display = ("type_of_product", 'created_by')
+    list_display = "type_of_product"
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -74,7 +74,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 
 class ProductMetaAdmin(admin.ModelAdmin):
     readonly_fields = ["created_by", "modified_by", ]
-    list_display = ('name', 'product_category', 'shop_category', 'vat_amount')
+    list_display = ('id', 'name', 'product_category', 'shop_category', 'vat_amount')
     list_filter = ('product_category', 'shop_category')
 
     def save_model(self, request, obj, form, change):

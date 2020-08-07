@@ -43,8 +43,6 @@ class ProductUnit(BaseModel):
     def __str__(self):
         return self.product_unit
 
-        
-
     class Meta:
         verbose_name = 'Product Unit'
         verbose_name_plural = 'Product Unit'
