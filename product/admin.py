@@ -18,6 +18,13 @@ class ProductAdmin(MaterialModelAdmin):
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
     autocomplete_fields = ('product_unit',)
+    actions = ["save_selected"]
+
+    def save_selected(self, request, queryset):
+        for obj in queryset:
+            obj.save()
+
+    save_selected.short_description = "Save Selected"
 
     def save_model(self, request, obj, form, change):
         if obj.id:
