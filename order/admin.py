@@ -79,15 +79,16 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' % obj.product)
         return list
 
-    readonly_fields = ['user', 'invoice_number', 'order_total_price',
+    readonly_fields = ['user', 'invoice_number', 'order_total_price', 'created_by', 'modified_by', 'created_on',
                        'delivery_date_time', 'delivery_place', 'address', order_products]
     list_display = ('id', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products,)
+    list_editable = ('order_status',)
     search_fields = ['id', 'invoice_number']
     inlines = [OrderProductInline, InvoiceInfoInline]
     fieldsets = (
         ('Order Detail View', {
-            'fields': ('user', 'invoice_number', 'order_total_price', 'delivery_date_time', 'delivery_place',
-                       'address')
+            'fields': ('user', 'invoice_number', 'order_total_price', 'order_status', 'delivery_date_time',
+                       'delivery_place', 'address', 'created_by', 'modified_by', 'created_on')
         }),
     )
 
@@ -97,13 +98,9 @@ class OrderAdmin(MaterialModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def has_change_permission(self, request, obj=None):
-        return False
-
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 

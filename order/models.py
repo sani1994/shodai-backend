@@ -76,9 +76,9 @@ class Order(BaseModel):
         # self.shop_geopoint.y = self.shop_lat
         # self.shop_geopoint.x = self.shop_long
         # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
-        self.payment_id = str(uuid.uuid4())[:8]
-        self.invoice_number = str(uuid.uuid4())[:8]
-        self.bill_id = str(uuid.uuid4())[:8]
+        # self.payment_id = str(uuid.uuid4())[:8]
+        # self.invoice_number = str(uuid.uuid4())[:8]
+        # self.bill_id = str(uuid.uuid4())[:8]
         self.currency = 'BDT'
         self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)

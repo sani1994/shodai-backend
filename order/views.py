@@ -1,4 +1,6 @@
 import datetime
+import uuid
+
 from django.db.models import Q
 from decouple import config
 from notifications.signals import notify
@@ -97,6 +99,11 @@ class OrderList(APIView):
             """
             # Create InvoiceInfo Instance
             order_instance = Order.objects.get(id=serializer.data['id'])
+            if order_instance:
+                order_instance.payment_id = str(uuid.uuid4())[:8]
+                order_instance.invoice_number = str(uuid.uuid4())[:8]
+                order_instance.bill_id = str(uuid.uuid4())[:8]
+                order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
             else:
@@ -117,7 +124,7 @@ class OrderList(APIView):
                                        delivery_date_time=order_instance.delivery_date_time,
                                        delivery_charge=delivery_charge,
                                        net_payable_amount=order_instance.order_total_price,
-                                       payment_method='SSLCommerz',
+                                       payment_method='SSLCOMMERZ',
                                        order_number=order_instance,
                                        user=request.user,
                                        created_by=request.user)

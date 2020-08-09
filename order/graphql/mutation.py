@@ -1,4 +1,5 @@
 import json
+import uuid
 
 import graphene
 import requests
@@ -101,6 +102,7 @@ class CreateOrder(graphene.Mutation):
             else:
                 if user.user_type == 'CM':
                     order_instance = Order(user=user,
+                                           created_by=user,
                                            delivery_date_time=input.delivery_date_time,
                                            delivery_place=input.delivery_place,
                                            order_total_price=input.net_pay_able_amount,
@@ -111,6 +113,9 @@ class CreateOrder(graphene.Mutation):
                                            contact_number=input.contact_number if input.contact_number else user.mobile_number
                                            )
                     order_instance.address = Address.objects.get(id=input.address)
+                    order_instance.payment_id = str(uuid.uuid4())[:8]
+                    order_instance.invoice_number = str(uuid.uuid4())[:8]
+                    order_instance.bill_id = str(uuid.uuid4())[:8]
                     order_instance.save()
                     datetime = order_instance.delivery_date_time.strftime("%m/%d/%Y, %H:%M:%S")
 
