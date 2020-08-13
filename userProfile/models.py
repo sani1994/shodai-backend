@@ -79,7 +79,7 @@ class UserProfile(AbstractUser):
 
 
 class Address(models.Model):
-    road = models.CharField(max_length=30, blank=True, null=True)
+    road = models.CharField(max_length=300, blank=True, null=True)
     city = models.CharField(max_length=30, blank=True, null=True)
     district = models.CharField(max_length=30, blank=True, null=True)
     country = models.CharField(max_length=30, blank=True, null=True)
