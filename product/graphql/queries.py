@@ -14,6 +14,10 @@ class ProductNode(DjangoObjectType):
         filter_fields = {"product_name": ["icontains"]}
         interfaces = (relay.Node,)
 
+    @classmethod
+    def get_queryset(cls, queryset, info):
+        return queryset.filter(is_approved=True)
+
 
 class ProductType(DjangoObjectType):
     class Meta:

@@ -160,13 +160,13 @@ class OrderDetail(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def delete(self, request, id):
-        obj = self.get_order_object(id)
-        if obj:
-            obj.delete()
-            return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+    # def delete(self, request, id):
+    #     obj = self.get_order_object(id)
+    #     if obj:
+    #         obj.delete()
+    #         return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+    #     else:
+    #         return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class OrderProductList(APIView):

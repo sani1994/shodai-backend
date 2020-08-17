@@ -85,7 +85,11 @@ INSTALLED_APPS = [
     'graphene_gis',
     'corsheaders',
 ]
-
+# ELASTICSEARCH_DSL = {
+#     'default': {
+#         'hosts': 'localhost:9200'
+#     },
+# }
 GRAPHQL_JWT = {
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LONG_RUNNING_REFRESH_TOKEN': True,
