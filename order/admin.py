@@ -136,6 +136,9 @@ class OrderProductAdmin(MaterialModelAdmin):
 
     export_as_csv.short_description = "Export Selected"
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
@@ -183,6 +186,9 @@ class PaymentInfoAdmin(MaterialModelAdmin):
                        'bill_id', 'payment_id', 'create_on']
     search_fields = ['transaction_id', 'order_id__pk', 'invoice_number']
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def has_add_permission(self, request, obj=None):
         return False
 
@@ -224,6 +230,9 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
                     'transaction_id', 'paid_on']
         else:
             return ['created_on', 'modified_on', 'created_by', 'modified_by']
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
     def save_model(self, request, obj, form, change):
         if obj:

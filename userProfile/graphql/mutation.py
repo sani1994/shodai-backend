@@ -223,18 +223,15 @@ class AddressCreateMutation(graphene.Mutation):
             if token:
                 raise Exception('Invalid or expired token!')
             else:
-                if user.user_type == 'CM':
-                    address_instance = Address(road=input.road,
-                                               city=input.city,
-                                               district=input.district,
-                                               country=input.country,
-                                               zip_code=input.zip_code,
-                                               user=user,
-                                               )
-                    address_instance.save()
-                    return AddressCreateMutation(address=address_instance)
-                else:
-                    raise Exception('Unauthorized request!')
+                address_instance = Address(road=input.road,
+                                           city=input.city,
+                                           district=input.district,
+                                           country=input.country,
+                                           zip_code=input.zip_code,
+                                           user=user,
+                                           )
+                address_instance.save()
+                return AddressCreateMutation(address=address_instance)
 
 
 class AddressUpdateMutation(graphene.Mutation):
@@ -259,18 +256,15 @@ class AddressUpdateMutation(graphene.Mutation):
             if token:
                 raise Exception('Invalid or expired token!')
             else:
-                if user.user_type == 'CM':
-                    address = Address.objects.get(id=input.id, user=user)
-                    address.road = input.road if input.road else address.road
-                    address.city = input.city if input.city else address.city
-                    address.district = input.district if input.district else address.district
-                    address.country = input.country if input.country else address.country
-                    address.zip_code = input.zip_code if input.zip_code else address.zip_code
-                    address.user = user
-                    address.save()
-                    return AddressUpdateMutation(address=address, ok=True)
-                else:
-                    raise Exception('Unauthorized request!')
+                address = Address.objects.get(id=input.id, user=user)
+                address.road = input.road if input.road else address.road
+                address.city = input.city if input.city else address.city
+                address.district = input.district if input.district else address.district
+                address.country = input.country if input.country else address.country
+                address.zip_code = input.zip_code if input.zip_code else address.zip_code
+                address.user = user
+                address.save()
+                return AddressUpdateMutation(address=address, ok=True)
 
 
 class AddressDeleteMutation(graphene.Mutation):
@@ -294,12 +288,9 @@ class AddressDeleteMutation(graphene.Mutation):
             if token:
                 raise Exception('Invalid or expired token!')
             else:
-                if user.user_type == 'CM':
-                    obj = Address.objects.get(pk=kwargs["id"], user=user)
-                    obj.delete()
-                    return cls(ok=True)
-                else:
-                    raise Exception('Unauthorized request!')
+                obj = Address.objects.get(pk=kwargs["id"], user=user)
+                obj.delete()
+                return cls(ok=True)
 
 
 class ForgotPasswordMutation(graphene.Mutation):
@@ -374,4 +365,3 @@ class Mutation(graphene.ObjectType):
     delete_address = AddressDeleteMutation.Field()
     change_password = ChangePasswordMutation.Field()
     forgot_password = ForgotPasswordMutation.Field()
-
