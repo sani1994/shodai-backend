@@ -204,7 +204,7 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
     list_display = ['id', 'invoice_number', 'order_number', 'paid_status', 'paid_on']
 
     search_fields = ['invoice_number', 'order_number__pk']
-    list_filter = ['created_on', 'delivery_date_time']
+    list_filter = ['created_on', 'delivery_date_time', 'payment_method', 'paid_status']
 
     fieldsets = (
         ('Order Detail View', {
@@ -220,6 +220,23 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
                        'created_by', 'modified_by')
         }),
     )
+
+    actions = ["export_as_csv"]
+
+    def export_as_csv(self, request, queryset):
+        field_names = ['id', 'invoice_number', 'order_number', 'transaction_id', 'net_payable_amount',
+                       'delivery_date_time', 'paid_status', 'paid_on', 'payment_method', ]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=invoice_info.csv'
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+        return response
+
+    export_as_csv.short_description = "Export Selected"
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
