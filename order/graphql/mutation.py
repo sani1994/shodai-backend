@@ -1,6 +1,7 @@
 import json
 import uuid
 
+import geocoder
 import graphene
 import requests
 from decouple import config
@@ -113,6 +114,10 @@ class CreateOrder(graphene.Mutation):
                                            contact_number=input.contact_number if input.contact_number else user.mobile_number
                                            )
                     order_instance.address = Address.objects.get(id=input.address)
+                    place = str(order_instance.delivery_place) + ', Dhaka'
+                    g = geocoder.osm(place)
+                    order_instance.lat = g.osm['y']
+                    order_instance.long = g.osm['x']
                     order_instance.payment_id = str(uuid.uuid4())[:8]
                     order_instance.invoice_number = str(uuid.uuid4())[:8]
                     order_instance.bill_id = str(uuid.uuid4())[:8]
