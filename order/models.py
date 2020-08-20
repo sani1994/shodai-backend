@@ -1,5 +1,6 @@
 import uuid
 from django.contrib.gis.db import models
+from django.utils import timezone
 from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import ugettext_lazy as _
@@ -16,7 +17,7 @@ from userProfile.models import Address
 class Order(BaseModel):
     """Create order object"""
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
-    payment_id = models.CharField(max_length=100, blank=True,)
+    payment_id = models.CharField(max_length=100, blank=True, )
     invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')
@@ -66,19 +67,25 @@ class Order(BaseModel):
     @property
     def paid_status(self):
         status = InvoiceInfo.objects.get(order_number_id=self.id).paid_status
-        if status==True:
+        if status == True:
             return 'Paid Status'
         else:
             return 'Not Paid Status'
         return 'Not Paid Status'
 
     def save(self, *args, **kwargs):
-        # self.shop_geopoint.y = self.shop_lat
-        # self.shop_geopoint.x = self.shop_long
-        # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
-        # self.payment_id = str(uuid.uuid4())[:8]
-        # self.invoice_number = str(uuid.uuid4())[:8]
-        # self.bill_id = str(uuid.uuid4())[:8]
+        if self.order_status == "COM":
+            invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)
+            if invoice.payment_method == "CASH_ON_DELIVERY":
+                invoice.paid_status = True
+                invoice.paid_on = timezone.now()
+                invoice.save()
+        else:
+            invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)
+            if invoice.payment_method == "CASH_ON_DELIVERY":
+                invoice.paid_status = False
+                invoice.paid_on = None
+                invoice.save()
         self.currency = 'BDT'
         self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)

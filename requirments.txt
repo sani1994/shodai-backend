@@ -21,6 +21,7 @@ djangorestframework-simplejwt==4.3.0
 elasticsearch==7.1.0
 elasticsearch-dsl==7.1.0
 et-xmlfile==1.0.1
+geocoder
 graphene-django
 graphene-gis
 django-graphiql

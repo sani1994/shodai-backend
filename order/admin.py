@@ -258,6 +258,9 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
             if obj.paid_status:
                 obj.paid_on = timezone.now()
                 obj.save()
+            else:
+                obj.paid_on = None
+                obj.save()
             obj.save()
             return super().save_model(request, obj, form, change)
         else:
