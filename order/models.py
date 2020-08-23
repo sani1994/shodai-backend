@@ -82,15 +82,10 @@ class Order(BaseModel):
                 invoice.save()
             elif invoice.payment_method == "SSLCOMMERZ":
                 if not invoice.paid_status:
+                    invoice.payment_method = "CASH_ON_DELIVERY"
                     invoice.paid_status = True
                     invoice.paid_on = timezone.now()
                     invoice.save()
-        else:
-            invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                invoice.paid_status = False
-                invoice.paid_on = None
-                invoice.save()
         self.currency = 'BDT'
         self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)

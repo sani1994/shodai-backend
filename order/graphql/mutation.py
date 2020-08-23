@@ -118,9 +118,9 @@ class CreateOrder(graphene.Mutation):
                     g = geocoder.osm(place)
                     order_instance.lat = g.osm['y']
                     order_instance.long = g.osm['x']
-                    order_instance.payment_id = str(uuid.uuid4())[:8]
-                    order_instance.invoice_number = str(uuid.uuid4())[:8]
-                    order_instance.bill_id = str(uuid.uuid4())[:8]
+                    order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                    order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+                    order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                     order_instance.save()
                     datetime = order_instance.delivery_date_time.strftime("%m/%d/%Y, %H:%M:%S")
 
