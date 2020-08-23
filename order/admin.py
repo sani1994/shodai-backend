@@ -224,11 +224,11 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
     actions = ["export_as_csv"]
 
     def export_as_csv(self, request, queryset):
-        field_names = ['id', 'invoice_number', 'order_number', 'transaction_id', 'net_payable_amount',
-                       'delivery_date_time', 'paid_status', 'paid_on', 'payment_method', ]
+        field_names = ['id', 'invoice_number', 'order_number', 'net_payable_amount', 'payment_method',
+                       'paid_status', 'paid_on', 'transaction_id', 'created_on', ]
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=invoice_info.csv'
+        response['Content-Disposition'] = 'attachment; filename=invoice_report.csv'
         writer = csv.writer(response)
 
         writer.writerow(field_names)
