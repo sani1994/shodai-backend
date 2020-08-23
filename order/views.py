@@ -100,9 +100,9 @@ class OrderList(APIView):
             # Create InvoiceInfo Instance
             order_instance = Order.objects.get(id=serializer.data['id'])
             if order_instance:
-                order_instance.payment_id = str(uuid.uuid4())[:8]
-                order_instance.invoice_number = str(uuid.uuid4())[:8]
-                order_instance.bill_id = str(uuid.uuid4())[:8]
+                order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
