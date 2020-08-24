@@ -77,9 +77,10 @@ class Order(BaseModel):
         if self.order_status == "COM":
             invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)
             if invoice.payment_method == "CASH_ON_DELIVERY":
-                invoice.paid_status = True
-                invoice.paid_on = timezone.now()
-                invoice.save()
+                if not invoice.paid_status:
+                    invoice.paid_status = True
+                    invoice.paid_on = timezone.now()
+                    invoice.save()
             elif invoice.payment_method == "SSLCOMMERZ":
                 if not invoice.paid_status:
                     invoice.payment_method = "CASH_ON_DELIVERY"

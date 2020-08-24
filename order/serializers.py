@@ -11,8 +11,9 @@ from rest_framework import serializers
 from userProfile.models import Address
 from userProfile.serializers import AddressSerializer
 from userProfile.serializers import UserProfileSerializer
-class OrderSerializer(serializers.ModelSerializer):
 
+
+class OrderSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
@@ -29,8 +30,8 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "created_on", "modified_on", "payment_id", "invoice_number", 
-            "bill_id", "currency", "delivery_date_time", "delivery_place", "order_total_price", 
+            "id", "created_on", "modified_on", "payment_id", "invoice_number",
+            "bill_id", "currency", "delivery_date_time", "delivery_place", "order_total_price",
             "lat", "long", "order_geopoint", "order_status", "home_delivery", "order_type",
             "contact_number", "created_by", "modified_by", "user", "address", "paid_status",
         )
@@ -39,11 +40,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializerDetail(serializers.ModelSerializer):
-
     class Meta:
         model = Order
         fields = '__all__'
-        read_only = ('id', )
+        read_only = ('id',)
         depth = 2
 
 
@@ -62,10 +62,11 @@ class OrderProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct
         fields = ('id', 'order_product_price', 'order_product_qty', 'product', 'order',)
-        read_only = ('id', )
+        read_only = ('id',)
 
 
-class OrderProductReadSerializer(serializers.ModelSerializer):  # this serializer has been used to get all the details including foreign key id... this duplication has been made as 'depth=1' is not working for post request in serializer.
+class OrderProductReadSerializer(
+    serializers.ModelSerializer):  # this serializer has been used to get all the details including foreign key id... this duplication has been made as 'depth=1' is not working for post request in serializer.
 
     class Meta:
         model = OrderProduct
@@ -92,7 +93,6 @@ class DeliveryChargeSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryCharge
         fields = '__all__'
-
 
 
 class OrderProductDetailsSerializer(serializers.ModelSerializer):
@@ -131,6 +131,7 @@ class OrderDetailPaymentSerializer(serializers.ModelSerializer):
 
 class PaymentInfoSerializer(serializers.ModelSerializer):
     """Create serializer for PaymentInfo object"""
+
     class Meta:
         model = PaymentInfo
         fields = ('__all__')
