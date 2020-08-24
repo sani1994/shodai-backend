@@ -56,6 +56,7 @@ class Query(graphene.ObjectType):
     all_products_pagination = relay.ConnectionField(ProductConnection)
     all_products = graphene.List(ProductType)
     product_by_id = relay.Node.Field(ProductNode)
+    product_by_slug = graphene.Field(ProductNode, slug=graphene.String())
     product_categories = graphene.List(ProductCategoryType)
     shop_categories = graphene.List(ShopCategoryType)
     product_meta_list = graphene.List(ProductMetaType)
@@ -74,6 +75,10 @@ class Query(graphene.ObjectType):
 
     def resolve_all_products(self, info, **kwargs):
         return Product.objects.filter(is_approved=True)
+
+    def resolve_product_by_slug(self, info, **kwargs):
+        slug = kwargs.get('slug')
+        return Product.objects.get(slug=slug, is_approved=True)
 
     def resolve_product_categories(self, info):
         return ProductCategory.objects.all()
