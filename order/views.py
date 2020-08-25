@@ -61,12 +61,13 @@ class OrderList(APIView):
         slot = datetime[0]
         date = datetime[1]
 
-        time = TimeSlot.objects.filter(slot=slot.replace(' ', ''))
+        year = date.split('-')[2]
+        month = date.split('-')[1]
+        day = date.split('-')[0]
+        date = year + '-' + month + '-' + day
+
+        time = TimeSlot.objects.filter(slot=slot)
         for t in time:
-            year = date.split('-')[2]
-            month = date.split('-')[1]
-            day = date.split('-')[0]
-            date = year + '-' + month + '-' + day
             request.POST._mutable = True
             request.data['delivery_date_time'] = date + ' ' + str(t.time)
             request.POST._mutable = False
