@@ -3,6 +3,7 @@ from rest_framework.relations import HyperlinkedIdentityField
 
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 from utility.serializers import ProductUnitSerializer
+from utility.models import ProductUnit
 
 
 class ShopCategorySerializer(serializers.ModelSerializer):
@@ -103,3 +104,21 @@ class RetailerProductSerializer(serializers.ModelSerializer):
                   'product_description', 'product_description_bn',
                   'price_with_vat')
         read_only = ('id')
+
+
+class ProductUnitCartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductUnit
+        fields = ('product_unit',)
+
+
+class ProductForCartSerializer(serializers.ModelSerializer):
+    product_quantity = serializers.FloatField(default=1.0)
+    product_unit = ProductUnitCartSerializer(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'product_name', 'product_description', 'product_price',
+                  'product_image', 'product_unit', 'product_quantity', 'product_last_price',
+                  'product_name_bn', 'product_description_bn', 'price_with_vat']

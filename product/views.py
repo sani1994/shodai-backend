@@ -3,7 +3,7 @@ from rest_framework.generics import get_object_or_404
 
 import qrcode
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
-    ProductMetaSerializer, LatestProductSerializer
+    ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
 from utility.models import ProductUnit
 from django.http import Http404
@@ -210,7 +210,8 @@ class ProductCategoryDetail(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ShopCategoryList(APIView):  # shop_category must be in unique formate to make the connection with shop model of retailer
+class ShopCategoryList(
+    APIView):  # shop_category must be in unique formate to make the connection with shop model of retailer
 
     permission_classes = [GenericAuth]
 
@@ -308,7 +309,8 @@ class ProductMetaDetails(APIView):  # get product meta id to get all the product
             if serializer:
                 datas = serializer.data
                 for data in range(len(datas)):
-                    datas[data]['product_unit'] = ProductUnit.objects.get(id=int(datas[data]['product_unit'])).product_unit
+                    datas[data]['product_unit'] = ProductUnit.objects.get(
+                        id=int(datas[data]['product_unit'])).product_unit
                     datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
 
                 return Response(datas, status=status.HTTP_200_OK)
@@ -320,7 +322,6 @@ class ProductMetaDetails(APIView):  # get product meta id to get all the product
             }, status=status.HTTP_204_NO_CONTENT)
 
 
-
 class RecentlyAddedProductList(APIView):  # return list of recently added products
     permission_classes = [GenericAuth]
 
@@ -329,4 +330,22 @@ class RecentlyAddedProductList(APIView):  # return list of recently added produc
         serializer = LatestProductSerializer(queryset, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductForCart(APIView):
+    permission_classes = [GenericAuth]
+    """
+    Retrieve products information to show in cart
+    """
+    def get_product_object(self, id):
+        obj = get_object_or_404(Product, id=id)
+        return obj
+
+    def get(self, request, id):
+        product = self.get_product_object(id)
+        serializer = ProductForCartSerializer(product)
+        if serializer:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
