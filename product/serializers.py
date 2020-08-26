@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 from rest_framework.relations import HyperlinkedIdentityField
 
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
@@ -106,16 +107,12 @@ class RetailerProductSerializer(serializers.ModelSerializer):
         read_only = ('id')
 
 
-class ProductUnitCartSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ProductUnit
-        fields = ('product_unit',)
-
-
 class ProductForCartSerializer(serializers.ModelSerializer):
     product_quantity = serializers.FloatField(default=1.0)
-    product_unit = ProductUnitCartSerializer(read_only=True)
+    product_unit = serializers.CharField(default="")
+
+    def get_product_unit(self, obj):
+        return get_object_or_404(ProductUnit, id=obj.product_unit.id)
 
     class Meta:
         model = Product

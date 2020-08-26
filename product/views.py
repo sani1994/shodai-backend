@@ -334,7 +334,7 @@ class RecentlyAddedProductList(APIView):  # return list of recently added produc
 
 
 class ProductForCart(APIView):
-    permission_classes = [GenericAuth]
+    # permission_classes = [GenericAuth]
     """
     Retrieve products information to show in cart
     """
