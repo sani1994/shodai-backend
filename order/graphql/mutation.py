@@ -5,6 +5,9 @@ import geocoder
 import graphene
 import requests
 from decouple import config
+from django.core.mail import EmailMultiAlternatives
+from django.template import Context
+from django.template.loader import get_template
 from django.utils import timezone
 
 from graphene_django import DjangoObjectType
@@ -12,7 +15,7 @@ from graphql_relay.utils import unbase64
 
 from utility.notification import email_notification
 from .queries import OrderType, OrderProductType
-from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo
+from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot
 from product.models import Product
 from userProfile.models import Address, BlackListedToken
 
@@ -93,7 +96,6 @@ class CreateOrder(graphene.Mutation):
             raise Exception('Must Log In!')
         else:
             token = info.context.headers['Authorization'].split(' ')[1]
-            print(token)
             try:
                 token = BlackListedToken.objects.get(token=token)
             except BlackListedToken.DoesNotExist as e:
@@ -126,6 +128,7 @@ class CreateOrder(graphene.Mutation):
 
                     product_list = input.products
                     product_list_detail = []
+                    matrix = []
                     for p in product_list:
                         product_id = from_global_id(p.product_id)
                         product = Product.objects.get(id=product_id)
@@ -135,11 +138,20 @@ class CreateOrder(graphene.Mutation):
                                                     order_product_price_with_vat=product.price_with_vat,
                                                     vat_amount=product.product_meta.vat_amount,
                                                     order_product_qty=p.order_product_qty, )
+
+                        col = [None] * 5
+                        matrix.append(col)
+                        col[0] = product.product_name
+                        col[1] = product.product_price if product.product_last_price == 0 else product.product_price
+                        col[2] = product.product_price
+                        col[3] = p.order_product_qty
+                        col[4] = float(col[2]) * col[3]
                         product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                    + str(p.order_product_qty) + "\n")
 
                     # Create InvoiceInfo Instance
                     billing_person_name = user.first_name + " " + user.last_name
+                    delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                     invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
                                                          billing_person_name=billing_person_name,
                                                          billing_person_email=user.email,
@@ -147,7 +159,7 @@ class CreateOrder(graphene.Mutation):
                                                          delivery_contact_number=order_instance.contact_number,
                                                          delivery_address=order_instance.address.road,
                                                          delivery_date_time=order_instance.delivery_date_time,
-                                                         delivery_charge=DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
+                                                         delivery_charge=delivery_charge,
                                                          net_payable_amount=input.net_pay_able_amount,
                                                          payment_method=input.payment_method,
                                                          order_number=order_instance,
@@ -164,14 +176,40 @@ class CreateOrder(graphene.Mutation):
                            f" \r\nOrder delivery date and time: {datetime}." \
                            f" \r\nOrder delivery area: {order_instance.delivery_place}." \
                            f" \r\nOrder delivery address: {order_instance.address}." \
-                           f" \r\nOrder total price: {order_instance.order_total_price}." \
+                           f" \r\nOrder Sub total price: {input.order_total_price}." \
                            f" \r\nOrder vat amount: {input.total_vat}." \
-                           f" \r\nOrder delivery charge: {DeliveryCharge.objects.get()}." \
+                           f" \r\nOrder delivery charge: {delivery_charge}." \
                            f" \r\nOrder net payable amount: {input.net_pay_able_amount}." \
                            f" \r\nOrder payment method: {input.payment_method}." \
                            f" \r\nOrder payment status: {invoice.paid_status}." \
                            f"\r\n \r\nThanks and Regards\r\nShodai "
                     email_notification(sub, body)
+
+                    text_content = 'This is an important message.'
+                    htmly = get_template('email.html')
+                    time_slot = order_instance.delivery_date_time.time()
+                    time_slot = TimeSlot.objects.get(time=time_slot)
+
+                    d = {'user_name': user.first_name + " " + user.last_name,
+                         'order_id': order_instance.pk,
+                         'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                         'mobile_no': order_instance.contact_number,
+                         'order_date': order_instance.created_on.date(),
+                         'delivery_date_time': str(
+                             order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                         'sub_total': input.order_total_price,
+                         'delivery_charge': delivery_charge,
+                         'total': input.net_pay_able_amount,
+                         'order_details': matrix
+                         }
+
+                    subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
+                    subject, from_email, to = subject, 'noreply@shod.ai', user.email
+                    # text_content = plaintext.render(d)
+                    html_content = htmly.render(d)
+                    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send()
                     return CreateOrder(order=order_instance)
                 else:
                     raise Exception('Unauthorized request!')
