@@ -185,7 +185,7 @@ class CreateOrder(graphene.Mutation):
                            f"\r\n \r\nThanks and Regards\r\nShodai "
                     email_notification(sub, body)
 
-                    text_content = 'This is an important message.'
+                    text_content = 'Your Order (#' + order_instance.pk + ') has been confirmed'
                     htmly = get_template('email.html')
                     time_slot = order_instance.delivery_date_time.time()
                     time_slot = TimeSlot.objects.get(time=time_slot)
@@ -205,7 +205,6 @@ class CreateOrder(graphene.Mutation):
 
                     subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
                     subject, from_email, to = subject, 'noreply@shod.ai', user.email
-                    # text_content = plaintext.render(d)
                     html_content = htmly.render(d)
                     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
                     msg.attach_alternative(html_content, "text/html")

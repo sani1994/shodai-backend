@@ -60,6 +60,7 @@ class Query(graphene.ObjectType):
     product_categories = graphene.List(ProductCategoryType)
     shop_categories = graphene.List(ShopCategoryType)
     product_meta_list = graphene.List(ProductMetaType)
+    product_meta_by_category = graphene.List(ProductMetaType, cat_ID=graphene.Int())
     recently_added_product_list = graphene.List(ProductNode)
 
     def resolve_products_by_category(root, info, **kwargs):
@@ -85,6 +86,10 @@ class Query(graphene.ObjectType):
 
     def resolve_product_meta_list(self, info):
         return ProductMeta.objects.all()
+
+    def resolve_product_meta_by_category(root, info, **kwargs):
+        cat_id = kwargs.get('cat_ID')
+        return ProductMeta.objects.filter(product_category__pk=cat_id)
 
     def resolve_shop_categories(self, info):
         return ShopCategory.objects.all()
