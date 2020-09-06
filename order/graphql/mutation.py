@@ -71,6 +71,10 @@ class OrderInput(graphene.InputObjectType):
     payment_method = graphene.NonNull(PaymentMethodEnum)
 
 
+class EmailInput(graphene.InputObjectType):
+    order_id = graphene.ID(required=True)
+
+
 class OrderProductInputA(graphene.InputObjectType):
     product_id = graphene.String(required=True)
     order_id = graphene.ID()
@@ -116,10 +120,6 @@ class CreateOrder(graphene.Mutation):
                                            contact_number=input.contact_number if input.contact_number else user.mobile_number
                                            )
                     order_instance.address = Address.objects.get(id=input.address)
-                    place = str(order_instance.delivery_place) + ', Dhaka'
-                    g = geocoder.osm(place)
-                    order_instance.lat = g.osm['y']
-                    order_instance.long = g.osm['x']
                     order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                     order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                     order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -128,7 +128,6 @@ class CreateOrder(graphene.Mutation):
 
                     product_list = input.products
                     product_list_detail = []
-                    matrix = []
                     for p in product_list:
                         product_id = from_global_id(p.product_id)
                         product = Product.objects.get(id=product_id)
@@ -138,14 +137,6 @@ class CreateOrder(graphene.Mutation):
                                                     order_product_price_with_vat=product.price_with_vat,
                                                     vat_amount=product.product_meta.vat_amount,
                                                     order_product_qty=p.order_product_qty, )
-
-                        col = [None] * 5
-                        matrix.append(col)
-                        col[0] = product.product_name
-                        col[1] = product.product_price if product.product_last_price == 0 else product.product_price
-                        col[2] = product.product_price
-                        col[3] = p.order_product_qty
-                        col[4] = float(col[2]) * col[3]
                         product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                    + str(p.order_product_qty) + "\n")
 
@@ -170,7 +161,7 @@ class CreateOrder(graphene.Mutation):
                     """
                     sub = "Order Placed"
                     body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
-                           f"posted an order with the following details" \
+                           f"posted an order from shodai website with the following details" \
                            f" \r\nOrder id: {order_instance.pk}." \
                            f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
                            f" \r\nOrder delivery date and time: {datetime}." \
@@ -184,34 +175,77 @@ class CreateOrder(graphene.Mutation):
                            f" \r\nOrder payment status: {invoice.paid_status}." \
                            f"\r\n \r\nThanks and Regards\r\nShodai "
                     email_notification(sub, body)
-
-                    text_content = 'Your Order (#' + order_instance.pk + ') has been confirmed'
-                    htmly = get_template('email.html')
-                    time_slot = order_instance.delivery_date_time.time()
-                    time_slot = TimeSlot.objects.get(time=time_slot)
-
-                    d = {'user_name': user.first_name + " " + user.last_name,
-                         'order_id': order_instance.pk,
-                         'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
-                         'mobile_no': order_instance.contact_number,
-                         'order_date': order_instance.created_on.date(),
-                         'delivery_date_time': str(
-                             order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                         'sub_total': input.order_total_price,
-                         'delivery_charge': delivery_charge,
-                         'total': input.net_pay_able_amount,
-                         'order_details': matrix
-                         }
-
-                    subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
-                    subject, from_email, to = subject, 'noreply@shod.ai', user.email
-                    html_content = htmly.render(d)
-                    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
-                    msg.attach_alternative(html_content, "text/html")
-                    msg.send()
                     return CreateOrder(order=order_instance)
                 else:
                     raise Exception('Unauthorized request!')
+
+
+class SendEmail(graphene.Mutation):
+    class Arguments:
+        input = EmailInput(required=True)
+
+    msg = graphene.String()
+
+    @staticmethod
+    def mutate(root, info, input=None):
+        user = info.context.user
+        if user.is_anonymous:
+            raise Exception('Must Log In!')
+        else:
+            token = info.context.headers['Authorization'].split(' ')[1]
+            try:
+                token = BlackListedToken.objects.get(token=token)
+            except BlackListedToken.DoesNotExist as e:
+                token = None
+            if token:
+                raise Exception('Invalid or expired token!')
+            else:
+                order_instance = Order.objects.get(pk=input.order_id)
+                place = str(order_instance.delivery_place) + ', Dhaka'
+                g = geocoder.osm(place)
+                order_instance.lat = g.osm['y']
+                order_instance.long = g.osm['x']
+                order_instance.save()
+
+                product_list = OrderProduct.objects.filter(order__pk=input.order_id)
+                matrix = []
+                for p in product_list:
+                    product = Product.objects.get(product_name=p.product)
+                    col = [None] * 5
+                    matrix.append(col)
+                    col[0] = product.product_name
+                    col[1] = product.product_price if product.product_last_price == 0 else product.product_price
+                    col[2] = product.product_price
+                    col[3] = p.order_product_qty
+                    col[4] = float(col[2]) * col[3]
+
+                text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
+                htmly = get_template('email.html')
+                time_slot = order_instance.delivery_date_time.time()
+                time_slot = TimeSlot.objects.get(time=time_slot)
+                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+                sub_total = order_instance.order_total_price - delivery_charge
+
+                d = {'user_name': user.first_name + " " + user.last_name,
+                     'order_id': order_instance.pk,
+                     'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                     'mobile_no': order_instance.contact_number,
+                     'order_date': order_instance.created_on.date(),
+                     'delivery_date_time': str(
+                         order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                     'sub_total': sub_total,
+                     'delivery_charge': delivery_charge,
+                     'total': order_instance.order_total_price,
+                     'order_details': matrix
+                     }
+
+                subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
+                subject, from_email, to = subject, 'noreply@shod.ai', user.email
+                html_content = htmly.render(d)
+                msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+                return SendEmail(msg="email sent successfully")
 
 
 class CreateOrderProduct(graphene.Mutation):
@@ -390,6 +424,7 @@ class TransactionMutation(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     create_order = CreateOrder.Field()
+    send_email = SendEmail.Field()
     create_order_product = CreateOrderProduct.Field()
     payment = PaymentMutation.Field()
     store_transaction_info = TransactionMutation.Field()
