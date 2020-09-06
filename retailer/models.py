@@ -4,18 +4,20 @@ from simple_history.models import HistoricalRecords
 from product.models import ShopCategory, Product, ProductMeta
 from userProfile.models import UserProfile
 from userProfile.models import Address
-from order.models import Order,OrderProduct
+from order.models import Order, OrderProduct
 from bases.models import BaseModel
 # from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.db import models as gis_models
 from utility.models import ProductUnit
+
+
 # Create your models here.
 
 
 class Account(BaseModel):
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     bank_name = models.CharField(max_length=50, blank=True, null=True)
-    account_no = models.CharField(max_length=100,blank=True, null=True)
+    account_no = models.CharField(max_length=100, blank=True, null=True)
     account_name = models.CharField(max_length=50, blank=True, null=True)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
@@ -25,21 +27,22 @@ class Account(BaseModel):
 
 
 class Shop(BaseModel):
-    user = models.OneToOneField(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
     # shodai_products = models.ManyToManyField(Product)
-    shop_name = models.CharField(max_length= 100,null=False,blank=False)
+    shop_name = models.CharField(max_length=100, null=False, blank=False)
     shop_type = models.ForeignKey(ShopCategory, on_delete=models.CASCADE)
-    shop_lat = models.FloatField(null=True,blank=True)
-    shop_long = models.FloatField(null=True,blank=True)
+    shop_lat = models.FloatField(null=True, blank=True)
+    shop_long = models.FloatField(null=True, blank=True)
     shop_geopoint = gis_models.PointField(null=True)
-    shop_address = models.CharField(max_length=100,blank=True,null=True)
-    shop_image= models.ImageField(upload_to='retailer/shop/%Y/%m/%d',null=True,blank=True)
-    shop_licence= models.CharField(max_length=200,blank=True,null=True,unique=True) #trade licence
-    shop_website = models.CharField(max_length=100,blank=True,null=True)
-    shop_open_time = models.TimeField(auto_now=False,null=True)
-    shop_close_time= models.TimeField(auto_now=False,null=True)
+    shop_address = models.CharField(max_length=100, blank=True, null=True)
+    shop_image = models.ImageField(upload_to='retailer/shop/%Y/%m/%d', null=True, blank=True)
+    shop_licence = models.CharField(max_length=200, blank=True, null=True, unique=True)  # trade licence
+    shop_website = models.CharField(max_length=100, blank=True, null=True)
+    shop_open_time = models.TimeField(auto_now=False, null=True)
+    shop_close_time = models.TimeField(auto_now=False, null=True)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
+
     # geo_objects = gis_models.GeoManager()
 
     def __str__(self):
@@ -55,9 +58,10 @@ class Shop(BaseModel):
 
 class AcceptedOrder(BaseModel):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, blank=True, null=True)
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, blank=True, null=True)   # to track the order by shop, shop has been added as a foreign key
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, blank=True,
+                             null=True)  # to track the order by shop, shop has been added as a foreign key
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    order_product = models.ForeignKey(OrderProduct,on_delete=models.CASCADE,null=True)
+    order_product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE, null=True)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -71,15 +75,14 @@ class ShopProduct(BaseModel):
     # product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
     product_image = models.CharField(max_length=255, blank=True, null=True)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
-    product_price = models.DecimalField(decimal_places=2, max_digits=7,blank=True, null=True)
-    product_stock = models.DecimalField(decimal_places=2, max_digits=7,blank=True, null=True)
+    product_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    product_stock = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
     history = HistoricalRecords()
-    product_last_price = models.DecimalField(decimal_places=2,max_digits=7,blank=True,null=True,default=0.00)
+    product_last_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True, default=0.00)
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.product.id) + self.product.product_name
-
 
     def save(self, *args, **kwargs):
         if not self.product_image:
@@ -88,7 +91,7 @@ class ShopProduct(BaseModel):
         if not self.product_price:
             self.product_price = self.product.product_price
 
-        return super(ShopProduct, self).save(*args,**kwargs)
+        return super(ShopProduct, self).save(*args, **kwargs)
 
     @property
     def product_name(self):
@@ -107,24 +110,16 @@ class ShopProduct(BaseModel):
         return self.product.product_name_bn
 
     @property
-    def  product_description(self):
-            
+    def product_description(self):
+
         return self.product.product_description
 
     @property
-    def  product_description_bn(self):
- 
+    def product_description_bn(self):
+
         return self.product.product_description_bn
 
     @property
-    def  product_unit_name(self):
- 
+    def product_unit_name(self):
+
         return self.product_unit.product_unit
-
-
-
-
-
-
-
-
