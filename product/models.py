@@ -83,7 +83,7 @@ class Product(BaseModel):
         super(Product, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.product_name + " " + self.product_unit.product_unit
+        return self.product_name + ", " + self.product_unit.product_unit
 
     @property
     def product_price_with_vat(self):

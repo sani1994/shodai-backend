@@ -120,7 +120,6 @@
             <tr>
               <th style="padding: 10px 0 10px 0;">Name</th>
               <th style="padding: 10px 0 10px 0;">Price</th>
-              <th style="padding: 10px 0 10px 0;">Discounted Price</th>
               <th style="padding: 10px 0 10px 0;">Quantity</th>
               <th style="padding: 10px 0 10px 0;">Total</th>
             </tr>
@@ -137,16 +136,13 @@
                   <strong>৳{{o.2}}</strong>
               </td>
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                <strong>{{o.3}}</strong>
-              </td>
-              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>৳{{o.4}}</strong>
+                  <strong>৳{{o.3}}</strong>
               </td>
             </tr>
             {% endfor %}
   
             <tr style="text-align: right;">
-              <td colspan="4" >
+              <td colspan="3" >
                   <strong>Sub-Total:</strong>
               </td>
               <td>
@@ -155,7 +151,7 @@
             </tr>
   
             <tr style="text-align: right;">
-              <td colspan="4" >
+              <td colspan="3" >
                   <strong>Shipping: </strong>
               </td>
               <td>
@@ -164,7 +160,7 @@
             </tr>
   
             <tr style="text-align: right;">
-              <td colspan="4" >
+              <td colspan="3" >
                 <strong>Total: </strong>
               </td>
               <td>

@@ -76,7 +76,7 @@ class ShopProduct(BaseModel):
     product_image = models.CharField(max_length=255, blank=True, null=True)
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
     product_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
-    product_stock = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    product_stock = models.IntegerField(default=0)
     history = HistoricalRecords()
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True, default=0.00)
     is_approved = models.BooleanField(default=False)

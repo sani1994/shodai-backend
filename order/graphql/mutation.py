@@ -73,6 +73,7 @@ class OrderInput(graphene.InputObjectType):
 
 class EmailInput(graphene.InputObjectType):
     order_id = graphene.ID(required=True)
+    time_slot_id = graphene.ID(required=True)
 
 
 class OrderProductInputA(graphene.InputObjectType):
@@ -210,19 +211,19 @@ class SendEmail(graphene.Mutation):
                 product_list = OrderProduct.objects.filter(order__pk=input.order_id)
                 matrix = []
                 for p in product_list:
-                    product = Product.objects.get(product_name=p.product)
+                    pr = str(p.product).split(",")
+                    product = Product.objects.get(product_name=pr[0])
                     col = [None] * 5
                     matrix.append(col)
                     col[0] = product.product_name
-                    col[1] = product.product_price if product.product_last_price == 0 else product.product_price
-                    col[2] = product.product_price
-                    col[3] = p.order_product_qty
-                    col[4] = float(col[2]) * col[3]
+                    col[1] = product.product_price
+                    col[2] = p.order_product_qty
+                    col[3] = float(col[1]) * col[2]
 
                 text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
                 htmly = get_template('email.html')
-                time_slot = order_instance.delivery_date_time.time()
-                time_slot = TimeSlot.objects.get(time=time_slot)
+
+                time_slot = TimeSlot.objects.get(id=input.time_slot_id)
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 sub_total = order_instance.order_total_price - delivery_charge
 
