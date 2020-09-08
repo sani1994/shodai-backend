@@ -34,6 +34,12 @@ class OrderTypeEnum(graphene.Enum):
     BIDDING = "BD"
 
 
+class AreaChoicesEnum(graphene.Enum):
+    Dhanmondi = 'Dhanmondi'
+    Mohammadpur = 'Mohammadpur'
+    Adabar = 'Adabar'
+
+
 class PaymentMethodEnum(graphene.Enum):
     ONLINE_PAYMENT = 'SSLCOMMERZ'
     CASH_ON_DELIVERY = 'CASH_ON_DELIVERY'
@@ -57,7 +63,7 @@ class OrderProductInput(graphene.InputObjectType):
 
 class OrderInput(graphene.InputObjectType):
     delivery_date_time = graphene.DateTime(required=True)
-    delivery_place = graphene.String(required=True)
+    delivery_place = graphene.NonNull(AreaChoicesEnum)
     net_pay_able_amount = graphene.String(required=True)
     total_vat = graphene.String(required=True)
     order_total_price = graphene.String(required=True)

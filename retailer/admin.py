@@ -47,6 +47,9 @@ class ShopProductInline(admin.StackedInline):
     readonly_fields = ['product_price', 'product_unit']
     autocomplete_fields = ('product',)
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class ShopAdmin(MaterialModelAdmin):
     model = Shop
@@ -87,6 +90,7 @@ class ShopProductAdmin(MaterialModelAdmin):
     model = ShopProduct
     list_display = ('product', 'shop', 'product_stock')
     readonly_fields = ["created_by", "modified_by", 'product_last_price', 'created_on', 'modified_on']
+    search_fields = ['shop__shop_name', ]
 
     def save_model(self, request, obj, form, change):
         if obj.id:
