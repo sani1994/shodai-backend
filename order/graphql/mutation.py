@@ -13,7 +13,7 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
 
-from utility.notification import email_notification
+from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot
 from product.models import Product
@@ -210,9 +210,15 @@ class SendEmail(graphene.Mutation):
                 order_instance = Order.objects.get(pk=input.order_id)
                 place = str(order_instance.delivery_place) + ', Dhaka'
                 g = geocoder.osm(place)
-                order_instance.lat = g.osm['y']
-                order_instance.long = g.osm['x']
-                order_instance.save()
+                if g:
+                    order_instance.lat = g.osm['y']
+                    order_instance.long = g.osm['x']
+                    order_instance.save()
+                else:
+                    g = geocoder.osm('Adabar, Dhaka')
+                    order_instance.lat = g.osm['y']
+                    order_instance.long = g.osm['x']
+                    order_instance.save()
 
                 product_list = OrderProduct.objects.filter(order__pk=input.order_id)
                 matrix = []
@@ -232,8 +238,9 @@ class SendEmail(graphene.Mutation):
                 time_slot = TimeSlot.objects.get(id=input.time_slot_id)
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 sub_total = order_instance.order_total_price - delivery_charge
+                client_name = user.first_name + " " + user.last_name
 
-                d = {'user_name': user.first_name + " " + user.last_name,
+                d = {'user_name': client_name,
                      'order_id': order_instance.pk,
                      'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                      'mobile_no': order_instance.contact_number,
@@ -252,6 +259,15 @@ class SendEmail(graphene.Mutation):
                 msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
+
+                # send sms to user
+                sms_body = f"Dear " + client_name + \
+                           ",\r\n\nYour order #" + str(order_instance.pk) + \
+                           " has been placed. Your total payable amount is " +\
+                           str(order_instance.order_total_price) + " and preferred delivery slot is "\
+                           + str(order_instance.delivery_date_time.date()) + " (" + time_slot.slot + ")" +\
+                           ". \n\n Thank you for shopping with shodai "
+                sms_flag = send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
                 return SendEmail(msg="email sent successfully")
 
 
