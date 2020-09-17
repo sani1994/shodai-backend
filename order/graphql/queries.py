@@ -2,6 +2,7 @@ import graphene
 from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter
 
+from bases.views import checkAuthentication
 from userProfile.models import BlackListedToken
 from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo
 
@@ -51,70 +52,26 @@ class Query(graphene.ObjectType):
 
     def resolve_order_list_of_user(self, info):
         user = info.context.user
-        if not user.is_authenticated:
-            raise Exception('Must Log in to see order details')
-        else:
-            token = info.context.headers['Authorization'].split(' ')[1]
-            print(token)
-            try:
-                token = BlackListedToken.objects.get(token=token)
-            except BlackListedToken.DoesNotExist as e:
-                token = None
-            if token:
-                raise Exception('Invalid or expired token!')
-            else:
-                return Order.objects.filter(user=user).order_by('-created_on')
+        if checkAuthentication(user, info):
+            return Order.objects.filter(user=user).order_by('-created_on')
 
     def resolve_order_by_id(self, info, **kwargs):
         user = info.context.user
-        if not user.is_authenticated:
-            raise Exception('Must Log in to see order')
-        else:
-            token = info.context.headers['Authorization'].split(' ')[1]
-            print(token)
-            try:
-                token = BlackListedToken.objects.get(token=token)
-            except BlackListedToken.DoesNotExist as e:
-                token = None
-            if token:
-                raise Exception('Invalid or expired token!')
-            else:
-                order_id = kwargs.get('order_id')
-                return Order.objects.get(pk=order_id, user=user)
+        if checkAuthentication(user, info):
+            order_id = kwargs.get('order_id')
+            return Order.objects.get(pk=order_id, user=user)
 
     def resolve_order_product_list_by_order(self, info, **kwargs):
         user = info.context.user
-        if not user.is_authenticated:
-            raise Exception('Must Log in to see order')
-        else:
-            token = info.context.headers['Authorization'].split(' ')[1]
-            print(token)
-            try:
-                token = BlackListedToken.objects.get(token=token)
-            except BlackListedToken.DoesNotExist as e:
-                token = None
-            if token:
-                raise Exception('Invalid or expired token!')
-            else:
-                order_id = kwargs.get('order_id')
-                return OrderProduct.objects.filter(order=order_id)
+        if checkAuthentication(user, info):
+            order_id = kwargs.get('order_id')
+            return OrderProduct.objects.filter(order=order_id)
 
     def resolve_vat_by_product_meta(self, info, **kwargs):
         user = info.context.user
-        if not user.is_authenticated:
-            raise Exception('Must Log in!')
-        else:
-            token = info.context.headers['Authorization'].split(' ')[1]
-            print(token)
-            try:
-                token = BlackListedToken.objects.get(token=token)
-            except BlackListedToken.DoesNotExist as e:
-                token = None
-            if token:
-                raise Exception('Invalid or expired token!')
-            else:
-                product_meta = kwargs.get('product_meta_id')
-                return Vat.objects.get(product_meta=product_meta)
+        if checkAuthentication(user, info):
+            product_meta = kwargs.get('product_meta_id')
+            return Vat.objects.get(product_meta=product_meta)
 
     def resolve_delivery_charge(self, info):
         return DeliveryCharge.objects.get()
@@ -124,17 +81,6 @@ class Query(graphene.ObjectType):
 
     def resolve_invoice_by_order(self, info, **kwargs):
         user = info.context.user
-        if not user.is_authenticated:
-            raise Exception('Must Log in to see order')
-        else:
-            token = info.context.headers['Authorization'].split(' ')[1]
-            print(token)
-            try:
-                token = BlackListedToken.objects.get(token=token)
-            except BlackListedToken.DoesNotExist as e:
-                token = None
-            if token:
-                raise Exception('Invalid or expired token!')
-            else:
-                order_id = kwargs.get('order_id')
-                return InvoiceInfo.objects.get(order_number__pk=order_id, user=user)
+        if checkAuthentication(user, info):
+            order_id = kwargs.get('order_id')
+            return InvoiceInfo.objects.get(order_number__pk=order_id, user=user)

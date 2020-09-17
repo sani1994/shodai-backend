@@ -25,12 +25,13 @@ class Order(BaseModel):
     Dhanmondi = 'Dhanmondi'
     Mohammadpur = 'Mohammadpur'
     Adabar = 'Adabar'
-    AREA_CHOICES = [
-        (Dhanmondi, 'Dhanmondi'),
-        (Adabar, 'Adabar'),
-        (Mohammadpur, 'Mohammadpur')
-    ]
-    delivery_place = models.CharField(max_length=100, choices=AREA_CHOICES, default=Adabar)
+    # AREA_CHOICES = [
+    #     (Dhanmondi, 'Dhanmondi'),
+    #     (Adabar, 'Adabar'),
+    #     (Mohammadpur, 'Mohammadpur')
+    # ]
+    # delivery_place = models.CharField(max_length=100, choices=AREA_CHOICES, default=Adabar)
+    delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)  # storing price+vat+delivery_charge
     lat = models.FloatField()
     long = models.FloatField()
