@@ -32,6 +32,7 @@ jsonfield==3.1.0
 MarkupPy==1.14
 material==0.1
 notify==0.3.1
+num2words
 odfpy==1.4.0
 openpyxl==3.0.1
 Pillow==6.1.0

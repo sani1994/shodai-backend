@@ -10,9 +10,12 @@ from django.urls import path
 from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
+from num2words import num2words
+
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
 
 # Register your models here.
+from product.models import Product
 from utility.pdf import render_to_pdf
 
 
@@ -59,24 +62,42 @@ class OrderAdmin(MaterialModelAdmin):
 
     def response_change(self, request, obj):
         if "_download-pdf" in request.POST:
+            product_list = OrderProduct.objects.filter(order__pk=obj.id)
+            matrix = []
+            for p in product_list:
+                total = float(p.product.product_price) * p.order_product_qty
+                col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
+                       p.product.product_price, total]
+                matrix.append(col)
+            invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)[0].payment_method
+            if invoice == "CASH_ON_DELIVERY":
+                payment_method = "Cash on Delivery"
+            elif invoice == "SSLCOMMERZ":
+                payment_method = "Online Payment"
             data = {
-                'customer_name': obj.user.first_name,
+                'customer_name': obj.user.first_name + " " + obj.user.last_name,
                 'address': obj.address,
                 'user_email': obj.user.email,
                 'user_mobile': obj.user.mobile_number,
                 'order_id': obj.id,
+                'invoice_number': obj.invoice_number,
                 'created_on': obj.created_on,
                 'delivery_date': obj.delivery_date_time.date(),
-                'delivery_time': obj.delivery_date_time.time()
+                'delivery_time': obj.delivery_date_time.time(),
+                'order_details': matrix,
+                'delivery': DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
+                'total': obj.order_total_price,
+                'in_words': num2words(obj.order_total_price),
+                'payment_method': payment_method
             }
             pdf = render_to_pdf('pdf/invoice.html', data)
             if pdf:
                 response = HttpResponse(pdf, content_type='application/pdf')
                 filename = "Invoice_of_order#%s.pdf" % obj.id
-                content = "inline; filename='%s'" % filename
-                download = request.GET.get("download")
-                if download:
-                    content = "attachment; filename='%s'" % filename
+                # content = "inline; filename=%s" % filename
+                # download = request.GET.get("download")
+                # if download:
+                content = "attachment; filename=%s" % filename
                 response['Content-Disposition'] = content
                 return response
             return HttpResponse("Not found")

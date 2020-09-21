@@ -204,12 +204,10 @@ class SendEmail(graphene.Mutation):
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
             matrix = []
             for p in product_list:
-                pr = str(p.product).split(",")
-                product = Product.objects.get(product_name=pr[0])
                 col = [None] * 5
                 matrix.append(col)
-                col[0] = product.product_name
-                col[1] = product.product_price
+                col[0] = p.product.product_name
+                col[1] = p.product.product_price
                 col[2] = p.order_product_qty
                 col[3] = float(col[1]) * col[2]
 

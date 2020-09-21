@@ -58,7 +58,8 @@
             Client Address: {{address}} <br/>
             Mobile Number: <strong>{{user_mobile}}</strong><br/>
             Email Id: <strong>{{user_email}}</strong><br/>
-            Order id: # {{order_id}}<br/>
+            Order Id: # {{order_id}}<br/>
+            Invoice Number: # {{invoice_number}}<br/>
             Order Created: {{created_on}} <br/>
             Delivery Date: {{delivery_date}}<br/>
             Delivery Time: {{delivery_time}} <br/><br/>
@@ -71,28 +72,36 @@
                     <th>Per Unit (BDT)</th>
                     <th>Total Amount</th>
                 </tr>
+                {% for o in order_details %}
                 <tr>
-                    <td>Jill</td>
-                    <td>Smith</td>
-                    <td>50</td>
-                    <td>Smith</td>
-                    <td>50</td>
+                    <td style="text-align: left;">{{o.0}}</td>
+                    <td style="text-align: center;">{{o.1}}</td>
+                    <td style="text-align: center;">{{o.2}}</td>
+                    <td style="text-align: center;">{{o.3}}</td>
+                    <td style="text-align: center;">{{o.4}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">
+                        Delivery Charge:
+                    </td>
+                    <td style="text-align: center;">
+                        {{delivery}}
+                    </td>
                 </tr>
                 <tr>
-                    <td>Eve</td>
-                    <td>Jackson</td>
-                    <td>94</td>
-                    <td>Smith</td>
-                    <td>50</td>
-                </tr>
-                <tr>
-                    <td>John</td>
-                    <td>Doe</td>
-                    <td>80</td>
-                    <td>Smith</td>
-                    <td>50</td>
+                    <td colspan="4" style="text-align: center;">
+                        Total Amount:
+                    </td>
+                    <td style="text-align: center;">
+                        {{total}}
+                    </td>
                 </tr>
             </table>
+            <strong> In Words: {{in_words}} </strong><br/><br/>
+            Payment Method: {{payment_method}} <br/><br/>
+            <pre class="tab"><strong>-----------               -----------               -----------</strong></pre>
+            <pre class="tab"><strong>Prepared By               Delivered By               Received By</strong></pre>
         </div>
     </div>
     </body>
