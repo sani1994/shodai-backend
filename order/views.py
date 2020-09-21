@@ -19,6 +19,7 @@ from utility.notification import email_notification
 
 class TimeSlotList(APIView):
     """`Get` time slot that are allowed"""
+
     def get(self, request):
         queryset = TimeSlot.objects.filter(allow=True)
         if queryset:
@@ -89,15 +90,7 @@ class OrderList(APIView):
         if serializer.is_valid():
 
             serializer.save(user=request.user, created_by=request.user)
-            """
-            To send notification to admin
-            """
-            sub = "Order Placed"
-            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: {request.user.user_type} posted an order Order id: {serializer.data['id']}.\r\n \r\nThanks and Regards\r\nShodai"
-            email_notification(sub, body)
-            """
-            Notification code ends here
-            """
+
             # Create InvoiceInfo Instance
             order_instance = Order.objects.get(id=serializer.data['id'])
             if order_instance:
@@ -116,19 +109,39 @@ class OrderList(APIView):
                 if order_instance.delivery_place:
                     address = order_instance.delivery_place
 
-            InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                       billing_person_name=billing_person_name,
-                                       billing_person_email=request.user.email,
-                                       billing_person_mobile_number=request.user.mobile_number,
-                                       delivery_contact_number=order_instance.contact_number,
-                                       delivery_address=address,
-                                       delivery_date_time=order_instance.delivery_date_time,
-                                       delivery_charge=delivery_charge,
-                                       net_payable_amount=order_instance.order_total_price,
-                                       payment_method='SSLCOMMERZ',
-                                       order_number=order_instance,
-                                       user=request.user,
-                                       created_by=request.user)
+            invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                                 billing_person_name=billing_person_name,
+                                                 billing_person_email=request.user.email,
+                                                 billing_person_mobile_number=request.user.mobile_number,
+                                                 delivery_contact_number=order_instance.contact_number,
+                                                 delivery_address=address,
+                                                 delivery_date_time=order_instance.delivery_date_time,
+                                                 delivery_charge=delivery_charge,
+                                                 net_payable_amount=order_instance.order_total_price,
+                                                 payment_method='SSLCOMMERZ',
+                                                 order_number=order_instance,
+                                                 user=request.user,
+                                                 created_by=request.user)
+            """
+            To send notification to admin
+            """
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: " \
+                   f"{request.user.user_type} posted an order from shodai app with the following details" \
+                   f"\r\nOrder id: {serializer.data['id']}." \
+                   f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
+                   f" \r\nOrder delivery area: {order_instance.delivery_place}." \
+                   f" \r\nOrder delivery address: {order_instance.address}." \
+                   f" \r\nOrder Sub-total (with vat): {order_instance.order_total_price - delivery_charge}." \
+                   f" \r\nOrder delivery charge: {delivery_charge}." \
+                   f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
+                   f" \r\nOrder payment method: {invoice.payment_method}." \
+                   f" \r\nOrder payment status: {invoice.paid_status}." \
+                   f"\r\n \r\nThanks and Regards\r\nShodai "
+            email_notification(sub, body)
+            """
+            Notification code ends here
+            """
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

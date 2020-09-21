@@ -4,13 +4,17 @@ import datetime
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.http import HttpResponse
+from django.template.loader import get_template
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
 
-
 # Register your models here.
+from utility.pdf import render_to_pdf
+
 
 class TimeSlotAdmin(MaterialModelAdmin):
     list_display = ('slot', 'start', 'end', 'time', 'allow')
@@ -51,6 +55,32 @@ class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id',)
 
     actions = ["export_as_csv"]
+    change_form_template = "order_admin_changeform.html"
+
+    def response_change(self, request, obj):
+        if "_download-pdf" in request.POST:
+            data = {
+                'customer_name': obj.user.first_name,
+                'address': obj.address,
+                'user_email': obj.user.email,
+                'user_mobile': obj.user.mobile_number,
+                'order_id': obj.id,
+                'created_on': obj.created_on,
+                'delivery_date': obj.delivery_date_time.date(),
+                'delivery_time': obj.delivery_date_time.time()
+            }
+            pdf = render_to_pdf('pdf/invoice.html', data)
+            if pdf:
+                response = HttpResponse(pdf, content_type='application/pdf')
+                filename = "Invoice_of_order#%s.pdf" % obj.id
+                content = "inline; filename='%s'" % filename
+                download = request.GET.get("download")
+                if download:
+                    content = "attachment; filename='%s'" % filename
+                response['Content-Disposition'] = content
+                return response
+            return HttpResponse("Not found")
+        return super().response_change(request, obj)
 
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'user', 'invoice_number', 'order_total_price',

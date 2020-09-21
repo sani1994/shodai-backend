@@ -22,15 +22,6 @@ class Order(BaseModel):
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField()
-    Dhanmondi = 'Dhanmondi'
-    Mohammadpur = 'Mohammadpur'
-    Adabar = 'Adabar'
-    # AREA_CHOICES = [
-    #     (Dhanmondi, 'Dhanmondi'),
-    #     (Adabar, 'Adabar'),
-    #     (Mohammadpur, 'Mohammadpur')
-    # ]
-    # delivery_place = models.CharField(max_length=100, choices=AREA_CHOICES, default=Adabar)
     delivery_place = models.CharField(max_length=100)
     order_total_price = models.FloatField(default=0)  # storing price+vat+delivery_charge
     lat = models.FloatField()
