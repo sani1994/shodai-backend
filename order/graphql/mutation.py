@@ -190,6 +190,7 @@ class SendEmail(graphene.Mutation):
         if checkAuthentication(user, info):
             order_instance = Order.objects.get(pk=input.order_id)
             place = str(order_instance.delivery_place) + ', Dhaka'
+            print(place)
             g = geocoder.osm(place)
             if g:
                 order_instance.lat = g.osm['y']
@@ -245,7 +246,7 @@ class SendEmail(graphene.Mutation):
                        " has been placed. Your total payable amount is " + \
                        str(order_instance.order_total_price) + " and preferred delivery slot is " \
                        + str(order_instance.delivery_date_time.date()) + " (" + time_slot.slot + ")" + \
-                       ". \n\n Thank you for shopping with shodai "
+                       ". \n\nThank you for shopping with shodai "
             sms_flag = send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
             return SendEmail(msg="email sent successfully")
 
@@ -316,14 +317,14 @@ class PaymentMutation(graphene.Mutation):
                 data = json.dumps(body)
                 response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
                 content = response.json()
-                print(content)
+
                 if response.status_code == 200:
                     if content["status"] == "success":
                         payment_id = content["payment_id"]
                         order_id = obj.pk
                         bill_id = obj.bill_id
                         invoice_number = obj.invoice_number
-                        print(invoice_number)
+
                         payment = PaymentInfo(payment_id=payment_id,
                                               order_id=Order.objects.get(pk=order_id),
                                               bill_id=bill_id,

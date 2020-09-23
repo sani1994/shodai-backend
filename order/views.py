@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
-from utility.notification import email_notification
+from utility.notification import email_notification, send_sms
 
 
 class TimeSlotList(APIView):
@@ -179,6 +179,15 @@ class OrderList(APIView):
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
+
+            # send sms to user
+            sms_body = f"Dear " + billing_person_name + \
+                       ",\r\n\nYour order #" + str(order_instance.pk) + \
+                       " has been placed. Your total payable amount is " + \
+                       str(order_instance.order_total_price) + " and preferred delivery slot is " \
+                       + str(order_instance.delivery_date_time.date()) + " (" + slot + ")" + \
+                       ". \n\nThank you for shopping with shodai "
+            sms_flag = send_sms(mobile_number=request.user.mobile_number, sms_content=sms_body)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
