@@ -8,6 +8,7 @@
                 font-size: 14px;
             }
             .header {
+                max-width: 600px;
                 font-size: 20px;
                 font-weight: 100;
                 text-align: center;
@@ -23,9 +24,19 @@
                 color: #007cae;
             }
             .details {
+                max-width: 600px;
                 padding: 10px 20px 0px 20px;
                 text-align: left !important;
                 /*margin-left: 40%;*/
+            }
+            .table table, th, td{
+                border: 1px solid black;border-collapse: collapse;
+                padding: 10px 20px 0px 20px;
+                text-align: center !important;
+                /*margin-left: 40%;*/
+            }
+            .productRow th, td {
+              padding: 3px;
             }
             .hrItem {
                 border: none;
@@ -50,7 +61,7 @@
                   Monico Bhaban, 26-27, Ring Road, Adabor.<br/>
                   Mohammodpur, Dhaka, Bangladesh<br/>
                   <strong>Help Line: 09614-161271</strong><br/>
-                  <strong>Web: https://www. shod.ai</strong><br/><br/>
+                  <strong>Web: https://www.shod.ai</strong><br/><br/>
 
                 </td>
               </tr>
@@ -62,18 +73,18 @@
             Invoice Number: # {{invoice_number}}<br/>
             Order Created: {{created_on}} <br/>
             Delivery Date: {{delivery_date}}<br/>
-            Delivery Time: {{delivery_time}} <br/><br/>
-            <style>table, th, td {border: 1px solid black; border-collapse: collapse;}</style>
-            <table style="width:80%;">
-                <tr>
-                    <th>Item Name</th>
-                    <th>Weight</th>
-                    <th>Quantity</th>
-                    <th>Per Unit (BDT)</th>
-                    <th>Total Amount</th>
+            Delivery Time: {{delivery_time}} <br/>
+
+            <table style="margin: 25px 0 13px 0; width: 100%" class="table">
+                <tr class="productRow">
+                    <th style="width:40%;">Item Name</th>
+                    <th style="width:10%;">Weight</th>
+                    <th style="width:10%;">Quantity</th>
+                    <th style="width:10%;">Per Unit (BDT)</th>
+                    <th style="width:10%;">Total Amount</th>
                 </tr>
                 {% for o in order_details %}
-                <tr>
+                <tr class="productRow">
                     <td style="text-align: left;">{{o.0}}</td>
                     <td style="text-align: center;">{{o.1}}</td>
                     <td style="text-align: center;">{{o.2}}</td>
@@ -98,8 +109,9 @@
                     </td>
                 </tr>
             </table>
-            <strong> In Words: {{in_words}} </strong><br/><br/>
-            Payment Method: {{payment_method}} <br/><br/>
+
+            <strong> In Words: {{in_words}} </strong><br/>
+            Payment Method: {{payment_method}} <br/>
             <pre class="tab"><strong>-----------               -----------               -----------</strong></pre>
             <pre class="tab"><strong>Prepared By               Delivered By               Received By</strong></pre>
         </div>

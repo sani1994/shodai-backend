@@ -15,7 +15,6 @@ from num2words import num2words
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
 
 # Register your models here.
-from product.models import Product
 from utility.pdf import render_to_pdf
 
 

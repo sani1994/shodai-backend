@@ -1,8 +1,10 @@
 import datetime
 import uuid
 
+from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q
 from decouple import config
+from django.template.loader import get_template
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
@@ -125,10 +127,21 @@ class OrderList(APIView):
             """
             To send notification to admin
             """
+            product_list = OrderProduct.objects.filter(order__pk=serializer.data['id'])
+            matrix = []
+            product_list_detail = []
+            for p in product_list:
+                total = float(p.product.product_price) * p.order_product_qty
+                col = [p.product.product_name, p.product.product_price, p.order_product_qty, total]
+                matrix.append(col)
+                product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
+                                           + str(p.order_product_qty) + "\n")
+
             sub = "Order Placed"
             body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: " \
                    f"{request.user.user_type} posted an order from shodai app with the following details" \
                    f"\r\nOrder id: {serializer.data['id']}." \
+                   f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
                    f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
                    f" \r\nOrder delivery area: {order_instance.delivery_place}." \
                    f" \r\nOrder delivery address: {order_instance.address}." \
@@ -142,6 +155,30 @@ class OrderList(APIView):
             """
             Notification code ends here
             """
+
+            # send email to user
+            text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
+            htmly = get_template('email.html')
+
+            d = {'user_name': billing_person_name,
+                 'order_id': order_instance.pk,
+                 'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                 'mobile_no': order_instance.contact_number,
+                 'order_date': order_instance.created_on.date(),
+                 'delivery_date_time': str(
+                     order_instance.delivery_date_time.date()) + " ( " + slot + " )",
+                 'sub_total': order_instance.order_total_price - delivery_charge,
+                 'delivery_charge': delivery_charge,
+                 'total': order_instance.order_total_price,
+                 'order_details': matrix
+                 }
+
+            subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
+            subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
+            html_content = htmly.render(d)
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
