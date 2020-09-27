@@ -111,83 +111,20 @@ class OrderList(APIView):
                 if order_instance.delivery_place:
                     address = order_instance.delivery_place
 
-            invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                                 billing_person_name=billing_person_name,
-                                                 billing_person_email=request.user.email,
-                                                 billing_person_mobile_number=request.user.mobile_number,
-                                                 delivery_contact_number=order_instance.contact_number,
-                                                 delivery_address=address,
-                                                 delivery_date_time=order_instance.delivery_date_time,
-                                                 delivery_charge=delivery_charge,
-                                                 net_payable_amount=order_instance.order_total_price,
-                                                 payment_method='SSLCOMMERZ',
-                                                 order_number=order_instance,
-                                                 user=request.user,
-                                                 created_by=request.user)
-            """
-            To send notification to admin
-            """
-            product_list = OrderProduct.objects.filter(order__pk=serializer.data['id'])
-            matrix = []
-            product_list_detail = []
-            for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
-                col = [p.product.product_name, p.product.product_price, p.order_product_qty, total]
-                matrix.append(col)
-                product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
-                                           + str(p.order_product_qty) + "\n")
+            InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                       billing_person_name=billing_person_name,
+                                       billing_person_email=request.user.email,
+                                       billing_person_mobile_number=request.user.mobile_number,
+                                       delivery_contact_number=order_instance.contact_number,
+                                       delivery_address=address,
+                                       delivery_date_time=order_instance.delivery_date_time,
+                                       delivery_charge=delivery_charge,
+                                       net_payable_amount=order_instance.order_total_price,
+                                       payment_method='SSLCOMMERZ',
+                                       order_number=order_instance,
+                                       user=request.user,
+                                       created_by=request.user)
 
-            sub = "Order Placed"
-            body = f"Dear Concern,\r\n User phone number :{request.user.mobile_number} \r\nUser type: " \
-                   f"{request.user.user_type} posted an order from shodai app with the following details" \
-                   f"\r\nOrder id: {serializer.data['id']}." \
-                   f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
-                   f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
-                   f" \r\nOrder delivery area: {order_instance.delivery_place}." \
-                   f" \r\nOrder delivery address: {order_instance.address}." \
-                   f" \r\nOrder Sub-total (with vat): {order_instance.order_total_price - delivery_charge}." \
-                   f" \r\nOrder delivery charge: {delivery_charge}." \
-                   f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
-                   f" \r\nOrder payment method: {invoice.payment_method}." \
-                   f" \r\nOrder payment status: {invoice.paid_status}." \
-                   f"\r\n \r\nThanks and Regards\r\nShodai "
-            email_notification(sub, body)
-            """
-            Notification code ends here
-            """
-
-            # send email to user
-            text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
-            htmly = get_template('email.html')
-
-            d = {'user_name': billing_person_name,
-                 'order_id': order_instance.pk,
-                 'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
-                 'mobile_no': order_instance.contact_number,
-                 'order_date': order_instance.created_on.date(),
-                 'delivery_date_time': str(
-                     order_instance.delivery_date_time.date()) + " ( " + slot + " )",
-                 'sub_total': order_instance.order_total_price - delivery_charge,
-                 'delivery_charge': delivery_charge,
-                 'total': order_instance.order_total_price,
-                 'order_details': matrix
-                 }
-
-            subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
-            subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
-            html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
-
-            # send sms to user
-            sms_body = f"Dear " + billing_person_name + \
-                       ",\r\n\nYour order #" + str(order_instance.pk) + \
-                       " has been placed. Your total payable amount is " + \
-                       str(order_instance.order_total_price) + " and preferred delivery slot is " \
-                       + str(order_instance.delivery_date_time.date()) + " (" + slot + ")" + \
-                       ". \n\nThank you for shopping with shodai "
-            sms_flag = send_sms(mobile_number=request.user.mobile_number, sms_content=sms_body)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -255,13 +192,89 @@ class OrderProductList(APIView):
             for data in request.data:
                 serializer = OrderProductSerializer(data=data, context={'request': request.data})
                 if serializer.is_valid():
-                    # print(serializer.data)
                     serializer.save()
                     response = {'rspns': serializer.data, 'status_code': status.HTTP_200_OK}
                     responses.append(response)
                 else:
                     response = {'rspns': serializer.errors, 'status_code': status.HTTP_400_BAD_REQUEST}
                     responses.append(response)
+            print(serializer.data['order'])
+
+            order_instance = Order.objects.filter(pk=serializer.data['order'])[0]
+            invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
+            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+            time = TimeSlot.objects.filter(time=order_instance.delivery_date_time.time())[0]
+            print(time.slot)
+            if request.user.first_name and request.user.last_name:
+                billing_person_name = request.user.first_name + " " + request.user.last_name
+            else:
+                billing_person_name = request.user.username
+            if order_instance.address:
+                if order_instance.address.road:
+                    address = order_instance.address.road
+            else:
+                if order_instance.delivery_place:
+                    address = order_instance.delivery_place
+
+            product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
+            matrix = []
+            product_list_detail = []
+            for p in product_list:
+                total = float(p.product.product_price) * p.order_product_qty
+                col = [p.product.product_name, p.product.product_price, p.order_product_qty, total]
+                matrix.append(col)
+                product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
+                                           + str(p.order_product_qty) + "\n")
+            print(product_list_detail)
+
+            """
+            To send notification to admin
+            """
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\nUser phone number :{request.user.mobile_number} \r\nUser type: " \
+                   f"{request.user.user_type} posted an order from shodai app with the following details" \
+                   f"\r\nOrder id: {serializer.data['id']}." \
+                   f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
+                   f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
+                   f" \r\nOrder delivery address: {address}." \
+                   f" \r\nOrder Sub-total (with vat): {order_instance.order_total_price - delivery_charge}." \
+                   f" \r\nOrder delivery charge: {delivery_charge}." \
+                   f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
+                   f" \r\nOrder payment method: {invoice.payment_method}." \
+                   f" \r\nOrder payment status: {invoice.paid_status}." \
+                   f"\r\n \r\nThanks and Regards\r\nShodai "
+            email_notification(sub, body)
+            """
+            Notification code ends here
+            """
+
+            # send email to user
+            text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
+            htmly = get_template('email.html')
+
+            d = {'user_name': billing_person_name,
+                 'order_id': order_instance.pk,
+                 'shipping_address': address,
+                 'mobile_no': order_instance.contact_number,
+                 'order_date': order_instance.created_on.date(),
+                 'delivery_date_time': str(
+                     order_instance.delivery_date_time.date()) + " ( " + time.slot + " )",
+                 'sub_total': order_instance.order_total_price - delivery_charge,
+                 'delivery_charge': delivery_charge,
+                 'total': order_instance.order_total_price,
+                 'order_details': matrix
+                 }
+
+            subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
+            subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
+            html_content = htmly.render(d)
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg.attach_alternative(html_content, "text/html")
+            mail_flag = msg.send()
+            if mail_flag:
+                print("mail sent successfully")
+            else:
+                print("an error occurred while sending the email")
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 

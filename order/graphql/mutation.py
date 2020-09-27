@@ -240,14 +240,14 @@ class SendEmail(graphene.Mutation):
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
-            # send sms to user
-            sms_body = f"Dear " + client_name + \
-                       ",\r\n\nYour order #" + str(order_instance.pk) + \
-                       " has been placed. Your total payable amount is " + \
-                       str(order_instance.order_total_price) + " and preferred delivery slot is " \
-                       + str(order_instance.delivery_date_time.date()) + " (" + time_slot.slot + ")" + \
-                       ". \n\nThank you for shopping with shodai "
-            sms_flag = send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
+            # # send sms to user
+            # sms_body = f"Dear " + client_name + \
+            #            ",\r\n\nYour order #" + str(order_instance.pk) + \
+            #            " has been placed. Your total payable amount is " + \
+            #            str(order_instance.order_total_price) + " and preferred delivery slot is " \
+            #            + str(order_instance.delivery_date_time.date()) + " (" + time_slot.slot + ")" + \
+            #            ". \n\nThank you for shopping with shodai "
+            # sms_flag = send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
             return SendEmail(msg="email sent successfully")
 
 
