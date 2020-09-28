@@ -219,10 +219,13 @@ class OrderProductList(APIView):
             product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
             matrix = []
             product_list_detail = []
+            total_vat = 0
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
                 col = [p.product.product_name, p.product.product_price, p.order_product_qty, total]
                 matrix.append(col)
+                vat = p.order_product_price_with_vat * p.order_product_qty - total
+                total_vat += vat
                 product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
                                            + str(p.order_product_qty) + "\n")
             print(product_list_detail)
@@ -260,6 +263,7 @@ class OrderProductList(APIView):
                  'delivery_date_time': str(
                      order_instance.delivery_date_time.date()) + " ( " + time.slot + " )",
                  'sub_total': order_instance.order_total_price - delivery_charge,
+                 'vat': total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix

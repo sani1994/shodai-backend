@@ -204,6 +204,7 @@ class SendEmail(graphene.Mutation):
 
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
             matrix = []
+            total_vat = 0
             for p in product_list:
                 col = [None] * 5
                 matrix.append(col)
@@ -211,6 +212,8 @@ class SendEmail(graphene.Mutation):
                 col[1] = p.product.product_price
                 col[2] = p.order_product_qty
                 col[3] = float(col[1]) * col[2]
+                vat = p.order_product_price_with_vat * p.order_product_qty - col[3]
+                total_vat += vat
 
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
@@ -228,6 +231,7 @@ class SendEmail(graphene.Mutation):
                  'delivery_date_time': str(
                      order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                  'sub_total': sub_total,
+                 'vat': total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix
