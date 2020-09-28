@@ -90,7 +90,8 @@ class ShopProductAdmin(MaterialModelAdmin):
     model = ShopProduct
     list_display = ('product', 'shop', 'product_stock')
     readonly_fields = ["created_by", "modified_by", 'product_last_price', 'created_on', 'modified_on']
-    search_fields = ['shop__shop_name', ]
+    search_fields = ['shop__shop_name', 'product__product_name', ]
+    list_filter = ('shop__shop_area',)
 
     def save_model(self, request, obj, form, change):
         if obj.id:

@@ -35,6 +35,7 @@ class Shop(BaseModel):
     shop_long = models.FloatField(null=True, blank=True)
     shop_geopoint = gis_models.PointField(null=True)
     shop_address = models.CharField(max_length=100, blank=True, null=True)
+    shop_area = models.CharField(max_length=100, blank=True, null=True)
     shop_image = models.ImageField(upload_to='retailer/shop/%Y/%m/%d', null=True, blank=True)
     shop_licence = models.CharField(max_length=200, blank=True, null=True, unique=True)  # trade licence
     shop_website = models.CharField(max_length=100, blank=True, null=True)
