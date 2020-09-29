@@ -224,11 +224,13 @@ class OrderProductList(APIView):
                 total = float(p.product.product_price) * p.order_product_qty
                 col = [p.product.product_name, p.product.product_price, p.order_product_qty, total]
                 matrix.append(col)
-                vat = p.order_product_price_with_vat * p.order_product_qty - total
+                vat = float(p.product.price_with_vat) * p.order_product_qty - total
                 total_vat += vat
                 product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
                                            + str(p.order_product_qty) + "\n")
             print(product_list_detail)
+            order_instance.total_vat = total_vat
+            order_instance.save()
 
             """
             To send notification to admin
@@ -240,7 +242,8 @@ class OrderProductList(APIView):
                    f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
                    f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
                    f" \r\nOrder delivery address: {address}." \
-                   f" \r\nOrder Sub-total (with vat): {order_instance.order_total_price - delivery_charge}." \
+                   f" \r\nOrder Sub-total price: {order_instance.order_total_price - total_vat - delivery_charge}." \
+                   f" \r\nOrder vat amount: {total_vat}." \
                    f" \r\nOrder delivery charge: {delivery_charge}." \
                    f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
                    f" \r\nOrder payment method: {invoice.payment_method}." \

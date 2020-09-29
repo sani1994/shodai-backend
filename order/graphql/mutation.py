@@ -126,6 +126,7 @@ class CreateOrder(graphene.Mutation):
 
                 product_list = input.products
                 product_list_detail = []
+                total_vat = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
@@ -135,8 +136,12 @@ class CreateOrder(graphene.Mutation):
                                                 order_product_price_with_vat=product.price_with_vat,
                                                 vat_amount=product.product_meta.vat_amount,
                                                 order_product_qty=p.order_product_qty, )
+                    vat = float(product.price_with_vat - product.product_price) * p.order_product_qty
+                    total_vat += vat
                     product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                + str(p.order_product_qty) + "\n")
+                order_instance.total_vat = total_vat
+                order_instance.save()
 
                 # Create InvoiceInfo Instance
                 billing_person_name = user.first_name + " " + user.last_name
@@ -166,7 +171,7 @@ class CreateOrder(graphene.Mutation):
                        f" \r\nOrder delivery area: {order_instance.delivery_place}." \
                        f" \r\nOrder delivery address: {order_instance.address}." \
                        f" \r\nOrder Sub total price: {input.order_total_price}." \
-                       f" \r\nOrder vat amount: {input.total_vat}." \
+                       f" \r\nOrder vat amount: {order_instance.total_vat}." \
                        f" \r\nOrder delivery charge: {delivery_charge}." \
                        f" \r\nOrder net payable amount: {input.net_pay_able_amount}." \
                        f" \r\nOrder payment method: {input.payment_method}." \
@@ -204,7 +209,6 @@ class SendEmail(graphene.Mutation):
 
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
             matrix = []
-            total_vat = 0
             for p in product_list:
                 col = [None] * 5
                 matrix.append(col)
@@ -212,8 +216,6 @@ class SendEmail(graphene.Mutation):
                 col[1] = p.product.product_price
                 col[2] = p.order_product_qty
                 col[3] = float(col[1]) * col[2]
-                vat = p.order_product_price_with_vat * p.order_product_qty - col[3]
-                total_vat += vat
 
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
@@ -231,7 +233,7 @@ class SendEmail(graphene.Mutation):
                  'delivery_date_time': str(
                      order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                  'sub_total': sub_total,
-                 'vat': total_vat,
+                 'vat': order_instance.total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix
