@@ -19,6 +19,7 @@ urlpatterns = [
     # post productMeta id and get list of product
     path('recentproduct/', views.RecentlyAddedProductList.as_view()),  # return recenlty added 10 products.
     path('productforcart/<int:id>/', views.ProductForCart.as_view()),  # returns custom details to show in cart
+    path('recentProductPagination/', views.RecentlyAddedProductListPagination.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

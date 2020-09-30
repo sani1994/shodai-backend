@@ -1,7 +1,9 @@
 from django.shortcuts import render
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, ListAPIView
 
 import qrcode
+from rest_framework.pagination import PageNumberPagination
+
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
     ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
@@ -338,6 +340,7 @@ class ProductForCart(APIView):
     """
     Retrieve products information to show in cart
     """
+
     def get_product_object(self, id):
         obj = get_object_or_404(Product, id=id)
         return obj
@@ -349,3 +352,10 @@ class ProductForCart(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RecentlyAddedProductListPagination(ListAPIView):  # return list of recently added products
+    # permission_classes = [GenericAuth]
+    serializer_class = LatestProductSerializer
+    queryset = Product.objects.all().order_by('-created_on')
+    pagination_class = PageNumberPagination

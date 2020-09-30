@@ -110,6 +110,7 @@ class CreateOrder(graphene.Mutation):
                                        created_by=user,
                                        delivery_date_time=input.delivery_date_time,
                                        delivery_place=input.delivery_place,
+                                       total_vat=input.total_vat,
                                        order_total_price=input.net_pay_able_amount,
                                        lat=input.lat,
                                        long=input.long,
@@ -126,7 +127,6 @@ class CreateOrder(graphene.Mutation):
 
                 product_list = input.products
                 product_list_detail = []
-                total_vat = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
@@ -136,12 +136,8 @@ class CreateOrder(graphene.Mutation):
                                                 order_product_price_with_vat=product.price_with_vat,
                                                 vat_amount=product.product_meta.vat_amount,
                                                 order_product_qty=p.order_product_qty, )
-                    vat = float(product.price_with_vat - product.product_price) * p.order_product_qty
-                    total_vat += vat
                     product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                + str(p.order_product_qty) + "\n")
-                order_instance.total_vat = total_vat
-                order_instance.save()
 
                 # Create InvoiceInfo Instance
                 billing_person_name = user.first_name + " " + user.last_name

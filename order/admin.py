@@ -63,14 +63,12 @@ class OrderAdmin(MaterialModelAdmin):
         if "_download-pdf" in request.POST:
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
             matrix = []
-            total_vat = 0
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
                 col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
                        p.product.product_price, total]
                 matrix.append(col)
-                vat = p.order_product_price_with_vat * p.order_product_qty - total
-                total_vat += vat
+
             invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)[0].payment_method
             if invoice == "CASH_ON_DELIVERY":
                 payment_method = "Cash on Delivery"
@@ -88,7 +86,7 @@ class OrderAdmin(MaterialModelAdmin):
                 'delivery_time': obj.delivery_date_time.time(),
                 'order_details': matrix,
                 'delivery': DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
-                'vat': total_vat,
+                'vat': obj.total_vat,
                 'total': obj.order_total_price,
                 'in_words': num2words(obj.order_total_price),
                 'payment_method': payment_method
