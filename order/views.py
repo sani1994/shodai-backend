@@ -1,9 +1,11 @@
+import csv
 import datetime
 import uuid
 
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q
 from decouple import config
+from django.http import HttpResponse
 from django.template.loader import get_template
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
@@ -616,3 +618,28 @@ class OrderLatest(APIView):
             return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
         return Response({"status": "Unauthorized request"}, status=status.HTTP_200_OK)
+
+
+class CheckPaidStatus(APIView):
+
+    def get(self, request):
+        completed_orders = Order.objects.filter(order_status='COM')
+        queryset = []
+        for o in completed_orders:
+            invoice = InvoiceInfo.objects.filter(invoice_number=o.invoice_number)
+            if not invoice[0].paid_status:
+                queryset.append(invoice)
+        print(queryset)
+        field_names = ['id', 'invoice_number', 'order_number', 'payment_method',
+                       'paid_status', ]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=payment_check_report.csv'
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for i in range(len(queryset)):
+            for obj in queryset[i]:
+                writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response

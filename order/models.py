@@ -97,7 +97,7 @@ class Order(BaseModel):
         orders = OrderProduct.objects.filter(order=self)
         order_product_detail = []
         [order_product_detail.append(op.product.product_name + "\n") for op in orders]
-        order_product = f"{''.join(order_product_detail)}"
+        order_product = f"{''.fieldjoin(order_product_detail)}"
         return order_product
 
     @property

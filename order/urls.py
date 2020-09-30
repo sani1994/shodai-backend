@@ -18,5 +18,6 @@ urlpatterns = [
     path('latestorder/', views.OrderLatest.as_view()),
     path('slot/', views.TimeSlotList.as_view()),
     # path('transaction/', views.TransactionIdCreate.as_view()),
+    path('checkPaidStatus/', views.CheckPaidStatus.as_view()),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
