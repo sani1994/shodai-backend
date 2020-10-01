@@ -72,7 +72,7 @@ class Query(graphene.ObjectType):
         return Product.objects.filter(product_meta__pk=meta_id, is_approved=True)
 
     def resolve_all_products_pagination(root, info, **kwargs):
-        return Product.objects.filter(is_approved=True)
+        return Product.objects.filter(is_approved=True).order_by('-created_on')
 
     def resolve_all_products(self, info, **kwargs):
         return Product.objects.filter(is_approved=True)
