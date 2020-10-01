@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework.generics import get_object_or_404, ListAPIView
 
 import qrcode
-from rest_framework.pagination import PageNumberPagination, CursorPagination
 
+from product.pagination import CustomPageNumberPagination
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
     ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
@@ -357,5 +357,6 @@ class ProductForCart(APIView):
 class RecentlyAddedProductListPagination(ListAPIView):  # return list of recently added products
     # permission_classes = [GenericAuth]
     serializer_class = LatestProductSerializer
-    queryset = Product.objects.all()
-    pagination_class = CursorPagination
+    queryset = Product.objects.all().order_by('-created_on')
+    pagination_class = CustomPageNumberPagination
+
