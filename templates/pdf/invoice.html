@@ -2,10 +2,12 @@
 <html>
     <head>
         <title>Title</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <style type="text/css">
             body {
                 font-weight: 200;
-                font-size: 14px;
+                font-size: 16px;
+                font-family: 'SolaimanLipi', sans-serif;
             }
             .header {
                 max-width: 600px;
@@ -31,9 +33,21 @@
             }
             .table table, th, td{
                 border: 1px solid black;border-collapse: collapse;
+                font-size: 14px;
                 padding: 10px 20px 0px 20px;
                 text-align: center !important;
                 /*margin-left: 40%;*/
+            }
+            .container{
+               max-width: 600px;
+               padding:0 50px;
+               font-family: 'Source Sans Pro Regular';
+               color: #222;
+               font-size: 14px;
+            }
+            .container  .productsTable thead tr th{
+               border: 1px solid black;border-collapse: collapse;
+               padding: 10px 0;
             }
             .productRow th, td {
               padding: 3px;
@@ -75,7 +89,7 @@
             Delivery Date: {{delivery_date}}<br/>
             Delivery Time: {{delivery_time}} <br/>
 
-            <table style="margin: 25px 0 13px 0; width: 100%" class="table">
+            <table style="margin: 25px 0 13px 0; width: 100%" class="productsTable">
                 <tr class="productRow">
                     <th style="width:40%;">Item Name</th>
                     <th style="width:10%;">Weight</th>
@@ -117,12 +131,18 @@
                     </td>
                 </tr>
             </table>
-
-            <strong> In Words: {{in_words}} </strong><br/>
-            Payment Method: {{payment_method}} <br/>
-            <pre class="tab"><strong>-----------               -----------               -----------</strong></pre>
-            <pre class="tab"><strong>Prepared By               Delivered By               Received By</strong></pre>
+            </div>
+        <div class='details'>
+            <tr>
+                <td>
+                <strong> In Words: {{in_words}} </strong><br/>
+                Payment Method: {{payment_method}} <br/>
+                <pre class="tab"><strong>-----------               -----------               -----------</strong></pre>
+                <pre class="tab"><strong>Prepared By               Delivered By               Received By</strong></pre>
+                </td>
+            </tr>
         </div>
+            <hr style="border:1px solid #E8E8E8; margin: 30px 0 15px 0"/>
     </div>
     </body>
 </html>

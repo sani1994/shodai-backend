@@ -240,7 +240,7 @@ class OrderProductList(APIView):
             sub = "Order Placed"
             body = f"Dear Concern,\r\nUser phone number :{request.user.mobile_number} \r\nUser type: " \
                    f"{request.user.user_type} posted an order from shodai app with the following details" \
-                   f"\r\nOrder id: {serializer.data['id']}." \
+                   f"\r\nOrder id: {order_instance.pk}." \
                    f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
                    f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
                    f" \r\nOrder delivery address: {address}." \
