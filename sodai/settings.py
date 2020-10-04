@@ -84,12 +84,20 @@ INSTALLED_APPS = [
     'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
     'graphene_gis',
     'corsheaders',
+    'mapwidgets',
 ]
 # ELASTICSEARCH_DSL = {
 #     'default': {
 #         'hosts': 'localhost:9200'
 #     },
 # }
+
+# Map settings
+GOOGLE_MAP_API_KEY = 'AIzaSyAdDekVJsqfKSNwPr8VOD8aqG4ckv0uuEM'
+MAP_WIDGETS = {
+    "GOOGLE_MAP_API_KEY": GOOGLE_MAP_API_KEY
+}
+
 GRAPHQL_JWT = {
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LONG_RUNNING_REFRESH_TOKEN': True,

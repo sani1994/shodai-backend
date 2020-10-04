@@ -1,5 +1,7 @@
 from django.contrib import admin, messages
+from django.contrib.gis.db.models import GeometryField
 from django.forms import BaseInlineFormSet
+from mapwidgets import GooglePointFieldInlineWidget
 from rest_framework.generics import get_object_or_404
 
 from userProfile.models import UserProfile
@@ -57,6 +59,10 @@ class ShopAdmin(MaterialModelAdmin):
     readonly_fields = ["created_by", "modified_by", 'user', 'created_on', 'modified_on']
     verbose_name = 'Shop'
     inlines = [ShopProductInline, ]
+
+    formfield_overrides = {
+        GeometryField: {"widget": GooglePointFieldInlineWidget}
+    }
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
