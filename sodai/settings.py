@@ -84,7 +84,7 @@ INSTALLED_APPS = [
     'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
     'graphene_gis',
     'corsheaders',
-    'mapwidgets',
+    'leaflet',
 ]
 # ELASTICSEARCH_DSL = {
 #     'default': {
@@ -92,10 +92,13 @@ INSTALLED_APPS = [
 #     },
 # }
 
-# Map settings
-GOOGLE_MAP_API_KEY = 'AIzaSyAdDekVJsqfKSNwPr8VOD8aqG4ckv0uuEM'
-MAP_WIDGETS = {
-    "GOOGLE_MAP_API_KEY": GOOGLE_MAP_API_KEY
+LEAFLET_CONFIG = {
+    # conf here
+    'DEFAULT_CENTER': (23.7733, 90.3548),
+    'DEFAULT_ZOOM': 16,
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 18,
+    'DEFAULT_PRECISION': 6,
 }
 
 GRAPHQL_JWT = {
