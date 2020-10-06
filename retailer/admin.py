@@ -1,9 +1,5 @@
 from django.contrib import admin, messages
-from django.contrib.gis.db.models import GeometryField
-from django.forms import BaseInlineFormSet
-from leaflet.admin import LeafletGeoAdmin
-from leaflet.forms.widgets import LeafletWidget
-from mapwidgets import GooglePointFieldInlineWidget
+from leaflet.admin import LeafletGeoAdminMixin
 from rest_framework.generics import get_object_or_404
 
 from userProfile.models import UserProfile
@@ -55,14 +51,10 @@ class ShopProductInline(admin.StackedInline):
         return False
 
 
-# class PoiLocationInline(LeafletGeoAdminMixin, admin.StackedInline):
-#     model = Map
-
-
-class ShopAdmin(MaterialModelAdmin):
+class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
     model = Shop
     list_display = ('shop_name', 'is_approved')
-    readonly_fields = ["created_by", "modified_by", 'user', 'created_on', 'modified_on']
+    readonly_fields = ["created_by", "modified_by", 'user', 'created_on', 'modified_on', 'shop_lat', 'shop_long']
     verbose_name = 'Shop'
     inlines = [ShopProductInline, ]
 
@@ -112,7 +104,7 @@ class ShopProductAdmin(MaterialModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-site.register(Shop, LeafletGeoAdmin)
+site.register(Shop, ShopAdmin)
 site.register(Account)
 site.register(AcceptedOrder, AcceptedOrderAdmin)
 site.register(ShopProduct, ShopProductAdmin)
