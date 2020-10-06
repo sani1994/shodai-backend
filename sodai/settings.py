@@ -93,12 +93,11 @@ INSTALLED_APPS = [
 # }
 
 LEAFLET_CONFIG = {
-    # conf here
     'DEFAULT_CENTER': (23.7733, 90.3548),
-    'DEFAULT_ZOOM': 16,
+    'DEFAULT_ZOOM': 10,
     'MIN_ZOOM': 3,
     'MAX_ZOOM': 18,
-    'DEFAULT_PRECISION': 6,
+    'DEFAULT_PRECISION': 6
 }
 
 GRAPHQL_JWT = {
@@ -229,6 +228,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 if DEBUG:
     CORS_ORIGIN_WHITELIST = config("CORS_ORIGIN_WHITELIST").replace(" ", "").split(',')
+else:
+    LEAFLET_CONFIG['TILES'] = 'https://mapserver.koth.ai/v2/raster/normal/?z={z}&y={y}&x={x}&token=' + config("MAP_TOKEN")
 
 CORS_ORIGIN_ALLOW_ALL = True
 

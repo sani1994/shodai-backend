@@ -630,7 +630,7 @@ class CheckPaidStatus(APIView):
             if not invoice[0].paid_status:
                 queryset.append(invoice)
         print(queryset)
-        field_names = ['id', 'order_number', 'invoice_number', 'payment_method', ]
+        field_names = ['id', 'invoice_number', 'order_number', 'payment_method']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=payment_check_report.csv'
