@@ -141,7 +141,12 @@
             <tr>
                 <td>
                 <strong> In Words: {{in_words}} taka only</strong><br/>
-                Payment Method: {{payment_method}} <br/>
+                {% if paid_status %}
+                    Payment Method: Online Payment <br/>
+                    Payment Status: Paid
+                {% else %}
+                    Payment Method: Cash on Delivery <br/>
+                {% endif %}
                 <pre class="tab"><strong>-----------               -----------               -----------</strong></pre>
                 <pre class="tab"><strong>Prepared By               Delivered By               Received By</strong></pre>
                 </td>
