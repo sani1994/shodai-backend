@@ -155,25 +155,6 @@ class CreateOrder(graphene.Mutation):
                                                      order_number=order_instance,
                                                      user=user,
                                                      created_by=user)
-                """
-                To send notification to admin
-                """
-                sub = "Order Placed"
-                body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
-                       f"posted an order from shodai website with the following details" \
-                       f" \r\nOrder id: {order_instance.pk}." \
-                       f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
-                       f" \r\nOrder delivery date and time: {datetime}." \
-                       f" \r\nOrder delivery area: {order_instance.delivery_place}." \
-                       f" \r\nOrder delivery address: {order_instance.address}." \
-                       f" \r\nOrder Sub total price: {input.order_total_price}." \
-                       f" \r\nOrder vat amount: {order_instance.total_vat}." \
-                       f" \r\nOrder delivery charge: {delivery_charge}." \
-                       f" \r\nOrder net payable amount: {input.net_pay_able_amount}." \
-                       f" \r\nOrder payment method: {input.payment_method}." \
-                       f" \r\nOrder payment status: {invoice.paid_status}." \
-                       f"\r\n \r\nThanks and Regards\r\nShodai "
-                email_notification(sub, body)
                 return CreateOrder(order=order_instance)
             else:
                 raise Exception('Unauthorized request!')
@@ -189,7 +170,8 @@ class SendEmail(graphene.Mutation):
     def mutate(root, info, input=None):
         user = info.context.user
         if checkAuthentication(user, info):
-            order_instance = Order.objects.get(pk=input.order_id)
+            order_instance = Order.objects.filter(pk=input.order_id)[0]
+            invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
             place = str(order_instance.delivery_place) + ', Dhaka'
             print(place)
             g = geocoder.osm(place)
@@ -204,6 +186,7 @@ class SendEmail(graphene.Mutation):
                 order_instance.save()
 
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
+            product_list_detail = []
             matrix = []
             for p in product_list:
                 col = [None] * 5
@@ -212,6 +195,8 @@ class SendEmail(graphene.Mutation):
                 col[1] = p.product.product_price
                 col[2] = p.order_product_qty
                 col[3] = float(col[1]) * col[2]
+                product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
+                                           + str(p.order_product_qty) + "\n")
 
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
@@ -242,6 +227,26 @@ class SendEmail(graphene.Mutation):
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
+            """
+            To send notification to admin
+            """
+            sub = "Order Placed"
+            body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
+                   f"posted an order from shodai website with the following details" \
+                   f" \r\nOrder id: {order_instance.pk}." \
+                   f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
+                   f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
+                   f" \r\nOrder delivery area: {order_instance.delivery_place}." \
+                   f" \r\nOrder delivery address: {order_instance.address}." \
+                   f" \r\nOrder Sub total price: {order_instance.order_total_price - order_instance.total_vat - delivery_charge}." \
+                   f" \r\nOrder vat amount: {order_instance.total_vat}." \
+                   f" \r\nOrder delivery charge: {delivery_charge}." \
+                   f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
+                   f" \r\nOrder payment method: {invoice.payment_method}." \
+                   f"\r\n \r\nThanks and Regards\r\nShodai "
+            print(invoice.paid_status)
+            email_notification(sub, body)
+
             # # send sms to user
             # sms_body = f"Dear " + client_name + \
             #            ",\r\n\nYour order #" + str(order_instance.pk) + \
@@ -250,6 +255,7 @@ class SendEmail(graphene.Mutation):
             #            + str(order_instance.delivery_date_time.date()) + " (" + time_slot.slot + ")" + \
             #            ". \n\nThank you for shopping with shodai "
             # sms_flag = send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
+
             return SendEmail(msg="email sent successfully")
 
 

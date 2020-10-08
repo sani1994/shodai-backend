@@ -249,7 +249,6 @@ class OrderProductList(APIView):
                    f" \r\nOrder delivery charge: {delivery_charge}." \
                    f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
                    f" \r\nOrder payment method: {invoice.payment_method}." \
-                   f" \r\nOrder payment status: {invoice.paid_status}." \
                    f"\r\n \r\nThanks and Regards\r\nShodai "
             email_notification(sub, body)
             """

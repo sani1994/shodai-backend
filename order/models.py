@@ -68,7 +68,7 @@ class Order(BaseModel):
     @property
     def paid_status(self):
         status = InvoiceInfo.objects.get(order_number_id=self.id).paid_status
-        if status == True:
+        if status:
             return 'Paid Status'
         else:
             return 'Not Paid Status'
