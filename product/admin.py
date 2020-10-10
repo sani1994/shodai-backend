@@ -20,7 +20,7 @@ class ProductAdmin(MaterialModelAdmin):
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
     autocomplete_fields = ('product_unit',)
-    actions = ["save_selected"]
+    actions = ["save_selected", "export_as_csv"]
 
     def save_selected(self, request, queryset):
         for obj in queryset:
@@ -37,8 +37,6 @@ class ProductAdmin(MaterialModelAdmin):
         obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
-
-    actions = ["export_as_csv"]
 
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'product_name', 'product_name_bn', 'product_unit', 'product_price',
