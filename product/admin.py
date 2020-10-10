@@ -1,9 +1,11 @@
+import csv
 from builtins import super
 
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from rest_framework.generics import get_object_or_404
+from django.http import HttpResponse
 
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 from import_export import resources
@@ -35,6 +37,23 @@ class ProductAdmin(MaterialModelAdmin):
         obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
+
+    actions = ["export_as_csv"]
+
+    def export_as_csv(self, request, queryset):
+        field_names = ['id', 'product_name', 'product_name_bn', 'product_unit', 'product_price',
+                       'product_last_price', 'price_with_vat', 'product_meta', 'is_approved']
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=order_product.csv'
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            writer.writerow([getattr(obj, field) for field in field_names])
+        return response
+
+    export_as_csv.short_description = "Export Selected"
 
 
 class ProductUnitAdmin(ImportExportModelAdmin):
