@@ -47,9 +47,6 @@ class ShopProductInline(admin.StackedInline):
     readonly_fields = ['product_price', 'product_unit']
     autocomplete_fields = ('product',)
 
-    def has_delete_permission(self, request, obj=None):
-        return False
-
 
 class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
     model = Shop
@@ -60,20 +57,23 @@ class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
-        for instance in instances:
-            if ShopProduct.objects.filter(product=instance.product, shop=instance.shop).exists():
-                messages.add_message(request, messages.INFO, 'Your message here')
-            else:
-                instance.is_approved = True
-                instance.product_unit = instance.product.product_unit
-                instance.product_last_price = instance.product.product_last_price
-                instance.created_by = request.user
-                instance.save()
+        if instances:
+            for instance in instances:
+                if ShopProduct.objects.filter(product=instance.product, shop=instance.shop).exists():
+                    messages.add_message(request, messages.INFO, 'Your message here')
+                else:
+                    instance.is_approved = True
+                    instance.product_unit = instance.product.product_unit
+                    instance.product_last_price = instance.product.product_last_price
+                    instance.created_by = request.user
+                    instance.save()
+            instance.save()
         formset.save_m2m()
 
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
+            obj.save()
 
         obj.created_by = request.user
         obj.save()
