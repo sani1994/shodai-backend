@@ -47,8 +47,8 @@ class ProductAdmin(MaterialModelAdmin):
         writer = csv.writer(response)
 
         writer.writerow(field_names)
-        all_product = Product.objects.all()
-        for obj in all_product:
+
+        for obj in queryset:
             writer.writerow([getattr(obj, field) for field in field_names])
         return response
 
@@ -59,7 +59,7 @@ class ProductAdmin(MaterialModelAdmin):
                        'product_last_price', 'price_with_vat', 'product_meta', 'is_approved']
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=product.csv'
+        response['Content-Disposition'] = 'attachment; filename=all_product.csv'
         writer = csv.writer(response)
 
         writer.writerow(field_names)
