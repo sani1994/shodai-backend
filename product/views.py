@@ -3,7 +3,7 @@ from rest_framework.generics import get_object_or_404, ListAPIView
 
 import qrcode
 
-from product.pagination import CustomPageNumberPagination
+from product.pagination import CustomPagination
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
     ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
@@ -358,5 +358,5 @@ class RecentlyAddedProductListPagination(ListAPIView):  # return list of recentl
     permission_classes = [GenericAuth]
     serializer_class = LatestProductSerializer
     queryset = Product.objects.filter(is_approved=True).order_by('-created_on')
-    pagination_class = CustomPageNumberPagination
+    pagination_class = CustomPagination
 

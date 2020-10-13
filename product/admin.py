@@ -2,6 +2,9 @@ import csv
 from builtins import super
 
 from django.contrib import admin
+from django.forms import forms
+from django.shortcuts import redirect, render
+from django.urls import path
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from rest_framework.generics import get_object_or_404
@@ -13,6 +16,10 @@ from import_export.admin import ImportExportModelAdmin
 
 
 # Register your models here.
+
+class CsvImportForm(forms.Form):
+    csv_file = forms.FileField()
+
 
 class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_name', 'product_meta', 'is_approved')
@@ -40,7 +47,7 @@ class ProductAdmin(MaterialModelAdmin):
 
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'product_name', 'product_name_bn', 'product_unit', 'product_price',
-                       'product_last_price', 'price_with_vat', 'product_meta', 'is_approved']
+                       'product_last_price', 'price_with_vat', 'product_meta', 'is_approved', 'product_image']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=product.csv'
@@ -56,7 +63,7 @@ class ProductAdmin(MaterialModelAdmin):
 
     def export_all_as_csv(self, request, queryset):
         field_names = ['id', 'product_name', 'product_name_bn', 'product_unit', 'product_price',
-                       'product_last_price', 'price_with_vat', 'product_meta', 'is_approved']
+                       'product_last_price', 'price_with_vat', 'product_meta', 'is_approved', 'product_image']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=all_product.csv'
@@ -69,6 +76,31 @@ class ProductAdmin(MaterialModelAdmin):
         return response
 
     export_all_as_csv.short_description = "Export All"
+
+    change_list_template = "product/product_changelist.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('import-csv/', self.import_csv),
+        ]
+        return my_urls + urls
+
+    def import_csv(self, request):
+        if request.method == "POST":
+            csv_file = request.FILES["csv_file"]
+            ifile = open(csv_file, "rt")
+            reader = csv.reader(ifile)
+            print(reader)
+            # Create objects from passed in data
+            # ...
+            self.message_user(request, "Your csv file has been imported")
+            return redirect("..")
+        form = CsvImportForm()
+        payload = {"form": form}
+        return render(
+            request, "product/csv_form.html", payload
+        )
 
 
 class ProductUnitAdmin(ImportExportModelAdmin):

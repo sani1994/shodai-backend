@@ -50,10 +50,10 @@ class Shop(BaseModel):
         return self.shop_name
 
     def save(self, *args, **kwargs):
-        self.shop_lat = self.shop_geopoint[1]
-        self.shop_long = self.shop_geopoint[0]
+        self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.shop_long, self.shop_lat))
+        # self.shop_lat = self.shop_geopoint[1]
+        # self.shop_long = self.shop_geopoint[0]
         # self.shop_geopoint = GEOSGeometry('POINT (' + self.shop_long + self.shop_lat + ')')
-        # self.shop_geopoint = GEOSGeometry('POINT(%f %f)' % (self.shop_long, self.shop_lat))
         super(Shop, self).save(*args, **kwargs)
 
 

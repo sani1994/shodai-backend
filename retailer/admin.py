@@ -43,15 +43,19 @@ from retailer.models import Account, Shop, ShopProduct, AcceptedOrder
 
 class ShopProductInline(admin.StackedInline):
     model = ShopProduct
-    fields = ['product', 'product_stock', 'product_price', 'product_unit']
-    readonly_fields = ['product_price', 'product_unit']
+    fields = ['product', 'product_stock', 'product_price', 'product_unit', ]
+    readonly_fields = ['product_unit']
     autocomplete_fields = ('product',)
+
+    def get_queryset(self, request):
+        qs = super(ShopProductInline, self).get_queryset(request)
+        return qs.filter(is_approved=True)
 
 
 class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
     model = Shop
     list_display = ('shop_name', 'is_approved')
-    readonly_fields = ["created_by", "modified_by", 'user', 'created_on', 'modified_on', 'shop_lat', 'shop_long']
+    readonly_fields = ["created_by", "modified_by", 'user', 'created_on', 'modified_on']
     verbose_name = 'Shop'
     inlines = [ShopProductInline, ]
 
@@ -74,7 +78,6 @@ class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
             obj.save()
-
         obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
