@@ -39,7 +39,7 @@ class ProductAdmin(MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
             old_obj = get_object_or_404(Product, id=obj.id)
-            obj.product_last_price = old_obj.product_price
+            # obj.product_last_price = old_obj.product_price
             obj.save()
         obj.created_by = request.user
         obj.save()

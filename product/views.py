@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404, ListAPIView
 
@@ -357,6 +358,11 @@ class ProductForCart(APIView):
 class RecentlyAddedProductListPagination(ListAPIView):  # return list of recently added products
     permission_classes = [GenericAuth]
     serializer_class = LatestProductSerializer
-    queryset = Product.objects.filter(is_approved=True).order_by('-created_on')
-    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = Product.objects.filter(is_approved=True).order_by('-created_on')
+        paginator = Paginator(queryset, 10)  # Show 10 products per page
+        page = self.kwargs['id']
+        products = paginator.get_page(page)
+        return products
 
