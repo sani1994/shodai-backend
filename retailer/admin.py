@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.forms import forms
 from leaflet.admin import LeafletGeoAdminMixin
 from rest_framework.generics import get_object_or_404
 
@@ -64,7 +65,7 @@ class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
         if instances:
             for instance in instances:
                 if ShopProduct.objects.filter(product=instance.product, shop=instance.shop).exists():
-                    messages.add_message(request, messages.INFO, 'Your message here')
+                    raise forms.ValidationError('Item already Exists in the shop')
                 else:
                     instance.is_approved = True
                     instance.product_unit = instance.product.product_unit
