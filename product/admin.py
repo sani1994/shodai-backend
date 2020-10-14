@@ -77,7 +77,7 @@ class ProductAdmin(MaterialModelAdmin):
 
     export_all_as_csv.short_description = "Export All"
 
-    change_list_template = "product/product_changelist.html"
+    # change_list_template = "product/product_changelist.html"
 
     def get_urls(self):
         urls = super().get_urls()
@@ -89,9 +89,6 @@ class ProductAdmin(MaterialModelAdmin):
     def import_csv(self, request):
         if request.method == "POST":
             csv_file = request.FILES["csv_file"]
-            ifile = open(csv_file, "rt")
-            reader = csv.reader(ifile)
-            print(reader)
             # Create objects from passed in data
             # ...
             self.message_user(request, "Your csv file has been imported")
