@@ -69,7 +69,13 @@ class OrderAdmin(MaterialModelAdmin):
                        p.product.product_price, total]
                 matrix.append(col)
 
-            paid_status = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)[0].paid_status
+            invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
+            paid_status = invoice[0].paid_status
+
+            if invoice[0].payment_method == "CASH_ON_DELIVERY":
+                payment_method = "Cash on Delivery"
+            else:
+                payment_method = "Online Payment"
             data = {
                 'customer_name': obj.user.first_name + " " + obj.user.last_name,
                 'address': obj.address,
@@ -85,7 +91,9 @@ class OrderAdmin(MaterialModelAdmin):
                 'vat': obj.total_vat,
                 'total': obj.order_total_price,
                 'in_words': num2words(obj.order_total_price),
-                'paid_status': paid_status
+                'payment_method': payment_method if paid_status else 'Cash on Delivery',
+                'paid_status': paid_status,
+                'downloaded_on': datetime.datetime.now().replace(microsecond=0)
             }
             pdf = render_to_pdf('pdf/invoice.html', data)
             if pdf:

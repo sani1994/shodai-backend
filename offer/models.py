@@ -35,4 +35,4 @@ class OfferProduct(BaseModel):
         return self.product.product_name
 
     def get_offer_product_url(self):
-        return "http://www.shod.ai/admin/offer/offerproduct/%d/change/" % self.id
+        return "https://www.shod.ai/admin/offer/offerproduct/%d/change/" % self.id

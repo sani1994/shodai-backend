@@ -87,10 +87,10 @@
             Client Name: {{customer_name}}<br/>
             Client Address: {{address}} <br/>
             Mobile Number: <strong>{{user_mobile}}</strong><br/>
-            Email Id: <strong>{{user_email}}</strong><br/>
-            Order Id: # {{order_id}}<br/>
-            Invoice Number: # {{invoice_number}}<br/>
-            Order Created: {{created_on}} <br/>
+            Email: <strong>{{user_email}}</strong><br/>
+            Order No: # {{order_id}}<br/>
+            Invoice No: # {{invoice_number}}<br/>
+            Order Placed: {{created_on}} <br/>
             Delivery Date: {{delivery_date}}<br/>
             Delivery Time: {{delivery_time}} <br/>
 
@@ -141,18 +141,16 @@
             <tr>
                 <td>
                 <strong> In Words: {{in_words}} taka only</strong><br/>
+                Payment Method: {{payment_method}} <br/>
                 {% if paid_status %}
-                    Payment Method: Online Payment <br/>
-                    Payment Status: Paid
-                {% else %}
-                    Payment Method: Cash on Delivery <br/>
+                Payment Status: Paid
                 {% endif %}
                 <pre class="tab"><strong>-----------               -----------               -----------</strong></pre>
                 <pre class="tab"><strong>Prepared By               Delivered By               Received By</strong></pre>
                 </td>
             </tr>
         </div>
-            <hr style="border:1px solid #E8E8E8; margin: 30px 0 15px 0"/>
+            <p style="text-align:right;"><small>{{downloaded_on}}</small></p>
     </div>
     </body>
 </html>
