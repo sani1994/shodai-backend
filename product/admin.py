@@ -41,8 +41,9 @@ class ProductAdmin(MaterialModelAdmin):
             old_obj = get_object_or_404(Product, id=obj.id)
             # obj.product_last_price = old_obj.product_price
             obj.save()
-        obj.created_by = request.user
-        obj.save()
+        else:
+            obj.created_by = request.user
+            obj.save()
         return super().save_model(request, obj, form, change)
 
     def export_as_csv(self, request, queryset):
@@ -125,7 +126,8 @@ class ShopCategoryAdmin(ImportExportModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -137,7 +139,8 @@ class ProductCategoryAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -150,7 +153,8 @@ class ProductMetaAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 

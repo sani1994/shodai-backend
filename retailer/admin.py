@@ -79,7 +79,8 @@ class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
             obj.save()
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -103,7 +104,8 @@ class ShopProductAdmin(MaterialModelAdmin):
             old_obj = get_object_or_404(ShopProduct, id=obj.id)
             obj.product_last_price = old_obj.product_price
             obj.save()
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 

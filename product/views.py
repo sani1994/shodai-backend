@@ -355,14 +355,17 @@ class ProductForCart(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RecentlyAddedProductListPagination(ListAPIView):  # return list of recently added products
+class RecentlyAddedProductListPagination(APIView):
     permission_classes = [GenericAuth]
-    serializer_class = LatestProductSerializer
 
-    def get_queryset(self):
+    def get(self, request, id):
         queryset = Product.objects.filter(is_approved=True).order_by('-created_on')
         paginator = Paginator(queryset, 10)  # Show 10 products per page
-        page = self.kwargs['id']
-        products = paginator.get_page(page)
-        return products
+        products = paginator.get_page(id)
+        serializer = LatestProductSerializer(products, many=True)
+        if serializer:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 

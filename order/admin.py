@@ -198,7 +198,8 @@ class OrderProductAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -211,7 +212,8 @@ class VatAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -230,7 +232,8 @@ class DeliveryChargeAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -251,7 +254,8 @@ class PaymentInfoAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-        obj.created_by = request.user
+        else:
+            obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
