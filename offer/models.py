@@ -19,6 +19,20 @@ class Offer(BaseModel):
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
 
+    SINGLE_PRODUCT_OFFER = 'SP'  # Offer on a single product
+    BUNDLE_OFFER = 'BP'  # Offer on a bundle product
+    DISCOUNT_ON_SINGLE_PRODUCT = 'DSP'  # Discount on a single product based on total amount
+    DISCOUNT_ON_TOTAL = 'DT'  # Discount on total based on total amount
+    DISCOUNT_ON_DELIVERY_CHARGE = 'DD'  # Discount on delivery charge based on total amount
+    OFFER_TYPES = [
+        (SINGLE_PRODUCT_OFFER, 'Single Product Offer'),
+        (BUNDLE_OFFER, 'Bundle Offer'),
+        (DISCOUNT_ON_SINGLE_PRODUCT, 'Discount on Single Product'),
+        (DISCOUNT_ON_TOTAL, 'Discount on Total'),
+        (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
+    ]
+    order_types = models.CharField(max_length=100, choices=OFFER_TYPES, default=SINGLE_PRODUCT_OFFER)
+
     def __str__(self):
         return self.offer_name
 
@@ -36,3 +50,16 @@ class OfferProduct(BaseModel):
 
     def get_offer_product_url(self):
         return "https://www.shod.ai/admin/offer/offerproduct/%d/change/" % self.id
+
+
+class CartOffer(BaseModel):
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
+    sub_total_limit = models.IntegerField(default=0)
+    updated_shipping_charge = models.FloatField(default=0)
+    discount_amount = models.FloatField(default=0, blank=False, null=False, verbose_name='Discount Amount(%)')
+    discount_limit = models.IntegerField(default=0)
+    history = HistoricalRecords()
+
+
+class CouponCode(BaseModel):
+    cart_offer = models.ForeignKey(CartOffer, on_delete=models.CASCADE)
