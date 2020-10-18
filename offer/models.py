@@ -8,7 +8,7 @@ from product.models import Product
 # Create your models here.
 
 class Offer(BaseModel):
-    # put reailer as foreign key
+    # put retailer as foreign key
     offer_name = models.CharField(max_length=100, blank=False, null=False)
     offer_name_bn = models.CharField(max_length=100, blank=False, null=False)
     offer_img = models.ImageField(upload_to="offer", blank=False, null=False)
@@ -59,6 +59,9 @@ class CartOffer(BaseModel):
     discount_amount = models.FloatField(default=0, blank=False, null=False, verbose_name='Discount Amount(%)')
     discount_limit = models.IntegerField(default=0)
     history = HistoricalRecords()
+
+    def __str__(self):
+        return self.offer.offer_name + " on " + self.sub_total_limit
 
 
 class CouponCode(BaseModel):
