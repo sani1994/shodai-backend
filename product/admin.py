@@ -1,10 +1,12 @@
 import csv
+import pandas as pd
 from builtins import super
 
 from django.contrib import admin
 from django.forms import forms
 from django.shortcuts import redirect, render
 from django.urls import path
+from django.utils.text import slugify
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from rest_framework.generics import get_object_or_404
@@ -81,11 +83,25 @@ class ProductAdmin(MaterialModelAdmin):
     def import_csv(self, request):
         if request.method == "POST":
             csv_file = request.FILES["csv_file"]
-            csv_reader = csv.reader(csv_file, newline='', delimiter=',')
-            print(csv_reader)
+            data = pd.read_csv(csv_file)
+            length = len(data.index)
             # Create objects from passed in data
-            # ...
-            self.message_user(request, "Your csv file has been imported")
+            for i in range(length):
+                slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
+                if Product.objects.filter(slug=slug).exists():
+                    print("Product already exists in database")
+                    message = "row" + i + "in your csv failed because of duplicate value"
+                    self.message_user(request, message)
+                else:
+                    Product.objects.create(product_name=data["product_name"][i],
+                                           product_image=data["product_image"][i],
+                                           product_description=data["product_description"][i],
+                                           product_description_bn=data["product_description_bn"][i],
+                                           product_price=data["product_price"][i],
+                                           product_last_price=data["product_last_price"][i],
+                                           is_approved=True
+                                           )
+                    self.message_user(request, "Your csv file has been imported")
             return redirect("..")
         form = CsvImportForm()
         payload = {"form": form}
