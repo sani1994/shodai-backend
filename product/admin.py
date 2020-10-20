@@ -16,25 +16,19 @@ from import_export.admin import ImportExportModelAdmin
 
 
 # Register your models here.
+from utility.models import ProductUnit
+
 
 class CsvImportForm(forms.Form):
     csv_file = forms.FileField()
 
 
-class ProductResource(resources.ModelResource):
-    class Meta:
-        model = ShopCategory
-        fields = ('product_name', 'product_image', 'product_description', 'product_description_bn',
-                  'product_price', 'product_last_price', 'is_approved')
-
-
-class ProductAdmin(ImportExportModelAdmin):
+class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_name', 'product_meta', 'is_approved')
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
     autocomplete_fields = ('product_unit',)
-    resource_class = ProductResource
     actions = ["save_selected", "export_as_csv", "export_all_as_csv"]
 
     def save_selected(self, request, queryset):
@@ -74,6 +68,30 @@ class ProductAdmin(ImportExportModelAdmin):
         return response
 
     export_all_as_csv.short_description = "Export All"
+
+    change_list_template = "product/product_changelist.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('import-csv/', self.import_csv),
+        ]
+        return my_urls + urls
+
+    def import_csv(self, request):
+        if request.method == "POST":
+            csv_file = request.FILES["csv_file"]
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            print(csv_reader)
+            # Create objects from passed in data
+            # ...
+            self.message_user(request, "Your csv file has been imported")
+            return redirect("..")
+        form = CsvImportForm()
+        payload = {"form": form}
+        return render(
+            request, "product/csv_form.html", payload
+        )
 
     def save_model(self, request, obj, form, change):
         if obj.id:

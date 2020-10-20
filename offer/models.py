@@ -32,14 +32,15 @@ class Offer(BaseModel):
         (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
     ]
     order_types = models.CharField(max_length=100, choices=OFFER_TYPES, default=SINGLE_PRODUCT_OFFER)
+    offer_url = models.CharField(max_length=300, default="https://www.shod.ai/")
 
     def __str__(self):
         return self.offer_name
 
 
 class OfferProduct(BaseModel):
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)  # offer foreign key relation
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    offer = models.ForeignKey(Offer, related_name='offer_products', on_delete=models.CASCADE)  # offer foreign key relation
+    product = models.ForeignKey(Product, related_name='products',  on_delete=models.CASCADE)
     offer_price = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     offer_product_balance = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True)
     history = HistoricalRecords()
