@@ -81,7 +81,7 @@ class ProductAdmin(MaterialModelAdmin):
     def import_csv(self, request):
         if request.method == "POST":
             csv_file = request.FILES["csv_file"]
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader = csv.reader(csv_file, newline='', delimiter=',')
             print(csv_reader)
             # Create objects from passed in data
             # ...

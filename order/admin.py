@@ -124,9 +124,6 @@ class OrderAdmin(MaterialModelAdmin):
 
     export_as_csv.short_description = "Export Selected"
 
-    def _products(self, obj):
-        return obj.offerproduct_set.all().count()
-
     def order_products(self):
         list = []
         objs = OrderProduct.objects.filter(order__id=self.id)
