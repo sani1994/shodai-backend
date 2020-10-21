@@ -1,7 +1,7 @@
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from offer.models import Offer, OfferProduct
+from offer.models import Offer, OfferProduct, CouponCode, CartOffer
 
 
 # Register your models here.
@@ -33,7 +33,7 @@ class OfferAdmin(MaterialModelAdmin):
     offer_products.allow_tags = False
 
     list_display = ('offer_name', 'offer_starts_in', 'offer_ends_in', 'is_approved', _products, offer_products)
-    inlines = (OfferProductInline, )
+    inlines = (OfferProductInline,)
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -59,5 +59,33 @@ class OfferProductAdmin(MaterialModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+class CouponCodeAdmin(MaterialModelAdmin):
+    list_display = ('coupon_code', 'created_by')
+    readonly_fields = ["created_by", "modified_by", "coupon_code", ]
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        else:
+            obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
+class CartOfferAdmin(MaterialModelAdmin):
+    list_display = ('offer', 'sub_total_limit', 'updated_shipping_charge')
+    readonly_fields = ["created_by", "modified_by", ]
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        else:
+            obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
 site.register(Offer, OfferAdmin)
 site.register(OfferProduct, OfferProductAdmin)
+# site.register(CouponCode, CouponCodeAdmin)
+# site.register(CartOffer, CartOfferAdmin)

@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 import graphene
 from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter
@@ -22,7 +24,13 @@ class Query(graphene.ObjectType):
     offer_product_list = graphene.List(OfferProductType)
 
     def resolve_offer_list(self, info):
-        return Offer.objects.all()
+        payload = []
+        all_offers = Offer.objects.filter(is_approved=True)
+        today = timezone.now()
+        for o in all_offers:
+            if o.offer_starts_in < today < o.offer_ends_in:
+                payload.append(o)
+        return payload
 
     def resolve_offer_product_list(self, info):
         return OfferProduct.objects.all()
