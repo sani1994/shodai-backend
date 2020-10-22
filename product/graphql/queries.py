@@ -82,17 +82,17 @@ class Query(graphene.ObjectType):
         return Product.objects.get(slug=slug, is_approved=True)
 
     def resolve_product_categories(self, info):
-        return ProductCategory.objects.all()
+        return ProductCategory.objects.filter(is_approved=True)
 
     def resolve_product_meta_list(self, info):
-        return ProductMeta.objects.all()
+        return ProductMeta.objects.filter(is_approved=True)
 
     def resolve_product_meta_by_category(root, info, **kwargs):
         cat_id = kwargs.get('cat_ID')
-        return ProductMeta.objects.filter(product_category__pk=cat_id)
+        return ProductMeta.objects.filter(product_category__pk=cat_id, is_approved=True)
 
     def resolve_shop_categories(self, info):
-        return ShopCategory.objects.all()
+        return ShopCategory.objects.filter(is_approved=True)
 
     def resolve_recently_added_product_list(self, info):
-        return Product.objects.all().order_by('-created_on')[:20]
+        return Product.objects.filter(is_approved=True).order_by('-created_on')[:20]

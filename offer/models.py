@@ -11,16 +11,6 @@ from product.models import Product
 
 class Offer(BaseModel):
     # put retailer as foreign key
-    offer_name = models.CharField(max_length=100, blank=False, null=False)
-    offer_name_bn = models.CharField(max_length=100, blank=False, null=False)
-    offer_img = models.ImageField(upload_to="offer", blank=False, null=False)
-    offer_details = models.CharField(max_length=500, blank=True, null=True)
-    offer_details_bn = models.CharField(max_length=500, blank=True, null=True, verbose_name='Offer Detail Bangla')
-    offer_starts_in = models.DateTimeField(blank=True, null=True)
-    offer_ends_in = models.DateTimeField(blank=True, null=True)
-    history = HistoricalRecords()
-    is_approved = models.BooleanField(default=False)
-
     SINGLE_PRODUCT_OFFER = 'SP'  # Offer on a single product
     BUNDLE_OFFER = 'BP'  # Offer on a bundle product
     DISCOUNT_ON_SINGLE_PRODUCT = 'DSP'  # Discount on a single product based on total amount
@@ -33,7 +23,17 @@ class Offer(BaseModel):
         (DISCOUNT_ON_TOTAL, 'Discount on Total'),
         (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
     ]
-    order_types = models.CharField(max_length=100, choices=OFFER_TYPES, default=SINGLE_PRODUCT_OFFER)
+
+    offer_name = models.CharField(max_length=100, blank=False, null=False)
+    offer_name_bn = models.CharField(max_length=100, blank=False, null=False)
+    offer_img = models.ImageField(upload_to="offer", blank=False, null=False)
+    offer_details = models.CharField(max_length=500, blank=True, null=True)
+    offer_details_bn = models.CharField(max_length=500, blank=True, null=True, verbose_name='Offer Detail Bangla')
+    offer_starts_in = models.DateTimeField(blank=True, null=True)
+    offer_ends_in = models.DateTimeField(blank=True, null=True)
+    history = HistoricalRecords()
+    is_approved = models.BooleanField(default=False)
+    offer_types = models.CharField(max_length=100, choices=OFFER_TYPES, default=SINGLE_PRODUCT_OFFER)
     offer_url = models.CharField(max_length=300, default="https://www.shod.ai/")
 
     def __str__(self):
@@ -46,7 +46,7 @@ class OfferProduct(BaseModel):
     offer_price = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     offer_product_balance = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True)
     history = HistoricalRecords()
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=True)
 
     def __str__(self):
         return self.product.product_name

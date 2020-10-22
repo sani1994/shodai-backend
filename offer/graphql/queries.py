@@ -2,10 +2,8 @@ from django.utils import timezone
 
 import graphene
 from graphene_django.types import DjangoObjectType
-from graphene_gis.converter import gis_converter
 
 from bases.views import checkAuthentication
-from userProfile.models import BlackListedToken
 from ..models import Offer, OfferProduct
 
 
@@ -24,13 +22,12 @@ class Query(graphene.ObjectType):
     offer_product_list = graphene.List(OfferProductType)
 
     def resolve_offer_list(self, info):
-        payload = []
-        all_offers = Offer.objects.filter(is_approved=True)
         today = timezone.now()
-        for o in all_offers:
-            if o.offer_starts_in < today < o.offer_ends_in:
-                payload.append(o)
-        return payload
+        all_offers = Offer.objects.filter(is_approved=True, offer_starts_in__lte=today, offer_ends_in__gte=today)
+        return all_offers
 
     def resolve_offer_product_list(self, info):
-        return OfferProduct.objects.all()
+        today = timezone.now()
+        all_offer_products = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                         offer__offer_ends_in__gte=today)
+        return all_offer_products

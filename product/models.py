@@ -10,6 +10,7 @@ from utility.models import ProductUnit
 class ShopCategory(BaseModel):
     type_of_shop = models.CharField(max_length=89)
     type_of_shop_bn = models.CharField(max_length=90, null=True, blank=True, verbose_name='দোকানের ধরন')
+    is_approved = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -24,6 +25,7 @@ class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
     type_of_product_bn = models.CharField(max_length=90, null=True, blank=True, verbose_name='পন্যের ধরন')
     img = models.ImageField(upload_to='pictures/productcategory/', blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -42,6 +44,7 @@ class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapn
     shop_category = models.ForeignKey(ShopCategory, on_delete=models.CASCADE, verbose_name='Product Type')
     vat_amount = models.FloatField(default=0, blank=True, null=True,
                                    verbose_name='Vat Amount(%)')  # Here vat amount 15 is 15%
+    is_approved = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):

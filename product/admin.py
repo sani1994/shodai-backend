@@ -93,14 +93,15 @@ class ProductAdmin(MaterialModelAdmin):
                     message = "row" + i + "in your csv failed because of duplicate value"
                     self.message_user(request, message)
                 else:
-                    Product.objects.create(product_name=data["product_name"][i],
-                                           product_image=data["product_image"][i],
-                                           product_description=data["product_description"][i],
-                                           product_description_bn=data["product_description_bn"][i],
-                                           product_price=data["product_price"][i],
-                                           product_last_price=data["product_last_price"][i],
-                                           is_approved=True
-                                           )
+                    if ProductUnit.objects.filter(product_unit=data["product_unit"][i]).exists():
+                        Product.objects.create(product_name=data["product_name"][i],
+                                               product_image=data["product_image"][i],
+                                               product_description=data["product_description"][i],
+                                               product_description_bn=data["product_description_bn"][i],
+                                               product_price=data["product_price"][i],
+                                               product_last_price=data["product_last_price"][i],
+                                               is_approved=True
+                                               )
                     self.message_user(request, "Your csv file has been imported")
             return redirect("..")
         form = CsvImportForm()
