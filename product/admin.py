@@ -16,7 +16,6 @@ from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-
 # Register your models here.
 from utility.models import ProductUnit
 
@@ -88,21 +87,36 @@ class ProductAdmin(MaterialModelAdmin):
             # Create objects from passed in data
             for i in range(length):
                 slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
+                print(slug)
                 if Product.objects.filter(slug=slug).exists():
                     print("Product already exists in database")
-                    message = "row" + i + "in your csv failed because of duplicate value"
+                    message = "row" + str(i) + "in your csv failed because of duplicate value"
                     self.message_user(request, message)
                 else:
-                    if ProductUnit.objects.filter(product_unit=data["product_unit"][i]).exists():
+                    product_meta = ProductMeta.objects.filter(name=data["product_meta"][i])
+                    if product_meta.exists():
+                        unit = ProductUnit.objects.filter(product_unit=data["product_unit"][i])
+                        if unit.exists():
+                            product_unit = unit[0]
+                        else:
+                            product_unit = ProductUnit.objects.create(product_unit=data["product_unit"][i],
+                                                                      product_unit_bn=data["product_unit"][i])
                         Product.objects.create(product_name=data["product_name"][i],
                                                product_image=data["product_image"][i],
                                                product_description=data["product_description"][i],
                                                product_description_bn=data["product_description_bn"][i],
                                                product_price=data["product_price"][i],
-                                               product_last_price=data["product_last_price"][i],
-                                               is_approved=True
+                                               product_last_price=0,
+                                               is_approved=True,
+                                               product_unit=product_unit,
+                                               product_meta=product_meta[0]
                                                )
-                    self.message_user(request, "Your csv file has been imported")
+                        print("success")
+                        self.message_user(request, "Your csv file has been imported")
+                    else:
+                        print("Product meta not found")
+                        message = "row" + str(i) + "in your csv failed because product meta not found"
+                        self.message_user(request, message)
             return redirect("..")
         form = CsvImportForm()
         payload = {"form": form}

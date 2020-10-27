@@ -41,8 +41,9 @@ class Offer(BaseModel):
 
 
 class OfferProduct(BaseModel):
-    offer = models.ForeignKey(Offer, related_name='offer_products', on_delete=models.CASCADE)  # offer foreign key relation
-    product = models.ForeignKey(Product, related_name='products',  on_delete=models.CASCADE)
+    offer = models.ForeignKey(Offer, related_name='offer_products',
+                              on_delete=models.CASCADE)  # offer foreign key relation
+    product = models.ForeignKey(Product, related_name='products', on_delete=models.CASCADE)
     offer_price = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     offer_product_balance = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True)
     history = HistoricalRecords()
@@ -55,22 +56,22 @@ class OfferProduct(BaseModel):
         return "https://www.shod.ai/admin/offer/offerproduct/%d/change/" % self.id
 
 
-class CouponCode(BaseModel):
-    coupon_code = models.CharField(max_length=100, null=True, blank=True, unique=True, )
-
-    def save(self, *args, **kwargs):
-        self.coupon_code = str(uuid.uuid4())[:6].upper()
-        super(CouponCode, self).save(*args, **kwargs)
-
-
 class CartOffer(BaseModel):
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
     sub_total_limit = models.IntegerField(default=0)
     updated_shipping_charge = models.FloatField(default=0)
     discount_amount = models.FloatField(default=0, blank=False, null=False, verbose_name='Discount Amount(%)')
     discount_limit = models.IntegerField(default=0)
-    coupon_code = models.ForeignKey(CouponCode, related_name='coupons', null=True, blank=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
     def __str__(self):
         return self.offer.offer_name + " on " + self.sub_total_limit
+
+
+class CouponCode(BaseModel):
+    coupon_code = models.CharField(max_length=100, null=True, blank=True, unique=True, )
+    cart_offer = models.ForeignKey(CartOffer, null=True, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        self.coupon_code = str(uuid.uuid4())[:6].upper()
+        super(CouponCode, self).save(*args, **kwargs)
