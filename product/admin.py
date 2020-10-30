@@ -4,6 +4,7 @@ from builtins import super
 
 from django.contrib import admin
 from django.forms import forms
+from django import forms
 from django.shortcuts import redirect, render
 from django.urls import path
 from django.utils.text import slugify
@@ -17,11 +18,25 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
+from retailer.models import Shop
 from utility.models import ProductUnit
 
 
 class CsvImportForm(forms.Form):
     csv_file = forms.FileField()
+
+
+class SelectShopForm(forms.Form):
+    shops = Shop.objects.all()
+    matrix = []
+    for sp in shops:
+        col = [sp.shop_name, sp.shop_name]
+        matrix.append(col)
+
+    SHOP_CHOICES = matrix
+
+    shop_name = forms.ChoiceField(label='Select a Shop', choices=SHOP_CHOICES,
+                                  widget=forms.RadioSelect())
 
 
 class ProductAdmin(MaterialModelAdmin):
@@ -30,7 +45,7 @@ class ProductAdmin(MaterialModelAdmin):
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
     autocomplete_fields = ('product_unit',)
-    actions = ["save_selected", "export_as_csv", "export_all_as_csv"]
+    actions = ["save_selected", "export_as_csv", "export_all_as_csv", "export_to_shop_product"]
 
     def save_selected(self, request, queryset):
         for obj in queryset:
@@ -78,6 +93,17 @@ class ProductAdmin(MaterialModelAdmin):
             path('import-csv/', self.import_csv),
         ]
         return my_urls + urls
+
+    def export_to_shop_product(self, request, queryset):
+        for obj in queryset:
+            print(obj.product_name)
+        return render(
+            request, "product/shop_product.html", {'items': queryset,
+                                                   'shop_type_form': SelectShopForm(),
+                                                   }
+        )
+
+    export_to_shop_product.short_description = "Export Selected Products to Shop"
 
     def import_csv(self, request):
         if request.method == "POST":

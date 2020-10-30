@@ -1,0 +1,18 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div>
+        <h2>Shop input fields</h2>
+        <form action="." method="POST" >
+            {% csrf_token %}
+            {{ shop_type_form }}
+
+            <p>Following products will be copied to shop with corresponding values:</p>
+
+            <ul>{{ items|unordered_list }}</ul>
+            <input type="submit" name="download" value="Submit" />
+        </form>
+    </div>
+    <br />
+
+{% endblock %}
