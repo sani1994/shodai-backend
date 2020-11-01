@@ -36,7 +36,7 @@ class SelectShopForm(forms.Form):
     SHOP_CHOICES = matrix
 
     shop_name = forms.ChoiceField(label='Select a Shop', choices=SHOP_CHOICES,
-                                  widget=forms.RadioSelect())
+                                  widget=forms.CheckboxSelectMultiple())
 
 
 class ProductAdmin(MaterialModelAdmin):

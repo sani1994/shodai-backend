@@ -1,8 +1,10 @@
 import graphene
+from django.utils import timezone
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
+from offer.models import OfferProduct
 from ..models import Product, ProductCategory, ShopCategory, ProductMeta
 from utility.models import ProductUnit
 from graphene import relay
@@ -17,6 +19,19 @@ class ProductNode(DjangoObjectType):
     @classmethod
     def get_queryset(cls, queryset, info):
         return queryset.filter(is_approved=True)
+
+    offer_price = graphene.Float()
+
+    def resolve_offer_price(self, info):
+        today = timezone.now()
+        offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today, product=self,
+                                                    offer_product_balance__gt=0)
+        if offer_product:
+            print(offer_product[0].offer_price)
+            return offer_product[0].offer_price
+        else:
+            return None
 
 
 class ProductType(DjangoObjectType):
@@ -65,7 +80,8 @@ class Query(graphene.ObjectType):
 
     def resolve_products_by_category(root, info, **kwargs):
         category = kwargs.get('category')
-        return Product.objects.filter(product_meta__product_category__pk=category, is_approved=True).order_by('-created_on')
+        return Product.objects.filter(product_meta__product_category__pk=category, is_approved=True).order_by(
+            '-created_on')
 
     def resolve_products_by_meta(root, info, **kwargs):
         meta_id = kwargs.get('meta_id')
