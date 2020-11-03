@@ -2,7 +2,7 @@ import csv
 import pandas as pd
 from builtins import super
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.forms import forms
 from django import forms
 from django.shortcuts import redirect, render
@@ -95,13 +95,20 @@ class ProductAdmin(MaterialModelAdmin):
         return my_urls + urls
 
     def export_to_shop_product(self, request, queryset):
-        for obj in queryset:
-            print(obj.product_name)
-        return render(
-            request, "product/shop_product.html", {'items': queryset,
-                                                   'shop_type_form': SelectShopForm(),
-                                                   }
-        )
+        if 'do_action' in request.POST:
+            form = SelectShopForm(request.POST)
+            if form.is_valid():
+                shop = form.cleaned_data['shop_name']
+                print(shop)
+                messages.success(request, 'shops were updated')
+                return
+        else:
+            form = SelectShopForm()
+
+        return render(request, 'product/shop_product.html',
+                      {'title': u'Choose shop',
+                       'objects': queryset,
+                       'form': form})
 
     export_to_shop_product.short_description = "Export Selected Products to Shop"
 
