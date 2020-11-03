@@ -40,7 +40,7 @@ class SelectShopForm(forms.Form):
 
 
 class ProductAdmin(MaterialModelAdmin):
-    list_filter = ('product_name', 'product_meta', 'is_approved')
+    list_filter = ('product_meta__product_category', 'product_meta','product_name', 'is_approved', )
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
@@ -54,8 +54,8 @@ class ProductAdmin(MaterialModelAdmin):
     save_selected.short_description = "Save Selected"
 
     def export_as_csv(self, request, queryset):
-        field_names = ['id', 'product_name', 'product_name_bn', 'product_unit', 'product_price',
-                       'product_last_price', 'price_with_vat', 'product_meta', 'is_approved', 'product_image']
+        field_names = ['id', 'product_name', 'product_name_bn', 'product_unit', 'product_price', 'product_last_price',
+                       'price_with_vat', 'product_category_name', 'product_meta', 'is_approved', 'product_image']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=product.csv'

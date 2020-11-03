@@ -119,3 +119,7 @@ class Product(BaseModel):
     @property
     def product_meta_name(self):
         return self.product_meta.name
+
+    @property
+    def product_category_name(self):
+        return self.product_meta.product_category.type_of_product
