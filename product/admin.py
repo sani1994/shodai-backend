@@ -40,7 +40,7 @@ class SelectShopForm(forms.Form):
 
 
 class ProductAdmin(MaterialModelAdmin):
-    list_filter = ('product_meta__product_category', 'product_meta','product_name', 'is_approved', )
+    list_filter = ('product_meta__product_category', 'product_meta', 'product_name', 'is_approved',)
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
@@ -122,34 +122,16 @@ class ProductAdmin(MaterialModelAdmin):
                 slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
                 print(slug)
                 if Product.objects.filter(slug=slug).exists():
-                    print("Product already exists in database")
-                    message = "row" + str(i) + "in your csv failed because of duplicate value"
-                    self.message_user(request, message)
+                    product = Product.objects.get(slug=slug)
+                    product.product_price = float(data["product_price"][i])
+                    product.is_approved = data["is_approved"][i]
+                    product.save()
+                    print("success")
+                    self.message_user(request, "Your csv file has been imported")
                 else:
-                    product_meta = ProductMeta.objects.filter(name=data["product_meta"][i])
-                    if product_meta.exists():
-                        unit = ProductUnit.objects.filter(product_unit=data["product_unit"][i])
-                        if unit.exists():
-                            product_unit = unit[0]
-                        else:
-                            product_unit = ProductUnit.objects.create(product_unit=data["product_unit"][i],
-                                                                      product_unit_bn=data["product_unit"][i])
-                        Product.objects.create(product_name=data["product_name"][i],
-                                               product_image=data["product_image"][i],
-                                               product_description=data["product_description"][i],
-                                               product_description_bn=data["product_description_bn"][i],
-                                               product_price=data["product_price"][i],
-                                               product_last_price=0,
-                                               is_approved=True,
-                                               product_unit=product_unit,
-                                               product_meta=product_meta[0]
-                                               )
-                        print("success")
-                        self.message_user(request, "Your csv file has been imported")
-                    else:
-                        print("Product meta not found")
-                        message = "row" + str(i) + "in your csv failed because product meta not found"
-                        self.message_user(request, message)
+                    print("Product does not exists in database")
+                    message = "row" + str(i) + "in your csv failed because product does not exist"
+                    self.message_user(request, message)
             return redirect("..")
         form = CsvImportForm()
         payload = {"form": form}
