@@ -117,7 +117,9 @@ class ProductAdmin(MaterialModelAdmin):
                     print(slug)
                     if Product.objects.filter(slug=slug).exists():
                         product = Product.objects.get(slug=slug)
+                        last_price = product.product_price
                         product.product_price = float(data["product_price"][i]) if not pd.isna(data["product_price"][i]) else product.product_price
+                        product.product_last_price = last_price
                         print(product.product_price)
                         product.is_approved = data["is_approved"][i] if not pd.isna(data["is_approved"][i]) else product.is_approved
                         product.save()
@@ -141,10 +143,11 @@ class ProductAdmin(MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
             old_obj = get_object_or_404(Product, id=obj.id)
-            # obj.product_last_price = old_obj.product_price
+            obj.product_last_price = old_obj.product_price
             obj.save()
         else:
             obj.created_by = request.user
+            obj.product_last_price = obj.product_price
             obj.save()
         return super().save_model(request, obj, form, change)
 
