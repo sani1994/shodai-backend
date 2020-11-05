@@ -11,7 +11,7 @@ from django.utils.text import slugify
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from rest_framework.generics import get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 from import_export import resources
@@ -27,16 +27,8 @@ class CsvImportForm(forms.Form):
 
 
 class SelectShopForm(forms.Form):
-    # shops = Shop.objects.all()
-    # matrix = []
-    # for sp in shops:
-    #     col = [sp.shop_name, sp.shop_name]
-    #     matrix.append(col)
-    #
-    # SHOP_CHOICES = matrix
-
     _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
-    tag = forms.ModelChoiceField(Shop.objects)
+    shop = forms.ModelChoiceField(Shop.objects)
     # shop_name = forms.ChoiceField(label='Select a Shop', choices=SHOP_CHOICES,
     #                               widget=forms.CheckboxSelectMultiple())
 
@@ -97,19 +89,18 @@ class ProductAdmin(MaterialModelAdmin):
         return my_urls + urls
 
     def export_to_shop_product(self, request, queryset):
-        if 'do_action' in request.POST:
+        if 'apply' in request.POST:
             form = SelectShopForm(request.POST)
             if form.is_valid():
-                shop = form.cleaned_data['shop_name']
+                shop = form.cleaned_data['shop']
                 print(shop)
                 messages.success(request, 'shops were updated')
-                return
-        else:
-            form = SelectShopForm()
+                return HttpResponseRedirect(request.get_full_path())
+
+        form = SelectShopForm(initial={'_selected_action': request.POST.getlist(admin.ACTION_CHECKBOX_NAME)})
 
         return render(request, 'product/shop_product.html',
-                      {'title': u'Choose shop',
-                       'objects': queryset,
+                      {'objects': queryset,
                        'form': form})
 
     export_to_shop_product.short_description = "Export Selected Products to Shop"
