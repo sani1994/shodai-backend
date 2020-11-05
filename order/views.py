@@ -205,8 +205,8 @@ class OrderProductList(APIView):
             order_instance = Order.objects.filter(pk=serializer.data['order'])[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
             delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-            time = TimeSlot.objects.filter(time=order_instance.delivery_date_time.time())[0]
-            print(time.slot)
+            # time = TimeSlot.objects.filter(time=order_instance.delivery_date_time.time())[0]
+            # print(time.slot)
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
             else:
@@ -265,7 +265,7 @@ class OrderProductList(APIView):
                  'mobile_no': order_instance.contact_number,
                  'order_date': order_instance.created_on.date(),
                  'delivery_date_time': str(
-                     order_instance.delivery_date_time.date()) + " ( " + time.slot + " )",
+                     order_instance.delivery_date_time.date()) + " ( " + str(order_instance.delivery_date_time.time()) + " )",
                  'sub_total': order_instance.order_total_price - delivery_charge,
                  'vat': total_vat,
                  'delivery_charge': delivery_charge,

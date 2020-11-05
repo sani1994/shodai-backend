@@ -27,16 +27,18 @@ class CsvImportForm(forms.Form):
 
 
 class SelectShopForm(forms.Form):
-    shops = Shop.objects.all()
-    matrix = []
-    for sp in shops:
-        col = [sp.shop_name, sp.shop_name]
-        matrix.append(col)
+    # shops = Shop.objects.all()
+    # matrix = []
+    # for sp in shops:
+    #     col = [sp.shop_name, sp.shop_name]
+    #     matrix.append(col)
+    #
+    # SHOP_CHOICES = matrix
 
-    SHOP_CHOICES = matrix
-
-    shop_name = forms.ChoiceField(label='Select a Shop', choices=SHOP_CHOICES,
-                                  widget=forms.CheckboxSelectMultiple())
+    _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+    tag = forms.ModelChoiceField(Shop.objects)
+    # shop_name = forms.ChoiceField(label='Select a Shop', choices=SHOP_CHOICES,
+    #                               widget=forms.CheckboxSelectMultiple())
 
 
 class ProductAdmin(MaterialModelAdmin):
@@ -119,18 +121,23 @@ class ProductAdmin(MaterialModelAdmin):
             length = len(data.index)
             # Create objects from passed in data
             for i in range(length):
-                slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
-                print(slug)
-                if Product.objects.filter(slug=slug).exists():
-                    product = Product.objects.get(slug=slug)
-                    product.product_price = float(data["product_price"][i])
-                    product.is_approved = data["is_approved"][i]
-                    product.save()
-                    print("success")
-                    self.message_user(request, "Your csv file has been imported")
+                if not pd.isna(data["product_name"][i]) and not pd.isna(data["product_unit"][i]):
+                    slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
+                    print(slug)
+                    if Product.objects.filter(slug=slug).exists():
+                        product = Product.objects.get(slug=slug)
+                        product.product_price = float(data["product_price"][i]) if not pd.isna(data["product_price"][i]) else product.product_price
+                        print(product.product_price)
+                        product.is_approved = data["is_approved"][i] if not pd.isna(data["is_approved"][i]) else product.is_approved
+                        product.save()
+                        self.message_user(request, "Your csv file has been imported")
+                    else:
+                        print("Product does not exists in database")
+                        message = "row" + str(i) + "in your csv failed because product does not exist"
+                        self.message_user(request, message)
                 else:
-                    print("Product does not exists in database")
-                    message = "row" + str(i) + "in your csv failed because product does not exist"
+                    print("Product name or unit is Nan")
+                    message = "row" + str(i) + "in your csv failed because of empty value"
                     self.message_user(request, message)
             return redirect("..")
         form = CsvImportForm()
