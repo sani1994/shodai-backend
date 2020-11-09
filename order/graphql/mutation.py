@@ -189,12 +189,10 @@ class SendEmail(graphene.Mutation):
             product_list_detail = []
             matrix = []
             for p in product_list:
-                col = [None] * 5
+                total = float(p.product.product_price) * p.order_product_qty
+                col = [p.product.product_name, p.product.product_price,
+                       p.order_product_qty, total]
                 matrix.append(col)
-                col[0] = p.product.product_name
-                col[1] = p.product.product_price
-                col[2] = p.order_product_qty
-                col[3] = float(col[1]) * col[2]
                 product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
                                            + str(p.order_product_qty) + "\n")
 

@@ -25,8 +25,7 @@ class ProductNode(DjangoObjectType):
     def resolve_offer_price(self, info):
         today = timezone.now()
         offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
-                                                    offer__offer_ends_in__gte=today, product=self,
-                                                    offer_product_balance__gt=0)
+                                                    offer__offer_ends_in__gte=today, product=self)
         if offer_product:
             print(offer_product[0].offer_price)
             return offer_product[0].offer_price
@@ -37,6 +36,18 @@ class ProductNode(DjangoObjectType):
 class ProductType(DjangoObjectType):
     class Meta:
         model = Product
+
+    offer_price = graphene.Float()
+
+    def resolve_offer_price(self, info):
+        today = timezone.now()
+        offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today, product=self)
+        if offer_product:
+            print(offer_product[0].offer_price)
+            return offer_product[0].offer_price
+        else:
+            return None
 
 
 class ProductMetaType(DjangoObjectType):
