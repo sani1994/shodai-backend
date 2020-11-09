@@ -192,6 +192,9 @@ class OrderProductList(APIView):
             responses = []
 
             for data in request.data:
+                if data['time_slot']:
+                    time = data['time_slot'].split('||')
+                    slot = time[0]
                 serializer = OrderProductSerializer(data=data, context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
@@ -230,7 +233,6 @@ class OrderProductList(APIView):
                 total_vat += vat
                 product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
                                            + str(p.order_product_qty) + "\n")
-            print(product_list_detail)
             order_instance.total_vat = total_vat
             order_instance.save()
 
@@ -264,8 +266,7 @@ class OrderProductList(APIView):
                  'shipping_address': address,
                  'mobile_no': order_instance.contact_number,
                  'order_date': order_instance.created_on.date(),
-                 'delivery_date_time': str(
-                     order_instance.delivery_date_time.date()) + " ( " + str(order_instance.delivery_date_time.time()) + " )",
+                 'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
                  'sub_total': order_instance.order_total_price - delivery_charge,
                  'vat': total_vat,
                  'delivery_charge': delivery_charge,

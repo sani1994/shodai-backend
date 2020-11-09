@@ -3,7 +3,7 @@
 {% block content %}
     <div>
         <h2>Shop input fields</h2>
-        <form action="" method="POST" >
+        <form action=" get_shop_product/" method="POST" enctype="multipart/form-data" >
             {% csrf_token %}
             {{ form }}
             <p>Copy to shop following products</p>

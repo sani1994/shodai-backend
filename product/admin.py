@@ -38,7 +38,7 @@ class ProductAdmin(MaterialModelAdmin):
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
-    autocomplete_fields = ('product_unit',)
+    autocomplete_fields = ('product_unit', 'product_meta',)
     actions = ["save_selected", "export_as_csv", "export_all_as_csv", "export_to_shop_product"]
 
     def save_selected(self, request, queryset):
@@ -85,11 +85,12 @@ class ProductAdmin(MaterialModelAdmin):
         urls = super().get_urls()
         my_urls = [
             path('import-csv/', self.import_csv),
+            path('get_shop_product/', self.get_shop_product),
         ]
         return my_urls + urls
 
     def export_to_shop_product(self, request, queryset):
-        if 'apply' in request.POST:
+        if request.method == 'POST':
             form = SelectShopForm(request.POST)
             if form.is_valid():
                 shop = form.cleaned_data['shop']
@@ -97,13 +98,23 @@ class ProductAdmin(MaterialModelAdmin):
                 messages.success(request, 'shops were updated')
                 return HttpResponseRedirect(request.get_full_path())
 
-        form = SelectShopForm(initial={'_selected_action': request.POST.getlist(admin.ACTION_CHECKBOX_NAME)})
+        form = SelectShopForm()
 
         return render(request, 'product/shop_product.html',
                       {'objects': queryset,
                        'form': form})
 
     export_to_shop_product.short_description = "Export Selected Products to Shop"
+
+    def get_shop_product(self, request):
+        if request.method == 'POST':
+            form = SelectShopForm(request.POST)
+            if form.is_valid():
+                shop = form.cleaned_data['shop']
+                print(shop)
+                messages.success(request, 'shops were updated')
+                response = redirect('/admin/product/')
+                return response
 
     def import_csv(self, request):
         if request.method == "POST":
@@ -200,6 +211,7 @@ class ProductMetaAdmin(admin.ModelAdmin):
     readonly_fields = ["created_by", "modified_by", ]
     list_display = ('id', 'name', 'product_category', 'shop_category', 'vat_amount')
     list_filter = ('product_category', 'shop_category')
+    search_fields = ['name']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
