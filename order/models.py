@@ -137,7 +137,7 @@ class OrderProduct(BaseModel):
         """Save order_product_price_with_vat field using price_with_vat from product object.
            Save order_product_price_with_vat field using price_with_vat from product object
         """
-        self.order_product_price_with_vat = self.product.price_with_vat
+        # self.order_product_price_with_vat = self.product.price_with_vat
         self.vat_amount = self.product.product_meta.vat_amount
         super(OrderProduct, self).save(*args, **kwargs)
 

@@ -27,7 +27,7 @@ class TimeSlotAdmin(MaterialModelAdmin):
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct
-    fields = ['product', 'order_product_qty', 'order_product_price']
+    fields = ['product', 'order_product_qty', 'order_product_price', 'order_product_price_with_vat']
 
     def has_add_permission(self, request, obj=None):
         return False

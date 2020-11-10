@@ -124,19 +124,33 @@ class CreateOrder(graphene.Mutation):
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.save()
-                datetime = order_instance.delivery_date_time.strftime("%m/%d/%Y, %H:%M:%S")
 
                 product_list = input.products
                 product_list_detail = []
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
-                    OrderProduct.objects.create(product=product,
-                                                order=Order.objects.get(pk=order_instance.pk),
-                                                order_product_price=product.product_price,
-                                                order_product_price_with_vat=product.price_with_vat,
-                                                vat_amount=product.product_meta.vat_amount,
-                                                order_product_qty=p.order_product_qty, )
+                    today = timezone.now()
+                    offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                                offer__offer_ends_in__gte=today, product=product)
+
+                    if offer_product.exists():
+                        price = float(offer_product[0].offer_price) + (float(
+                            offer_product[0].offer_price) * product.product_meta.vat_amount) / 100
+                        OrderProduct.objects.create(product=product,
+                                                    order=Order.objects.get(pk=order_instance.pk),
+                                                    order_product_price=offer_product[0].offer_price,
+                                                    order_product_price_with_vat=round(price),
+                                                    vat_amount=product.product_meta.vat_amount,
+                                                    order_product_qty=p.order_product_qty)
+
+                    else:
+                        OrderProduct.objects.create(product=product,
+                                                    order=Order.objects.get(pk=order_instance.pk),
+                                                    order_product_price=product.product_price,
+                                                    order_product_price_with_vat=product.price_with_vat,
+                                                    vat_amount=product.product_meta.vat_amount,
+                                                    order_product_qty=p.order_product_qty, )
                     product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                + str(p.order_product_qty) + "\n")
 
