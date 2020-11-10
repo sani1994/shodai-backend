@@ -14,6 +14,7 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
 
+from offer.models import OfferProduct
 from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot
@@ -188,11 +189,29 @@ class SendEmail(graphene.Mutation):
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
             product_list_detail = []
             matrix = []
+            price_without_offer = 0
+
             for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
-                col = [p.product.product_name, p.product.product_price,
-                       p.order_product_qty, total]
-                matrix.append(col)
+                today = timezone.now()
+                offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                            offer__offer_ends_in__gte=today, product=p.product)
+
+                if offer_product:
+                    is_offer = True
+
+                    total_by_offer = float(offer_product[0].offer_price) * p.order_product_qty
+                    col = [p.product.product_name, offer_product[0].offer_price,
+                           p.order_product_qty, total_by_offer]
+                    total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
+                    price_without_offer += total_with_vat
+                    matrix.append(col)
+                else:
+                    total = float(p.product.product_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_price,
+                           p.order_product_qty, total]
+                    total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
+                    price_without_offer += total_with_vat
+                    matrix.append(col)
                 product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
                                            + str(p.order_product_qty) + "\n")
 
@@ -215,7 +234,9 @@ class SendEmail(graphene.Mutation):
                  'vat': order_instance.total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
-                 'order_details': matrix
+                 'order_details': matrix,
+                 'is_offer': is_offer,
+                 'price_without_offer': float(round(price_without_offer))
                  }
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
@@ -242,7 +263,7 @@ class SendEmail(graphene.Mutation):
                    f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
                    f" \r\nOrder payment method: {invoice.payment_method}." \
                    f"\r\n \r\nThanks and Regards\r\nShodai "
-            print(invoice.paid_status)
+            print(is_offer)
             email_notification(sub, body)
 
             # # send sms to user

@@ -90,20 +90,8 @@ class Product(BaseModel):
 
     @property
     def product_price_with_vat(self):
-        if self.product_meta.vat:
-            return self.product_price + (self.product_price * self.product_meta.vat_amount) / 100
-        return self.product_price
-
-    @property
-    def vat_amount(self):
         if self.product_meta.vat_amount:
-            return (self.product_price * self.product_meta.vat_amount) / 100
-        return 0.0
-
-    @property
-    def product_price_with_vat(self):
-        if self.product_meta.vat:
-            return self.product_price + (self.product_price * self.product_meta.vat_amount) / 100
+            return float(self.product_price) + (float(self.product_price) * self.product_meta.vat_amount) / 100
         return self.product_price
 
     @property

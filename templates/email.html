@@ -149,14 +149,34 @@
                 <strong>৳{{vat}}</strong>
               </td>
             </tr>
-            <tr style="text-align: right;">
-              <td colspan="3" >
-                  <strong>Sub-Total:</strong>
-              </td>
-              <td style="text-align: center;">
-                <strong>৳{{sub_total}}</strong>
-              </td>
-            </tr>
+            {% if is_offer %}
+                <tr style="text-align: right;">
+                  <td colspan="3" >
+                      <strong>Regular-Price:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong><del><span style="color:red;font-weight:bold">৳{{price_without_offer}}</span></del></strong>
+                  </td>
+                </tr>
+                <tr style="text-align: right;">
+                  <td colspan="3" >
+                      <strong>Discounted-Price:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong>৳{{sub_total}}</strong>
+                  </td>
+                </tr>
+            {% else %}
+                <tr style="text-align: right;">
+                  <td colspan="3" >
+                      <strong>Sub-Total:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong>৳{{sub_total}}</strong>
+                  </td>
+                </tr>
+            {% endif %}
+
   
             <tr style="text-align: right;">
               <td colspan="3" >
