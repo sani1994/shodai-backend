@@ -120,6 +120,7 @@
             <tr>
               <th style="padding: 10px 0 10px 0;">Name</th>
               <th style="padding: 10px 0 10px 0;">Price</th>
+              <th style="padding: 10px 0 10px 0;">Discounted Price</th>
               <th style="padding: 10px 0 10px 0;">Quantity</th>
               <th style="padding: 10px 0 10px 0;">Total</th>
             </tr>
@@ -132,17 +133,26 @@
               <td style="text-align: center; border-bottom: 1px solid #BFBFBF">
                   <strong>৳{{o.1}}</strong>
               </td>
-              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>৳{{o.2}}</strong>
-              </td>
+              {% if o.2 == "--" %}
+                  <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                      <strong>{{o.2}}</strong>
+                  </td>
+              {% else %}
+                  <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                      <strong>৳{{o.2}}</strong>
+                  </td>
+              {% endif %}
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
                   <strong>৳{{o.3}}</strong>
+              </td>
+              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                  <strong>৳{{o.4}}</strong>
               </td>
             </tr>
             {% endfor %}
   
             <tr style="text-align: right;">
-              <td colspan="3" >
+              <td colspan="4" >
                   <strong>Vat:</strong>
               </td>
               <td style="text-align: center;">
@@ -151,7 +161,7 @@
             </tr>
             {% if is_offer %}
                 <tr style="text-align: right;">
-                  <td colspan="3" >
+                  <td colspan="4" >
                       <strong>Regular-Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
@@ -159,7 +169,7 @@
                   </td>
                 </tr>
                 <tr style="text-align: right;">
-                  <td colspan="3" >
+                  <td colspan="4" >
                       <strong>Discounted-Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
@@ -168,7 +178,7 @@
                 </tr>
             {% else %}
                 <tr style="text-align: right;">
-                  <td colspan="3" >
+                  <td colspan="4" >
                       <strong>Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
@@ -179,7 +189,7 @@
 
   
             <tr style="text-align: right;">
-              <td colspan="3" >
+              <td colspan="4" >
                   <strong>Shipping: </strong>
               </td>
               <td style="text-align: center;">
@@ -188,7 +198,7 @@
             </tr>
   
             <tr style="text-align: right;">
-              <td colspan="3" >
+              <td colspan="4" >
                 <strong>Total: </strong>
               </td>
               <td style="text-align: center;">

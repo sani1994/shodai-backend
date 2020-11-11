@@ -12,6 +12,7 @@ from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from num2words import num2words
 
+from offer.models import OfferProduct
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
 
 # Register your models here.
@@ -64,11 +65,21 @@ class OrderAdmin(MaterialModelAdmin):
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
             matrix = []
             for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
-                col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
-                       p.product.product_price, total]
-                matrix.append(col)
+                today = timezone.now()
+                offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                            offer__offer_ends_in__gte=today, product=p.product)
 
+                if offer_product.exists():
+                    total = float(offer_product[0].offer_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
+                           p.product.product_price, offer_product[0].offer_price, total]
+                    matrix.append(col)
+                else:
+                    total = float(p.product.product_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
+                           p.product.product_price, "--", total]
+                    matrix.append(col)
+            print(matrix)
             invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
             paid_status = invoice[0].paid_status
 

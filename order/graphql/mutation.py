@@ -195,16 +195,15 @@ class SendEmail(graphene.Mutation):
 
                 if offer_product:
                     is_offer = True
-
                     total_by_offer = float(offer_product[0].offer_price) * p.order_product_qty
-                    col = [p.product.product_name, offer_product[0].offer_price,
+                    col = [p.product.product_name, p.product.product_price, offer_product[0].offer_price,
                            p.order_product_qty, total_by_offer]
                     total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
                     price_without_offer += total_with_vat
                     matrix.append(col)
                 else:
                     total = float(p.product.product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_price,
+                    col = [p.product.product_name, p.product.product_price, "--",
                            p.order_product_qty, total]
                     total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
                     price_without_offer += total_with_vat

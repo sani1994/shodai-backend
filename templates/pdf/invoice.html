@@ -100,6 +100,7 @@
                     <th style="width:10%;">Weight</th>
                     <th style="width:10%;">Quantity</th>
                     <th style="width:10%;">Per Unit (BDT)</th>
+                    <th style="width:10%;">Offer Price</th>
                     <th style="width:10%;">Total Amount</th>
                 </tr>
                 {% for o in order_details %}
@@ -109,10 +110,11 @@
                     <td style="text-align: center;">{{o.2}}</td>
                     <td style="text-align: center;">{{o.3}}</td>
                     <td style="text-align: center;">{{o.4}}</td>
+                    <td style="text-align: center;">{{o.5}}</td>
                 </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="4" style="text-align: center;">
+                    <td colspan="5" style="text-align: center;">
                         Vat:
                     </td>
                     <td style="text-align: center;">
@@ -120,7 +122,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="4" style="text-align: center;">
+                    <td colspan="5" style="text-align: center;">
                         Delivery Charge:
                     </td>
                     <td style="text-align: center;">
@@ -128,7 +130,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="4" style="text-align: center;">
+                    <td colspan="5" style="text-align: center;">
                         Total Amount:
                     </td>
                     <td style="text-align: center;">
