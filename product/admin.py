@@ -85,7 +85,6 @@ class ProductAdmin(MaterialModelAdmin):
         urls = super().get_urls()
         my_urls = [
             path('import-csv/', self.import_csv),
-            path('get_shop_product/', self.get_shop_product),
         ]
         return my_urls + urls
 
@@ -98,23 +97,14 @@ class ProductAdmin(MaterialModelAdmin):
                 messages.success(request, 'shops were updated')
                 return HttpResponseRedirect(request.get_full_path())
 
-        form = SelectShopForm()
+        if not form:
+            form = SelectShopForm(initial={'_selected_action': request.POST.getlist(admin.ACTION_CHECKBOX_NAME)})
 
         return render(request, 'product/shop_product.html',
                       {'objects': queryset,
                        'form': form})
 
     export_to_shop_product.short_description = "Export Selected Products to Shop"
-
-    def get_shop_product(self, request):
-        if request.method == 'POST':
-            form = SelectShopForm(request.POST)
-            if form.is_valid():
-                shop = form.cleaned_data['shop']
-                print(shop)
-                messages.success(request, 'shops were updated')
-                response = redirect('/admin/product/')
-                return response
 
     def import_csv(self, request):
         if request.method == "POST":
@@ -125,24 +115,25 @@ class ProductAdmin(MaterialModelAdmin):
             for i in range(length):
                 if not pd.isna(data["product_name"][i]) and not pd.isna(data["product_unit"][i]):
                     slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
-                    print(slug)
+
                     if Product.objects.filter(slug=slug).exists():
                         product = Product.objects.get(slug=slug)
                         last_price = product.product_price
                         product.product_price = float(data["product_price"][i]) if not pd.isna(data["product_price"][i]) else product.product_price
-                        product.product_last_price = last_price
-                        print(product.product_price)
+                        if last_price != product.product_price:
+                            product.product_last_price = last_price
+
                         product.is_approved = data["is_approved"][i] if not pd.isna(data["is_approved"][i]) else product.is_approved
                         product.save()
-                        self.message_user(request, "Your csv file has been imported")
+                        messages.success(request, 'Your csv file has been imported')
                     else:
                         print("Product does not exists in database")
                         message = "row" + str(i) + "in your csv failed because product does not exist"
-                        self.message_user(request, message)
+                        messages.success(request, message)
                 else:
                     print("Product name or unit is Nan")
                     message = "row" + str(i) + "in your csv failed because of empty value"
-                    self.message_user(request, message)
+                    messages.success(request, message)
             return redirect("..")
         form = CsvImportForm()
         payload = {"form": form}

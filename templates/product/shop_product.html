@@ -3,14 +3,14 @@
 {% block content %}
     <div>
         <h2>Shop input fields</h2>
-        <form action=" get_shop_product/" method="POST" enctype="multipart/form-data" >
+        <form action="." method="POST" enctype="multipart/form-data" >
             {% csrf_token %}
             {{ form }}
             <p>Copy to shop following products</p>
             <ul>
                 {{ objects|unordered_list }}
             </ul>
-            <input type="hidden" name="action" value="add_product" />
+            <input type="hidden" name="action" value="export_to_shop_product" />
             <input type="submit" name="apply" value="Copy Product" />
         </form>
     </div>

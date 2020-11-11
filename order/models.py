@@ -4,6 +4,8 @@ from django.utils import timezone
 from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import ugettext_lazy as _
+
+from offer.models import OfferProduct
 from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
@@ -137,7 +139,17 @@ class OrderProduct(BaseModel):
         """Save order_product_price_with_vat field using price_with_vat from product object.
            Save order_product_price_with_vat field using price_with_vat from product object
         """
-        # self.order_product_price_with_vat = self.product.price_with_vat
+        today = timezone.now()
+        offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today, product=self.product)
+
+        if offer_product.exists():
+            price = float(offer_product[0].offer_price) + (float(
+                offer_product[0].offer_price) * self.product.product_meta.vat_amount) / 100
+            self.order_product_price_with_vat = round(price)
+            self.order_product_price = offer_product[0].offer_price
+        else:
+            self.order_product_price_with_vat = self.product.price_with_vat
         self.vat_amount = self.product.product_meta.vat_amount
         super(OrderProduct, self).save(*args, **kwargs)
 
