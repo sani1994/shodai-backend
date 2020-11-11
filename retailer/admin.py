@@ -65,7 +65,7 @@ class ShopAdmin(LeafletGeoAdminMixin, MaterialModelAdmin):
         if instances:
             for instance in instances:
                 if ShopProduct.objects.filter(product=instance.product, shop=instance.shop).exists():
-                    raise forms.ValidationError('Item already Exists in the shop')
+                    messages.success(request, 'Item already Exists in the shop')
                 else:
                     instance.is_approved = True
                     instance.product_unit = instance.product.product_unit

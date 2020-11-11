@@ -125,15 +125,16 @@ class ProductAdmin(MaterialModelAdmin):
 
                         product.is_approved = data["is_approved"][i] if not pd.isna(data["is_approved"][i]) else product.is_approved
                         product.save()
-                        messages.success(request, 'Your csv file has been imported')
                     else:
                         print("Product does not exists in database")
-                        message = "row" + str(i) + "in your csv failed because product does not exist"
+                        message = "row " + str(i) + " in your csv failed because product does not exist"
                         messages.success(request, message)
                 else:
                     print("Product name or unit is Nan")
-                    message = "row" + str(i) + "in your csv failed because of empty value"
+                    message = "row " + str(i) + " in your csv failed because of empty value"
                     messages.success(request, message)
+
+            messages.success(request, 'Your csv file has been imported')
             return redirect("..")
         form = CsvImportForm()
         payload = {"form": form}
