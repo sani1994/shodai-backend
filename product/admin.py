@@ -1,5 +1,6 @@
 import csv
 import pandas as pd
+import numpy as np
 from builtins import super
 
 from django.contrib import admin, messages
@@ -29,6 +30,7 @@ class CsvImportForm(forms.Form):
 class SelectShopForm(forms.Form):
     _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
     shop = forms.ModelChoiceField(Shop.objects)
+    # shop = forms.ModelMultipleChoiceField(Shop.objects, widget=forms.CheckboxSelectMultiple)
     # shop_name = forms.ChoiceField(label='Select a Shop', choices=SHOP_CHOICES,
     #                               widget=forms.CheckboxSelectMultiple())
 
@@ -108,33 +110,37 @@ class ProductAdmin(MaterialModelAdmin):
 
     def import_csv(self, request):
         if request.method == "POST":
-            csv_file = request.FILES["csv_file"]
-            data = pd.read_csv(csv_file)
+            data = pd.read_csv(request.FILES["csv_file"])
             length = len(data.index)
-            # Create objects from passed in data
+            count = 0
             for i in range(length):
-                if not pd.isna(data["product_name"][i]) and not pd.isna(data["product_unit"][i]):
+                if (not pd.isna(data["product_name"][i]) and not pd.isna(data["product_unit"][i]) and
+                        not pd.isna(data["product_price"][i]) and not pd.isna(data["is_approved"][i])):
                     slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
-
-                    if Product.objects.filter(slug=slug).exists():
-                        product = Product.objects.get(slug=slug)
-                        last_price = product.product_price
-                        product.product_price = float(data["product_price"][i]) if not pd.isna(data["product_price"][i]) else product.product_price
-                        if last_price != product.product_price:
-                            product.product_last_price = last_price
-
-                        product.is_approved = data["is_approved"][i] if not pd.isna(data["is_approved"][i]) else product.is_approved
-                        product.save()
+                    product = Product.objects.filter(slug=slug)
+                    if product:
+                        product = product[0]
+                        flag = False
+                        if isinstance(data["product_price"][i], (np.int64, np.float32)) and product.product_price != float(data["product_price"][i]):
+                            product.product_last_price = product.product_price
+                            product.product_price = float(data["product_price"][i])
+                            flag = True
+                        if isinstance(data["is_approved"][i], np.bool_) and product.is_approved != data["is_approved"][i]:
+                            product.is_approved = data["is_approved"][i]
+                            flag = True
+                        if flag:
+                            product.save()
+                            count += 1
                     else:
                         print("Product does not exists in database")
-                        message = "row " + str(i) + " in your csv failed because product does not exist"
-                        messages.success(request, message)
+                        # message = "row " + str(i) + " in your csv failed because product does not exist"
+                        # messages.success(request, message)
                 else:
-                    print("Product name or unit is Nan")
-                    message = "row " + str(i) + " in your csv failed because of empty value"
-                    messages.success(request, message)
+                    print("Required information is empty")
+                    # message = "row " + str(i) + " in your csv failed because of empty value"
+                    # messages.success(request, message)
 
-            messages.success(request, 'Your csv file has been imported')
+            messages.success(request, 'Successful: {}, Ignored: {}'.format(count, length-count))
             return redirect("..")
         form = CsvImportForm()
         payload = {"form": form}
