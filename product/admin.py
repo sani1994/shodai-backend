@@ -41,7 +41,14 @@ class ProductAdmin(MaterialModelAdmin):
     readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
     search_fields = ['product_name']
     autocomplete_fields = ('product_unit', 'product_meta',)
-    actions = ["save_selected", "export_as_csv", "export_all_as_csv", "export_to_shop_product"]
+    actions = ["save_selected", "export_as_csv", "export_all_as_csv", ]
+
+    def get_actions(self, request):
+        actions = super(ProductAdmin, self).get_actions(request)
+        if not request.user.is_superuser:
+            return []
+        else:
+            return actions
 
     def save_selected(self, request, queryset):
         for obj in queryset:

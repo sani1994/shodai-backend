@@ -60,6 +60,13 @@ class OrderAdmin(MaterialModelAdmin):
     actions = ["export_as_csv"]
     change_form_template = "order_admin_changeform.html"
 
+    def get_actions(self, request):
+        actions = super(OrderAdmin, self).get_actions(request)
+        if not request.user.is_superuser:
+            return []
+        else:
+            return actions
+
     def response_change(self, request, obj):
         if "_download-pdf" in request.POST:
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
@@ -185,6 +192,13 @@ class OrderProductAdmin(MaterialModelAdmin):
                        'order_product_qty', 'created_by', 'modified_by', 'created_on']
     actions = ["export_as_csv"]
 
+    def get_actions(self, request):
+        actions = super(OrderProductAdmin, self).get_actions(request)
+        if not request.user.is_superuser:
+            return []
+        else:
+            return actions
+
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'product', 'order', 'order_product_price',
                        'order_product_price_with_vat', 'vat_amount', 'order_product_qty', 'order_product_unit', ]
@@ -290,6 +304,13 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
     )
 
     actions = ["export_as_csv"]
+
+    def get_actions(self, request):
+        actions = super(InvoiceInfoAdmin, self).get_actions(request)
+        if not request.user.is_superuser:
+            return []
+        else:
+            return actions
 
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'invoice_number', 'order_number', 'net_payable_amount', 'payment_method',

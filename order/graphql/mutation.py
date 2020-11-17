@@ -237,30 +237,11 @@ class SendEmail(graphene.Mutation):
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', user.email
+            bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to], bcc=[bcc])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
-
-            """
-            To send notification to admin
-            """
-            sub = "Order Placed"
-            body = f"Dear Concern,\r\nUser phone number :{user.mobile_number} \r\nUser type: {user.user_type} " \
-                   f"posted an order from shodai website with the following details" \
-                   f" \r\nOrder id: {order_instance.pk}." \
-                   f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
-                   f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
-                   f" \r\nOrder delivery area: {order_instance.delivery_place}." \
-                   f" \r\nOrder delivery address: {order_instance.address}." \
-                   f" \r\nOrder Sub total price: {order_instance.order_total_price - order_instance.total_vat - delivery_charge}." \
-                   f" \r\nOrder vat amount: {order_instance.total_vat}." \
-                   f" \r\nOrder delivery charge: {delivery_charge}." \
-                   f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
-                   f" \r\nOrder payment method: {invoice.payment_method}." \
-                   f"\r\n \r\nThanks and Regards\r\nShodai "
-            print(is_offer)
-            email_notification(sub, body)
 
             # # send sms to user
             # sms_body = f"Dear " + client_name + \

@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 app_name = 'shodaiAdmin'
 urlpatterns = [
-    path('refresh/', jwt_views.TokenRefreshView.as_view(),
+    path('adminRefresh/', jwt_views.TokenRefreshView.as_view(),
          name='token_refresh'),
     path('adminLogin/', views.AdminLogin.as_view()),
     path('adminLogout/', views.Logout.as_view()),

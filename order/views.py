@@ -236,27 +236,6 @@ class OrderProductList(APIView):
             order_instance.total_vat = total_vat
             order_instance.save()
 
-            """
-            To send notification to admin
-            """
-            sub = "Order Placed"
-            body = f"Dear Concern,\r\nUser phone number :{request.user.mobile_number} \r\nUser type: " \
-                   f"{request.user.user_type} posted an order from shodai app with the following details" \
-                   f"\r\nOrder id: {order_instance.pk}." \
-                   f" \r\nOrdered product list with quantity:\n {' '.join(product_list_detail)}" \
-                   f" \r\nOrder delivery date and time: {order_instance.delivery_date_time}." \
-                   f" \r\nOrder delivery address: {address}." \
-                   f" \r\nOrder Sub-total price: {order_instance.order_total_price - total_vat - delivery_charge}." \
-                   f" \r\nOrder vat amount: {total_vat}." \
-                   f" \r\nOrder delivery charge: {delivery_charge}." \
-                   f" \r\nOrder net payable amount: {order_instance.order_total_price}." \
-                   f" \r\nOrder payment method: {invoice.payment_method}." \
-                   f"\r\n \r\nThanks and Regards\r\nShodai "
-            email_notification(sub, body)
-            """
-            Notification code ends here
-            """
-
             # send email to user
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
@@ -276,8 +255,9 @@ class OrderProductList(APIView):
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
+            bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to], bcc=[bcc])
             msg.attach_alternative(html_content, "text/html")
             mail_flag = msg.send()
             if mail_flag:
