@@ -22,11 +22,13 @@ class UserProfile(AbstractUser):
     RETAILER = 'RT'
     PRODUCER = 'PD'
     STAFF = 'SF'
+    VENDOR = 'VN'
     USER_TYPES_CHOICES = [
         (CUSTOMER, 'Customer'),
         (RETAILER, 'Retailer'),
         (PRODUCER, 'Producer'),
-        (STAFF, 'Staff')
+        (STAFF, 'Staff'),
+        (VENDOR, 'Vendor')
     ]
     user_type = models.CharField(max_length=30, choices=USER_TYPES_CHOICES, default=CUSTOMER)
     user_image = models.ImageField(upload_to='user/%Y/%m/%d',blank=True, null=True)

@@ -38,7 +38,7 @@ class AdminAuth(IsAdminUser):
 
         try:
             is_blacklisted = BlackListedToken.objects.get(
-                user=get_user_object(username=username), token=token)
+                user=UserProfile.objects.filter(username=username, user_type="SF")[0], token=token)
 
             if is_blacklisted:
                 return False
