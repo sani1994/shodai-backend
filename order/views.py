@@ -203,7 +203,6 @@ class OrderProductList(APIView):
                 else:
                     response = {'rspns': serializer.errors, 'status_code': status.HTTP_400_BAD_REQUEST}
                     responses.append(response)
-            print(serializer.data['order'])
 
             order_instance = Order.objects.filter(pk=serializer.data['order'])[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
@@ -227,7 +226,7 @@ class OrderProductList(APIView):
             total_vat = 0
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
-                col = [p.product.product_name, p.product.product_price, p.order_product_qty, total]
+                col = [p.product.product_name, p.product.product_price, "--", p.order_product_qty, total]
                 matrix.append(col)
                 vat = float(p.product.price_with_vat) * p.order_product_qty - total
                 total_vat += vat
