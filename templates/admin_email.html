@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml">
+  <head>
+    <title>Shodai Order Invoice</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
+
+    <style>
+      @font-face {
+        font-family: 'Source Sans Pro Regular';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url(https://fonts.gstatic.com/s/sourcesanspro/v13/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7lujVj9w.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'Source Sans Pro SemiBold';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: local('Source Sans Pro SemiBold'), local('SourceSansPro-SemiBold'), url(https://fonts.gstatic.com/s/sourcesanspro/v13/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwlxdu3cOWxw.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      .container{
+        max-width: 600px;
+        padding:0 50px;
+        font-family: 'Source Sans Pro Regular';
+        color: #222;
+        font-size: 14px;
+      }
+      .container strong{
+        font-weight: 600;
+        font-family: "Source Sans Pro SemiBold";
+      }
+      .container  .productsTable thead tr th{
+        padding: 10px 0;
+      }
+      .productRow td{
+        border-bottom: 1px solid #BFBFBF;padding: 7px 0;
+      }
+      
+    </style>
+  </head>
+
+  <body>
+    <center>
+      <div class="container" style="max-width: 600px;padding: 0px 20px 0 20px;font-size: 16px;">
+        <table style="font-size:16px">
+            <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
+  
+            <tbody>
+              <tr>
+                <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
+              </tr>
+              <tr>
+                <td>
+                  Thank you for shopping with us. We have attached below is the
+                  summary of your order <strong>#{{order_id}}</strong><br/><br/>
+                  You just saved
+                  yourself 2 hours by avoiding traffic, bargaining and crowded
+                  superstores. Go and spend some time with your family. Enjoy!!<br/><br/>
+                  By sharing your experience about this purchase you can help other
+                  shoppers, like yourself, to pick the best products on Shodai.
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding-bottom: 20px;"><br/><strong>Thank you again for shopping with Shodai</strong></td>
+              </tr>
+              <tr>
+                <td>Thanks & Regards</td>
+              </tr>
+              <tr>
+                <td><strong>Team Shodai</strong></td>
+              </tr>
+              
+            </tbody>
+        </table>
+  
+        <hr style="border:1px solid #E8E8E8; margin: 30px 0 15px 0"/>
+  
+        <table style="text-align: center;width: 100%;" class="">
+          <thead>
+            <tr style="color:#545454;">
+              <th style="padding-bottom: 15px;"><strong>SHIPPING ADDRESS</strong></th>
+              <th style="padding-bottom: 15px"><strong>ORDER DETAILS</strong></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+                <td style="background:#fbfced">
+                  {{shipping_address}}<br />
+                  <strong>Mobile</strong><br />
+                  {{mobile_no}}
+                </td>
+  
+                <td style="background:#fbfced">
+                  <p>
+                    <strong>Order Number#</strong>
+                    {{order_id}}
+                  </p>
+                  <p>
+                    <strong>Platform:</strong>
+                    {{platform}}
+                  </p>
+                  <p>
+                    <strong>Date Ordered:</strong>
+                    {{order_date}}
+                  </p>
+                  <p>
+                    <strong>Preferred Delivery Slot</strong></br>
+                    {{delivery_date_time}}
+                  </p>
+                </td>
+            </tr>
+          </tbody>
+        </table>
+  
+        <table style="width: 100%" class="productsTable">
+          <caption style="text-align: center;"><h2 style="margin: 25px 0 13px 0">Your order</h2></caption>
+          <thead style="background:#222222;color: #fff">
+            <tr>
+              <th style="padding: 10px 0 10px 0;">Name</th>
+              <th style="padding: 10px 0 10px 0;">Price</th>
+              <th style="padding: 10px 0 10px 0;">Discounted Price</th>
+              <th style="padding: 10px 0 10px 0;">Quantity</th>
+              <th style="padding: 10px 0 10px 0;">Total</th>
+            </tr>
+          </thead>
+  
+          <tbody>
+            {% for o in order_details %}
+            <tr class="productRow">
+              <td style="border-bottom: 1px solid #BFBFBF;padding: 7px 0;">{{o.0}}</td>
+              <td style="text-align: center; border-bottom: 1px solid #BFBFBF">
+                  <strong>৳{{o.1}}</strong>
+              </td>
+              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                  <strong>{{o.2}}</strong>
+              </td>
+              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                  <strong>৳{{o.3}}</strong>
+              </td>
+              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                  <strong>৳{{o.4}}</strong>
+              </td>
+            </tr>
+            {% endfor %}
+  
+            <tr style="text-align: right;">
+              <td colspan="4" >
+                  <strong>Vat:</strong>
+              </td>
+              <td style="text-align: center;">
+                <strong>৳{{vat}}</strong>
+              </td>
+            </tr>
+            {% if is_offer %}
+                <tr style="text-align: right;">
+                  <td colspan="4" >
+                      <strong>Regular-Sub-Total:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong><del><span style="color:red;font-weight:bold">৳{{price_without_offer}}</span></del></strong>
+                  </td>
+                </tr>
+                <tr style="text-align: right;">
+                  <td colspan="4" >
+                      <strong>Discounted-Sub-Total:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong>৳{{sub_total}}</strong>
+                  </td>
+                </tr>
+            {% else %}
+                <tr style="text-align: right;">
+                  <td colspan="4" >
+                      <strong>Sub-Total:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong>৳{{sub_total}}</strong>
+                  </td>
+                </tr>
+            {% endif %}
+
+  
+            <tr style="text-align: right;">
+              <td colspan="4" >
+                  <strong>Shipping: </strong>
+              </td>
+              <td style="text-align: center;">
+                <strong>৳{{delivery_charge}}</strong>
+              </td>
+            </tr>
+  
+            <tr style="text-align: right;">
+              <td colspan="4" >
+                <strong>Total: </strong>
+              </td>
+              <td style="text-align: center;">
+                <strong>৳{{total}}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+  
+          <!-- -->
+          <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
+          <div style="text-align: center;">
+            <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>
+            <p style="line-height: 20px;">Helpline: <strong>09614-161271</strong><br/>
+              Feel free to contact us at (customer support): <strong>help@shod.ai.com</strong></p>
+          </div>
+        
+          <hr style="border:1px solid #E8E8E8"></hr>
+            
+          <div style="text-align: center;padding-bottom: 30px;padding-top: 10px">
+            <p style="font-size: 20px;line-height: 24px;"><strong>Download Mobile App</strong></p>
+            <a href="https://play.google.com/store/apps/details?id=com.mtl.shodaiapp" rel="noopener noreferrer"><img src="https://i.ibb.co/DD955M2/playstore.png" alt="google playstore link"/></a>
+          </div>
+  
+          <div style="text-align: center; background-color:#E5E5E5; color:#5D7079; line-height: 24px;font-size: 16px;padding: 26px 0;">
+            &copy; 2020 Shodai  |  All rights reserved<br>
+            Monico Bhaban, 26-27, Ring Road, Adabar, Dhaka -1207    
+          </div>
+      </div>
+    </center>
+  </body>
+</html>

@@ -83,19 +83,16 @@ class OrderAdmin(MaterialModelAdmin):
                     col = [p.product.product_name, p.product.product_price, offer_product[0].offer_price,
                            p.order_product_qty, total]
                     matrix.append(col)
-                    total_with_vat_regular = float(p.product.product_price_with_vat) * p.order_product_qty
-                    price_without_offer += total_with_vat_regular
-                    total_with_vat = float(p.order_product_price_with_vat) * p.order_product_qty
-                    sub_total += total_with_vat
                 else:
                     total = float(p.product.product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, "--",
                            p.order_product_qty, total]
                     matrix.append(col)
-                    total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
-                    price_without_offer += total_with_vat
-                    sub_total += total_with_vat
-            print(matrix)
+                total_with_vat_regular = float(p.product.product_price_with_vat) * p.order_product_qty
+                price_without_offer += total_with_vat_regular
+                total_with_vat = float(p.order_product_price_with_vat) * p.order_product_qty
+                sub_total += total_with_vat
+
             invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
             paid_status = invoice[0].paid_status
 

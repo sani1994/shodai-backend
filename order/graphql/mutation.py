@@ -153,7 +153,7 @@ class CreateOrder(graphene.Mutation):
                                            delivery_date_time=order_instance.delivery_date_time,
                                            delivery_charge=delivery_charge,
                                            discount_amount=sub_total - (
-                                                       float(order_instance.order_total_price) - delivery_charge),
+                                                   float(order_instance.order_total_price) - delivery_charge),
                                            net_payable_amount=input.net_pay_able_amount,
                                            payment_method=input.payment_method,
                                            order_number=order_instance,
@@ -243,13 +243,39 @@ class SendEmail(graphene.Mutation):
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', user.email
-            bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
+            # bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to], bcc=[bcc])
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
-            # # send sms to user
+            """
+            To send notification to admin
+            """
+            content = {'user_name': client_name,
+                       'order_id': order_instance.pk,
+                       'platform': "Website",
+                       'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                       'mobile_no': order_instance.contact_number,
+                       'order_date': order_instance.created_on.date(),
+                       'delivery_date_time': str(
+                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'sub_total': sub_total,
+                       'vat': order_instance.total_vat,
+                       'delivery_charge': delivery_charge,
+                       'total': order_instance.order_total_price,
+                       'order_details': matrix,
+                       'is_offer': is_offer,
+                       'price_without_offer': float(round(price_without_offer))
+                       }
+            admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'
+            admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
+            html_admin = get_template('admin_email.html')
+            html_content = html_admin.render(content)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, [admin_email])
+            msg_to_admin.attach_alternative(html_content, "text/html")
+            msg_to_admin.send()
+
             # sms_body = f"Dear " + client_name + \
             #            ",\r\n\nYour order #" + str(order_instance.pk) + \
             #            " has been placed. Your total payable amount is " + \

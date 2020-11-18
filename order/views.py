@@ -249,7 +249,8 @@ class OrderProductList(APIView):
                  'vat': total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
-                 'order_details': matrix
+                 'order_details': matrix,
+                 'is_offer': False,
                  }
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
@@ -258,11 +259,32 @@ class OrderProductList(APIView):
             html_content = htmly.render(d)
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to], bcc=[bcc])
             msg.attach_alternative(html_content, "text/html")
-            mail_flag = msg.send()
-            if mail_flag:
-                print("mail sent successfully")
-            else:
-                print("an error occurred while sending the email")
+            msg.send()
+
+            """
+            To send notification to admin
+            """
+            content = {'user_name': billing_person_name,
+                       'order_id': order_instance.pk,
+                       'platform': "App",
+                       'shipping_address': address,
+                       'mobile_no': order_instance.contact_number,
+                       'order_date': order_instance.created_on.date(),
+                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
+                       'sub_total': order_instance.order_total_price - delivery_charge,
+                       'vat': total_vat,
+                       'delivery_charge': delivery_charge,
+                       'total': order_instance.order_total_price,
+                       'order_details': matrix,
+                       'is_offer': False,
+                       }
+            admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'
+            admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
+            html_admin = get_template('admin_email.html')
+            html_content = html_admin.render(content)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, [admin_email])
+            msg_to_admin.attach_alternative(html_content, "text/html")
+            msg_to_admin.send()
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
