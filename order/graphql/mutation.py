@@ -127,32 +127,38 @@ class CreateOrder(graphene.Mutation):
 
                 product_list = input.products
                 product_list_detail = []
+                sub_total = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
+                    total_with_vat = float(product.price_with_vat) * p.order_product_qty
+                    sub_total += total_with_vat
                     OrderProduct.objects.create(product=product,
                                                 order=Order.objects.get(pk=order_instance.pk),
-                                                order_product_price=product.product_price,
                                                 order_product_qty=p.order_product_qty, )
                     product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
                                                + str(p.order_product_qty) + "\n")
 
+                print(sub_total)
                 # Create InvoiceInfo Instance
                 billing_person_name = user.first_name + " " + user.last_name
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-                invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                                     billing_person_name=billing_person_name,
-                                                     billing_person_email=user.email,
-                                                     billing_person_mobile_number=user.mobile_number,
-                                                     delivery_contact_number=order_instance.contact_number,
-                                                     delivery_address=order_instance.address.road,
-                                                     delivery_date_time=order_instance.delivery_date_time,
-                                                     delivery_charge=delivery_charge,
-                                                     net_payable_amount=input.net_pay_able_amount,
-                                                     payment_method=input.payment_method,
-                                                     order_number=order_instance,
-                                                     user=user,
-                                                     created_by=user)
+
+                InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                           billing_person_name=billing_person_name,
+                                           billing_person_email=user.email,
+                                           billing_person_mobile_number=user.mobile_number,
+                                           delivery_contact_number=order_instance.contact_number,
+                                           delivery_address=order_instance.address.road,
+                                           delivery_date_time=order_instance.delivery_date_time,
+                                           delivery_charge=delivery_charge,
+                                           discount_amount=sub_total - (
+                                                       float(order_instance.order_total_price) - delivery_charge),
+                                           net_payable_amount=input.net_pay_able_amount,
+                                           payment_method=input.payment_method,
+                                           order_number=order_instance,
+                                           user=user,
+                                           created_by=user)
                 return CreateOrder(order=order_instance)
             else:
                 raise Exception('Unauthorized request!')

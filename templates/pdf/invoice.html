@@ -73,14 +73,14 @@
             </div>
 
         <div class='details'>
-            <td style="margin: 25px 0 13px 0"><strong>SHODAI</strong></td><br/><br/>
+            <td style="margin: 25px 0 13px 0"><strong>SHODAI</strong></td><br/>
             </tr>
               <tr>
                 <td>
                   Monico Bhaban, 26-27, Ring Road, Adabor.<br/>
                   Mohammodpur, Dhaka, Bangladesh<br/>
                   <strong>Help Line: 09614-161271</strong><br/>
-                  <strong>Web: https://www.shod.ai</strong><br/><br/>
+                  <strong>Web: https://www.shod.ai</strong><br/>
 
                 </td>
               </tr>
@@ -96,12 +96,11 @@
 
             <table style="margin: 25px 0 13px 0; width: 100%" class="productsTable">
                 <tr class="productRow">
-                    <th style="width:40%;">Item Name</th>
-                    <th style="width:10%;">Weight</th>
+                    <th style="width:40%;">Name</th>
+                    <th style="width:10%;">Price (BDT)</th>
+                    <th style="width:10%;">Discounted Price</th>
                     <th style="width:10%;">Quantity</th>
-                    <th style="width:10%;">Per Unit (BDT)</th>
-                    <th style="width:10%;">Offer Price</th>
-                    <th style="width:10%;">Total Amount</th>
+                    <th style="width:10%;">Total</th>
                 </tr>
                 {% for o in order_details %}
                 <tr class="productRow">
@@ -110,28 +109,54 @@
                     <td style="text-align: center;">{{o.2}}</td>
                     <td style="text-align: center;">{{o.3}}</td>
                     <td style="text-align: center;">{{o.4}}</td>
-                    <td style="text-align: center;">{{o.5}}</td>
                 </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="5" style="text-align: center;">
+                    <td colspan="4" style="text-align: center;">
                         Vat:
                     </td>
                     <td style="text-align: center;">
                         {{vat}}
                     </td>
                 </tr>
+                {% if is_offer %}
+                    <tr>
+                        <td colspan="4" style="text-align: center;">
+                            Regular-Sub-Total:
+                        </td>
+                        <td style="text-align: center;">
+                            <del><span style="color:black;font-weight:bold">{{price_without_offer}}</span></del>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="text-align: center;">
+                            Discounted-Sub-Total:
+                        </td>
+                        <td style="text-align: center;">
+                            {{sub_total}}
+                        </td>
+                    </tr>
+                {% else %}
+                     <tr>
+                        <td colspan="4" style="text-align: center;">
+                            Sub-Total:
+                        </td>
+                        <td style="text-align: center;">
+                            {{sub_total}}
+                        </td>
+                    </tr>
+                {% endif %}
                 <tr>
-                    <td colspan="5" style="text-align: center;">
-                        Delivery Charge:
+                    <td colspan="4" style="text-align: center;">
+                        Shipping Charge:
                     </td>
                     <td style="text-align: center;">
                         {{delivery}}
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="5" style="text-align: center;">
-                        Total Amount:
+                    <td colspan="4" style="text-align: center;">
+                        Total:
                     </td>
                     <td style="text-align: center;">
                         {{total}}

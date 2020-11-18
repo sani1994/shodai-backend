@@ -150,6 +150,7 @@ class OrderProduct(BaseModel):
             self.order_product_price = offer_product[0].offer_price
         else:
             self.order_product_price_with_vat = self.product.price_with_vat
+            self.order_product_price = self.product.product_price
         self.vat_amount = self.product.product_meta.vat_amount
         super(OrderProduct, self).save(*args, **kwargs)
 

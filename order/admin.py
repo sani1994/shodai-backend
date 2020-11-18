@@ -71,21 +71,30 @@ class OrderAdmin(MaterialModelAdmin):
         if "_download-pdf" in request.POST:
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
             matrix = []
+            price_without_offer, sub_total = 0, 0
             for p in product_list:
                 today = timezone.now()
                 offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
                                                             offer__offer_ends_in__gte=today, product=p.product)
 
                 if offer_product.exists():
+                    is_offer = True
                     total = float(offer_product[0].offer_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
-                           p.product.product_price, offer_product[0].offer_price, total]
+                    col = [p.product.product_name, p.product.product_price, offer_product[0].offer_price,
+                           p.order_product_qty, total]
                     matrix.append(col)
+                    total_with_vat_regular = float(p.product.product_price_with_vat) * p.order_product_qty
+                    price_without_offer += total_with_vat_regular
+                    total_with_vat = float(p.order_product_price_with_vat) * p.order_product_qty
+                    sub_total += total_with_vat
                 else:
                     total = float(p.product.product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
-                           p.product.product_price, "--", total]
+                    col = [p.product.product_name, p.product.product_price, "--",
+                           p.order_product_qty, total]
                     matrix.append(col)
+                    total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
+                    price_without_offer += total_with_vat
+                    sub_total += total_with_vat
             print(matrix)
             invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
             paid_status = invoice[0].paid_status
@@ -107,10 +116,13 @@ class OrderAdmin(MaterialModelAdmin):
                 'order_details': matrix,
                 'delivery': DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
                 'vat': obj.total_vat,
+                'price_without_offer': float(round(price_without_offer)),
+                'sub_total': sub_total,
                 'total': obj.order_total_price,
                 'in_words': num2words(obj.order_total_price),
                 'payment_method': payment_method if paid_status else 'Cash on Delivery',
                 'paid_status': paid_status,
+                'is_offer': is_offer,
                 'downloaded_on': datetime.datetime.now().replace(microsecond=0)
             }
             pdf = render_to_pdf('pdf/invoice.html', data)

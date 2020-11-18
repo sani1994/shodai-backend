@@ -116,44 +116,51 @@ class ProductAdmin(MaterialModelAdmin):
     export_to_shop_product.short_description = "Export Selected Products to Shop"
 
     def import_csv(self, request):
-        if request.method == "POST":
-            data = pd.read_csv(request.FILES["csv_file"])
-            length = len(data.index)
-            count = 0
-            for i in range(length):
-                if (not pd.isna(data["product_name"][i]) and not pd.isna(data["product_unit"][i]) and
-                        not pd.isna(data["product_price"][i]) and not pd.isna(data["is_approved"][i])):
-                    slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
-                    product = Product.objects.filter(slug=slug)
-                    if product:
-                        product = product[0]
-                        flag = False
-                        if isinstance(data["product_price"][i], (np.int64, np.float32)) and product.product_price != float(data["product_price"][i]):
-                            product.product_last_price = product.product_price
-                            product.product_price = float(data["product_price"][i])
-                            flag = True
-                        if isinstance(data["is_approved"][i], np.bool_) and product.is_approved != data["is_approved"][i]:
-                            product.is_approved = data["is_approved"][i]
-                            flag = True
-                        if flag:
-                            product.save()
-                            count += 1
-                    else:
-                        print("Product does not exists in database")
-                        # message = "row " + str(i) + " in your csv failed because product does not exist"
-                        # messages.success(request, message)
-                else:
-                    print("Required information is empty")
-                    # message = "row " + str(i) + " in your csv failed because of empty value"
-                    # messages.success(request, message)
-
-            messages.success(request, 'Successful: {}, Ignored: {}'.format(count, length-count))
+        if not request.user.is_superuser:
+            messages.success(request, "You are not authorised for this action")
             return redirect("..")
-        form = CsvImportForm()
-        payload = {"form": form}
-        return render(
-            request, "product/csv_form.html", payload
-        )
+        else:
+            if request.method == "POST":
+                data = pd.read_csv(request.FILES["csv_file"])
+                length = len(data.index)
+                count = 0
+                for i in range(length):
+                    if (not pd.isna(data["product_name"][i]) and not pd.isna(data["product_unit"][i]) and
+                            not pd.isna(data["product_price"][i]) and not pd.isna(data["is_approved"][i])):
+                        slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
+                        product = Product.objects.filter(slug=slug)
+                        if product:
+                            product = product[0]
+                            flag = False
+                            if isinstance(data["product_price"][i],
+                                          (np.int64, np.float32)) and product.product_price != float(
+                                    data["product_price"][i]):
+                                product.product_last_price = product.product_price
+                                product.product_price = float(data["product_price"][i])
+                                flag = True
+                            if isinstance(data["is_approved"][i], np.bool_) and product.is_approved != \
+                                    data["is_approved"][i]:
+                                product.is_approved = data["is_approved"][i]
+                                flag = True
+                            if flag:
+                                product.save()
+                                count += 1
+                        else:
+                            print("Product does not exists in database")
+                            # message = "row " + str(i) + " in your csv failed because product does not exist"
+                            # messages.success(request, message)
+                    else:
+                        print("Required information is empty")
+                        # message = "row " + str(i) + " in your csv failed because of empty value"
+                        # messages.success(request, message)
+
+                messages.success(request, 'Successful: {}, Ignored: {}'.format(count, length - count))
+                return redirect("..")
+            form = CsvImportForm()
+            payload = {"form": form}
+            return render(
+                request, "product/csv_form.html", payload
+            )
 
     def save_model(self, request, obj, form, change):
         if obj.id:
