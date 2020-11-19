@@ -255,9 +255,9 @@ class OrderProductList(APIView):
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
-            bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
+            # bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to], bcc=[bcc])
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
@@ -282,7 +282,7 @@ class OrderProductList(APIView):
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, [admin_email])
+            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
             msg_to_admin.send()
             return Response(responses)

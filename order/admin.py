@@ -72,6 +72,7 @@ class OrderAdmin(MaterialModelAdmin):
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
             matrix = []
             price_without_offer, sub_total = 0, 0
+            is_offer = False
             for p in product_list:
                 today = timezone.now()
                 offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
@@ -109,7 +110,6 @@ class OrderAdmin(MaterialModelAdmin):
                 'invoice_number': obj.invoice_number,
                 'created_on': obj.created_on,
                 'delivery_date': obj.delivery_date_time.date(),
-                'delivery_time': obj.delivery_date_time.time(),
                 'order_details': matrix,
                 'delivery': DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
                 'vat': obj.total_vat,

@@ -193,7 +193,7 @@ class SendEmail(graphene.Mutation):
             product_list_detail = []
             matrix = []
             price_without_offer = 0
-
+            is_offer = False
             for p in product_list:
                 today = timezone.now()
                 offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
@@ -272,7 +272,7 @@ class SendEmail(graphene.Mutation):
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, [admin_email])
+            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
             msg_to_admin.send()
 
