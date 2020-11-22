@@ -40,7 +40,7 @@
       .productRow td{
         border-bottom: 1px solid #BFBFBF;padding: 7px 0;
       }
-      
+
     </style>
   </head>
 
@@ -49,7 +49,7 @@
       <div class="container" style="max-width: 600px;padding: 0px 20px 0 20px;font-size: 16px;">
         <table style="font-size:16px">
             <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
-  
+
             <tbody>
               <tr>
                 <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
@@ -63,7 +63,7 @@
                   superstores. Go and spend some time with your family. Enjoy!!<br/><br/>
                   By sharing your experience about this purchase you can help other
                   shoppers, like yourself, to pick the best products on Shodai.
-                  
+
                 </td>
               </tr>
               <tr>
@@ -75,12 +75,12 @@
               <tr>
                 <td><strong>Team Shodai</strong></td>
               </tr>
-              
+
             </tbody>
         </table>
-  
+
         <hr style="border:1px solid #E8E8E8; margin: 30px 0 15px 0"/>
-  
+
         <table style="text-align: center;width: 100%;" class="">
           <thead>
             <tr style="color:#545454;">
@@ -95,7 +95,7 @@
                   <strong>Mobile</strong><br />
                   {{mobile_no}}
                 </td>
-  
+
                 <td style="background:#fbfced">
                   <p>
                     <strong>Order Number#</strong><br />
@@ -113,19 +113,22 @@
             </tr>
           </tbody>
         </table>
-  
+
         <table style="width: 100%" class="productsTable">
           <caption style="text-align: center;"><h2 style="margin: 25px 0 13px 0">Your order</h2></caption>
           <thead style="background:#222222;color: #fff">
             <tr>
               <th style="padding: 10px 0 10px 0;">Name</th>
               <th style="padding: 10px 0 10px 0;">Price</th>
+              {% if is_offer %}
               <th style="padding: 10px 0 10px 0;">Discounted Price</th>
+              {% endif %}
               <th style="padding: 10px 0 10px 0;">Quantity</th>
               <th style="padding: 10px 0 10px 0;">Total</th>
             </tr>
+
           </thead>
-  
+
           <tbody>
             {% for o in order_details %}
             <tr class="productRow">
@@ -133,9 +136,11 @@
               <td style="text-align: center; border-bottom: 1px solid #BFBFBF">
                   <strong>৳{{o.1}}</strong>
               </td>
+              {% if is_offer %}
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
                   <strong>{{o.2}}</strong>
               </td>
+              {% endif %}
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
                   <strong>৳{{o.3}}</strong>
               </td>
@@ -144,9 +149,9 @@
               </td>
             </tr>
             {% endfor %}
-  
+
             <tr style="text-align: right;">
-              <td colspan="4" >
+              <td colspan={{colspan_value}} >
                   <strong>Vat:</strong>
               </td>
               <td style="text-align: center;">
@@ -172,7 +177,7 @@
                 </tr>
             {% else %}
                 <tr style="text-align: right;">
-                  <td colspan="4" >
+                  <td colspan={{colspan_value}} >
                       <strong>Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
@@ -181,18 +186,18 @@
                 </tr>
             {% endif %}
 
-  
+
             <tr style="text-align: right;">
-              <td colspan="4" >
+              <td colspan={{colspan_value}} >
                   <strong>Shipping: </strong>
               </td>
               <td style="text-align: center;">
                 <strong>৳{{delivery_charge}}</strong>
               </td>
             </tr>
-  
+
             <tr style="text-align: right;">
-              <td colspan="4" >
+              <td colspan={{colspan_value}} >
                 <strong>Total: </strong>
               </td>
               <td style="text-align: center;">
@@ -201,25 +206,25 @@
             </tr>
           </tbody>
         </table>
-  
+
           <!-- -->
           <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
           <div style="text-align: center;">
             <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>
             <p style="line-height: 20px;">Helpline: <strong>09614-161271</strong><br/>
-              Feel free to contact us at (customer support): <strong>help@shod.ai.com</strong></p>
+              Feel free to contact us at (customer support): <strong>help@shod.ai</strong></p>
           </div>
-        
+
           <hr style="border:1px solid #E8E8E8"></hr>
-            
+
           <div style="text-align: center;padding-bottom: 30px;padding-top: 10px">
             <p style="font-size: 20px;line-height: 24px;"><strong>Download Mobile App</strong></p>
             <a href="https://play.google.com/store/apps/details?id=com.mtl.shodaiapp" rel="noopener noreferrer"><img src="https://i.ibb.co/DD955M2/playstore.png" alt="google playstore link"/></a>
           </div>
-  
+
           <div style="text-align: center; background-color:#E5E5E5; color:#5D7079; line-height: 24px;font-size: 16px;padding: 26px 0;">
             &copy; 2020 Shodai  |  All rights reserved<br>
-            Monico Bhaban, 26-27, Ring Road, Adabar, Dhaka -1207    
+            Monico Bhaban, 26-27, Ring Road, Adabar, Dhaka -1207
           </div>
       </div>
     </center>

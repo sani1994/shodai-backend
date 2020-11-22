@@ -71,10 +71,10 @@ class OrderAdmin(MaterialModelAdmin):
         if "_download-pdf" in request.POST:
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
             matrix = []
-            price_without_offer, sub_total = 0, 0
+            price_without_offer = sub_total = 0
             is_offer = False
+            today = timezone.now()
             for p in product_list:
-                today = timezone.now()
                 offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
                                                             offer__offer_ends_in__gte=today, product=p.product)
 

@@ -190,32 +190,22 @@ class SendEmail(graphene.Mutation):
                 order_instance.save()
 
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
-            product_list_detail = []
             matrix = []
             price_without_offer = 0
             is_offer = False
             for p in product_list:
-                today = timezone.now()
-                offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
-                                                            offer__offer_ends_in__gte=today, product=p.product)
-
-                if offer_product:
+                if p.order_product_price != p.product.product_price:
                     is_offer = True
-                    total_by_offer = float(offer_product[0].offer_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_price, offer_product[0].offer_price,
+                    total_by_offer = float(p.order_product_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_price, p.order_product_price,
                            p.order_product_qty, total_by_offer]
-                    total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
-                    price_without_offer += total_with_vat
-                    matrix.append(col)
                 else:
                     total = float(p.product.product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, "--",
                            p.order_product_qty, total]
-                    total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
-                    price_without_offer += total_with_vat
-                    matrix.append(col)
-                product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
-                                           + str(p.order_product_qty) + "\n")
+                matrix.append(col)
+                total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
+                price_without_offer += total_with_vat
 
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
@@ -238,12 +228,12 @@ class SendEmail(graphene.Mutation):
                  'total': order_instance.order_total_price,
                  'order_details': matrix,
                  'is_offer': is_offer,
-                 'price_without_offer': float(round(price_without_offer))
+                 'price_without_offer': float(round(price_without_offer)),
+                 'colspan_value': "4" if is_offer else "3"
                  }
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', user.email
-            # bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_content = htmly.render(d)
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
             msg.attach_alternative(html_content, "text/html")
