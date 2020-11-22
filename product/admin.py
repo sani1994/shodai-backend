@@ -98,16 +98,13 @@ class ProductAdmin(MaterialModelAdmin):
         return my_urls + urls
 
     def export_to_shop_product(self, request, queryset):
-        if request.method == 'POST':
-            form = SelectShopForm(request.POST)
+        form = SelectShopForm(request.POST)
+        if request.POST.get('apply') == 'Copy Product':
             if form.is_valid():
                 shop = form.cleaned_data['shop']
                 print(shop)
                 messages.success(request, 'shops were updated')
                 return HttpResponseRedirect(request.get_full_path())
-
-        if not form:
-            form = SelectShopForm(initial={'_selected_action': request.POST.getlist(admin.ACTION_CHECKBOX_NAME)})
 
         return render(request, 'product/shop_product.html',
                       {'objects': queryset,
