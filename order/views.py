@@ -245,12 +245,13 @@ class OrderProductList(APIView):
                  'mobile_no': order_instance.contact_number,
                  'order_date': order_instance.created_on.date(),
                  'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
-                 'sub_total': order_instance.order_total_price - delivery_charge,
+                 'sub_total': order_instance.order_total_price - order_instance.total_vat - delivery_charge,
                  'vat': total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix,
                  'is_offer': False,
+                 'colspan_value': "3"
                  }
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
@@ -264,6 +265,7 @@ class OrderProductList(APIView):
             """
             To send notification to admin
             """
+            paid_status = invoice.paid_status
             content = {'user_name': billing_person_name,
                        'order_id': order_instance.pk,
                        'platform': "App",
@@ -271,12 +273,16 @@ class OrderProductList(APIView):
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
                        'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
+                       'invoice_number': invoice.invoice_number,
+                       'payment_method': 'Online Payment' if paid_status else 'Cash on Delivery',
+                       'paid_status': paid_status,
                        'sub_total': order_instance.order_total_price - delivery_charge,
                        'vat': total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
                        'is_offer': False,
+                       'colspan_value': "3"
                        }
             admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')

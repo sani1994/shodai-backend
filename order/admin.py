@@ -73,22 +73,19 @@ class OrderAdmin(MaterialModelAdmin):
             matrix = []
             price_without_offer = sub_total = 0
             is_offer = False
-            today = timezone.now()
-            for p in product_list:
-                offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
-                                                            offer__offer_ends_in__gte=today, product=p.product)
 
-                if offer_product.exists():
+            for p in product_list:
+                if p.order_product_price != p.product.product_price:
                     is_offer = True
-                    total = float(offer_product[0].offer_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_price, offer_product[0].offer_price,
+                    total = float(p.order_product_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_price, p.order_product_price,
                            p.order_product_qty, total]
-                    matrix.append(col)
+
                 else:
                     total = float(p.product.product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, "--",
                            p.order_product_qty, total]
-                    matrix.append(col)
+                matrix.append(col)
                 total_with_vat_regular = float(p.product.product_price_with_vat) * p.order_product_qty
                 price_without_offer += total_with_vat_regular
                 total_with_vat = float(p.order_product_price_with_vat) * p.order_product_qty
@@ -120,6 +117,7 @@ class OrderAdmin(MaterialModelAdmin):
                 'payment_method': payment_method if paid_status else 'Cash on Delivery',
                 'paid_status': paid_status,
                 'is_offer': is_offer,
+                'colspan_value': "4" if is_offer else "3",
                 'downloaded_on': datetime.datetime.now().replace(microsecond=0)
             }
             pdf = render_to_pdf('pdf/invoice.html', data)

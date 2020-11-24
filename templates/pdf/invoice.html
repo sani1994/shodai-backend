@@ -97,7 +97,9 @@
                 <tr class="productRow">
                     <th style="width:40%;">Name</th>
                     <th style="width:10%;">Price (BDT)</th>
+                    {% if is_offer %}
                     <th style="width:10%;">Discounted Price</th>
+                    {% endif %}
                     <th style="width:10%;">Quantity</th>
                     <th style="width:10%;">Total</th>
                 </tr>
@@ -105,13 +107,15 @@
                 <tr class="productRow">
                     <td style="text-align: left;">{{o.0}}</td>
                     <td style="text-align: center;">{{o.1}}</td>
+                    {% if is_offer %}
                     <td style="text-align: center;">{{o.2}}</td>
+                    {% endif %}
                     <td style="text-align: center;">{{o.3}}</td>
                     <td style="text-align: center;">{{o.4}}</td>
                 </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="4" style="text-align: center;">
+                    <td colspan={{colspan_value}} style="text-align: center;">
                         Vat:
                     </td>
                     <td style="text-align: center;">
@@ -120,7 +124,7 @@
                 </tr>
                 {% if is_offer %}
                     <tr>
-                        <td colspan="4" style="text-align: center;">
+                        <td colspan="{{colspan_value}}" style="text-align: center;">
                             Regular-Sub-Total:
                         </td>
                         <td style="text-align: center;">
@@ -128,7 +132,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="text-align: center;">
+                        <td colspan={{colspan_value}} style="text-align: center;">
                             Discounted-Sub-Total:
                         </td>
                         <td style="text-align: center;">
@@ -137,7 +141,7 @@
                     </tr>
                 {% else %}
                      <tr>
-                        <td colspan="4" style="text-align: center;">
+                        <td colspan={{colspan_value}} style="text-align: center;">
                             Sub-Total:
                         </td>
                         <td style="text-align: center;">
@@ -146,7 +150,7 @@
                     </tr>
                 {% endif %}
                 <tr>
-                    <td colspan="4" style="text-align: center;">
+                    <td colspan={{colspan_value}} style="text-align: center;">
                         Shipping Charge:
                     </td>
                     <td style="text-align: center;">
@@ -154,7 +158,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="4" style="text-align: center;">
+                    <td colspan={{colspan_value}} style="text-align: center;">
                         Total:
                     </td>
                     <td style="text-align: center;">

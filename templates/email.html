@@ -56,19 +56,18 @@
               </tr>
               <tr>
                 <td>
-                  Thank you for shopping with us. We have attached below is the
-                  summary of your order <strong>#{{order_id}}</strong><br/><br/>
-                  You just saved
-                  yourself 2 hours by avoiding traffic, bargaining and crowded
-                  superstores. Go and spend some time with your family. Enjoy!!<br/><br/>
-                  By sharing your experience about this purchase you can help other
-                  shoppers, like yourself, to pick the best products on Shodai.
+                  Thank you for ordering in Shodai.<strong>Your order number is #{{order_id}}.</strong><br/><br/>
+                  Hooray! You have just saved your time and energy by ordering from Shodai.
+                  Hope these valuable times will be beneficial for your other activities.<br/><br/>
+                  We know you are excited to get your grocery just on your doorstep.
+                  The Shodai team has already started working hard to pick and pack your product and deliver it within 24 hours.
+                  Now take a look below for the summary details of your order.<br/><br/>
+                  Please share your experience with others about shopping in Shodai, and help them to find fresh and
+                  organic products and grow a healthy community.
 
                 </td>
               </tr>
-              <tr>
-                <td style="padding-bottom: 20px;"><br/><strong>Thank you again for shopping with Shodai</strong></td>
-              </tr>
+
               <tr>
                 <td>Thanks & Regards</td>
               </tr>
@@ -137,12 +136,18 @@
                   <strong>৳{{o.1}}</strong>
               </td>
               {% if is_offer %}
-              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>{{o.2}}</strong>
-              </td>
+                 {% if o.2 == "--" %}
+                     <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                         <strong>--</strong>
+                     </td>
+                 {% else %}
+                     <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                         <strong>৳{{o.2}}</strong>
+                     </td>
+                 {% endif %}
               {% endif %}
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>৳{{o.3}}</strong>
+                  <strong>{{o.3}}</strong>
               </td>
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
                   <strong>৳{{o.4}}</strong>
@@ -150,29 +155,22 @@
             </tr>
             {% endfor %}
 
-            <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
-                  <strong>Vat:</strong>
-              </td>
-              <td style="text-align: center;">
-                <strong>৳{{vat}}</strong>
-              </td>
-            </tr>
+
             {% if is_offer %}
                 <tr style="text-align: right;">
                   <td colspan="4" >
-                      <strong>Regular-Sub-Total:</strong>
+                      <strong>Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
-                      <strong><del><span style="color:red;font-weight:bold">৳{{price_without_offer}}</span></del></strong>
+                      <strong>৳{{sub_total}}</strong>
                   </td>
                 </tr>
                 <tr style="text-align: right;">
                   <td colspan="4" >
-                      <strong>Discounted-Sub-Total:</strong>
+                      <strong>You Saved:</strong>
                   </td>
                   <td style="text-align: center;">
-                      <strong>৳{{sub_total}}</strong>
+                      <strong><span style="color:red;font-weight:bold">৳{{price_without_offer}}</span></strong>
                   </td>
                 </tr>
             {% else %}
@@ -185,8 +183,14 @@
                   </td>
                 </tr>
             {% endif %}
-
-
+            <tr style="text-align: right;">
+              <td colspan={{colspan_value}} >
+                  <strong>Vat:</strong>
+              </td>
+              <td style="text-align: center;">
+                <strong>৳{{vat}}</strong>
+              </td>
+            </tr>
             <tr style="text-align: right;">
               <td colspan={{colspan_value}} >
                   <strong>Shipping: </strong>

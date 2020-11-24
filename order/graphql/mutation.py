@@ -222,13 +222,13 @@ class SendEmail(graphene.Mutation):
                  'order_date': order_instance.created_on.date(),
                  'delivery_date_time': str(
                      order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                 'sub_total': sub_total,
+                 'sub_total': sub_total - order_instance.total_vat,
                  'vat': order_instance.total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix,
                  'is_offer': is_offer,
-                 'price_without_offer': float(round(price_without_offer)),
+                 'price_without_offer': float(round(price_without_offer) - sub_total),
                  'colspan_value': "4" if is_offer else "3"
                  }
 
@@ -242,6 +242,7 @@ class SendEmail(graphene.Mutation):
             """
             To send notification to admin
             """
+            paid_status = invoice.paid_status
             content = {'user_name': client_name,
                        'order_id': order_instance.pk,
                        'platform': "Website",
@@ -250,13 +251,17 @@ class SendEmail(graphene.Mutation):
                        'order_date': order_instance.created_on.date(),
                        'delivery_date_time': str(
                            order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'sub_total': sub_total,
+                       'invoice_number': invoice.invoice_number,
+                       'payment_method': 'Online Payment' if paid_status else 'Cash on Delivery',
+                       'paid_status': paid_status,
+                       'sub_total': sub_total - order_instance.total_vat,
                        'vat': order_instance.total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
                        'is_offer': is_offer,
-                       'price_without_offer': float(round(price_without_offer))
+                       'price_without_offer': float(round(price_without_offer) - sub_total),
+                       'colspan_value': "4" if is_offer else "3"
                        }
             admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
