@@ -116,7 +116,7 @@ class OrderAdmin(MaterialModelAdmin):
                 'total': obj.order_total_price,
                 'in_words': num2words(obj.order_total_price),
                 'payment_method': payment_method if paid_status else 'Cash on Delivery',
-                'paid_status': 'Paid' if paid_status else 'Not Paid',
+                'paid_status': paid_status,
                 'is_offer': is_offer,
                 'colspan_value': "4" if is_offer else "3",
                 'downloaded_on': datetime.datetime.now().replace(microsecond=0)
