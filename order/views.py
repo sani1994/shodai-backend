@@ -226,7 +226,7 @@ class OrderProductList(APIView):
             total_vat = 0
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
-                col = [p.product.product_name, p.product.product_price, "--", p.order_product_qty, total]
+                col = [p.product.product_name, p.product.product_price, "--", int(p.order_product_qty), total]
                 matrix.append(col)
                 vat = float(p.product.price_with_vat) * p.order_product_qty - total
                 total_vat += vat
@@ -275,8 +275,8 @@ class OrderProductList(APIView):
                        'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
                        'invoice_number': invoice.invoice_number,
                        'payment_method': 'Online Payment' if paid_status else 'Cash on Delivery',
-                       'paid_status': paid_status,
-                       'sub_total': order_instance.order_total_price - delivery_charge,
+                       'paid_status': 'Paid' if paid_status else 'Not Paid',
+                       'sub_total': order_instance.order_total_price - total_vat - delivery_charge,
                        'vat': total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,

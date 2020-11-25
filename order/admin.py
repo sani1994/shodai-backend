@@ -71,7 +71,7 @@ class OrderAdmin(MaterialModelAdmin):
         if "_download-pdf" in request.POST:
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
             matrix = []
-            price_without_offer = sub_total = 0
+            price_without_offer = 0
             is_offer = False
 
             for p in product_list:
@@ -79,18 +79,19 @@ class OrderAdmin(MaterialModelAdmin):
                     is_offer = True
                     total = float(p.order_product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, p.order_product_price,
-                           p.order_product_qty, total]
+                           int(p.order_product_qty), total]
 
                 else:
                     total = float(p.product.product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, "--",
-                           p.order_product_qty, total]
+                           int(p.order_product_qty), total]
                 matrix.append(col)
-                total_with_vat_regular = float(p.product.product_price_with_vat) * p.order_product_qty
-                price_without_offer += total_with_vat_regular
-                total_with_vat = float(p.order_product_price_with_vat) * p.order_product_qty
-                sub_total += total_with_vat
+                total_without_vat_regular = float(p.product.product_price) * p.order_product_qty
+                price_without_offer += total_without_vat_regular
 
+            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+            #  total without vat
+            sub_total = obj.order_total_price - obj.total_vat - delivery_charge
             invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
             paid_status = invoice[0].paid_status
 
@@ -108,14 +109,14 @@ class OrderAdmin(MaterialModelAdmin):
                 'created_on': obj.created_on,
                 'delivery_date': obj.delivery_date_time.date(),
                 'order_details': matrix,
-                'delivery': DeliveryCharge.objects.get().delivery_charge_inside_dhaka,
+                'delivery': delivery_charge,
                 'vat': obj.total_vat,
-                'price_without_offer': float(round(price_without_offer)),
+                'saved_amount': float(round(price_without_offer) - sub_total),
                 'sub_total': sub_total,
                 'total': obj.order_total_price,
                 'in_words': num2words(obj.order_total_price),
                 'payment_method': payment_method if paid_status else 'Cash on Delivery',
-                'paid_status': paid_status,
+                'paid_status': 'Paid' if paid_status else 'Not Paid',
                 'is_offer': is_offer,
                 'colspan_value': "4" if is_offer else "3",
                 'downloaded_on': datetime.datetime.now().replace(microsecond=0)

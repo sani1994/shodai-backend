@@ -63,8 +63,7 @@
                   The Shodai team has already started working hard to pick and pack your product and deliver it within 24 hours.
                   Now take a look below for the summary details of your order.<br/><br/>
                   Please share your experience with others about shopping in Shodai, and help them to find fresh and
-                  organic products and grow a healthy community.
-
+                  organic products and grow a healthy community.<br/><br/>
                 </td>
               </tr>
 
@@ -83,7 +82,7 @@
         <table style="text-align: center;width: 100%;" class="">
           <thead>
             <tr style="color:#545454;">
-              <th style="padding-bottom: 15px;"><strong>SHIPPING ADDRESS</strong></th>
+              <th style="padding-bottom: 15px;"><strong>SHIPPING DETAILS</strong></th>
               <th style="padding-bottom: 15px"><strong>ORDER DETAILS</strong></th>
             </tr>
           </thead>
@@ -159,20 +158,21 @@
             {% if is_offer %}
                 <tr style="text-align: right;">
                   <td colspan="4" >
+                      <strong>You Saved:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong><span style="color:red;font-weight:bold">৳{{saved_amount}}</span></strong>
+                  </td>
+                </tr>
+                <tr style="text-align: right;">
+                  <td colspan="4" >
                       <strong>Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
                       <strong>৳{{sub_total}}</strong>
                   </td>
                 </tr>
-                <tr style="text-align: right;">
-                  <td colspan="4" >
-                      <strong>You Saved:</strong>
-                  </td>
-                  <td style="text-align: center;">
-                      <strong><span style="color:red;font-weight:bold">৳{{price_without_offer}}</span></strong>
-                  </td>
-                </tr>
+
             {% else %}
                 <tr style="text-align: right;">
                   <td colspan={{colspan_value}} >

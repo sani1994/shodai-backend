@@ -57,7 +57,7 @@
               <tr>
                 <td>
                   Customer with phone number :+8801770432777
-                  posted an order with order number <strong>#{{order_id}}.</strong><br/><br/>
+                  placed an order with order number <strong>#{{order_id}}.</strong><br/><br/>
                   The details are given below.<br/>
                 </td>
               </tr>
@@ -124,7 +124,7 @@
                     {{payment_method}}
                   </p>
                   <p>
-                    <strong>Paid Status:</strong>
+                    <strong>Payment Status:</strong>
                     {{paid_status}}
                   </p>
 
@@ -178,18 +178,18 @@
             {% if is_offer %}
                 <tr style="text-align: right;">
                   <td colspan={{colspan_value}} >
-                      <strong>Sub-Total:</strong>
+                      <strong>You Saved:</strong>
                   </td>
                   <td style="text-align: center;">
-                      <strong>৳{{sub_total}}</strong>
+                      <strong><span style="color:red;font-weight:bold">৳{{saved_amount}}</span></strong>
                   </td>
                 </tr>
                 <tr style="text-align: right;">
                   <td colspan={{colspan_value}} >
-                      <strong>You Saved:</strong>
+                      <strong>Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
-                      <strong><span style="color:red;font-weight:bold">৳{{price_without_offer}}</span></strong>
+                      <strong>৳{{sub_total}}</strong>
                   </td>
                 </tr>
             {% else %}

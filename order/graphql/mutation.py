@@ -198,21 +198,22 @@ class SendEmail(graphene.Mutation):
                     is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, p.order_product_price,
-                           p.order_product_qty, total_by_offer]
+                           int(p.order_product_qty), total_by_offer]
                 else:
                     total = float(p.product.product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, "--",
-                           p.order_product_qty, total]
+                           int(p.order_product_qty), total]
                 matrix.append(col)
-                total_with_vat = float(p.product.product_price_with_vat) * p.order_product_qty
-                price_without_offer += total_with_vat
+                total_without_vat = float(p.product.product_price) * p.order_product_qty
+                price_without_offer += total_without_vat
 
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
 
             time_slot = TimeSlot.objects.get(id=input.time_slot_id)
             delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-            sub_total = order_instance.order_total_price - delivery_charge
+            #  total without vat
+            sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             client_name = user.first_name + " " + user.last_name
 
             d = {'user_name': client_name,
@@ -222,13 +223,13 @@ class SendEmail(graphene.Mutation):
                  'order_date': order_instance.created_on.date(),
                  'delivery_date_time': str(
                      order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                 'sub_total': sub_total - order_instance.total_vat,
+                 'sub_total': sub_total,
                  'vat': order_instance.total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix,
                  'is_offer': is_offer,
-                 'price_without_offer': float(round(price_without_offer) - sub_total),
+                 'saved_amount': float(round(price_without_offer) - sub_total),
                  'colspan_value': "4" if is_offer else "3"
                  }
 
@@ -253,14 +254,14 @@ class SendEmail(graphene.Mutation):
                            order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'invoice_number': invoice.invoice_number,
                        'payment_method': 'Online Payment' if paid_status else 'Cash on Delivery',
-                       'paid_status': paid_status,
-                       'sub_total': sub_total - order_instance.total_vat,
+                       'paid_status': 'Paid' if paid_status else 'Not Paid',
+                       'sub_total': sub_total,
                        'vat': order_instance.total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
                        'is_offer': is_offer,
-                       'price_without_offer': float(round(price_without_offer) - sub_total),
+                       'saved_amount': float(round(price_without_offer) - sub_total),
                        'colspan_value': "4" if is_offer else "3"
                        }
             admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'

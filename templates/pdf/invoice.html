@@ -114,26 +114,19 @@
                     <td style="text-align: center;">{{o.4}}</td>
                 </tr>
                 {% endfor %}
-                <tr>
-                    <td colspan={{colspan_value}} style="text-align: center;">
-                        Vat:
-                    </td>
-                    <td style="text-align: center;">
-                        {{vat}}
-                    </td>
-                </tr>
+
                 {% if is_offer %}
                     <tr>
                         <td colspan="{{colspan_value}}" style="text-align: center;">
-                            Regular-Sub-Total:
+                            You Saved:
                         </td>
                         <td style="text-align: center;">
-                            <del><span style="color:black;font-weight:bold">{{price_without_offer}}</span></del>
+                            <span style="color:black;font-weight:bold">{{saved_amount}}</span>
                         </td>
                     </tr>
                     <tr>
                         <td colspan={{colspan_value}} style="text-align: center;">
-                            Discounted-Sub-Total:
+                            Sub-Total:
                         </td>
                         <td style="text-align: center;">
                             {{sub_total}}
@@ -149,6 +142,14 @@
                         </td>
                     </tr>
                 {% endif %}
+                <tr>
+                    <td colspan={{colspan_value}} style="text-align: center;">
+                        Vat:
+                    </td>
+                    <td style="text-align: center;">
+                        {{vat}}
+                    </td>
+                </tr>
                 <tr>
                     <td colspan={{colspan_value}} style="text-align: center;">
                         Shipping Charge:
