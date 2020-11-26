@@ -71,31 +71,30 @@ class OrderAdmin(MaterialModelAdmin):
         if "_download-pdf" in request.POST:
             product_list = OrderProduct.objects.filter(order__pk=obj.id)
             matrix = []
-            price_without_offer = 0
+            total_price_without_offer = 0
             is_offer = False
-
             for p in product_list:
+                total = float(p.product.product_price) * p.order_product_qty
+                total_price_without_offer += total
                 if p.order_product_price != p.product.product_price:
                     is_offer = True
-                    total = float(p.order_product_price) * p.order_product_qty
+                    total_by_offer = float(p.order_product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, p.order_product_price,
-                           int(p.order_product_qty), total]
-
+                           int(p.order_product_qty), total_by_offer]
                 else:
-                    total = float(p.product.product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_price, "--",
                            int(p.order_product_qty), total]
                 matrix.append(col)
-                total_without_vat_regular = float(p.product.product_price) * p.order_product_qty
-                price_without_offer += total_without_vat_regular
 
-            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-            #  total without vat
-            sub_total = obj.order_total_price - obj.total_vat - delivery_charge
             invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
-            paid_status = invoice[0].paid_status
+            if not invoice:
+                return HttpResponse("Not found")
+            invoice = invoice[0]
+            delivery_charge = invoice.delivery_charge
+            sub_total = obj.order_total_price - obj.total_vat - delivery_charge
+            paid_status = invoice.paid_status
 
-            if invoice[0].payment_method == "CASH_ON_DELIVERY":
+            if invoice.payment_method == "CASH_ON_DELIVERY":
                 payment_method = "Cash on Delivery"
             else:
                 payment_method = "Online Payment"
@@ -111,7 +110,7 @@ class OrderAdmin(MaterialModelAdmin):
                 'order_details': matrix,
                 'delivery': delivery_charge,
                 'vat': obj.total_vat,
-                'saved_amount': float(round(price_without_offer) - sub_total),
+                'saved_amount': float(round(total_price_without_offer - sub_total)),
                 'sub_total': sub_total,
                 'total': obj.order_total_price,
                 'in_words': num2words(obj.order_total_price),

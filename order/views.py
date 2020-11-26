@@ -206,7 +206,7 @@ class OrderProductList(APIView):
 
             order_instance = Order.objects.filter(pk=serializer.data['order'])[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
-            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+            delivery_charge = invoice.delivery_charge
             # time = TimeSlot.objects.filter(time=order_instance.delivery_date_time.time())[0]
             # print(time.slot)
             if request.user.first_name and request.user.last_name:
@@ -222,7 +222,6 @@ class OrderProductList(APIView):
 
             product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
             matrix = []
-            product_list_detail = []
             total_vat = 0
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
@@ -230,8 +229,6 @@ class OrderProductList(APIView):
                 matrix.append(col)
                 vat = float(p.product.price_with_vat) * p.order_product_qty - total
                 total_vat += vat
-                product_list_detail.append(p.product.product_name + " " + p.product.product_unit.product_unit + "*"
-                                           + str(p.order_product_qty) + "\n")
             order_instance.total_vat = total_vat
             order_instance.save()
 
@@ -256,7 +253,6 @@ class OrderProductList(APIView):
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
-            # bcc = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_content = htmly.render(d)
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
             msg.attach_alternative(html_content, "text/html")
@@ -267,6 +263,7 @@ class OrderProductList(APIView):
             """
             paid_status = invoice.paid_status
             content = {'user_name': billing_person_name,
+                       'user_mobile': invoice.billing_person_mobile_number,
                        'order_id': order_instance.pk,
                        'platform': "App",
                        'shipping_address': address,
@@ -276,7 +273,7 @@ class OrderProductList(APIView):
                        'invoice_number': invoice.invoice_number,
                        'payment_method': 'Online Payment' if paid_status else 'Cash on Delivery',
                        'paid_status': 'Paid' if paid_status else 'Not Paid',
-                       'sub_total': order_instance.order_total_price - total_vat - delivery_charge,
+                       'sub_total': order_instance.order_total_price - order_instance.total_vat - delivery_charge,
                        'vat': total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
