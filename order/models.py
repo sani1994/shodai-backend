@@ -20,6 +20,7 @@ class Order(BaseModel):
     """Create order object"""
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
     payment_id = models.CharField(max_length=100, blank=True, )
+    order_number = models.CharField(max_length=10, null=True, blank=True, unique=True)
     invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')

@@ -123,23 +123,21 @@ class CreateOrder(graphene.Mutation):
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.order_number = str(uuid.uuid4().int)[:8]
                 order_instance.save()
 
                 product_list = input.products
-                product_list_detail = []
-                sub_total = 0
+                sub_total_without_offer = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
-                    total_with_vat = float(product.price_with_vat) * p.order_product_qty
-                    sub_total += total_with_vat
+                    total_without_vat = float(product.product_price) * p.order_product_qty
+                    sub_total_without_offer += total_without_vat
                     OrderProduct.objects.create(product=product,
                                                 order=Order.objects.get(pk=order_instance.pk),
                                                 order_product_qty=p.order_product_qty, )
-                    product_list_detail.append(product.product_name + " " + product.product_unit.product_unit + "*"
-                                               + str(p.order_product_qty) + "\n")
 
-                print(sub_total)
+                print(sub_total_without_offer)
                 # Create InvoiceInfo Instance
                 billing_person_name = user.first_name + " " + user.last_name
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
@@ -152,8 +150,7 @@ class CreateOrder(graphene.Mutation):
                                            delivery_address=order_instance.address.road,
                                            delivery_date_time=order_instance.delivery_date_time,
                                            delivery_charge=delivery_charge,
-                                           discount_amount=sub_total - (
-                                                   float(order_instance.order_total_price) - delivery_charge),
+                                           discount_amount=sub_total_without_offer - float(input.order_total_price),
                                            net_payable_amount=input.net_pay_able_amount,
                                            payment_method=input.payment_method,
                                            order_number=order_instance,
@@ -177,7 +174,7 @@ class SendEmail(graphene.Mutation):
             order_instance = Order.objects.filter(pk=input.order_id)[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
             place = str(order_instance.delivery_place) + ', Dhaka'
-            print(place)
+            print("delivery place: " + place)
             g = geocoder.osm(place)
             if g:
                 order_instance.lat = g.osm['y']
@@ -241,7 +238,11 @@ class SendEmail(graphene.Mutation):
             """
             To send notification to admin
             """
-            paid_status = invoice.paid_status
+
+            if invoice.payment_method == "CASH_ON_DELIVERY":
+                payment_method = "Cash on Delivery"
+            else:
+                payment_method = "Online Payment"
             content = {'user_name': client_name,
                        'user_mobile': user.mobile_number,
                        'order_id': order_instance.pk,
@@ -252,8 +253,7 @@ class SendEmail(graphene.Mutation):
                        'delivery_date_time': str(
                            order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'invoice_number': invoice.invoice_number,
-                       'payment_method': 'Online Payment' if paid_status else 'Cash on Delivery',
-                       'paid_status': 'Paid' if paid_status else 'Not Paid',
+                       'payment_method': payment_method,
                        'sub_total': sub_total,
                        'vat': order_instance.total_vat,
                        'delivery_charge': delivery_charge,
