@@ -23,8 +23,8 @@ from retailer.models import Shop
 from utility.models import ProductUnit
 
 
-class CsvImportForm(forms.Form):
-    csv_file = forms.FileField()
+class FileImportForm(forms.Form):
+    uploaded_file = forms.FileField()
 
 
 class SelectShopForm(forms.Form):
@@ -118,14 +118,24 @@ class ProductAdmin(MaterialModelAdmin):
             return redirect("..")
         else:
             if request.method == "POST":
-                data = pd.read_csv(request.FILES["csv_file"])
+                if request.FILES['uploaded_file'].content_type == 'text/csv':
+                    data = pd.read_csv(request.FILES["uploaded_file"])
+                # elif (request.FILES['uploaded_file'].content_type == 'application/vnd.ms-excel' or
+                #       request.FILES['uploaded_file'].content_type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):
+                #     data = pd.read_excel(request.FILES["uploaded_file"])
+                # elif (request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet' or
+                #       request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet-template'):
+                #     data = pd.read_excel(request.FILES["uploaded_file"], engine="odf")
+                else:
+                    messages.success(request, 'File format not supported.')
+                    return redirect("..")
+
                 length = len(data.index)
                 count = 0
                 for i in range(length):
-                    if (not pd.isna(data["product_name"][i]) and not pd.isna(data["product_unit"][i]) and
+                    if (not pd.isna(data["id"][i]) and
                             not pd.isna(data["product_price"][i]) and not pd.isna(data["is_approved"][i])):
-                        slug = slugify(data["product_name"][i] + "-" + data["product_unit"][i])
-                        product = Product.objects.filter(slug=slug)
+                        product = Product.objects.filter(id=data["id"][i])
                         if product:
                             product = product[0]
                             flag = False
@@ -143,17 +153,17 @@ class ProductAdmin(MaterialModelAdmin):
                                 product.save()
                                 count += 1
                         else:
-                            print("Product does not exists in database")
+                            print("Product ID {} does not exists in database".format(data["id"][i]))
                             # message = "row " + str(i) + " in your csv failed because product does not exist"
                             # messages.success(request, message)
                     else:
-                        print("Required information is empty")
+                        print("Required information is empty in row {}".format(i+1))
                         # message = "row " + str(i) + " in your csv failed because of empty value"
                         # messages.success(request, message)
 
                 messages.success(request, 'Successful: {}, Ignored: {}'.format(count, length - count))
                 return redirect("..")
-            form = CsvImportForm()
+            form = FileImportForm()
             payload = {"form": form}
             return render(
                 request, "product/csv_form.html", payload
