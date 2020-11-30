@@ -93,7 +93,7 @@ class ProductAdmin(MaterialModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
-            path('import-csv/', self.import_csv),
+            path('import-file/', self.import_file),
         ]
         return my_urls + urls
 
@@ -112,21 +112,20 @@ class ProductAdmin(MaterialModelAdmin):
 
     export_to_shop_product.short_description = "Export Selected Products to Shop"
 
-    def import_csv(self, request):
+    def import_file(self, request):
         if not request.user.is_superuser:
             messages.success(request, "You are not authorised for this action")
             return redirect("..")
         else:
             if request.method == "POST":
-                if request.FILES['uploaded_file'].content_type == 'text/csv':
+                content_type = request.FILES['uploaded_file'].content_type
+                if content_type == 'text/csv':
                     data = pd.read_csv(request.FILES["uploaded_file"])
-                elif (request.FILES['uploaded_file'].content_type == 'application/vnd.ms-excel' or
-                      request.FILES['uploaded_file'].content_type == 'application/vnd.openxmlformats-officedocument'
-                                                                     '.spreadsheetml.sheet'):
+                elif (content_type == 'application/vnd.ms-excel' or
+                      content_type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):
                     data = pd.read_excel(request.FILES["uploaded_file"])
-                elif (request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet' or
-                      request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet'
-                                                                     '-template'):
+                elif (content_type == 'application/vnd.oasis.opendocument.spreadsheet' or
+                      content_type == 'application/vnd.oasis.opendocument.spreadsheet-template'):
                     data = pd.read_excel(request.FILES["uploaded_file"], engine="odf")
                 else:
                     messages.success(request, 'File format not supported.')
