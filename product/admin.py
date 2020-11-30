@@ -120,12 +120,14 @@ class ProductAdmin(MaterialModelAdmin):
             if request.method == "POST":
                 if request.FILES['uploaded_file'].content_type == 'text/csv':
                     data = pd.read_csv(request.FILES["uploaded_file"])
-                # elif (request.FILES['uploaded_file'].content_type == 'application/vnd.ms-excel' or
-                #       request.FILES['uploaded_file'].content_type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):
-                #     data = pd.read_excel(request.FILES["uploaded_file"])
-                # elif (request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet' or
-                #       request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet-template'):
-                #     data = pd.read_excel(request.FILES["uploaded_file"], engine="odf")
+                elif (request.FILES['uploaded_file'].content_type == 'application/vnd.ms-excel' or
+                      request.FILES['uploaded_file'].content_type == 'application/vnd.openxmlformats-officedocument'
+                                                                     '.spreadsheetml.sheet'):
+                    data = pd.read_excel(request.FILES["uploaded_file"])
+                elif (request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet' or
+                      request.FILES['uploaded_file'].content_type == 'application/vnd.oasis.opendocument.spreadsheet'
+                                                                     '-template'):
+                    data = pd.read_excel(request.FILES["uploaded_file"], engine="odf")
                 else:
                     messages.success(request, 'File format not supported.')
                     return redirect("..")
@@ -181,6 +183,9 @@ class ProductAdmin(MaterialModelAdmin):
             obj.save()
         return super().save_model(request, obj, form, change)
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class ProductUnitAdmin(ImportExportModelAdmin):
     list_display = ('product_unit', 'history')
@@ -212,6 +217,9 @@ class ShopCategoryAdmin(ImportExportModelAdmin):
         obj.save()
         return super().save_model(request, obj, form, change)
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class ProductCategoryAdmin(admin.ModelAdmin):
     readonly_fields = ["created_by", "modified_by", ]
@@ -224,6 +232,9 @@ class ProductCategoryAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class ProductMetaAdmin(admin.ModelAdmin):
@@ -239,6 +250,9 @@ class ProductMetaAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 site.register(Product, ProductAdmin)

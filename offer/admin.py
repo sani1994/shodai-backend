@@ -43,6 +43,9 @@ class OfferAdmin(MaterialModelAdmin):
         obj.save()
         return super().save_model(request, obj, form, change)
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class OfferProductAdmin(MaterialModelAdmin):
     list_display = ('offer', 'product', 'offer_price', 'offer_product_balance', 'is_approved')
@@ -57,6 +60,9 @@ class OfferProductAdmin(MaterialModelAdmin):
             obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class CouponCodeAdmin(MaterialModelAdmin):
