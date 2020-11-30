@@ -15,7 +15,7 @@ class OfferProductInline(admin.StackedInline):
 
 class OfferAdmin(MaterialModelAdmin):
     list_filter = ('offer_name', 'offer_starts_in', 'offer_ends_in', 'is_approved')
-    readonly_fields = ["created_by", "modified_by", ]
+    readonly_fields = ["created_by", "modified_by", "created_on"]
 
     def _products(self):
         return OfferProduct.objects.filter(offer__id=self.id).count()

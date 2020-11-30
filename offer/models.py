@@ -29,8 +29,8 @@ class Offer(BaseModel):
     offer_img = models.ImageField(upload_to="offer", blank=False, null=False, verbose_name="Image: 1300px/300px")
     offer_details = models.CharField(max_length=500, blank=True, null=True)
     offer_details_bn = models.CharField(max_length=500, blank=True, null=True, verbose_name='Offer Detail Bangla')
-    offer_starts_in = models.DateTimeField(blank=True, null=True)
-    offer_ends_in = models.DateTimeField(blank=True, null=True)
+    offer_starts_in = models.DateTimeField(null=False)
+    offer_ends_in = models.DateTimeField(null=False)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
     offer_types = models.CharField(max_length=100, choices=OFFER_TYPES, default=SINGLE_PRODUCT_OFFER)
@@ -44,8 +44,8 @@ class OfferProduct(BaseModel):
     offer = models.ForeignKey(Offer, related_name='offer_products',
                               on_delete=models.CASCADE)  # offer foreign key relation
     product = models.ForeignKey(Product, related_name='products', on_delete=models.CASCADE)
-    offer_price = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    offer_product_balance = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True)
+    offer_price = models.DecimalField(max_digits=5, decimal_places=2, null=False)
+    offer_product_balance = models.IntegerField(blank=True, null=True)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=True)
 
