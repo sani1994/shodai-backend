@@ -18,10 +18,10 @@ class Offer(BaseModel):
     DISCOUNT_ON_DELIVERY_CHARGE = 'DD'  # Discount on delivery charge based on total amount
     OFFER_TYPES = [
         (SINGLE_PRODUCT_OFFER, 'Single Product Offer'),
-        (BUNDLE_OFFER, 'Bundle Offer'),
-        (DISCOUNT_ON_SINGLE_PRODUCT, 'Discount on Single Product'),
-        (DISCOUNT_ON_TOTAL, 'Discount on Total'),
-        (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
+        # (BUNDLE_OFFER, 'Bundle Offer'),
+        # (DISCOUNT_ON_SINGLE_PRODUCT, 'Discount on Single Product'),
+        # (DISCOUNT_ON_TOTAL, 'Discount on Total'),
+        # (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
     ]
 
     offer_name = models.CharField(max_length=100, blank=False, null=False)
