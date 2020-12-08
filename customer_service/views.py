@@ -1,12 +1,10 @@
-from django.shortcuts import render
-
 # Create your views here.
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from customerService.models import CustomerQuery
-from customerService.serializers import CustomerQuerySerializer
+from customer_service.models import CustomerQuery
+from customer_service.serializers import CustomerQuerySerializer
 
 
 class CustomerQueryList(APIView):

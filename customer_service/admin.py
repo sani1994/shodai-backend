@@ -4,7 +4,7 @@ from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 
-from customerService.models import CustomerQuery
+from customer_service.models import CustomerQuery
 
 
 class CustomerQueryAdmin(MaterialModelAdmin):

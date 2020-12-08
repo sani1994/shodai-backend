@@ -77,7 +77,7 @@ INSTALLED_APPS = [
     'delivery',
     'search',
     'notifications',
-    'customerService',
+    'customer_service',
     'shodaiAdmin',
 
     'graphene_django',

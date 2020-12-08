@@ -65,7 +65,7 @@ site.login_bg_color = '#088A3F'
 
 urlpatterns = [
     path('', include('order.urls')),
-    path('', include('customerService.urls')),
+    path('', include('customer_service.urls')),
     path('', include('product.urls')),
     path('', include('producer.urls')),
     path('', include('retailer.urls')),
