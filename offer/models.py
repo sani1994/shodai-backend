@@ -44,7 +44,7 @@ class OfferProduct(BaseModel):
     offer = models.ForeignKey(Offer, related_name='offer_products',
                               on_delete=models.CASCADE)  # offer foreign key relation
     product = models.ForeignKey(Product, related_name='products', on_delete=models.CASCADE)
-    offer_price = models.DecimalField(max_digits=5, decimal_places=2, null=False)
+    offer_price = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     offer_product_balance = models.IntegerField(blank=True, null=True)
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=True)
