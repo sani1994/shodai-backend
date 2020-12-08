@@ -70,7 +70,7 @@ urlpatterns = [
     path('', include('producer.urls')),
     path('', include('retailer.urls')),
     path('', include('userProfile.urls')),
-    path('', include('shodai_admin.urls')),
+    path('ad/', include('shodai_admin.urls')),
     path('', include('offer.urls')),
     path('', include('utility.urls')),
     path('admin/', include('material.admin.urls')),
