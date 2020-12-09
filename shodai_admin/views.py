@@ -2,11 +2,14 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import status
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Create your views here.
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from shodai_admin.serializers import AdminProfileSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
 from userProfile.models import UserProfile, BlackListedToken
@@ -43,7 +46,7 @@ class AdminLogin(APIView):
             }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         else:
             if user.check_password(request.data['password']):
-                if user.user_type == 'SF':
+                if not user.is_staff or user.user_type == 'SF':
                     refresh = RefreshToken.for_user(user)
                     return JsonResponse({
                         "message": "success",
@@ -90,3 +93,14 @@ class Logout(APIView):  # logout
                 "status": True,
                 "status_code": status.HTTP_200_OK
             }, status=status.HTTP_200_OK)
+
+
+class AdminProfileDetail(APIView):
+    permission_classes = [AdminAuth]
+
+    def get(self, request, id):
+        user_profile = get_object_or_404(UserProfile, id=id)
+        if request.user == user_profile:
+            serializer = AdminProfileSerializer(user_profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'Un-authorized request'}, status=status.HTTP_401_UNAUTHORIZED)
