@@ -11,4 +11,9 @@ urlpatterns = [
          name='token_refresh'),
     path('adminLogin/', views.AdminLogin.as_view()),
     path('adminLogout/', views.Logout.as_view()),
+
+    # REST_FRAMEWORK Token Authentication Test API
+    path('login-test/', views.LoginTest.as_view()),
+    path('logout-test/', views.LogoutTest.as_view()),
+    path('token-view-test/', views.TokenViewAPITest.as_view()),
 ]
