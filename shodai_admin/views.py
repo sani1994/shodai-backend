@@ -3,17 +3,15 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.views import APIView
-
-# Create your views here.
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from shodai_admin.serializers import AdminProfileSerializer
+from order.models import Order
+from shodai_admin.serializers import AdminProfileSerializer, OrderSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
 from userProfile.models import UserProfile, BlackListedToken
-
 
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
@@ -111,6 +109,7 @@ class AdminProfileDetail(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'Un-authorized request'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
 # Testing REST_FRAMEWORK Token Authentication
 class LoginTest(APIView):
 
@@ -163,3 +162,20 @@ class TokenViewAPITest(APIView):  # Sample API test with Authentication
         token = Token.objects.get(user=request.user)
         data = {'token': token.key}
         return Response(data, status=status.HTTP_200_OK)
+
+
+class OrderList(APIView):
+    # permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        queryset = Order.objects.all()
+        if queryset:
+            paginator = LimitOffsetPagination()
+            result_page = paginator.paginate_queryset(queryset, request)
+            serializer = OrderSerializer(result_page, many=True, context={'request': request})
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
