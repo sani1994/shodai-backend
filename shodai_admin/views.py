@@ -165,16 +165,25 @@ class TokenViewAPITest(APIView):  # Sample API test with Authentication
 
 
 class OrderList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
-        queryset = Order.objects.all()
+        if request.data['sort_by']:
+            queryset = Order.objects.all().order_by(request.data['sort_by']).reverse()
+        # elif request.data['search_by']:
+        #     search = request.data['search_by']
+        #     if search.startswith("+"):
+        #         queryset = Order.objects.filter(user__username=search)
+        #     else:
+        #         queryset = Order.objects.filter(id=search)
+        else:
+            queryset = Order.objects.all()
         if queryset:
             paginator = LimitOffsetPagination()
             result_page = paginator.paginate_queryset(queryset, request)
             serializer = OrderSerializer(result_page, many=True, context={'request': request})
             if serializer:
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return paginator.get_paginated_response(serializer.data)
             else:
                 return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
         else:
