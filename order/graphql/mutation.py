@@ -37,9 +37,7 @@ class OrderTypeEnum(graphene.Enum):
 
 
 class AreaChoicesEnum(graphene.Enum):
-    Dhanmondi = 'Dhanmondi'
-    Mohammadpur = 'Mohammadpur'
-    Adabar = 'Adabar'
+    Dhaka = 'Dhaka'
 
 
 class PaymentMethodEnum(graphene.Enum):
@@ -172,8 +170,7 @@ class SendEmail(graphene.Mutation):
         if checkAuthentication(user, info):
             order_instance = Order.objects.filter(pk=input.order_id)[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
-            place = str(order_instance.delivery_place) + ', Dhaka'
-            print("delivery place: " + place)
+            place = order_instance.address.road
             g = geocoder.osm(place)
             if g:
                 order_instance.lat = g.osm['y']
