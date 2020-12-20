@@ -195,11 +195,11 @@ class SendEmail(graphene.Mutation):
                 if p.order_product_price != p.product.product_price:
                     is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_price, p.order_product_price,
-                           int(p.order_product_qty), total_by_offer]
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           p.order_product_price, int(p.order_product_qty), total_by_offer]
                 else:
-                    col = [p.product.product_name, p.product.product_price, "--",
-                           int(p.order_product_qty), total]
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
