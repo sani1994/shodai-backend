@@ -143,26 +143,26 @@
           <tbody>
             {% for o in order_details %}
             <tr class="productRow">
-              <td style="border-bottom: 1px solid #BFBFBF;padding: 7px 0;">{{o.0}}</td>
+              <td style="border-bottom: 1px solid #BFBFBF;padding: 7px 0;">{{o.0}} - {{o.1}}</td>
               <td style="text-align: center; border-bottom: 1px solid #BFBFBF">
-                  <strong>৳{{o.1}}</strong>
+                  <strong>৳{{o.2}}</strong>
               </td>
               {% if is_offer %}
-                 {% if o.2 == "--" %}
+                 {% if o.3 == "--" %}
                      <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
                          <strong>--</strong>
                      </td>
                  {% else %}
                      <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                         <strong>৳{{o.2}}</strong>
+                         <strong>৳{{o.3}}</strong>
                      </td>
                  {% endif %}
               {% endif %}
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>{{o.3}}</strong>
+                  <strong>{{o.4}}</strong>
               </td>
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>৳{{o.4}}</strong>
+                  <strong>৳{{o.5}}</strong>
               </td>
             </tr>
             {% endfor %}

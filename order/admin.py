@@ -28,7 +28,11 @@ class TimeSlotAdmin(MaterialModelAdmin):
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct
-    fields = ['product', 'order_product_qty', 'order_product_price', 'order_product_price_with_vat']
+    fields = ['product', 'order_product_price', 'order_product_qty', 'order_product_total_price']
+    readonly_fields = ['product', 'order_product_price', 'order_product_qty', 'order_product_total_price']
+
+    def order_product_total_price(self, obj):
+        return obj.order_product_price * obj.order_product_qty
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -79,11 +83,11 @@ class OrderAdmin(MaterialModelAdmin):
                 if p.order_product_price != p.product.product_price:
                     is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_price, p.order_product_price,
-                           int(p.order_product_qty), total_by_offer]
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           p.order_product_price, int(p.order_product_qty), total_by_offer]
                 else:
-                    col = [p.product.product_name, p.product.product_price, "--",
-                           int(p.order_product_qty), total]
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
             invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)

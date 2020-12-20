@@ -24,17 +24,17 @@ class Offer(BaseModel):
         # (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
     ]
 
-    offer_name = models.CharField(max_length=100, blank=False, null=False)
-    offer_name_bn = models.CharField(max_length=100, blank=False, null=False)
-    offer_img = models.ImageField(upload_to="offer", blank=False, null=False, verbose_name="Image: 1300px/300px")
+    offer_name = models.CharField(max_length=100)
+    offer_name_bn = models.CharField(max_length=100, blank=True, null=True)
+    offer_img = models.ImageField(upload_to="offer", blank=True, null=True, verbose_name="Image: 1300px/300px")
     offer_details = models.CharField(max_length=500, blank=True, null=True)
     offer_details_bn = models.CharField(max_length=500, blank=True, null=True, verbose_name='Offer Detail Bangla')
-    offer_starts_in = models.DateTimeField(null=False)
-    offer_ends_in = models.DateTimeField(null=False)
+    offer_starts_in = models.DateTimeField()
+    offer_ends_in = models.DateTimeField()
     history = HistoricalRecords()
     is_approved = models.BooleanField(default=False)
     offer_types = models.CharField(max_length=100, choices=OFFER_TYPES, default=SINGLE_PRODUCT_OFFER)
-    offer_url = models.CharField(max_length=300, default="https://www.shod.ai/")
+    offer_url = models.CharField(max_length=300, default="https://www.shod.ai/offers")
 
     def __str__(self):
         return self.offer_name
