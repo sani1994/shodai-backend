@@ -1,7 +1,9 @@
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.relations import HyperlinkedIdentityField
 
+from offer.models import OfferProduct
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
 from utility.serializers import ProductUnitSerializer
 from utility.models import ProductUnit
@@ -72,14 +74,26 @@ class ProductSerializer(serializers.ModelSerializer):
 
     # product_unit = ProductUnitSerializer(read_only=True)
 
+    offer_price = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
         fields = ['id', 'product_name', 'product_name_bn', 'product_image',
                   'product_unit', 'product_price', 'product_meta',
                   'product_last_price', 'is_approved',
                   'product_description', 'product_description_bn',
-                  'price_with_vat']
-        read_only = 'product_last_price'
+                  'price_with_vat', 'offer_price']
+        read_only = 'product_last_price', 'offer_price'
+
+    def get_offer_price(self, obj):
+        today = timezone.now()
+        offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today, product=obj)
+        if offer_product:
+            print(offer_product[0].offer_price)
+            return offer_product[0].offer_price
+        else:
+            return None
 
 
 class LatestProductSerializer(serializers.ModelSerializer):
