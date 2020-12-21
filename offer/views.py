@@ -216,7 +216,7 @@ class OfferProductListByOffer(APIView):
         today = timezone.now()
         offer = Offer.objects.filter(id=id, is_approved=True, offer_starts_in__lte=today, offer_ends_in__gte=today)
         if offer:
-            offer_product_list = OfferProduct.objects.filter(offer=offer[0])
+            offer_product_list = OfferProduct.objects.filter(offer=offer[0], product__is_approved=True)
             serializer = OfferProductListSerializer(offer_product_list, many=True)
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
