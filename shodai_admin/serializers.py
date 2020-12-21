@@ -15,5 +15,5 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = (
             "id", "created_on", "modified_on", "invoice_number", "delivery_date_time",
             "delivery_place", "order_total_price", "order_status", "contact_number",
-            "created_by", "modified_by", "user", "address", "paid_status",
+            "created_by", "modified_by", "user", "address", "paid_status"
         )

@@ -168,14 +168,20 @@ class OrderList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        if request.data['sort_by']:
+        sort_by = request.data.get('sort_by', None)
+        search = request.data.get('search_by', None)
+        if sort_by is not None and search is not None:
+            if search.startswith("+"):
+                queryset = Order.objects.filter(user__username=search)
+            else:
+                queryset = Order.objects.filter(id=search)
+        elif sort_by is not None and search is None:
             queryset = Order.objects.all().order_by(request.data['sort_by']).reverse()
-        # elif request.data['search_by']:
-        #     search = request.data['search_by']
-        #     if search.startswith("+"):
-        #         queryset = Order.objects.filter(user__username=search)
-        #     else:
-        #         queryset = Order.objects.filter(id=search)
+        elif search is not None and sort_by is None:
+            if search.startswith("+"):
+                queryset = Order.objects.filter(user__username=search)
+            else:
+                queryset = Order.objects.filter(id=search)
         else:
             queryset = Order.objects.all()
         if queryset:
