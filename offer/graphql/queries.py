@@ -2,16 +2,18 @@ from django.utils import timezone
 
 import graphene
 from graphene import relay
+from graphene_django.types import DjangoObjectType
 
 from product.graphql.queries import ProductConnection
 from product.models import Product
 from offer.models import Offer, OfferProduct
 
 
-class OfferType(graphene.ObjectType):
-    id = graphene.Int()
-    offer_name = graphene.String()
-    offer_img = graphene.String()
+class OfferType(DjangoObjectType):
+    class Meta:
+        model = Offer
+        fields = ['id', 'offer_name', 'offer_img']
+
     total_offer_product = graphene.Int()
 
     def resolve_total_offer_product(self, info):
@@ -34,9 +36,7 @@ class Query(graphene.ObjectType):
         today = timezone.now()
         all_offers = Offer.objects.filter(is_approved=True,
                                           offer_starts_in__lte=today,
-                                          offer_ends_in__gte=today).values('id',
-                                                                           'offer_name',
-                                                                           'offer_img')
+                                          offer_ends_in__gte=today)
         return all_offers
 
     def resolve_all_offer_products(root, info, **kwargs):

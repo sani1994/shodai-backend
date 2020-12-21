@@ -24,10 +24,12 @@ class ProductNode(DjangoObjectType):
 
     def resolve_offer_price(self, info):
         today = timezone.now()
-        offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
-                                                    offer__offer_ends_in__gte=today, product=self)
+        offer_product = OfferProduct.objects.filter(product=self,
+                                                    is_approved=True,
+                                                    offer__is_approved=True,
+                                                    offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today)
         if offer_product:
-            print(offer_product[0].offer_price)
             return offer_product[0].offer_price
         else:
             return None

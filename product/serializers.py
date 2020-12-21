@@ -83,14 +83,16 @@ class ProductSerializer(serializers.ModelSerializer):
                   'product_last_price', 'is_approved',
                   'product_description', 'product_description_bn',
                   'price_with_vat', 'offer_price']
-        read_only = 'product_last_price', 'offer_price'
+        read_only_fields = ['product_last_price', 'offer_price']
 
     def get_offer_price(self, obj):
         today = timezone.now()
-        offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
-                                                    offer__offer_ends_in__gte=today, product=obj)
+        offer_product = OfferProduct.objects.filter(product=obj,
+                                                    is_approved=True,
+                                                    offer__is_approved=True,
+                                                    offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today)
         if offer_product:
-            print(offer_product[0].offer_price)
             return offer_product[0].offer_price
         else:
             return None
