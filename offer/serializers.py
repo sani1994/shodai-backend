@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from offer.models import Offer, OfferProduct
+from product.models import Product
 
 
 class OfferSerializer(serializers.ModelSerializer):
@@ -42,3 +43,18 @@ class OfferProductReadSerializer(serializers.ModelSerializer):
         model = OfferProduct
         fields = ('id', 'offer_price', 'offer_product_balance', 'offer', 'product')
         depth = 1
+
+
+class ProductReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ('product_name', 'product_image', 'product_price')
+
+
+class OfferProductListSerializer(serializers.ModelSerializer):
+    product = ProductReadSerializer(read_only=True)
+    offer = serializers.StringRelatedField()
+
+    class Meta:
+        model = OfferProduct
+        fields = ('id', 'offer_price', 'offer', 'product')

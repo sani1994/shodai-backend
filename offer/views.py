@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework.generics import get_object_or_404
 
 from offer.models import Offer, OfferProduct
-from offer.serializers import OfferSerializer, OfferProductSerializer, OfferProductReadSerializer
+from offer.serializers import OfferSerializer, OfferProductSerializer, OfferProductReadSerializer, \
+    OfferProductListSerializer
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -205,3 +207,22 @@ class GetOfferProducts(APIView):
             return Response(offerProducts, status=status.HTTP_200_OK)  # returning on offer product list
         else:
             return Response(offerserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OfferProductListByOffer(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self, request, id):
+        today = timezone.now()
+        offer = Offer.objects.filter(id=id, is_approved=True, offer_starts_in__lte=today, offer_ends_in__gte=today)
+        if offer:
+            offer_product_list = OfferProduct.objects.filter(offer=offer[0])
+            serializer = OfferProductListSerializer(offer_product_list, many=True)
+            if serializer:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "details": "Invalid Offer"
+            }, status=status.HTTP_400_BAD_REQUEST)

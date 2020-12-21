@@ -6,7 +6,7 @@ import qrcode
 
 from product.pagination import CustomPagination
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
-    ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer
+    ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer, OfferProductSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
 from utility.models import ProductUnit
 from django.http import Http404
@@ -50,7 +50,7 @@ class ProductList(APIView):
 class ProductDetail(APIView):
     permission_classes = [GenericAuth]
     """
-    Retrieve, update and delete products
+    Retrieve product by id with offer price and offer name
     """
 
     def get_product_object(self, id):
@@ -59,33 +59,32 @@ class ProductDetail(APIView):
 
     def get(self, request, id):
         product = self.get_product_object(id)
-
-        serializer = ProductSerializer(product)
+        serializer = OfferProductSerializer(product)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            product = self.get_product_object(id)
-            if request.data['product_price'] != product.product_price:
-                product.product_last_price = product.product_price
-            serializer = ProductSerializer(product, data=request.data)
-            if serializer.is_valid():
-                serializer.save(modified_by=request.user)
-                # print(serializer.data)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def put(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         product = self.get_product_object(id)
+    #         if request.data['product_price'] != product.product_price:
+    #             product.product_last_price = product.product_price
+    #         serializer = ProductSerializer(product, data=request.data)
+    #         if serializer.is_valid():
+    #             serializer.save(modified_by=request.user)
+    #             # print(serializer.data)
+    #             return Response(serializer.data, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            product = self.get_product_object(id)
-            product.delete()
-            return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def delete(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         product = self.get_product_object(id)
+    #         product.delete()
+    #         return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ProductMetaList(APIView):
