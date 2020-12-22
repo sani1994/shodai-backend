@@ -174,22 +174,14 @@ class OrderList(APIView):
             if search.startswith("+"):
                 queryset = Order.objects.filter(user__mobile_number=search).order_by(sort_by).reverse()
             else:
-                order = Order.objects.filter(id=search).order_by(sort_by).reverse()
-                if order:
-                    queryset = order
-                else:
-                    return Response({"status": "Matching Order Not Found"}, status=status.HTTP_400_BAD_REQUEST)
+                queryset = Order.objects.filter(id=search).order_by(sort_by).reverse()
         elif sort_by is not None and search is None:
             queryset = Order.objects.all().order_by(sort_by).reverse()
         elif search is not None and sort_by is None:
             if search.startswith("+"):
                 queryset = Order.objects.filter(user__mobile_number=search)
             else:
-                order = Order.objects.filter(id=search)
-                if order:
-                    queryset = order
-                else:
-                    return Response({"status": "Matching Order Not Found"}, status=status.HTTP_400_BAD_REQUEST)
+                queryset = Order.objects.filter(id=search)
         else:
             queryset = Order.objects.all()
         if queryset:
