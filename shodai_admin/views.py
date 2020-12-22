@@ -174,7 +174,7 @@ class OrderList(APIView):
             if search.startswith("+"):
                 queryset = Order.objects.filter(user__mobile_number=search).order_by(sort_by).reverse()
             else:
-                order = Order.objects.filter(id=search)
+                order = Order.objects.filter(id=search).order_by(sort_by).reverse()
                 if order:
                     queryset = order
                 else:
