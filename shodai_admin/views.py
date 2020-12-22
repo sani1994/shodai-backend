@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -172,20 +172,29 @@ class OrderList(APIView):
         search = request.data.get('search_by', None)
         if sort_by is not None and search is not None:
             if search.startswith("+"):
-                queryset = Order.objects.filter(user__username=search)
+                queryset = Order.objects.filter(user__mobile_number=search).order_by(sort_by).reverse()
             else:
-                queryset = Order.objects.filter(id=search)
+                order = Order.objects.filter(id=search)
+                if order:
+                    queryset = order
+                else:
+                    return Response({"status": "Matching Order Not Found"}, status=status.HTTP_400_BAD_REQUEST)
         elif sort_by is not None and search is None:
-            queryset = Order.objects.all().order_by(request.data['sort_by']).reverse()
+            queryset = Order.objects.all().order_by(sort_by).reverse()
         elif search is not None and sort_by is None:
             if search.startswith("+"):
-                queryset = Order.objects.filter(user__username=search)
+                queryset = Order.objects.filter(user__mobile_number=search)
             else:
-                queryset = Order.objects.filter(id=search)
+                order = Order.objects.filter(id=search)
+                if order:
+                    queryset = order
+                else:
+                    return Response({"status": "Matching Order Not Found"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             queryset = Order.objects.all()
         if queryset:
-            paginator = LimitOffsetPagination()
+            paginator = PageNumberPagination()
+            paginator.page_size_query_param = 'page_size'
             result_page = paginator.paginate_queryset(queryset, request)
             serializer = OrderSerializer(result_page, many=True, context={'request': request})
             if serializer:
