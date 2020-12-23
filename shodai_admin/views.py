@@ -171,17 +171,25 @@ class OrderList(APIView):
         sort_by = request.data.get('sort_by', None)
         search = request.data.get('search_by', None)
         if sort_by is not None and search is not None:
-            if search.startswith("+"):
-                queryset = Order.objects.filter(user__mobile_number=search).order_by(sort_by).reverse()
+            is_valid = getattr(Order, sort_by, False)
+            if is_valid:
+                if search.startswith("+"):
+                    queryset = Order.objects.filter(user__mobile_number=search).order_by(sort_by).reverse()
+                else:
+                    queryset = Order.objects.filter(id__icontains=search).order_by(sort_by).reverse()
             else:
-                queryset = Order.objects.filter(id=search).order_by(sort_by).reverse()
+                return Response({"status": "No such Field in Order as " + sort_by}, status=status.HTTP_400_BAD_REQUEST)
         elif sort_by is not None and search is None:
-            queryset = Order.objects.all().order_by(sort_by).reverse()
+            is_valid = getattr(Order, sort_by, False)
+            if is_valid:
+                queryset = Order.objects.all().order_by(sort_by).reverse()
+            else:
+                return Response({"status": "No such Field in Order as " + sort_by}, status=status.HTTP_400_BAD_REQUEST)
         elif search is not None and sort_by is None:
             if search.startswith("+"):
                 queryset = Order.objects.filter(user__mobile_number=search)
             else:
-                queryset = Order.objects.filter(id=search)
+                queryset = Order.objects.filter(id__icontains=search)
         else:
             queryset = Order.objects.all()
         if queryset:
