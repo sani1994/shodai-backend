@@ -6,7 +6,7 @@ import qrcode
 
 from product.pagination import CustomPagination
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
-    ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer, OfferProductSerializer
+    ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
 from utility.models import ProductUnit
 from django.http import Http404
@@ -59,7 +59,7 @@ class ProductDetail(APIView):
 
     def get(self, request, id):
         product = self.get_product_object(id)
-        serializer = OfferProductSerializer(product)
+        serializer = ProductSerializer(product)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:

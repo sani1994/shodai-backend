@@ -73,18 +73,6 @@ class ProductSerializer(serializers.ModelSerializer):
     #     return instance
 
     # product_unit = ProductUnitSerializer(read_only=True)
-
-    class Meta:
-        model = Product
-        fields = ['id', 'product_name', 'product_name_bn', 'product_image',
-                  'product_unit', 'product_price', 'product_meta',
-                  'product_last_price', 'is_approved',
-                  'product_description', 'product_description_bn',
-                  'price_with_vat']
-        read_only_fields = ['product_last_price', ]
-
-
-class OfferProductSerializer(serializers.ModelSerializer):
     offer_price = serializers.SerializerMethodField()
     offer_name = serializers.SerializerMethodField()
 
@@ -97,25 +85,23 @@ class OfferProductSerializer(serializers.ModelSerializer):
                   'price_with_vat', 'offer_price', 'offer_name']
         read_only_fields = ['product_last_price', 'offer_price', 'offer_name']
 
-    def get_offer_price(self, obj):
+    def get_offer_product(self, obj):
         today = timezone.now()
-        offer_product = OfferProduct.objects.filter(product=obj,
-                                                    is_approved=True,
-                                                    offer__is_approved=True,
-                                                    offer__offer_starts_in__lte=today,
-                                                    offer__offer_ends_in__gte=today)
+        return OfferProduct.objects.filter(product=obj,
+                                           is_approved=True,
+                                           offer__is_approved=True,
+                                           offer__offer_starts_in__lte=today,
+                                           offer__offer_ends_in__gte=today)
+
+    def get_offer_price(self, obj):
+        offer_product = self.get_offer_product(obj)
         if offer_product:
             return offer_product[0].offer_price
         else:
             return None
 
     def get_offer_name(self, obj):
-        today = timezone.now()
-        offer_product = OfferProduct.objects.filter(product=obj,
-                                                    is_approved=True,
-                                                    offer__is_approved=True,
-                                                    offer__offer_starts_in__lte=today,
-                                                    offer__offer_ends_in__gte=today)
+        offer_product = self.get_offer_product(obj)
         if offer_product:
             return offer_product[0].offer.offer_name
         else:

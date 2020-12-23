@@ -48,7 +48,11 @@ class OfferProductReadSerializer(serializers.ModelSerializer):
 class ProductReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('product_name', 'product_image', 'product_price')
+        fields = ('id', 'product_name', 'product_name_bn', 'product_image',
+                  'product_unit', 'product_price', 'product_meta',
+                  'product_last_price', 'is_approved',
+                  'product_description', 'product_description_bn',
+                  'price_with_vat',)
 
 
 class OfferProductListSerializer(serializers.ModelSerializer):

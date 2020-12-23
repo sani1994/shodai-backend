@@ -19,8 +19,10 @@ class OfferList(APIView):
     permission_class = [GenericAuth, ]
 
     def get(self, request):
-
-        queryset = Offer.objects.filter(is_approved=True)
+        today = timezone.now()
+        queryset = Offer.objects.filter(is_approved=True,
+                                        offer_starts_in__lte=today,
+                                        offer_ends_in__gte=today)
         if queryset:
             serializer = OfferSerializer(queryset, many=True)
             if serializer:
@@ -216,7 +218,8 @@ class OfferProductListByOffer(APIView):
         today = timezone.now()
         offer = Offer.objects.filter(id=id, is_approved=True, offer_starts_in__lte=today, offer_ends_in__gte=today)
         if offer:
-            offer_product_list = OfferProduct.objects.filter(offer=offer[0], is_approved=True, product__is_approved=True)
+            offer_product_list = OfferProduct.objects.filter(offer=offer[0], is_approved=True,
+                                                             product__is_approved=True)
             serializer = OfferProductListSerializer(offer_product_list, many=True)
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
