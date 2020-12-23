@@ -165,41 +165,25 @@ class TokenViewAPITest(APIView):  # Sample API test with Authentication
 
 
 class OrderList(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
     def get(self, request):
-        sort_by = request.data.get('sort_by', None)
-        search = request.data.get('search_by', None)
-        if sort_by is not None and search is not None:
-            is_valid = getattr(Order, sort_by, False)
-            if is_valid:
-                if search.startswith("+"):
-                    queryset = Order.objects.filter(user__mobile_number=search).order_by(sort_by).reverse()
-                else:
-                    queryset = Order.objects.filter(id__icontains=search).order_by(sort_by).reverse()
+        search = request.query_params.get('search', None)
+        sort_by = request.query_params.get('sort_by', '')
+        sort_type = request.query_params.get('sort_type', 'dsc')
+        if not getattr(Order, sort_by, False):
+            sort_by = 'created_on'
+        if sort_type != 'asc':
+            sort_by = '-'+sort_by
+        if search:
+            if search.startswith("01") and len(search) == 11:
+                queryset = Order.objects.filter(user__mobile_number='+88'+search).order_by(sort_by)
             else:
-                return Response({"status": "No such Field in Order as " + sort_by}, status=status.HTTP_400_BAD_REQUEST)
-        elif sort_by is not None and search is None:
-            is_valid = getattr(Order, sort_by, False)
-            if is_valid:
-                queryset = Order.objects.all().order_by(sort_by).reverse()
-            else:
-                return Response({"status": "No such Field in Order as " + sort_by}, status=status.HTTP_400_BAD_REQUEST)
-        elif search is not None and sort_by is None:
-            if search.startswith("+"):
-                queryset = Order.objects.filter(user__mobile_number=search)
-            else:
-                queryset = Order.objects.filter(id__icontains=search)
+                queryset = Order.objects.filter(id__icontains=search).order_by(sort_by)
         else:
-            queryset = Order.objects.all()
-        if queryset:
-            paginator = PageNumberPagination()
-            paginator.page_size_query_param = 'page_size'
-            result_page = paginator.paginate_queryset(queryset, request)
-            serializer = OrderSerializer(result_page, many=True, context={'request': request})
-            if serializer:
-                return paginator.get_paginated_response(serializer.data)
-            else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+            queryset = Order.objects.all().order_by(sort_by)
+        paginator = PageNumberPagination()
+        paginator.page_size_query_param = 'page_size'
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = OrderSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
