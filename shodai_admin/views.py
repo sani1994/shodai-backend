@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from order.models import Order
-from shodai_admin.serializers import AdminProfileSerializer, OrderSerializer
+from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
 from userProfile.models import UserProfile, BlackListedToken
@@ -174,10 +174,10 @@ class OrderList(APIView):
         if not getattr(Order, sort_by, False):
             sort_by = 'created_on'
         if sort_type != 'asc':
-            sort_by = '-'+sort_by
+            sort_by = '-' + sort_by
         if search:
             if search.startswith("01") and len(search) == 11:
-                queryset = Order.objects.filter(user__mobile_number='+88'+search).order_by(sort_by)
+                queryset = Order.objects.filter(user__mobile_number='+88' + search).order_by(sort_by)
             else:
                 queryset = Order.objects.filter(id__icontains=search).order_by(sort_by)
         else:
@@ -185,5 +185,17 @@ class OrderList(APIView):
         paginator = PageNumberPagination()
         paginator.page_size_query_param = 'page_size'
         result_page = paginator.paginate_queryset(queryset, request)
-        serializer = OrderSerializer(result_page, many=True, context={'request': request})
+        serializer = OrderListSerializer(result_page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
+
+
+class OrderDetail(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Get, update and delete order
+    """
+
+    def get(self, request, id):
+        order = get_object_or_404(Order, id=id)
+        serializer = OrderDetailSerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)

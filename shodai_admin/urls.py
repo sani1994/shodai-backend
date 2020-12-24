@@ -14,6 +14,7 @@ urlpatterns = [
     path('logout/', views.Logout.as_view()),
     path('profile/<int:id>/', views.AdminProfileDetail.as_view()),
     path('orders/', views.OrderList.as_view()),
+    path('order/<int:id>/', views.OrderDetail.as_view()),
 
     # REST_FRAMEWORK Token Authentication Test API
     path('login-test/', views.LoginTest.as_view()),
