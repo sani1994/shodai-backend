@@ -248,6 +248,7 @@ class OrderProductList(APIView):
             # send email to user
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
+            sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
 
             d = {'user_name': billing_person_name,
                  'order_id': order_instance.pk,
@@ -255,13 +256,14 @@ class OrderProductList(APIView):
                  'mobile_no': order_instance.contact_number,
                  'order_date': order_instance.created_on.date(),
                  'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
-                 'sub_total': order_instance.order_total_price - order_instance.total_vat - delivery_charge,
+                 'sub_total': sub_total,
                  'vat': total_vat,
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix,
                  'is_offer': is_offer,
-                 'colspan_value': "3"
+                 'saved_amount': float(round(total_price_without_offer - sub_total)),
+                 'colspan_value': "4" if is_offer else "3"
                  }
 
             subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
@@ -274,7 +276,10 @@ class OrderProductList(APIView):
             """
             To send notification to admin
             """
-            paid_status = invoice.paid_status
+            if invoice.payment_method == "CASH_ON_DELIVERY":
+                payment_method = "Cash on Delivery"
+            else:
+                payment_method = "Online Payment"
             content = {'user_name': billing_person_name,
                        'user_mobile': invoice.billing_person_mobile_number,
                        'order_id': order_instance.pk,
@@ -284,15 +289,15 @@ class OrderProductList(APIView):
                        'order_date': order_instance.created_on.date(),
                        'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
                        'invoice_number': invoice.invoice_number,
-                       'payment_method': 'Online Payment' if paid_status else 'Cash on Delivery',
-                       'paid_status': 'Paid' if paid_status else 'Not Paid',
-                       'sub_total': order_instance.order_total_price - order_instance.total_vat - delivery_charge,
+                       'payment_method': payment_method,
+                       'sub_total': sub_total,
                        'vat': total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'is_offer': False,
-                       'colspan_value': "3"
+                       'is_offer': is_offer,
+                       'saved_amount': float(round(total_price_without_offer - sub_total)),
+                       'colspan_value': "4" if is_offer else "3"
                        }
             admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
