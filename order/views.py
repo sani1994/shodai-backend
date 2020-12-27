@@ -223,12 +223,25 @@ class OrderProductList(APIView):
             product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
             matrix = []
             total_vat = 0
+            total_price_without_offer = 0
+            is_offer = False
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
-                col = [p.product.product_name, p.product.product_price, "--", int(p.order_product_qty), total]
+                total_price_without_offer += total
+                if p.order_product_price != p.product.product_price:
+                    is_offer = True
+                    total_by_offer = float(p.order_product_price) * p.order_product_qty
+                    vat = float(p.product.price_with_vat) * p.order_product_qty - total
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           p.order_product_price, int(p.order_product_qty), total_by_offer]
+                    total_vat += vat
+                else:
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           "--", int(p.order_product_qty), total]
+                    vat = float(p.product.price_with_vat) * p.order_product_qty - total
+                    total_vat += vat
                 matrix.append(col)
-                vat = float(p.product.price_with_vat) * p.order_product_qty - total
-                total_vat += vat
+
             order_instance.total_vat = total_vat
             order_instance.save()
 
@@ -247,7 +260,7 @@ class OrderProductList(APIView):
                  'delivery_charge': delivery_charge,
                  'total': order_instance.order_total_price,
                  'order_details': matrix,
-                 'is_offer': False,
+                 'is_offer': is_offer,
                  'colspan_value': "3"
                  }
 

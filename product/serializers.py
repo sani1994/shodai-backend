@@ -130,12 +130,37 @@ class RetailerProductSerializer(serializers.ModelSerializer):
         fields = ('id', 'product_name', 'product_name_bn',
                   'product_description', 'product_description_bn',
                   'price_with_vat')
-        read_only = ('id')
+        read_only = 'id'
 
 
 class ProductForCartSerializer(serializers.ModelSerializer):
+    today = timezone.now()
     product_quantity = serializers.FloatField(default=1.0)
     product_unit = serializers.CharField(default="")
+    offer_price = serializers.SerializerMethodField()
+    offer_name = serializers.SerializerMethodField()
+
+    def get_offer_price(self, obj):
+        offer_product = OfferProduct.objects.filter(product=obj,
+                                                    is_approved=True,
+                                                    offer__is_approved=True,
+                                                    offer__offer_starts_in__lte=self.today,
+                                                    offer__offer_ends_in__gte=self.today)
+        if offer_product:
+            return offer_product[0].offer_price
+        else:
+            return None
+
+    def get_offer_name(self, obj):
+        offer_product = OfferProduct.objects.filter(product=obj,
+                                                    is_approved=True,
+                                                    offer__is_approved=True,
+                                                    offer__offer_starts_in__lte=self.today,
+                                                    offer__offer_ends_in__gte=self.today)
+        if offer_product:
+            return offer_product[0].offer.offer_name
+        else:
+            return None
 
     def get_product_unit(self, obj):
         return get_object_or_404(ProductUnit, id=obj.product_unit.id)
@@ -144,4 +169,5 @@ class ProductForCartSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'product_name', 'product_description', 'product_price',
                   'product_image', 'product_unit', 'product_quantity', 'product_last_price',
-                  'product_name_bn', 'product_description_bn', 'price_with_vat']
+                  'product_name_bn', 'product_description_bn', 'price_with_vat',
+                  "offer_name", "offer_price"]
