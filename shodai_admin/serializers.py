@@ -1,9 +1,7 @@
-from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 
 from order.models import Order, InvoiceInfo, OrderProduct
-from product.models import Product
 from userProfile.models import UserProfile
-from rest_framework import serializers
 
 
 class AdminProfileSerializer(serializers.ModelSerializer):
@@ -15,20 +13,32 @@ class AdminProfileSerializer(serializers.ModelSerializer):
 class OrderListSerializer(serializers.ModelSerializer):
     customer_mobile_number = serializers.SerializerMethodField()
     customer_name = serializers.SerializerMethodField()
+    order_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = (
             "id", "created_on", "delivery_date_time", "customer_mobile_number", "customer_name",
-            "order_total_price", "order_status", "contact_number"
+            "order_total_price", "order_status"
         )
-        read_only_fields = ["customer_mobile_number", "customer_name"]
+        read_only_fields = ["customer_mobile_number", "customer_name", "order_status"]
 
     def get_customer_mobile_number(self, obj):
         return obj.user.mobile_number
 
     def get_customer_name(self, obj):
         return obj.user.first_name + " " + obj.user.last_name
+
+    def get_order_status(self, obj):
+        all_order_status = {
+            'OD': 'Ordered',
+            'OA': 'Order Accepted',
+            'RE': 'Order Ready',
+            'OAD': 'Order At Delivery',
+            'COM': 'Order Completed',
+            'CN': 'Order Cancelled',
+        }
+        return all_order_status[obj.order_status]
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
@@ -68,9 +78,5 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         )
 
     def get_invoice(self, obj):
-        invoice = get_object_or_404(InvoiceInfo, order_number=obj)
+        invoice = InvoiceInfo.objects.get(order_number=obj)
         return InvoiceSerializer(invoice).data
-
-    def get_products(self, obj):
-        order_product = get_object_or_404(OrderProduct, order=obj)
-        return OrderProductReadSerializer(order_product, many=True).data

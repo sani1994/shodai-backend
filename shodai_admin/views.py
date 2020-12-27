@@ -1,6 +1,5 @@
 from django.db import IntegrityError
 from django.http import JsonResponse
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
@@ -39,7 +38,7 @@ class AdminLogin(APIView):
         if 'mobile_number' in data:
             try:
                 user = UserProfile.objects.get(mobile_number=request.data['mobile_number'])
-            except UserProfile.DoesNotExist as e:
+            except UserProfile.DoesNotExist:
                 user = None
 
         if user is None:
