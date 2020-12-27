@@ -31,7 +31,6 @@ class GenericAuth(IsAuthenticated):
 class AdminAuth(IsAdminUser):
     def has_permission(self, request, view):
         username = request.user.username
-        is_staff_user = True if request.user.user_type == "SF" else False
         is_access_denied = request.user.groups.filter(name='access_denied').exists()
         try:
             token = request.headers['Authorization'].split(' ')[1]
@@ -48,7 +47,7 @@ class AdminAuth(IsAdminUser):
 
         except BlackListedToken.DoesNotExist:
             pass
-        if is_access_denied or not is_staff_user:
+        if is_access_denied:
             return False
         return super().has_permission(request, view)
 

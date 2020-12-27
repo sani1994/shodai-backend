@@ -49,7 +49,7 @@ class AdminLogin(APIView):
             }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         else:
             if user.check_password(request.data['password']):
-                if not user.is_staff or user.user_type == 'SF':
+                if not user.is_staff:
                     refresh = RefreshToken.for_user(user)
                     return JsonResponse({
                         "message": "success",
