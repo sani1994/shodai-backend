@@ -27,7 +27,11 @@ class OrderListSerializer(serializers.ModelSerializer):
         return obj.user.mobile_number
 
     def get_customer_name(self, obj):
-        return obj.user.first_name + " " + obj.user.last_name
+        if obj.user.first_name and obj.user.last_name:
+            customer_name = obj.user.first_name + " " + obj.user.last_name
+        else:
+            customer_name = obj.user.username
+        return customer_name
 
     def get_order_status(self, obj):
         all_order_status = {
@@ -78,5 +82,5 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         )
 
     def get_invoice(self, obj):
-        invoice = InvoiceInfo.objects.get(order_number=obj)
+        invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]
         return InvoiceSerializer(invoice).data
