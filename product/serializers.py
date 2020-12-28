@@ -60,55 +60,6 @@ class ProductMetaSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # def update(self, instance, validated_data):
-    #     product_meta = validated_data.pop('product_meta')
-    #
-    #     instance.product_name = validated_data.get('product_name', instance.product_name)
-    #     instance.product_unit = validated_data.get('product_unit', instance.product_unit)
-    #     instance.product_price = validated_data.get('product_price', instance.product_price)
-    #     instance.product_image = validated_data.get('product_image',instance.product_image)
-    #     instance.product_meta = product_meta
-    #     instance.modified_by = validated_data.pop('modified_by')
-    #     instance.save()
-    #     return instance
-
-    # product_unit = ProductUnitSerializer(read_only=True)
-    offer_price = serializers.SerializerMethodField()
-    offer_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Product
-        fields = ['id', 'product_name', 'product_name_bn', 'product_image',
-                  'product_unit', 'product_price', 'product_meta',
-                  'product_last_price', 'is_approved',
-                  'product_description', 'product_description_bn',
-                  'price_with_vat', 'offer_price', 'offer_name']
-        read_only_fields = ['product_last_price', 'offer_price', 'offer_name']
-
-    def get_offer_product(self, obj):
-        today = timezone.now()
-        return OfferProduct.objects.filter(product=obj,
-                                           is_approved=True,
-                                           offer__is_approved=True,
-                                           offer__offer_starts_in__lte=today,
-                                           offer__offer_ends_in__gte=today)
-
-    def get_offer_price(self, obj):
-        offer_product = self.get_offer_product(obj)
-        if offer_product:
-            return offer_product[0].offer_price
-        else:
-            return None
-
-    def get_offer_name(self, obj):
-        offer_product = self.get_offer_product(obj)
-        if offer_product:
-            return offer_product[0].offer.offer_name
-        else:
-            return None
-
-
-class LatestProductSerializer(serializers.ModelSerializer):
     today = timezone.now()
     offer_price = serializers.SerializerMethodField()
     offer_name = serializers.SerializerMethodField()

@@ -228,18 +228,16 @@ class OrderProductList(APIView):
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
                 total_price_without_offer += total
+                vat = p.order_product_price_with_vat * p.order_product_qty - total
+                total_vat += vat
                 if p.order_product_price != p.product.product_price:
                     is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    vat = float(p.product.price_with_vat) * p.order_product_qty - total
                     col = [p.product.product_name, p.product.product_unit, p.product.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
-                    total_vat += vat
                 else:
                     col = [p.product.product_name, p.product.product_unit, p.product.product_price,
                            "--", int(p.order_product_qty), total]
-                    vat = float(p.product.price_with_vat) * p.order_product_qty - total
-                    total_vat += vat
                 matrix.append(col)
 
             order_instance.total_vat = total_vat
