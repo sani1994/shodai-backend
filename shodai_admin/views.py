@@ -2,10 +2,10 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from bases.views import CustomPageNumberPagination
 from order.models import Order
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer
 from sodai.utils.helper import get_user_object
@@ -181,8 +181,7 @@ class OrderList(APIView):
                 queryset = Order.objects.filter(id__icontains=search).order_by(sort_by)
         else:
             queryset = Order.objects.all().order_by(sort_by)
-        paginator = PageNumberPagination()
-        paginator.page_size_query_param = 'page_size'
+        paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = OrderListSerializer(result_page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
