@@ -13,7 +13,7 @@ urlpatterns = [
 
     # orders
     path('orders', views.OrderList.as_view()),
-    path('orders/<int:id>/', views.OrderDetail.as_view()),
+    path('orders/<int:id>', views.OrderDetail.as_view()),
 
     # REST_FRAMEWORK Token Authentication Test API
     path('login-test/', views.LoginTest.as_view()),

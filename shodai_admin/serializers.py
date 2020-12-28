@@ -30,7 +30,7 @@ class OrderListSerializer(serializers.ModelSerializer):
         if obj.user.first_name and obj.user.last_name:
             customer_name = obj.user.first_name + " " + obj.user.last_name
         else:
-            customer_name = obj.user.username
+            customer_name = ""
         return customer_name
 
     def get_order_status(self, obj):
@@ -49,10 +49,10 @@ class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceInfo
         fields = (
-            "invoice_number", "billing_person_name", "billing_person_email",
-            "billing_person_mobile_number", "delivery_charge",
+            "invoice_number", "delivery_charge",
             "discount_amount", "paid_status", "payment_method"
         )
+        read_only_fields = ["invoice_number", "discount_amount"]
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer):
@@ -73,14 +73,32 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
 class OrderDetailSerializer(serializers.ModelSerializer):
     invoice = serializers.SerializerMethodField(read_only=True)
     products = OrderProductReadSerializer(read_only=True, many=True)
+    customer_mobile_number = serializers.SerializerMethodField()
+    customer_name = serializers.SerializerMethodField()
+    customer_email = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = (
-            "id", "created_on", "delivery_date_time", "order_total_price", "total_vat",
-            "contact_number", "invoice", "products"
+            "id", "created_on", "delivery_date_time", "order_total_price", "order_status", "total_vat",
+            "contact_number", "customer_mobile_number", "customer_name", "customer_email",
+            "invoice", "products"
         )
 
     def get_invoice(self, obj):
         invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]
         return InvoiceSerializer(invoice).data
+
+    def get_customer_mobile_number(self, obj):
+        return obj.user.mobile_number
+
+    def get_customer_name(self, obj):
+        if obj.user.first_name and obj.user.last_name:
+            customer_name = obj.user.first_name + " " + obj.user.last_name
+        else:
+            customer_name = ""
+        return customer_name
+
+    def get_customer_email(self, obj):
+        customer_email = obj.user.email if obj.user.email else None
+        return customer_email

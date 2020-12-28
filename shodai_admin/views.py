@@ -6,7 +6,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from order.models import Order
+from order.models import Order, InvoiceInfo
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
@@ -191,10 +191,27 @@ class OrderList(APIView):
 class OrderDetail(APIView):
     # permission_classes = [IsAdminUser]
     """
-    Get, update and delete order
+    Get, update and create order
     """
 
     def get(self, request, id):
         order = get_object_or_404(Order, id=id)
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, id):
+        order = get_object_or_404(Order, id=id)
+        delivery_date_time = request.data.get('delivery_date_time', None)
+        contact_number = request.data.get('contact_number', None)
+        order_status = request.data.get('order_status', None)
+        delivery_charge = request.data.get('delivery_charge', None)
+        # if delivery_charge is not None:
+        #     invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
+        #     invoice.delivery_charge = delivery_charge
+        #     invoice.save()
+        if delivery_date_time or contact_number or order_status is not None:
+            serializer = OrderDetailSerializer(order, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
