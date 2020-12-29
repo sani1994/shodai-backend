@@ -11,20 +11,15 @@ class AdminProfileSerializer(serializers.ModelSerializer):
 
 
 class OrderListSerializer(serializers.ModelSerializer):
-    customer_mobile_number = serializers.SerializerMethodField()
     customer_name = serializers.SerializerMethodField()
+    customer_mobile_number = serializers.SerializerMethodField()
     order_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = (
-            "id", "created_on", "delivery_date_time", "customer_mobile_number", "customer_name",
-            "order_total_price", "order_status"
-        )
-        read_only_fields = ["customer_mobile_number", "customer_name", "order_status"]
-
-    def get_customer_mobile_number(self, obj):
-        return obj.user.mobile_number
+        fields = ["id", "created_on", "order_total_price",
+                  "customer_name", "customer_mobile_number", "order_status"]
+        read_only_fields = ["customer_name", "customer_mobile_number", "order_status"]
 
     def get_customer_name(self, obj):
         if obj.user.first_name and obj.user.last_name:
@@ -32,6 +27,9 @@ class OrderListSerializer(serializers.ModelSerializer):
         else:
             customer_name = ""
         return customer_name
+
+    def get_customer_mobile_number(self, obj):
+        return obj.user.mobile_number
 
     def get_order_status(self, obj):
         all_order_status = {
@@ -56,12 +54,16 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer):
+    product_id = serializers.SerializerMethodField(read_only=True)
     product_name = serializers.SerializerMethodField(read_only=True)
     product_price_total = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = OrderProduct
-        fields = ('product_name', 'order_product_price', 'order_product_qty', 'product_price_total')
+        fields = ('product_id', 'product_name', 'order_product_price', 'order_product_qty', 'product_price_total')
+
+    def get_product_id(self, obj):
+        return obj.product.id
 
     def get_product_name(self, obj):
         return obj.product.product_name
