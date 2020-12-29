@@ -191,7 +191,7 @@ class OrderList(APIView):
 
 
 class OrderDetail(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get, update and create order
     """
@@ -207,30 +207,42 @@ class OrderDetail(APIView):
         contact_number = request.data.get('contact_number', None)
         order_status = request.data.get('order_status', None)
         delivery_charge = request.data.get('delivery_charge', None)
+        payment_method = request.data.get('payment_method', None)
         products = request.data.get('products', None)
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
         billing_person_name = order.user.first_name + " " + order.user.last_name
-        if delivery_charge:
-            invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
-                                                 billing_person_name=billing_person_name,
-                                                 billing_person_email=order.user.email,
-                                                 billing_person_mobile_number=order.user.mobile_number,
-                                                 delivery_contact_number=order.contact_number,
-                                                 delivery_address=order.address.road,
-                                                 delivery_date_time=order.delivery_date_time,
-                                                 delivery_charge=delivery_charge,
-                                                 net_payable_amount=order.order_total_price - invoice.delivery_charge + delivery_charge,
-                                                 payment_method=invoice.payment_method,
-                                                 order_number=order,
-                                                 user=order.user)
+
+        if payment_method:
+            if payment_method != invoice.payment_method:
+                invoice.payment_method = payment_method
+                invoice.save()
+        if delivery_charge and not products:
+            if delivery_charge != invoice.delivery_charge:
+                invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
+                                                     billing_person_name=billing_person_name,
+                                                     billing_person_email=order.user.email,
+                                                     billing_person_mobile_number=order.user.mobile_number,
+                                                     delivery_contact_number=order.contact_number,
+                                                     delivery_address=order.address.road,
+                                                     delivery_date_time=order.delivery_date_time,
+                                                     delivery_charge=delivery_charge,
+                                                     net_payable_amount=order.order_total_price - invoice.delivery_charge + delivery_charge,
+                                                     payment_method=invoice.payment_method,
+                                                     order_number=order,
+                                                     user=order.user,
+                                                     created_by=request.user)
+                order.order_total_price = invoice.net_payable_amount
+                order.modified_by = request.user
+                order.save()
         if delivery_date_time or contact_number or order_status:
             serializer = OrderDetailSerializer(order, data=request.data)
             if serializer.is_valid():
                 serializer.save()
         if products:
-            # Create new Order
+            # Create new Order and invoice
+            delivery = delivery_charge if delivery_charge else invoice.delivery_charge
             order = Order.objects.create(user=order.user,
-                                         # created_by=request.user,
+                                         created_by=request.user,
                                          delivery_date_time=order.delivery_date_time,
                                          delivery_place=order.delivery_place,
                                          lat=order.lat,
@@ -240,7 +252,6 @@ class OrderDetail(APIView):
                                          address=order.address,
                                          contact_number=order.contact_number if order.contact_number else order.user.mobile_number
                                          )
-
             total_vat, total = 0, 0
             for p in products:
                 product = Product.objects.get(id=p["product_id"])
@@ -248,12 +259,12 @@ class OrderDetail(APIView):
                                                  order=order,
                                                  order_product_price=product.product_price,
                                                  order_product_qty=p["order_product_qty"])
-                total = float(op.order_product_price_with_vat) * op.order_product_qty
-                total += total
+                total_with_vat = float(op.order_product_price_with_vat) * op.order_product_qty
+                total += total_with_vat
                 vat = float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
                 total_vat += vat
 
-            order.order_total_price = total + invoice.delivery_charge
+            order.order_total_price = total + delivery
             order.total_vat = total_vat
             order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
             order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -268,11 +279,11 @@ class OrderDetail(APIView):
                                        delivery_contact_number=order.contact_number,
                                        delivery_address=order.address.road,
                                        delivery_date_time=order.delivery_date_time,
-                                       delivery_charge=invoice.delivery_charge,
+                                       delivery_charge=delivery,
                                        net_payable_amount=order.order_total_price,
                                        payment_method=invoice.payment_method,
                                        order_number=order,
-                                       user=order.user, )
-            # created_by=request.user)
+                                       user=order.user,
+                                       created_by=request.user)
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
