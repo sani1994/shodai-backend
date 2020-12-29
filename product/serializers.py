@@ -113,7 +113,7 @@ class RetailerProductSerializer(serializers.ModelSerializer):
 class ProductForCartSerializer(serializers.ModelSerializer):
     today = timezone.now()
     product_quantity = serializers.FloatField(default=1.0)
-    product_unit = serializers.CharField(default="")
+    product_unit = serializers.StringRelatedField()
     offer_price = serializers.SerializerMethodField()
     offer_name = serializers.SerializerMethodField()
 
@@ -138,9 +138,6 @@ class ProductForCartSerializer(serializers.ModelSerializer):
             return offer_product[0].offer.offer_name
         else:
             return None
-
-    def get_product_unit(self, obj):
-        return get_object_or_404(ProductUnit, id=obj.product_unit.id)
 
     class Meta:
         model = Product
