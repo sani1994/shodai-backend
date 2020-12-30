@@ -46,6 +46,28 @@ class OrderListSerializer(serializers.ModelSerializer):
         return all_order_status[obj.order_status]
 
 
+class ProductSearchSerializer(serializers.ModelSerializer):
+    today = timezone.now()
+    offer_price = serializers.SerializerMethodField()
+
+    def get_offer_price(self, obj):
+        offer_product = OfferProduct.objects.filter(product=obj,
+                                                    is_approved=True,
+                                                    offer__is_approved=True,
+                                                    offer__offer_starts_in__lte=self.today,
+                                                    offer__offer_ends_in__gte=self.today)
+        if offer_product:
+            return offer_product[0].offer_price
+        else:
+            return None
+
+    class Meta:
+        model = Product
+        fields = ['id', 'product_name', 'product_price', 'offer_price',
+                  'product_image', 'product_unit_name']
+        read_only_fields = ['offer_price', ]
+
+
 class CustomerSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField(read_only=True)
 
@@ -75,24 +97,12 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer):
-    product_id = serializers.SerializerMethodField(read_only=True)
-    product_name = serializers.SerializerMethodField(read_only=True)
-    product_image = serializers.SerializerMethodField(read_only=True)
+    product = ProductSearchSerializer(read_only=True)
     product_price_total = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = OrderProduct
-        fields = ('product_id', 'product_name', 'product_image', 'order_product_price',
-                  'order_product_qty', 'product_price_total')
-
-    def get_product_id(self, obj):
-        return obj.product.id
-
-    def get_product_name(self, obj):
-        return obj.product.product_name
-
-    def get_product_image(self, obj):
-        return obj.product.product_image
+        fields = ('order_product_price', 'order_product_qty', 'product_price_total', 'product')
 
     def get_product_price_total(self, obj):
         return obj.order_product_price * obj.order_product_qty
@@ -114,25 +124,3 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     def get_invoice(self, obj):
         invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]
         return InvoiceSerializer(invoice).data
-
-
-class ProductSearchSerializer(serializers.ModelSerializer):
-    today = timezone.now()
-    offer_price = serializers.SerializerMethodField()
-
-    def get_offer_price(self, obj):
-        offer_product = OfferProduct.objects.filter(product=obj,
-                                                    is_approved=True,
-                                                    offer__is_approved=True,
-                                                    offer__offer_starts_in__lte=self.today,
-                                                    offer__offer_ends_in__gte=self.today)
-        if offer_product:
-            return offer_product[0].offer_price
-        else:
-            return None
-
-    class Meta:
-        model = Product
-        fields = ['id', 'product_name', 'product_price', 'price_with_vat',
-                  'offer_price', 'product_image', 'product_unit_name', ]
-        read_only_fields = ['offer_price', ]
