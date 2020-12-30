@@ -10,8 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from bases.views import CustomPageNumberPagination
 from order.models import Order, InvoiceInfo, OrderProduct
 from product.models import Product
-from product.serializers import ProductSerializer
-from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer
+from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
+    ProductSearchSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
 from userProfile.models import UserProfile, BlackListedToken
@@ -194,7 +194,7 @@ class OrderList(APIView):
 
 
 class OrderDetail(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
     """
     Get, update and create order
     """
@@ -306,8 +306,8 @@ class ProductSearch(APIView):
 
     def get(self, request):
         name = request.query_params.get('name', None)
-        product = Product.objects.filter(product_name__icontains=name)
-        serializer = ProductSerializer(product, many=True)
+        product = Product.objects.filter(product_name__icontains=name, is_approved=True)
+        serializer = ProductSearchSerializer(product, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:

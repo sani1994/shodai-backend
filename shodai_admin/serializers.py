@@ -1,6 +1,9 @@
+from django.utils import timezone
 from rest_framework import serializers
 
+from offer.models import OfferProduct
 from order.models import Order, InvoiceInfo, OrderProduct
+from product.models import Product
 from userProfile.models import UserProfile
 
 
@@ -43,6 +46,24 @@ class OrderListSerializer(serializers.ModelSerializer):
         return all_order_status[obj.order_status]
 
 
+class CustomerSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = (
+            "customer_name", "mobile_number", "email"
+        )
+        read_only_fields = ["customer_name", "mobile_number", "email"]
+
+    def get_customer_name(self, obj):
+        if obj.first_name and obj.last_name:
+            customer_name = obj.first_name + " " + obj.last_name
+        else:
+            customer_name = ""
+        return customer_name
+
+
 class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceInfo
@@ -56,11 +77,13 @@ class InvoiceSerializer(serializers.ModelSerializer):
 class OrderProductReadSerializer(serializers.ModelSerializer):
     product_id = serializers.SerializerMethodField(read_only=True)
     product_name = serializers.SerializerMethodField(read_only=True)
+    product_image = serializers.SerializerMethodField(read_only=True)
     product_price_total = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = OrderProduct
-        fields = ('product_id', 'product_name', 'order_product_price', 'order_product_qty', 'product_price_total')
+        fields = ('product_id', 'product_name', 'product_image', 'order_product_price',
+                  'order_product_qty', 'product_price_total')
 
     def get_product_id(self, obj):
         return obj.product.id
@@ -68,40 +91,48 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
     def get_product_name(self, obj):
         return obj.product.product_name
 
+    def get_product_image(self, obj):
+        return obj.product.product_image
+
     def get_product_price_total(self, obj):
         return obj.order_product_price * obj.order_product_qty
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
+    address = serializers.StringRelatedField()
+    user = CustomerSerializer(read_only=True)
     invoice = serializers.SerializerMethodField(read_only=True)
     products = OrderProductReadSerializer(read_only=True, many=True)
-    customer_mobile_number = serializers.SerializerMethodField()
-    customer_name = serializers.SerializerMethodField()
-    customer_email = serializers.SerializerMethodField()
-    address = serializers.StringRelatedField()
 
     class Meta:
         model = Order
         fields = (
             "id", "created_on", "delivery_date_time", "order_total_price", "order_status", "total_vat",
-            "contact_number", "customer_name", "customer_mobile_number", "customer_email", "address",
-            "invoice", "products"
+            "contact_number", "address", "user", "invoice", "products"
         )
 
     def get_invoice(self, obj):
         invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]
         return InvoiceSerializer(invoice).data
 
-    def get_customer_mobile_number(self, obj):
-        return obj.user.mobile_number
 
-    def get_customer_name(self, obj):
-        if obj.user.first_name and obj.user.last_name:
-            customer_name = obj.user.first_name + " " + obj.user.last_name
+class ProductSearchSerializer(serializers.ModelSerializer):
+    today = timezone.now()
+    offer_price = serializers.SerializerMethodField()
+
+    def get_offer_price(self, obj):
+        offer_product = OfferProduct.objects.filter(product=obj,
+                                                    is_approved=True,
+                                                    offer__is_approved=True,
+                                                    offer__offer_starts_in__lte=self.today,
+                                                    offer__offer_ends_in__gte=self.today)
+        if offer_product:
+            return offer_product[0].offer_price
         else:
-            customer_name = ""
-        return customer_name
+            return None
 
-    def get_customer_email(self, obj):
-        customer_email = obj.user.email if obj.user.email else None
-        return customer_email
+    class Meta:
+        model = Product
+        fields = ['id', 'product_name', 'product_price', 'price_with_vat',
+                  'offer_price', 'product_image', 'product_unit_name', ]
+        read_only_fields = ['offer_price', ]
