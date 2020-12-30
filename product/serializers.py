@@ -5,7 +5,6 @@ from rest_framework.relations import HyperlinkedIdentityField
 
 from offer.models import OfferProduct
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
-from utility.serializers import ProductUnitSerializer
 from utility.models import ProductUnit
 
 
@@ -24,7 +23,6 @@ class ShopCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopCategory
         fields = ('id', 'type_of_shop', 'url')
-        # fields = '__all__'
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -107,7 +105,6 @@ class RetailerProductSerializer(serializers.ModelSerializer):
         fields = ('id', 'product_name', 'product_name_bn',
                   'product_description', 'product_description_bn',
                   'price_with_vat')
-        read_only = 'id'
 
 
 class ProductForCartSerializer(serializers.ModelSerializer):
