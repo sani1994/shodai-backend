@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from bases.views import CustomPageNumberPagination
 from order.models import Order, InvoiceInfo, OrderProduct
 from product.models import Product
+from product.serializers import ProductSerializer
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
@@ -19,6 +20,8 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+
+from userProfile.serializers import AddressSerializer
 
 
 class AdminLogin(APIView):
@@ -209,9 +212,14 @@ class OrderDetail(APIView):
         delivery_charge = request.data.get('delivery_charge', None)
         payment_method = request.data.get('payment_method', None)
         products = request.data.get('products', None)
+        address = request.data.get('address', None)
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
         billing_person_name = order.user.first_name + " " + order.user.last_name
 
+        if address:
+            serializer = AddressSerializer(data=address, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
         if payment_method:
             if payment_method != invoice.payment_method:
                 invoice.payment_method = payment_method
@@ -233,6 +241,7 @@ class OrderDetail(APIView):
                                                      created_by=request.user)
                 order.order_total_price = invoice.net_payable_amount
                 order.modified_by = request.user
+                order.invoice_number = invoice.invoice_number
                 order.save()
         if delivery_date_time or contact_number or order_status:
             serializer = OrderDetailSerializer(order, data=request.data)
@@ -287,3 +296,19 @@ class OrderDetail(APIView):
                                        created_by=request.user)
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProductSearch(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Get Product by name
+    """
+
+    def get(self, request):
+        name = request.query_params.get('name', None)
+        product = Product.objects.filter(product_name__icontains=name)
+        serializer = ProductSerializer(product, many=True)
+        if serializer:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

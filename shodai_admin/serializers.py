@@ -78,12 +78,13 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     customer_mobile_number = serializers.SerializerMethodField()
     customer_name = serializers.SerializerMethodField()
     customer_email = serializers.SerializerMethodField()
+    address = serializers.StringRelatedField()
 
     class Meta:
         model = Order
         fields = (
             "id", "created_on", "delivery_date_time", "order_total_price", "order_status", "total_vat",
-            "contact_number", "customer_mobile_number", "customer_name", "customer_email",
+            "contact_number", "customer_name", "customer_mobile_number", "customer_email", "address",
             "invoice", "products"
         )
 

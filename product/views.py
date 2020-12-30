@@ -6,7 +6,7 @@ import qrcode
 
 from product.pagination import CustomPagination
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
-    ProductMetaSerializer, LatestProductSerializer, ProductForCartSerializer
+    ProductMetaSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
 from utility.models import ProductUnit
 from django.http import Http404
@@ -308,7 +308,7 @@ class ProductMetaDetails(APIView):  # get product meta id to get all the product
         obj = ProductMeta.objects.filter(id=id).first()
         if obj:
             productList = obj.product_set.all()
-            serializer = LatestProductSerializer(productList, many=True)
+            serializer = ProductSerializer(productList, many=True)
             if serializer:
                 datas = serializer.data
                 for data in range(len(datas)):
@@ -330,7 +330,7 @@ class RecentlyAddedProductList(APIView):  # return list of recently added produc
 
     def get(self, request):
         queryset = Product.objects.filter(is_approved=True).order_by('-created_on')[:200]
-        serializer = LatestProductSerializer(queryset, many=True)
+        serializer = ProductSerializer(queryset, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -362,7 +362,7 @@ class RecentlyAddedProductListPagination(APIView):
         queryset = Product.objects.filter(is_approved=True).order_by('-created_on')
         paginator = Paginator(queryset, 10)  # Show 10 products per page
         products = paginator.get_page(id)
-        serializer = LatestProductSerializer(products, many=True)
+        serializer = ProductSerializer(products, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
