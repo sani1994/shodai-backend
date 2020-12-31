@@ -14,14 +14,12 @@ from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer
     ProductSearchSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
-from userProfile.models import UserProfile, BlackListedToken
+from userProfile.models import UserProfile, BlackListedToken, Address
 
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
-
-from userProfile.serializers import AddressSerializer
 
 
 class AdminLogin(APIView):
@@ -194,7 +192,7 @@ class OrderList(APIView):
 
 
 class OrderDetail(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get, update and create order
     """
@@ -215,41 +213,53 @@ class OrderDetail(APIView):
         address = request.data.get('address', None)
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
         billing_person_name = order.user.first_name + " " + order.user.last_name
+        delivery = delivery_charge if delivery_charge else invoice.delivery_charge
 
         if address:
-            serializer = AddressSerializer(data=address, context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-        if payment_method:
-            if payment_method != invoice.payment_method:
-                invoice.payment_method = payment_method
-                invoice.save()
-        if delivery_charge and not products:
-            if delivery_charge != invoice.delivery_charge:
-                invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
-                                                     billing_person_name=billing_person_name,
-                                                     billing_person_email=order.user.email,
-                                                     billing_person_mobile_number=order.user.mobile_number,
-                                                     delivery_contact_number=order.contact_number,
-                                                     delivery_address=order.address.road,
-                                                     delivery_date_time=order.delivery_date_time,
-                                                     delivery_charge=delivery_charge,
-                                                     net_payable_amount=order.order_total_price - invoice.delivery_charge + delivery_charge,
-                                                     payment_method=invoice.payment_method,
-                                                     order_number=order,
-                                                     user=order.user,
-                                                     created_by=request.user)
-                order.order_total_price = invoice.net_payable_amount
-                order.modified_by = request.user
-                order.invoice_number = invoice.invoice_number
+            delivery_address = Address.objects.create(road=address["road"],
+                                                      city=address["city"],
+                                                      district=address["district"],
+                                                      zip_code=address["zip_code"],
+                                                      country="Bangladesh",
+                                                      user=order.user)
+            if not products:
+                # update Order
+                order.address = delivery_address
                 order.save()
+        else:
+            delivery_address = order.address
+        if payment_method:
+            payment = payment_method if not invoice.paid_status else None
+        else:
+            payment = invoice.payment_method
+
+        if delivery_charge or address or payment_method and not products:
+            # Create new Invoice update Order
+            invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
+                                                 billing_person_name=billing_person_name,
+                                                 billing_person_email=order.user.email,
+                                                 billing_person_mobile_number=order.user.mobile_number,
+                                                 delivery_contact_number=order.contact_number,
+                                                 delivery_address=delivery_address.road,
+                                                 delivery_date_time=order.delivery_date_time,
+                                                 delivery_charge=delivery,
+                                                 discount_amount=invoice.discount_amount,
+                                                 net_payable_amount=order.order_total_price - invoice.delivery_charge + delivery,
+                                                 payment_method=payment,
+                                                 order_number=order,
+                                                 user=order.user,
+                                                 created_by=request.user)
+            order.order_total_price = invoice.net_payable_amount
+            order.modified_by = request.user
+            order.invoice_number = invoice.invoice_number
+            order.save()
         if delivery_date_time or contact_number or order_status:
+            # update Order
             serializer = OrderDetailSerializer(order, data=request.data)
             if serializer.is_valid():
                 serializer.save()
         if products:
-            # Create new Order and invoice
-            delivery = delivery_charge if delivery_charge else invoice.delivery_charge
+            # Create new Order and Invoice
             order = Order.objects.create(user=order.user,
                                          created_by=request.user,
                                          delivery_date_time=order.delivery_date_time,
@@ -258,20 +268,20 @@ class OrderDetail(APIView):
                                          long=order.long,
                                          order_status="OD",
                                          order_type=order.order_type,
-                                         address=order.address,
+                                         address=delivery_address,
                                          contact_number=order.contact_number if order.contact_number else order.user.mobile_number
                                          )
             total_vat, total = 0, 0
+            total_price, total_op_price = 0, 0
             for p in products:
                 product = Product.objects.get(id=p["product_id"])
                 op = OrderProduct.objects.create(product=product,
                                                  order=order,
-                                                 order_product_price=product.product_price,
                                                  order_product_qty=p["order_product_qty"])
-                total_with_vat = float(op.order_product_price_with_vat) * op.order_product_qty
-                total += total_with_vat
-                vat = float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
-                total_vat += vat
+                total_price += float(product.product_price) * op.order_product_qty
+                total_op_price += op.order_product_price * op.order_product_qty
+                total += float(op.order_product_price_with_vat) * op.order_product_qty
+                total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
             order.order_total_price = total + delivery
             order.total_vat = total_vat
@@ -286,11 +296,12 @@ class OrderDetail(APIView):
                                        billing_person_email=order.user.email,
                                        billing_person_mobile_number=order.user.mobile_number,
                                        delivery_contact_number=order.contact_number,
-                                       delivery_address=order.address.road,
+                                       delivery_address=delivery_address.road,
                                        delivery_date_time=order.delivery_date_time,
                                        delivery_charge=delivery,
+                                       discount_amount=total_price - total_op_price,
                                        net_payable_amount=order.order_total_price,
-                                       payment_method=invoice.payment_method,
+                                       payment_method=payment,
                                        order_number=order,
                                        user=order.user,
                                        created_by=request.user)

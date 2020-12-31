@@ -144,13 +144,12 @@ class OrderProduct(BaseModel):
                                                     offer__offer_ends_in__gte=today, product=self.product)
 
         if offer_product.exists():
-            price = float(offer_product[0].offer_price) + (float(
-                offer_product[0].offer_price) * self.product.product_meta.vat_amount) / 100
-            self.order_product_price_with_vat = round(price)
-            self.order_product_price = offer_product[0].offer_price
+            self.order_product_price = float(offer_product[0].offer_price)
         else:
-            self.order_product_price_with_vat = self.product.price_with_vat
+            self.order_product_price = float(self.product.product_price)
         self.vat_amount = self.product.product_meta.vat_amount
+        self.order_product_price_with_vat = round(self.order_product_price +
+                                                  (self.order_product_price * self.vat_amount) / 100)
         super(OrderProduct, self).save(*args, **kwargs)
 
     class Meta:
