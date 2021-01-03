@@ -192,7 +192,7 @@ class OrderList(APIView):
 
 
 class OrderDetail(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
     """
     Get, update and create order
     """
@@ -316,10 +316,10 @@ class ProductSearch(APIView):
     """
 
     def get(self, request):
-        name = request.query_params.get('name', None)
-        product = Product.objects.filter(product_name__icontains=name, is_approved=True)
+        query = request.query_params.get('query', '')
+        product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:10]
         serializer = ProductSearchSerializer(product, many=True)
         if serializer:
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

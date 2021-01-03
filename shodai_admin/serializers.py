@@ -87,8 +87,8 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderProduct
-        fields = ('product_id', 'product_name', 'product_image', 'order_product_price',
-                  'order_product_qty', 'product_price_total')
+        fields = ['order_product_price', 'order_product_unit', 'order_product_qty',
+                  'product_id', 'product_name', 'product_image', 'product_price_total']
 
     def get_product_id(self, obj):
         return obj.product.id
@@ -126,15 +126,15 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class ProductSearchSerializer(serializers.ModelSerializer):
-    today = timezone.now()
     offer_price = serializers.SerializerMethodField()
 
     def get_offer_price(self, obj):
+        today = timezone.now()
         offer_product = OfferProduct.objects.filter(product=obj,
                                                     is_approved=True,
                                                     offer__is_approved=True,
-                                                    offer__offer_starts_in__lte=self.today,
-                                                    offer__offer_ends_in__gte=self.today)
+                                                    offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today)
         if offer_product:
             return offer_product[0].offer_price
         else:
@@ -142,6 +142,6 @@ class ProductSearchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'product_name', 'product_price', 'price_with_vat',
-                  'offer_price', 'product_image', 'product_unit_name', ]
+        fields = ['id', 'product_name', 'product_price',
+                  'product_image', 'product_unit_name', 'offer_price', ]
         read_only_fields = ['offer_price', ]
