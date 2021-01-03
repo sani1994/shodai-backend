@@ -8,10 +8,10 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination
-from order.models import Order, InvoiceInfo, OrderProduct
+from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
-    ProductSearchSerializer
+    ProductSearchSerializer, TimeSlotSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
 from userProfile.models import UserProfile, BlackListedToken, Address
@@ -308,6 +308,41 @@ class OrderDetail(APIView):
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def post(self, request):
+        data = request.data
+        products = data["products"]
+        delivery = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+        order_instance = Order.objects.create(created_by=request.user,
+                                              delivery_date_time=data["delivery_date_time"],
+                                              delivery_place="Dhaka",
+                                              lat="23.7733",
+                                              long="90.3548",
+                                              contact_number=data["contact_number"]
+                                              )
+        order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.save()
+
+        total_vat, total = 0, 0
+        total_price, total_op_price = 0, 0
+        for p in products:
+            product = Product.objects.get(id=p["product_id"])
+            op = OrderProduct.objects.create(product=product,
+                                             order=order_instance,
+                                             order_product_qty=p["order_product_qty"])
+            total_price += float(product.product_price) * op.order_product_qty
+            total_op_price += op.order_product_price * op.order_product_qty
+            total += float(op.order_product_price_with_vat) * op.order_product_qty
+            total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
+
+        order_instance.order_total_price = total + delivery
+        order_instance.total_vat = total_vat
+        order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.save()
+
 
 class ProductSearch(APIView):
     # permission_classes = [IsAdminUser]
@@ -319,6 +354,21 @@ class ProductSearch(APIView):
         query = request.query_params.get('query', '')
         product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:10]
         serializer = ProductSearchSerializer(product, many=True)
+        if serializer:
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TimeSlotList(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Get List of Timeslots
+    """
+
+    def get(self, request):
+        queryset = TimeSlot.objects.filter(allow=True)
+        serializer = TimeSlotSerializer(queryset, many=True)
         if serializer:
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:

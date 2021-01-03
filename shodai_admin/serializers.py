@@ -2,10 +2,9 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from offer.models import OfferProduct
-from order.models import Order, InvoiceInfo, OrderProduct
+from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot
 from product.models import Product
 from userProfile.models import UserProfile
-
 
 all_order_status = {
     'OD': 'Ordered',
@@ -104,6 +103,7 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
+    time_slot = serializers.SerializerMethodField(read_only=True)
     delivery_address = serializers.StringRelatedField(source='address')
     customer = CustomerSerializer(source='user')
     invoice = serializers.SerializerMethodField(read_only=True)
@@ -113,9 +113,16 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "created_on", "delivery_date_time", "order_total_price", "order_status", "total_vat",
-            "contact_number", "delivery_address", "customer", "invoice", "products"
+            "id", "created_on", "delivery_date_time", "time_slot", "order_total_price", "order_status",
+            "total_vat", "contact_number", "delivery_address", "customer", "invoice", "products"
         )
+
+    def get_time_slot(self, obj):
+        time = TimeSlot.objects.filter(time=obj.delivery_date_time.time())
+        if time:
+            return time[0].slot
+        else:
+            return obj.delivery_date_time.time()
 
     def get_invoice(self, obj):
         invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]
@@ -145,3 +152,9 @@ class ProductSearchSerializer(serializers.ModelSerializer):
         fields = ['id', 'product_name', 'product_price',
                   'product_image', 'product_unit_name', 'offer_price', ]
         read_only_fields = ['offer_price', ]
+
+
+class TimeSlotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimeSlot
+        fields = ('id', 'slot', 'time')

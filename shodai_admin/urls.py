@@ -14,6 +14,7 @@ urlpatterns = [
     # orders
     path('orders', views.OrderList.as_view()),
     path('orders/<int:id>', views.OrderDetail.as_view()),
+    path('timeslots', views.TimeSlotList.as_view()),
 
     # products
     path('products/search', views.ProductSearch.as_view()),
