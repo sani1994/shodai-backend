@@ -211,6 +211,7 @@ class OrderDetail(APIView):
         payment_method = request.data.get('payment_method', None)
         products = request.data.get('products', None)
         address = request.data.get('address', None)
+
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
         billing_person_name = order.user.first_name + " " + order.user.last_name
         delivery = delivery_charge if delivery_charge else invoice.delivery_charge
@@ -373,3 +374,21 @@ class TimeSlotList(APIView):
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderStatusList(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Get All Order Status
+    """
+
+    def get(self, request):
+        all_order_status = [
+            'Ordered',
+            'Order Accepted',
+            'Order Ready',
+            'Order At Delivery',
+            'Order Completed',
+            'Order Cancelled',
+        ]
+        return Response({'status': 'success', 'data': all_order_status}, status=status.HTTP_200_OK)

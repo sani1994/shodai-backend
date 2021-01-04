@@ -103,7 +103,7 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
-    time_slot = serializers.SerializerMethodField(read_only=True)
+    delivery_time_slot = serializers.SerializerMethodField(read_only=True)
     delivery_address = serializers.StringRelatedField(source='address')
     customer = CustomerSerializer(source='user')
     invoice = serializers.SerializerMethodField(read_only=True)
@@ -113,16 +113,16 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "created_on", "delivery_date_time", "time_slot", "order_total_price", "order_status",
+            "id", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price", "order_status",
             "total_vat", "contact_number", "delivery_address", "customer", "invoice", "products"
         )
 
-    def get_time_slot(self, obj):
-        time = TimeSlot.objects.filter(time=obj.delivery_date_time.time())
+    def get_delivery_time_slot(self, obj):
+        time = TimeSlot.objects.filter(time=timezone.localtime(obj.delivery_date_time).time())
         if time:
             return time[0].slot
         else:
-            return obj.delivery_date_time.time()
+            return TimeSlot.objects.get(id=1).slot
 
     def get_invoice(self, obj):
         invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]
