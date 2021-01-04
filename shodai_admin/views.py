@@ -1,7 +1,11 @@
 import uuid
+from datetime import datetime
+from random import randint
 
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils import timezone
+from django.utils.crypto import get_random_string
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
@@ -11,7 +15,7 @@ from bases.views import CustomPageNumberPagination
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
-    ProductSearchSerializer, TimeSlotSerializer
+    ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
 from userProfile.models import UserProfile, BlackListedToken, Address
@@ -20,6 +24,8 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+
+from utility.notification import send_sms
 
 
 class AdminLogin(APIView):
@@ -211,16 +217,16 @@ class OrderDetail(APIView):
         payment_method = request.data.get('payment_method', None)
         products = request.data.get('products', None)
         address = request.data.get('address', None)
+        note = request.data.get('note', None)
 
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
         billing_person_name = order.user.first_name + " " + order.user.last_name
         delivery = delivery_charge if delivery_charge else invoice.delivery_charge
 
         if address:
-            delivery_address = Address.objects.create(road=address["road"],
-                                                      city=address["city"],
-                                                      district=address["district"],
-                                                      zip_code=address["zip_code"],
+            delivery_address = Address.objects.create(road=address,
+                                                      city="Dhaka",
+                                                      district="Dhaka",
                                                       country="Bangladesh",
                                                       user=order.user)
             if not products:
@@ -309,22 +315,59 @@ class OrderDetail(APIView):
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request):
+    def post(self, request, id):
         data = request.data
         products = data["products"]
+        customer = data["customer"]
+        note = data["note"]
+        date = data["delivery_date"]
+        time_slot = data["time_slot"]
         delivery = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+        time = TimeSlot.objects.filter(id=time_slot)
+        if time:
+            delivery_date_time = date + str(time[0].time)
+        else:
+            delivery_date_time = date + str(TimeSlot.objects.get(id=1).time)
+        delivery_date_time = datetime.strptime(delivery_date_time, "%d-%m-%Y%H:%M:%S")
+        try:
+            user = UserProfile.objects.get(username=customer["mobile_number"])
+        except UserProfile.DoesNotExist:
+            user = None
+
+        if user:
+            user_instance = user
+        else:
+            user_instance = UserProfile.objects.create(first_name=customer["name"],
+                                                       last_name="",
+                                                       email=customer["email"],
+                                                       mobile_number=customer["mobile_number"],
+                                                       user_type="CM",
+                                                       created_on=timezone.now(),
+                                                       verification_code=randint(100000, 999999),
+                                                       is_approved=True)
+            temp_password = get_random_string(length=6)
+            sms_body = f"Dear " + customer["name"] + \
+                       ",\r\nWe have created a temporary password [" + temp_password + \
+                       "] based on your order request." \
+                       "\r\n[N.B:Please change your password after login] "
+            send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+            user_instance.set_password(temp_password)
+            user_instance.save()
+        delivery_address = Address.objects.create(road=data["address"],
+                                                  city="Dhaka",
+                                                  district="Dhaka",
+                                                  country="Bangladesh",
+                                                  user=user_instance)
+
         order_instance = Order.objects.create(created_by=request.user,
-                                              delivery_date_time=data["delivery_date_time"],
+                                              user=user_instance,
+                                              delivery_date_time=delivery_date_time,
                                               delivery_place="Dhaka",
                                               lat="23.7733",
                                               long="90.3548",
-                                              contact_number=data["contact_number"]
+                                              contact_number=data["contact_number"],
+                                              address=delivery_address
                                               )
-        order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.save()
-
         total_vat, total = 0, 0
         total_price, total_op_price = 0, 0
         for p in products:
@@ -343,6 +386,25 @@ class OrderDetail(APIView):
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.save()
+
+        # Create new InvoiceInfo Instance
+        billing_person_name = user_instance.first_name + " " + user_instance.last_name
+        InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                   billing_person_name=billing_person_name,
+                                   billing_person_email=user_instance.email,
+                                   billing_person_mobile_number=user_instance.mobile_number,
+                                   delivery_contact_number=order_instance.contact_number,
+                                   delivery_address=delivery_address.road,
+                                   delivery_date_time=order_instance.delivery_date_time,
+                                   delivery_charge=delivery,
+                                   discount_amount=total_price - total_op_price,
+                                   net_payable_amount=order_instance.order_total_price,
+                                   payment_method=data["payment"],
+                                   order_number=order_instance,
+                                   user=user_instance,
+                                   created_by=request.user)
+
+        return Response({'status': 'success', 'message': 'Order Created successfully'}, status=status.HTTP_200_OK)
 
 
 class ProductSearch(APIView):
@@ -392,3 +454,19 @@ class OrderStatusList(APIView):
             'Order Cancelled',
         ]
         return Response({'status': 'success', 'data': all_order_status}, status=status.HTTP_200_OK)
+
+
+class CustomerSearch(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Get List of Customers by mobile number
+    """
+
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        queryset = UserProfile.objects.filter(user_type="CM", mobile_number__icontains=query)
+        serializer = CustomerSerializer(queryset, many=True)
+        if serializer:
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

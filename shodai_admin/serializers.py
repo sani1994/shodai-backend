@@ -52,7 +52,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ["name", "mobile_number", "email"]
+        fields = ["id", "name", "mobile_number", "email"]
         read_only_fields = ["name", "mobile_number", "email"]
 
     def get_name(self, obj):
