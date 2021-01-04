@@ -1,6 +1,6 @@
 from retailer.models import Account, Shop, AcceptedOrder, ShopProduct
 from rest_framework import serializers
-from product.serializers import RetailerProductSerializer, ProductUnitSerializer
+from product.serializers import RetailerProductSerializer
 
 
 class AccountSerializer(serializers.ModelSerializer):

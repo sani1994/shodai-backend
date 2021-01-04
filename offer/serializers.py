@@ -46,6 +46,8 @@ class OfferProductReadSerializer(serializers.ModelSerializer):
 
 
 class ProductReadSerializer(serializers.ModelSerializer):
+    product_meta = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Product
         fields = ('id', 'product_name', 'product_name_bn', 'product_image',
@@ -54,10 +56,13 @@ class ProductReadSerializer(serializers.ModelSerializer):
                   'product_description', 'product_description_bn',
                   'price_with_vat',)
 
+    def get_product_meta(self, obj):
+        return obj.product_meta.name
+
 
 class OfferProductListSerializer(serializers.ModelSerializer):
-    product = ProductReadSerializer(read_only=True)
     offer = serializers.StringRelatedField()
+    product = ProductReadSerializer(read_only=True)
 
     class Meta:
         model = OfferProduct
