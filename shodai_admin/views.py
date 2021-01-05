@@ -6,7 +6,6 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-from django.utils.timezone import make_aware
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
@@ -201,7 +200,7 @@ class OrderList(APIView):
 class OrderDetail(APIView):
     # permission_classes = [IsAdminUser]
     """
-    Get, update and create order
+    Get, update order
     """
 
     def get(self, request, id):
@@ -339,7 +338,14 @@ class OrderDetail(APIView):
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, id):
+
+class CreateOrder(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Create order
+    """
+
+    def post(self, request):
         data = request.data
         required_fields = ['delivery_date',
                            'time_slot_id',
@@ -378,7 +384,7 @@ class OrderDetail(APIView):
                 delivery_date_time = delivery_date + str(time[0].time)
             else:
                 delivery_date_time = delivery_date + str(TimeSlot.objects.get(id=1).time)
-            delivery_date_time = make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
+            delivery_date_time = timezone.make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
 
             try:
                 user = UserProfile.objects.get(username=customer["mobile_number"])
