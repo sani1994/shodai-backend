@@ -21,6 +21,13 @@ def checkAuthentication(user, info):
             return True
 
 
+def field_validation(fields, data):
+    if isinstance(data, dict) and all(key in data for key in fields):
+        return True
+    else:
+        return False
+
+
 class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 

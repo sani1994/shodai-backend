@@ -11,7 +11,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from bases.views import CustomPageNumberPagination
+from bases.views import CustomPageNumberPagination, field_validation
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
@@ -208,17 +208,40 @@ class OrderDetail(APIView):
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, id):
-        order = get_object_or_404(Order, id=id)
-        delivery_date_time = request.data.get('delivery_date_time', None)
-        contact_number = request.data.get('contact_number', None)
-        order_status = request.data.get('order_status', None)
-        delivery_charge = request.data.get('delivery_charge', None)
-        payment_method = request.data.get('payment_method', None)
-        products = request.data.get('products', None)
-        address = request.data.get('address', None)
-        note = request.data.get('note', None)
+    def patch(self, request, id):
+        data = request.data
 
+        # *** validation started ***
+        required_fields = ['delivery_date_time',
+                           'delivery_time_slot',
+                           'delivery_address',
+                           'contact_number',
+                           'order_status',
+                           'products',
+                           'note']
+        is_valid = field_validation(required_fields, data)
+
+        if is_valid and isinstance(data['products'], list):
+            required_fields = ['product_id', 'product_quantity']
+            for item in data['products']:
+                is_valid = field_validation(required_fields, item)
+                if not is_valid:
+                    break
+
+        order = Order.objects.filter(id=id)
+        if not is_valid or not order:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "status": "success",
+                "message": "Order updated successfully."
+            }, status=status.HTTP_200_OK)
+        # --- validation ended ---
+
+        order = order[0]
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
         billing_person_name = order.user.first_name + " " + order.user.last_name
         delivery = delivery_charge if delivery_charge else invoice.delivery_charge
