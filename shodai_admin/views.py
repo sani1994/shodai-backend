@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from django.utils.timezone import make_aware
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
@@ -307,7 +308,7 @@ class OrderDetail(APIView):
                 product = Product.objects.get(id=p["product_id"])
                 op = OrderProduct.objects.create(product=product,
                                                  order=order,
-                                                 order_product_qty=p["order_product_qty"])
+                                                 order_product_qty=p["product_quantity"])
                 total_price += float(product.product_price) * op.order_product_qty
                 total_op_price += op.order_product_price * op.order_product_qty
                 total += float(op.order_product_price_with_vat) * op.order_product_qty
@@ -340,94 +341,125 @@ class OrderDetail(APIView):
 
     def post(self, request, id):
         data = request.data
-        products = data["products"]
-        customer = data["customer"]
-        note = data["note"]
-        date = data["delivery_date"]
-        time_slot = data["time_slot"]
-        delivery = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-        time = TimeSlot.objects.filter(id=time_slot)
-        if time:
-            delivery_date_time = date + str(time[0].time)
+        required_fields = ['delivery_date',
+                           'time_slot_id',
+                           'delivery_address',
+                           'contact_number',
+                           'customer',
+                           'products',
+                           'note']
+        is_valid = field_validation(required_fields, data)
+
+        if is_valid:
+            required_fields = ['product_id', 'product_quantity']
+            for item in data['products']:
+                is_valid = field_validation(required_fields, item)
+                if not is_valid:
+                    break
+
+        if is_valid:
+            required_fields = ['mobile_number', 'name', 'email']
+            is_valid = field_validation(required_fields, data['customer'])
+
+        if not is_valid:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"
+            }, status=status.HTTP_400_BAD_REQUEST)
         else:
-            delivery_date_time = date + str(TimeSlot.objects.get(id=1).time)
-        delivery_date_time = datetime.strptime(delivery_date_time, "%d-%m-%Y%H:%M:%S")
-        try:
-            user = UserProfile.objects.get(username=customer["mobile_number"])
-        except UserProfile.DoesNotExist:
-            user = None
+            products = data["products"]
+            customer = data["customer"]
+            note = data["note"]
+            delivery_date = data["delivery_date"]
+            time_slot_id = data["time_slot_id"]
+            delivery = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+            time = TimeSlot.objects.filter(id=time_slot_id)
+            if time:
+                delivery_date_time = delivery_date + str(time[0].time)
+            else:
+                delivery_date_time = delivery_date + str(TimeSlot.objects.get(id=1).time)
+            delivery_date_time = make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
 
-        if user:
-            user_instance = user
-        else:
-            user_instance = UserProfile.objects.create(first_name=customer["name"],
-                                                       last_name="",
-                                                       email=customer["email"],
-                                                       mobile_number=customer["mobile_number"],
-                                                       user_type="CM",
-                                                       created_on=timezone.now(),
-                                                       verification_code=randint(100000, 999999),
-                                                       is_approved=True)
-            temp_password = get_random_string(length=6)
-            sms_body = f"Dear " + customer["name"] + \
-                       ",\r\nWe have created a temporary password [" + temp_password + \
-                       "] based on your order request." \
-                       "\r\n[N.B:Please change your password after login] "
-            send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
-            user_instance.set_password(temp_password)
-            user_instance.save()
-        delivery_address = Address.objects.create(road=data["address"],
-                                                  city="Dhaka",
-                                                  district="Dhaka",
-                                                  country="Bangladesh",
-                                                  user=user_instance)
+            try:
+                user = UserProfile.objects.get(username=customer["mobile_number"])
+            except UserProfile.DoesNotExist:
+                user = None
 
-        order_instance = Order.objects.create(created_by=request.user,
-                                              user=user_instance,
-                                              delivery_date_time=delivery_date_time,
-                                              delivery_place="Dhaka",
-                                              lat="23.7733",
-                                              long="90.3548",
-                                              contact_number=data["contact_number"],
-                                              address=delivery_address
-                                              )
-        total_vat, total = 0, 0
-        total_price, total_op_price = 0, 0
-        for p in products:
-            product = Product.objects.get(id=p["product_id"])
-            op = OrderProduct.objects.create(product=product,
-                                             order=order_instance,
-                                             order_product_qty=p["order_product_qty"])
-            total_price += float(product.product_price) * op.order_product_qty
-            total_op_price += op.order_product_price * op.order_product_qty
-            total += float(op.order_product_price_with_vat) * op.order_product_qty
-            total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
+            if user:
+                user_instance = user
+            else:
+                user_instance = UserProfile.objects.create(username=customer["mobile_number"],
+                                                           first_name=customer["name"],
+                                                           last_name="",
+                                                           email=customer["email"],
+                                                           mobile_number=customer["mobile_number"],
+                                                           user_type="CM",
+                                                           created_on=timezone.now(),
+                                                           verification_code=randint(100000, 999999),
+                                                           is_approved=True)
+                temp_password = get_random_string(length=6)
+                sms_body = f"Dear " + customer["name"] + \
+                           ",\r\nWe have created a temporary password [" + temp_password + \
+                           "] based on your order request." \
+                           "\r\n[N.B:Please change your password after login] "
+                send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+                user_instance.set_password(temp_password)
+                user_instance.save()
+            delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                      city="Dhaka",
+                                                      district="Dhaka",
+                                                      country="Bangladesh",
+                                                      user=user_instance)
 
-        order_instance.order_total_price = total + delivery
-        order_instance.total_vat = total_vat
-        order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.save()
+            order_instance = Order.objects.create(user=user_instance,
+                                                  delivery_date_time=delivery_date_time,
+                                                  delivery_place="Dhaka",
+                                                  lat=23.7733,
+                                                  long=90.3548,
+                                                  contact_number=data["contact_number"],
+                                                  address=delivery_address,
+                                                  # created_by=request.user,
+                                                  )
+            total_vat, total = 0, 0
+            total_price, total_op_price = 0, 0
+            for p in products:
+                product = Product.objects.get(id=p["product_id"])
+                op = OrderProduct.objects.create(product=product,
+                                                 order=order_instance,
+                                                 order_product_qty=p["product_quantity"])
+                total_price += float(product.product_price) * op.order_product_qty
+                total_op_price += op.order_product_price * op.order_product_qty
+                total += float(op.order_product_price_with_vat) * op.order_product_qty
+                total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        # Create new InvoiceInfo Instance
-        billing_person_name = user_instance.first_name + " " + user_instance.last_name
-        InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                   billing_person_name=billing_person_name,
-                                   billing_person_email=user_instance.email,
-                                   billing_person_mobile_number=user_instance.mobile_number,
-                                   delivery_contact_number=order_instance.contact_number,
-                                   delivery_address=delivery_address.road,
-                                   delivery_date_time=order_instance.delivery_date_time,
-                                   delivery_charge=delivery,
-                                   discount_amount=total_price - total_op_price,
-                                   net_payable_amount=order_instance.order_total_price,
-                                   payment_method=data["payment"],
-                                   order_number=order_instance,
-                                   user=user_instance,
-                                   created_by=request.user)
+            order_instance.order_total_price = total + delivery
+            order_instance.total_vat = total_vat
+            order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+            order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+            order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+            order_instance.save()
 
-        return Response({'status': 'success', 'message': 'Order Created successfully'}, status=status.HTTP_200_OK)
+            # Create new InvoiceInfo Instance
+            billing_person_name = user_instance.first_name + " " + user_instance.last_name
+            InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                       billing_person_name=billing_person_name,
+                                       billing_person_email=user_instance.email,
+                                       billing_person_mobile_number=user_instance.mobile_number,
+                                       delivery_contact_number=order_instance.contact_number,
+                                       delivery_address=delivery_address.road,
+                                       delivery_date_time=order_instance.delivery_date_time,
+                                       delivery_charge=delivery,
+                                       discount_amount=total_price - total_op_price,
+                                       net_payable_amount=order_instance.order_total_price,
+                                       payment_method="CASH_ON_DELIVERY",
+                                       order_number=order_instance,
+                                       user=user_instance,
+                                       # created_by=request.user,
+                                       )
+
+            return Response({'status': 'success',
+                             'message': 'Order Created successfully'},
+                            status=status.HTTP_200_OK)
 
 
 class ProductSearch(APIView):
