@@ -11,7 +11,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from bases.views import CustomPageNumberPagination, field_validation
+from bases.views import CustomPageNumberPagination, field_validation, type_validation
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
@@ -212,7 +212,7 @@ class OrderDetail(APIView):
         data = request.data
 
         # *** validation started ***
-        required_fields = ['delivery_date_time',
+        required_fields = ['delivery_date',
                            'delivery_time_slot',
                            'delivery_address',
                            'contact_number',
@@ -225,9 +225,23 @@ class OrderDetail(APIView):
             required_fields = ['product_id', 'product_quantity']
             for item in data['products']:
                 is_valid = field_validation(required_fields, item)
-                if not is_valid:
+                if not is_valid or not isinstance(item['product_id'], int) or \
+                        not isinstance(item['product_quantity'], int):
+                    is_valid = False
                     break
-
+                else:
+                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                    if not product_exist:
+                        is_valid = False
+                        break
+        if is_valid and isinstance(data['delivery_time_slot_id'], int):
+            time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
+            if time:
+                delivery_date_time = data['delivery_date'] + str(time[0].time)
+            else:
+                is_valid = False
+        else:
+            is_valid = False
         order = Order.objects.filter(id=id)
         if not is_valid or not order:
             return Response({
@@ -244,10 +258,9 @@ class OrderDetail(APIView):
         order = order[0]
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
         billing_person_name = order.user.first_name + " " + order.user.last_name
-        delivery = delivery_charge if delivery_charge else invoice.delivery_charge
 
-        if address:
-            delivery_address = Address.objects.create(road=address,
+        if data["delivery_address"]:
+            delivery_address = Address.objects.create(road=data["delivery_address"],
                                                       city="Dhaka",
                                                       district="Dhaka",
                                                       country="Bangladesh",
@@ -256,33 +269,29 @@ class OrderDetail(APIView):
                 # update Order
                 order.address = delivery_address
                 order.save()
-        else:
-            delivery_address = order.address
-        if payment_method:
-            payment = payment_method if not invoice.paid_status else None
-        else:
-            payment = invoice.payment_method
 
-        if delivery_charge or address or payment_method and not products:
-            # Create new Invoice update Order
-            invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
-                                                 billing_person_name=billing_person_name,
-                                                 billing_person_email=order.user.email,
-                                                 billing_person_mobile_number=order.user.mobile_number,
-                                                 delivery_contact_number=order.contact_number,
-                                                 delivery_address=delivery_address.road,
-                                                 delivery_date_time=order.delivery_date_time,
-                                                 delivery_charge=delivery,
-                                                 discount_amount=invoice.discount_amount,
-                                                 net_payable_amount=order.order_total_price - invoice.delivery_charge + delivery,
-                                                 payment_method=payment,
-                                                 order_number=order,
-                                                 user=order.user,
-                                                 created_by=request.user)
-            order.order_total_price = invoice.net_payable_amount
-            order.modified_by = request.user
-            order.invoice_number = invoice.invoice_number
-            order.save()
+                # Create new Invoice update Order
+                invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
+                                                     billing_person_name=billing_person_name,
+                                                     billing_person_email=order.user.email,
+                                                     billing_person_mobile_number=order.user.mobile_number,
+                                                     delivery_contact_number=order.contact_number,
+                                                     delivery_address=delivery_address.road,
+                                                     delivery_date_time=order.delivery_date_time,
+                                                     delivery_charge=delivery,
+                                                     discount_amount=invoice.discount_amount,
+                                                     net_payable_amount=order.order_total_price - invoice.delivery_charge + delivery,
+                                                     payment_method=invoice.payment_method,
+                                                     order_number=order,
+                                                     user=order.user,
+                                                     created_by=request.user)
+                order.order_total_price = invoice.net_payable_amount
+                order.modified_by = request.user
+                order.invoice_number = invoice.invoice_number
+                order.save()
+            else:
+                delivery_address = order.address
+
         if delivery_date_time or contact_number or order_status:
             # update Order
             serializer = OrderDetailSerializer(order, data=request.data)
@@ -356,12 +365,23 @@ class CreateOrder(APIView):
                            'note']
         is_valid = field_validation(required_fields, data)
 
-        if is_valid and isinstance(data['products'], list) and data['products']:
+        if is_valid:
+            customer = data['customer']
+            products = data['products']
+            string_fields = [data['delivery_date'],
+                             data['delivery_address'],
+                             data['contact_number'],
+                             data['note'],
+                             customer["mobile_number"]
+                             ]
+            is_valid = type_validation(string_fields, str)
+
+        if is_valid and isinstance(products, list):
             required_fields = ['product_id', 'product_quantity']
-            for item in data['products']:
+            for item in products:
                 is_valid = field_validation(required_fields, item)
                 if not is_valid or not isinstance(item['product_id'], int) or \
-                   not isinstance(item['product_quantity'], int):
+                        not isinstance(item['product_quantity'], int):
                     is_valid = False
                     break
                 else:
@@ -374,7 +394,27 @@ class CreateOrder(APIView):
 
         if is_valid:
             required_fields = ['mobile_number', 'name', 'email']
-            is_valid = field_validation(required_fields, data['customer'])
+            is_valid = field_validation(required_fields, customer)
+            if is_valid and len(customer["mobile_number"]) == 14 and \
+                    customer["mobile_number"].startswith('+8801') and customer["mobile_number"][1:].isdigit():
+                pass
+            else:
+                is_valid = False
+
+        if is_valid and isinstance(data['delivery_time_slot_id'], int):
+            time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
+            if time:
+                delivery_date_time = data['delivery_date'] + str(time[0].time)
+            else:
+                is_valid = False
+        else:
+            is_valid = False
+
+        if is_valid and len(data["contact_number"]) == 14 and \
+                data["contact_number"].startswith('+8801') and data["contact_number"][1:].isdigit():
+            pass
+        else:
+            is_valid = False
 
         if not is_valid:
             return Response({
@@ -382,23 +422,6 @@ class CreateOrder(APIView):
                 "message": "Invalid request!"
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
-            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-
-            if data['delivery_time_slot_id'] and isinstance(data['delivery_time_slot_id'], int):
-                time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
-                if time and isinstance(data['delivery_date'], str):
-                    delivery_date_time = data['delivery_date'] + str(time[0].time)
-                else:
-                    return Response({
-                        "status": "failed",
-                        "message": "Invalid request!"
-                    }, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({
-                    "status": "failed",
-                    "message": "Invalid request!"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
             try:
                 delivery_date_time = timezone.make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
             except Exception:
@@ -407,34 +430,8 @@ class CreateOrder(APIView):
                     "message": "Invalid request!"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            customer = data['customer']
-            if customer["mobile_number"] and isinstance(customer["mobile_number"], str) and \
-               len(customer["mobile_number"]) == 14 and customer["mobile_number"].startswith('+8801') and \
-               customer["mobile_number"][1:].isdigit():
-                pass
-            else:
-                return Response({
-                    "status": "failed",
-                    "message": "Invalid request!"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            if data["contact_number"] and isinstance(data["contact_number"], str) and \
-               len(data["contact_number"]) == 14 and data["contact_number"].startswith('+8801') and \
-               data["contact_number"][1:].isdigit():
-                pass
-            else:
-                return Response({
-                    "status": "failed",
-                    "message": "Invalid request!"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            if not data["delivery_address"] or not isinstance(data['delivery_address'], str) or not isinstance(data['note'], str):
-                return Response({
-                    "status": "failed",
-                    "message": "Invalid request!"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
             # All checked, processing started
+            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
             try:
                 user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
             except UserProfile.DoesNotExist:
@@ -476,7 +473,6 @@ class CreateOrder(APIView):
                                                   # created_by=request.user,
                                                   )
 
-            products = data['products']
             total_vat = total = total_price = total_op_price = 0
             for p in products:
                 product = Product.objects.get(id=p["product_id"])

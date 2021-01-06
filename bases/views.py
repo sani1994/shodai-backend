@@ -28,6 +28,14 @@ def field_validation(fields, data):
         return False
 
 
+def type_validation(self, typ):
+    for val in self:
+        if not isinstance(val, typ):
+            return False
+            break
+    return True
+
+
 class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
