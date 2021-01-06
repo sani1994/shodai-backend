@@ -348,7 +348,7 @@ class CreateOrder(APIView):
     def post(self, request):
         data = request.data
         required_fields = ['delivery_date',
-                           'time_slot_id',
+                           'delivery_time_slot_id',
                            'delivery_address',
                            'contact_number',
                            'customer',
@@ -356,12 +356,21 @@ class CreateOrder(APIView):
                            'note']
         is_valid = field_validation(required_fields, data)
 
-        if is_valid:
+        if is_valid and isinstance(data['products'], list) and data['products']:
             required_fields = ['product_id', 'product_quantity']
             for item in data['products']:
                 is_valid = field_validation(required_fields, item)
-                if not is_valid:
+                if not is_valid or not isinstance(item['product_id'], int) or \
+                   not isinstance(item['product_quantity'], int):
+                    is_valid = False
                     break
+                else:
+                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                    if not product_exist:
+                        is_valid = False
+                        break
+        else:
+            is_valid = False
 
         if is_valid:
             required_fields = ['mobile_number', 'name', 'email']
@@ -373,27 +382,65 @@ class CreateOrder(APIView):
                 "message": "Invalid request!"
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
-            products = data["products"]
-            customer = data["customer"]
-            note = data["note"]
-            delivery_date = data["delivery_date"]
-            time_slot_id = data["time_slot_id"]
-            delivery = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-            time = TimeSlot.objects.filter(id=time_slot_id)
-            if time:
-                delivery_date_time = delivery_date + str(time[0].time)
+            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+
+            if data['delivery_time_slot_id'] and isinstance(data['delivery_time_slot_id'], int):
+                time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
+                if time and isinstance(data['delivery_date'], str):
+                    delivery_date_time = data['delivery_date'] + str(time[0].time)
+                else:
+                    return Response({
+                        "status": "failed",
+                        "message": "Invalid request!"
+                    }, status=status.HTTP_400_BAD_REQUEST)
             else:
-                delivery_date_time = delivery_date + str(TimeSlot.objects.get(id=1).time)
-            delivery_date_time = timezone.make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
+                return Response({
+                    "status": "failed",
+                    "message": "Invalid request!"
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                user = UserProfile.objects.get(username=customer["mobile_number"])
-            except UserProfile.DoesNotExist:
-                user = None
+                delivery_date_time = timezone.make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
+            except Exception:
+                return Response({
+                    "status": "failed",
+                    "message": "Invalid request!"
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            if user:
-                user_instance = user
+            customer = data['customer']
+            if customer["mobile_number"] and isinstance(customer["mobile_number"], str) and \
+               len(customer["mobile_number"]) == 14 and customer["mobile_number"].startswith('+8801') and \
+               customer["mobile_number"][1:].isdigit():
+                pass
             else:
+                return Response({
+                    "status": "failed",
+                    "message": "Invalid request!"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if data["contact_number"] and isinstance(data["contact_number"], str) and \
+               len(data["contact_number"]) == 14 and data["contact_number"].startswith('+8801') and \
+               data["contact_number"][1:].isdigit():
+                pass
+            else:
+                return Response({
+                    "status": "failed",
+                    "message": "Invalid request!"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if not data["delivery_address"] or not isinstance(data['delivery_address'], str) or not isinstance(data['note'], str):
+                return Response({
+                    "status": "failed",
+                    "message": "Invalid request!"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # All checked, processing started
+            try:
+                user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
+            except UserProfile.DoesNotExist:
+                user_instance = None
+
+            if not user_instance:
                 user_instance = UserProfile.objects.create(username=customer["mobile_number"],
                                                            first_name=customer["name"],
                                                            last_name="",
@@ -404,13 +451,15 @@ class CreateOrder(APIView):
                                                            verification_code=randint(100000, 999999),
                                                            is_approved=True)
                 temp_password = get_random_string(length=6)
-                sms_body = f"Dear " + customer["name"] + \
-                           ",\r\nWe have created a temporary password [" + temp_password + \
-                           "] based on your order request." \
-                           "\r\n[N.B:Please change your password after login] "
-                send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
                 user_instance.set_password(temp_password)
                 user_instance.save()
+
+                # sms_body = f"Dear " + customer["name"] + \
+                #            ",\r\nWe have created a account with temporary password [" + temp_password + \
+                #            "] based on your order request." \
+                #            "\r\n[N.B:Please change your password after login]"
+                # send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+
             delivery_address = Address.objects.create(road=data["delivery_address"],
                                                       city="Dhaka",
                                                       district="Dhaka",
@@ -426,8 +475,9 @@ class CreateOrder(APIView):
                                                   address=delivery_address,
                                                   # created_by=request.user,
                                                   )
-            total_vat, total = 0, 0
-            total_price, total_op_price = 0, 0
+
+            products = data['products']
+            total_vat = total = total_price = total_op_price = 0
             for p in products:
                 product = Product.objects.get(id=p["product_id"])
                 op = OrderProduct.objects.create(product=product,
@@ -438,7 +488,7 @@ class CreateOrder(APIView):
                 total += float(op.order_product_price_with_vat) * op.order_product_qty
                 total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-            order_instance.order_total_price = total + delivery
+            order_instance.order_total_price = total + delivery_charge
             order_instance.total_vat = total_vat
             order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
             order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -454,7 +504,7 @@ class CreateOrder(APIView):
                                        delivery_contact_number=order_instance.contact_number,
                                        delivery_address=delivery_address.road,
                                        delivery_date_time=order_instance.delivery_date_time,
-                                       delivery_charge=delivery,
+                                       delivery_charge=delivery_charge,
                                        discount_amount=total_price - total_op_price,
                                        net_payable_amount=order_instance.order_total_price,
                                        payment_method="CASH_ON_DELIVERY",
@@ -464,7 +514,7 @@ class CreateOrder(APIView):
                                        )
 
             return Response({'status': 'success',
-                             'message': 'Order Created successfully'},
+                             'message': 'Order placed.'},
                             status=status.HTTP_200_OK)
 
 
