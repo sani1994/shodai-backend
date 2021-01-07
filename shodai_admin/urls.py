@@ -16,8 +16,10 @@ urlpatterns = [
     path('orders/<int:id>', views.OrderDetail.as_view()),
     path('orders/timeslots', views.TimeSlotList.as_view()),
     path('orders/status', views.OrderStatusList.as_view()),
-    path('customers/search', views.CustomerSearch.as_view()),
     path('orders/create', views.CreateOrder.as_view()),
+
+    # customers
+    path('customers/search', views.CustomerSearch.as_view()),
 
     # products
     path('products/search', views.ProductSearch.as_view()),

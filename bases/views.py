@@ -28,11 +28,10 @@ def field_validation(fields, data):
         return False
 
 
-def type_validation(self, typ):
-    for val in self:
+def type_validation(items, typ):
+    for val in items:
         if not isinstance(val, typ):
             return False
-            break
     return True
 
 

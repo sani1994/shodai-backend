@@ -366,45 +366,54 @@ class CreateOrder(APIView):
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
-            customer = data['customer']
-            products = data['products']
             string_fields = [data['delivery_date'],
                              data['delivery_address'],
                              data['contact_number'],
-                             data['note'],
-                             customer["mobile_number"]
-                             ]
+                             data['note']]
             is_valid = type_validation(string_fields, str)
 
-        if is_valid and isinstance(products, list):
-            required_fields = ['product_id', 'product_quantity']
-            for item in products:
-                is_valid = field_validation(required_fields, item)
-                if not is_valid or not isinstance(item['product_id'], int) or \
-                        not isinstance(item['product_quantity'], int):
-                    is_valid = False
-                    break
-                else:
-                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist:
-                        is_valid = False
-                        break
-        else:
-            is_valid = False
+        customer = data['customer']
+        products = data['products']
 
         if is_valid:
-            required_fields = ['mobile_number', 'name', 'email']
+            required_fields = ['name', 'mobile_number', 'email']
             is_valid = field_validation(required_fields, customer)
+            if is_valid:
+                string_fields = [customer["name"],
+                                 customer["mobile_number"],
+                                 customer["email"]]
+                is_valid = type_validation(string_fields, str)
             if is_valid and len(customer["mobile_number"]) == 14 and \
                     customer["mobile_number"].startswith('+8801') and customer["mobile_number"][1:].isdigit():
                 pass
             else:
                 is_valid = False
 
+        if is_valid and isinstance(products, list):
+            required_fields = ['product_id', 'product_quantity']
+            for item in products:
+                is_valid = field_validation(required_fields, item)
+                if is_valid:
+                    integer_fields = [item['product_id'],
+                                      item['product_quantity']]
+                    is_valid = type_validation(integer_fields, int)
+                if is_valid:
+                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                    if not product_exist:
+                        is_valid = False
+                if not is_valid:
+                    break
+        else:
+            is_valid = False
+
         if is_valid and isinstance(data['delivery_time_slot_id'], int):
             time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
             if time:
                 delivery_date_time = data['delivery_date'] + str(time[0].time)
+                try:
+                    delivery_date_time = timezone.make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
+                except Exception:
+                    is_valid = False
             else:
                 is_valid = False
         else:
@@ -419,18 +428,8 @@ class CreateOrder(APIView):
         if not is_valid:
             return Response({
                 "status": "failed",
-                "message": "Invalid request!"
-            }, status=status.HTTP_400_BAD_REQUEST)
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            try:
-                delivery_date_time = timezone.make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
-            except Exception:
-                return Response({
-                    "status": "failed",
-                    "message": "Invalid request!"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            # All checked, processing started
             delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
             try:
                 user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
@@ -571,7 +570,9 @@ class CustomerSearch(APIView):
 
     def get(self, request):
         query = request.query_params.get('query', '')
-        queryset = UserProfile.objects.filter(user_type="CM", mobile_number__icontains=query)
+        queryset = UserProfile.objects.filter(mobile_number__icontains=query,
+                                              user_type="CM",
+                                              is_approved=True)
         serializer = CustomerSerializer(queryset, many=True)
         if serializer:
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
