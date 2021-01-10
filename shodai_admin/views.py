@@ -211,142 +211,179 @@ class OrderDetail(APIView):
 
     def patch(self, request, id):
         data = request.data
+        all_order_status = {
+            'Ordered': 'OD',
+            'Order Accepted': 'OA',
+            'Order Ready': 'RE',
+            'Order At Delivery': 'OAD',
+            'Order Completed': 'COM',
+            'Order Cancelled': 'CN',
+        }
 
         # *** validation started ***
         required_fields = ['delivery_date',
-                           'delivery_time_slot',
+                           'delivery_time_slot_id',
                            'delivery_address',
                            'contact_number',
                            'order_status',
                            'products',
                            'note']
         is_valid = field_validation(required_fields, data)
+        if is_valid:
+            string_fields = [data['delivery_date'],
+                             data['delivery_address'],
+                             data['contact_number'],
+                             data['order_status'],
+                             data['note']]
+            is_valid = type_validation(string_fields, str)
 
-        if is_valid and isinstance(data['products'], list):
+        if is_valid and isinstance(data['products'], list) and data['products']:
             required_fields = ['product_id', 'product_quantity']
             for item in data['products']:
                 is_valid = field_validation(required_fields, item)
-                if not is_valid or not isinstance(item['product_id'], int) or \
-                        not isinstance(item['product_quantity'], int):
-                    is_valid = False
-                    break
-                else:
+                if is_valid:
+                    integer_fields = [item['product_id'],
+                                      item['product_quantity']]
+                    is_valid = type_validation(integer_fields, int)
+                if is_valid:
                     product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist:
+                    if not product_exist or not item['product_quantity']:
                         is_valid = False
-                        break
+                if not is_valid:
+                    break
+        else:
+            is_valid = False
         if is_valid and isinstance(data['delivery_time_slot_id'], int):
             time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
             if time:
                 delivery_date_time = data['delivery_date'] + str(time[0].time)
+                try:
+                    delivery_date_time = timezone.make_aware(datetime.strptime(delivery_date_time, "%Y-%m-%d%H:%M:%S"))
+                except Exception:
+                    is_valid = False
             else:
                 is_valid = False
         else:
             is_valid = False
+        if is_valid and len(data["contact_number"]) == 14 and \
+                data["contact_number"].startswith('+8801') and data["contact_number"][1:].isdigit():
+            pass
+        else:
+            is_valid = False
         order = Order.objects.filter(id=id)
-        if not is_valid or not order:
+        if not is_valid or not order or not data['delivery_address']:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
             }, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({
-                "status": "success",
-                "message": "Order updated successfully."
-            }, status=status.HTTP_200_OK)
         # --- validation ended ---
+        else:
+            order = order[0]
+            products = data['products']
+            op = OrderProduct.objects.filter(order=order)
+            order_products = []
+            for o in op:
+                c = {'product_id': o.product.id, 'product_quantity': o.order_product_qty}
+                order_products.append(c)
 
-        order = order[0]
-        invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
-        billing_person_name = order.user.first_name + " " + order.user.last_name
+            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
+            billing_person_name = order.user.first_name + " " + order.user.last_name
 
-        if data["delivery_address"]:
-            delivery_address = Address.objects.create(road=data["delivery_address"],
-                                                      city="Dhaka",
-                                                      district="Dhaka",
-                                                      country="Bangladesh",
-                                                      user=order.user)
-            if not products:
-                # update Order
-                order.address = delivery_address
-                order.save()
+            if data["delivery_address"] != invoice.delivery_address:
+                delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                          city="Dhaka",
+                                                          district="Dhaka",
+                                                          country="Bangladesh",
+                                                          user=order.user)
+            else:
+                delivery_address = order.address
 
+            product_changed = False
+            if len(order_products) != len(products):
+                product_changed = True
+            if not product_changed:
+                for i in products:
+                    if i not in order_products:
+                        product_changed = True
+            if not product_changed:
                 # Create new Invoice update Order
                 invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
                                                      billing_person_name=billing_person_name,
                                                      billing_person_email=order.user.email,
                                                      billing_person_mobile_number=order.user.mobile_number,
-                                                     delivery_contact_number=order.contact_number,
+                                                     delivery_contact_number=data['contact_number'],
                                                      delivery_address=delivery_address.road,
-                                                     delivery_date_time=order.delivery_date_time,
-                                                     delivery_charge=delivery,
+                                                     delivery_date_time=delivery_date_time,
+                                                     delivery_charge=invoice.delivery_charge,
                                                      discount_amount=invoice.discount_amount,
-                                                     net_payable_amount=order.order_total_price - invoice.delivery_charge + delivery,
+                                                     net_payable_amount=order.order_total_price,
                                                      payment_method=invoice.payment_method,
                                                      order_number=order,
                                                      user=order.user,
-                                                     created_by=request.user)
-                order.order_total_price = invoice.net_payable_amount
-                order.modified_by = request.user
+                                                     # created_by=request.user
+                                                     )
+
+                # order.modified_by = request.user
                 order.invoice_number = invoice.invoice_number
+                order.delivery_date_time = delivery_date_time
+                order.contact_number = data['contact_number']
+                order.order_status = all_order_status[data['order_status']]
+                order.address = delivery_address
                 order.save()
-            else:
-                delivery_address = order.address
+            if product_changed:
+                # Create new Order and Invoice
+                order.order_status = 'CN'
+                order.save()
+                order = Order.objects.create(user=order.user,
+                                             # created_by=request.user,
+                                             delivery_date_time=delivery_date_time,
+                                             delivery_place=order.delivery_place,
+                                             lat=order.lat,
+                                             long=order.long,
+                                             order_status="OD",
+                                             order_type=order.order_type,
+                                             address=delivery_address,
+                                             contact_number=data['contact_number']
+                                             )
 
-        if delivery_date_time or contact_number or order_status:
-            # update Order
-            serializer = OrderDetailSerializer(order, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-        if products:
-            # Create new Order and Invoice
-            order = Order.objects.create(user=order.user,
-                                         created_by=request.user,
-                                         delivery_date_time=order.delivery_date_time,
-                                         delivery_place=order.delivery_place,
-                                         lat=order.lat,
-                                         long=order.long,
-                                         order_status="OD",
-                                         order_type=order.order_type,
-                                         address=delivery_address,
-                                         contact_number=order.contact_number if order.contact_number else order.user.mobile_number
-                                         )
-            total_vat, total = 0, 0
-            total_price, total_op_price = 0, 0
-            for p in products:
-                product = Product.objects.get(id=p["product_id"])
-                op = OrderProduct.objects.create(product=product,
-                                                 order=order,
-                                                 order_product_qty=p["product_quantity"])
-                total_price += float(product.product_price) * op.order_product_qty
-                total_op_price += op.order_product_price * op.order_product_qty
-                total += float(op.order_product_price_with_vat) * op.order_product_qty
-                total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
+                total_vat = total = total_price = total_op_price = 0
+                for p in products:
+                    product = Product.objects.get(id=p["product_id"])
+                    op = OrderProduct.objects.create(product=product,
+                                                     order=order,
+                                                     order_product_qty=p["product_quantity"])
+                    total_price += float(product.product_price) * op.order_product_qty
+                    total_op_price += op.order_product_price * op.order_product_qty
+                    total += float(op.order_product_price_with_vat) * op.order_product_qty
+                    total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-            order.order_total_price = total + delivery
-            order.total_vat = total_vat
-            order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-            order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-            order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-            order.save()
+                order.order_total_price = total + invoice.delivery_charge
+                order.total_vat = total_vat
+                order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+                order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order.save()
 
-            # Create new InvoiceInfo Instance
-            InvoiceInfo.objects.create(invoice_number=order.invoice_number,
-                                       billing_person_name=billing_person_name,
-                                       billing_person_email=order.user.email,
-                                       billing_person_mobile_number=order.user.mobile_number,
-                                       delivery_contact_number=order.contact_number,
-                                       delivery_address=delivery_address.road,
-                                       delivery_date_time=order.delivery_date_time,
-                                       delivery_charge=delivery,
-                                       discount_amount=total_price - total_op_price,
-                                       net_payable_amount=order.order_total_price,
-                                       payment_method=payment,
-                                       order_number=order,
-                                       user=order.user,
-                                       created_by=request.user)
-        serializer = OrderDetailSerializer(order)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+                # Create new InvoiceInfo Instance
+                InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                           billing_person_name=billing_person_name,
+                                           billing_person_email=order.user.email,
+                                           billing_person_mobile_number=order.user.mobile_number,
+                                           delivery_contact_number=order.contact_number,
+                                           delivery_address=delivery_address.road,
+                                           delivery_date_time=order.delivery_date_time,
+                                           delivery_charge=invoice.delivery_charge,
+                                           discount_amount=total_price - total_op_price,
+                                           net_payable_amount=order.order_total_price,
+                                           payment_method=invoice.payment_method,
+                                           order_number=order,
+                                           user=order.user,
+                                           # created_by=request.user
+                                           )
+            return Response({
+                "status": "success",
+                "message": "Order updated successfully."
+            }, status=status.HTTP_200_OK)
 
 
 class CreateOrder(APIView):
