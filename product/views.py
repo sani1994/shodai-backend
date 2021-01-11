@@ -355,7 +355,7 @@ class ProductForCart(APIView):
 
 
 class RecentlyAddedProductListPagination(APIView):
-    permission_classes = [GenericAuth]
+    # permission_classes = [GenericAuth]
 
     def get(self, request, id):
         queryset = Product.objects.filter(is_approved=True).order_by('-created_on')
