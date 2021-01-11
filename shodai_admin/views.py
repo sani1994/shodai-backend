@@ -220,7 +220,6 @@ class OrderDetail(APIView):
             'Order Cancelled': 'CN',
         }
 
-        # *** validation started ***
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -229,6 +228,7 @@ class OrderDetail(APIView):
                            'products',
                            'note']
         is_valid = field_validation(required_fields, data)
+
         if is_valid:
             string_fields = [data['delivery_date'],
                              data['delivery_address'],
@@ -253,6 +253,7 @@ class OrderDetail(APIView):
                     break
         else:
             is_valid = False
+
         if is_valid and isinstance(data['delivery_time_slot_id'], int):
             time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
             if time:
@@ -265,31 +266,43 @@ class OrderDetail(APIView):
                 is_valid = False
         else:
             is_valid = False
+
         if is_valid and len(data["contact_number"]) == 14 and \
                 data["contact_number"].startswith('+8801') and data["contact_number"][1:].isdigit():
             pass
         else:
             is_valid = False
+
         order = Order.objects.filter(id=id)
-        if not is_valid or not order or not data['delivery_address']:
+        if not is_valid or not order or not data['delivery_address'] or data['order_status'] not in all_order_status:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
             }, status=status.HTTP_400_BAD_REQUEST)
-        # --- validation ended ---
         else:
             order = order[0]
             products = data['products']
-            op = OrderProduct.objects.filter(order=order)
-            order_products = []
-            for o in op:
-                c = {'product_id': o.product.id, 'product_quantity': o.order_product_qty}
-                order_products.append(c)
+            products_updated = True
 
-            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
-            billing_person_name = order.user.first_name + " " + order.user.last_name
+            if order.order_status == 'COM' or order.order_status == 'CN' or \
+                    data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
+                products_updated = False
 
-            if data["delivery_address"] != invoice.delivery_address:
+            if products_updated:
+                all_order_products = OrderProduct.objects.filter(order=order)
+                order_products = []
+                for item in all_order_products:
+                    product_data = {'product_id': item.product.id,
+                                    'product_quantity': item.order_product_qty}
+                    order_products.append(product_data)
+                if len(order_products) == len(products):
+                    for i in products:
+                        if i not in order_products:
+                            break
+                    else:
+                        products_updated = False
+
+            if data["delivery_address"] != order.address.road:
                 delivery_address = Address.objects.create(road=data["delivery_address"],
                                                           city="Dhaka",
                                                           district="Dhaka",
@@ -298,52 +311,20 @@ class OrderDetail(APIView):
             else:
                 delivery_address = order.address
 
-            product_changed = False
-            if len(order_products) != len(products):
-                product_changed = True
-            if not product_changed:
-                for i in products:
-                    if i not in order_products:
-                        product_changed = True
-            if not product_changed:
-                # Create new Invoice update Order
-                invoice = InvoiceInfo.objects.create(invoice_number="SHD" + str(uuid.uuid4())[:8].upper(),
-                                                     billing_person_name=billing_person_name,
-                                                     billing_person_email=order.user.email,
-                                                     billing_person_mobile_number=order.user.mobile_number,
-                                                     delivery_contact_number=data['contact_number'],
-                                                     delivery_address=delivery_address.road,
-                                                     delivery_date_time=delivery_date_time,
-                                                     delivery_charge=invoice.delivery_charge,
-                                                     discount_amount=invoice.discount_amount,
-                                                     net_payable_amount=order.order_total_price,
-                                                     payment_method=invoice.payment_method,
-                                                     order_number=order,
-                                                     user=order.user,
-                                                     # created_by=request.user
-                                                     )
-
-                # order.modified_by = request.user
-                order.invoice_number = invoice.invoice_number
-                order.delivery_date_time = delivery_date_time
-                order.contact_number = data['contact_number']
-                order.order_status = all_order_status[data['order_status']]
-                order.address = delivery_address
-                order.save()
-            if product_changed:
-                # Create new Order and Invoice
+            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
+            billing_person_name = order.user.first_name + " " + order.user.last_name
+            if products_updated:
                 order.order_status = 'CN'
                 order.save()
+
                 order = Order.objects.create(user=order.user,
-                                             # created_by=request.user,
                                              delivery_date_time=delivery_date_time,
                                              delivery_place=order.delivery_place,
                                              lat=order.lat,
                                              long=order.long,
-                                             order_status="OD",
-                                             order_type=order.order_type,
                                              address=delivery_address,
-                                             contact_number=data['contact_number']
+                                             contact_number=data['contact_number'],
+                                             # created_by=request.user,
                                              )
 
                 total_vat = total = total_price = total_op_price = 0
@@ -363,27 +344,34 @@ class OrderDetail(APIView):
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.save()
+            else:
+                order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+                order.delivery_date_time = delivery_date_time
+                order.contact_number = data['contact_number']
+                order.order_status = all_order_status[data['order_status']]
+                order.address = delivery_address
+                # order.modified_by = request.user
+                order.save()
 
-                # Create new InvoiceInfo Instance
-                InvoiceInfo.objects.create(invoice_number=order.invoice_number,
-                                           billing_person_name=billing_person_name,
-                                           billing_person_email=order.user.email,
-                                           billing_person_mobile_number=order.user.mobile_number,
-                                           delivery_contact_number=order.contact_number,
-                                           delivery_address=delivery_address.road,
-                                           delivery_date_time=order.delivery_date_time,
-                                           delivery_charge=invoice.delivery_charge,
-                                           discount_amount=total_price - total_op_price,
-                                           net_payable_amount=order.order_total_price,
-                                           payment_method=invoice.payment_method,
-                                           order_number=order,
-                                           user=order.user,
-                                           # created_by=request.user
-                                           )
+            discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
+            InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                       billing_person_name=billing_person_name,
+                                       billing_person_email=order.user.email,
+                                       billing_person_mobile_number=order.user.mobile_number,
+                                       delivery_contact_number=order.contact_number,
+                                       delivery_address=delivery_address.road,
+                                       delivery_date_time=order.delivery_date_time,
+                                       delivery_charge=invoice.delivery_charge,
+                                       discount_amount=discount_amount,
+                                       net_payable_amount=order.order_total_price,
+                                       payment_method=invoice.payment_method,
+                                       order_number=order,
+                                       user=order.user,
+                                       # created_by=request.user
+                                       )
             return Response({
                 "status": "success",
-                "message": "Order updated successfully."
-            }, status=status.HTTP_200_OK)
+                "message": "Order updated."}, status=status.HTTP_200_OK)
 
 
 class CreateOrder(APIView):
@@ -442,10 +430,9 @@ class CreateOrder(APIView):
                     is_valid = type_validation(integer_fields, int)
                 if is_valid:
                     product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist:
+                    if not product_exist or not item['product_quantity']:
                         is_valid = False
-                if not is_valid or not item['product_quantity']:
-                    is_valid = False
+                if not is_valid:
                     break
         else:
             is_valid = False
