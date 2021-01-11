@@ -322,6 +322,7 @@ class OrderDetail(APIView):
                                              delivery_place=order.delivery_place,
                                              lat=order.lat,
                                              long=order.long,
+                                             order_status="OA",
                                              address=delivery_address,
                                              contact_number=data['contact_number'],
                                              # created_by=request.user,
@@ -354,6 +355,7 @@ class OrderDetail(APIView):
                 order.save()
 
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
+            payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
             InvoiceInfo.objects.create(invoice_number=order.invoice_number,
                                        billing_person_name=billing_person_name,
                                        billing_person_email=order.user.email,
@@ -364,7 +366,7 @@ class OrderDetail(APIView):
                                        delivery_charge=invoice.delivery_charge,
                                        discount_amount=discount_amount,
                                        net_payable_amount=order.order_total_price,
-                                       payment_method=invoice.payment_method,
+                                       payment_method=payment_method,
                                        order_number=order,
                                        user=order.user,
                                        # created_by=request.user
@@ -498,6 +500,7 @@ class CreateOrder(APIView):
                                               delivery_place="Dhaka",
                                               lat=23.7733,
                                               long=90.3548,
+                                              order_status="OA",
                                               contact_number=data["contact_number"],
                                               address=delivery_address,
                                               # created_by=request.user,
