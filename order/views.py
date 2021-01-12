@@ -432,6 +432,7 @@ class OrderdProducts(APIView):
                     # orderProduct['product'].pop('modified_by')
                     product = orderProduct['product']
                     product['order_price'] = orderProduct['order_product_price']
+                    product['offer_price_with_vat'] = orderProduct['order_product_price_with_vat']
                     product['order_qty'] = orderProduct['order_product_qty']
                     # product['product_unit'] = orderProduct['product']['product_unit'].product_unit
                     # print(orderProduct['product']['product_unit']['product_unit'])

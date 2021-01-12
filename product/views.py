@@ -13,7 +13,6 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
 
 from sodai.utils.permission import GenericAuth
@@ -26,7 +25,7 @@ class ProductList(APIView):
     permission_classes = [GenericAuth]
 
     def get(self, request, format=None):
-        products = Product.objects.filter(is_approved=True)
+        products = Product.objects.filter(is_approved=True).distinct()
         serializer = ProductSerializer(products, many=True)
         if serializer:
             datas = serializer.data
@@ -328,7 +327,7 @@ class RecentlyAddedProductList(APIView):  # return list of recently added produc
     permission_classes = [GenericAuth]
 
     def get(self, request):
-        queryset = Product.objects.filter(is_approved=True).order_by('-created_on')[:200]
+        queryset = Product.objects.filter(is_approved=True).order_by('-created_on')[:200].distinct()
         serializer = ProductSerializer(queryset, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)

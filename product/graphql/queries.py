@@ -18,7 +18,7 @@ class ProductNode(DjangoObjectType):
 
     @classmethod
     def get_queryset(cls, queryset, info):
-        return queryset.filter(is_approved=True)
+        return queryset.filter(is_approved=True).distinct()
 
     offer_price = graphene.Float()
 

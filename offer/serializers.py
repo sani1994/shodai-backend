@@ -58,7 +58,12 @@ class ProductReadSerializer(serializers.ModelSerializer):
 class OfferProductListSerializer(serializers.ModelSerializer):
     offer = serializers.StringRelatedField()
     product = ProductReadSerializer(read_only=True)
+    offer_price_with_vat = serializers.SerializerMethodField()
+
+    def get_offer_price_with_vat(self, obj):
+        return round(float(obj.offer_price) +
+                     (float(obj.offer_price) * obj.product.product_meta.vat_amount) / 100)
 
     class Meta:
         model = OfferProduct
-        fields = ('id', 'offer_price', 'offer', 'product')
+        fields = ('id', 'offer_price', 'offer_price_with_vat', 'offer', 'product')

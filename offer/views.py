@@ -219,7 +219,7 @@ class OfferProductListByOffer(APIView):
         offer = Offer.objects.filter(id=id, is_approved=True, offer_starts_in__lte=today, offer_ends_in__gte=today)
         if offer:
             offer_product_list = OfferProduct.objects.filter(offer=offer[0], is_approved=True,
-                                                             product__is_approved=True)
+                                                             product__is_approved=True).distinct()
             serializer = OfferProductListSerializer(offer_product_list, many=True)
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
