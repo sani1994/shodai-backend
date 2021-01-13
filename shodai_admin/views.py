@@ -4,15 +4,17 @@ from random import randint
 
 from django.db import IntegrityError
 from django.core.validators import validate_email
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from num2words import num2words
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination, field_validation, type_validation
+from offer.models import OfferProduct
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
 from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
@@ -27,22 +29,17 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from utility.notification import send_sms
+from utility.pdf import render_to_pdf
 
 
 class AdminLogin(APIView):
 
     def post(self, request):
         data = request.data
-        if 'mobile_number' not in data:
+        if 'mobile_number' or 'password' not in data:
             return JsonResponse({
-                "message": "Mobile Number is required!",
-                "status": False,
-                "status_code": status.HTTP_400_BAD_REQUEST,
-            }, status=status.HTTP_400_BAD_REQUEST)
-        if 'password' not in data:
-            return JsonResponse({
-                "message": "Password is required!",
-                "status": False,
+                "status": "failed",
+                "message": "Invalid request!",
                 "status_code": status.HTTP_400_BAD_REQUEST,
             }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -60,7 +57,7 @@ class AdminLogin(APIView):
             }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         else:
             if user.check_password(request.data['password']):
-                if not user.is_staff:
+                if user.is_staff:
                     refresh = RefreshToken.for_user(user)
                     return JsonResponse({
                         "message": "success",
@@ -97,14 +94,14 @@ class Logout(APIView):  # logout
                 user=user)
         except IntegrityError:
             return JsonResponse({
+                "status": "failed",
                 "message": "Invalid or expired token!",
-                "status": False,
                 "status_code": status.HTTP_401_UNAUTHORIZED
             })
         finally:
             return JsonResponse({
+                "status": "success",
                 "message": "successfully logged out!",
-                "status": True,
                 "status_code": status.HTTP_200_OK
             }, status=status.HTTP_200_OK)
 
@@ -112,12 +109,12 @@ class Logout(APIView):  # logout
 class AdminProfileDetail(APIView):
     permission_classes = [AdminAuth]
 
-    def get(self, request, id):
-        user_profile = get_object_or_404(UserProfile, id=id)
-        if request.user == user_profile:
-            serializer = AdminProfileSerializer(user_profile)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({'Un-authorized request'}, status=status.HTTP_401_UNAUTHORIZED)
+    def get(self, request):
+        serializer = AdminProfileSerializer(request.user)
+        if serializer:
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Testing REST_FRAMEWORK Token Authentication
@@ -609,3 +606,72 @@ class CustomerSearch(APIView):
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DownloadInvoice(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Get PDF of Invoice by order ID
+    """
+
+    def get(self, request, id):
+        order = get_object_or_404(Order, id=id)
+        if order:
+            product_list = OrderProduct.objects.filter(order=order)
+            matrix = []
+            for p in product_list:
+                today = timezone.now()
+                offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                            offer__offer_ends_in__gte=today, product=p.product)
+
+                if offer_product.exists():
+                    total = float(offer_product[0].offer_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
+                           p.product.product_price, offer_product[0].offer_price, total]
+                    matrix.append(col)
+                else:
+                    total = float(p.product.product_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
+                           p.product.product_price, "--", total]
+                    matrix.append(col)
+            invoice = InvoiceInfo.objects.filter(invoice_number=order.invoice_number)
+            paid_status = invoice[0].paid_status
+
+            if invoice[0].payment_method == "CASH_ON_DELIVERY":
+                payment_method = "Cash on Delivery"
+            else:
+                payment_method = "Online Payment"
+            data = {
+                'customer_name': order.user.first_name + " " + order.user.last_name,
+                'address': order.address,
+                'user_email': order.user.email,
+                'user_mobile': order.user.mobile_number,
+                'order_id': order.id,
+                'invoice_number': order.invoice_number,
+                'created_on': order.created_on,
+                'delivery_date': order.delivery_date_time.date(),
+                'delivery_time': order.delivery_date_time.time(),
+                'order_details': matrix,
+                'delivery': invoice[0].delivery_charge,
+                'vat': order.total_vat,
+                'total': order.order_total_price,
+                'in_words': num2words(order.order_total_price),
+                'payment_method': payment_method if paid_status else 'Cash on Delivery',
+                'paid_status': paid_status,
+                'downloaded_on': datetime.now().replace(microsecond=0)
+            }
+            pdf = render_to_pdf('pdf/invoice.html', data)
+            if pdf:
+                response = HttpResponse(pdf, content_type='application/pdf')
+                filename = "Invoice_of_order#%s.pdf" % order.id
+                content = "inline; filename=%s" % filename
+                download = request.GET.get("download")
+                if download:
+                    content = "attachment; filename=%s" % filename
+                response['Content-Disposition'] = content
+                return response
+            return HttpResponse("Not found")
+        return Response({
+            "status": "failed",
+            "message": "Invalid request!"
+        }, status=status.HTTP_400_BAD_REQUEST)

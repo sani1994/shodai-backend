@@ -120,9 +120,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     def get_delivery_time_slot(self, obj):
         time = TimeSlot.objects.filter(time=timezone.localtime(obj.delivery_date_time).time())
         if time:
-            return time[0].slot
+            return time[0].id
         else:
-            return TimeSlot.objects.get(id=1).slot
+            return TimeSlot.objects.get(id=1).id
 
     def get_invoice(self, obj):
         invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]

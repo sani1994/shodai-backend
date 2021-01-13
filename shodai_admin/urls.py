@@ -9,7 +9,7 @@ urlpatterns = [
 
     path('login/', views.AdminLogin.as_view()),
     path('logout/', views.Logout.as_view()),
-    path('profile/<int:id>/', views.AdminProfileDetail.as_view()),
+    path('profile', views.AdminProfileDetail.as_view()),
 
     # orders
     path('orders', views.OrderList.as_view()),
@@ -17,6 +17,7 @@ urlpatterns = [
     path('orders/timeslots', views.TimeSlotList.as_view()),
     path('orders/status', views.OrderStatusList.as_view()),
     path('orders/create', views.CreateOrder.as_view()),
+    path('orders/pdf/<int:id>', views.DownloadInvoice.as_view()),
 
     # customers
     path('customers/search', views.CustomerSearch.as_view()),
