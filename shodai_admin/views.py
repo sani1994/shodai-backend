@@ -17,7 +17,7 @@ from bases.views import CustomPageNumberPagination, field_validation, type_valid
 from offer.models import OfferProduct
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
-from shodai_admin.serializers import AdminProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
+from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
@@ -83,7 +83,7 @@ class AdminLogin(APIView):
                 }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
 
 
-class Logout(APIView):  # logout
+class AdminLogout(APIView):  # logout
     permission_classes = [AdminAuth]
 
     def post(self, request):
@@ -106,19 +106,18 @@ class Logout(APIView):  # logout
             }, status=status.HTTP_200_OK)
 
 
-class AdminProfileDetail(APIView):
-    permission_classes = [AdminAuth]
+class AdminUserProfile(APIView):
+    # permission_classes = [AdminAuth]
 
     def get(self, request):
-        serializer = AdminProfileSerializer(request.user)
+        serializer = AdminUserProfileSerializer(request.user)
         if serializer:
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Testing REST_FRAMEWORK Token Authentication
-class LoginTest(APIView):
+class Login(APIView):
 
     def post(self, request):
         data = request.data
@@ -145,7 +144,7 @@ class LoginTest(APIView):
             }, status=status.HTTP_200_OK)
 
 
-class LogoutTest(APIView):
+class Logout(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
@@ -608,7 +607,7 @@ class CustomerSearch(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DownloadInvoice(APIView):
+class InvoiceDownloadPDF(APIView):
     # permission_classes = [IsAdminUser]
     """
     Get PDF of Invoice by order ID

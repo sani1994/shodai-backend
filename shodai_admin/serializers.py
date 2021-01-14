@@ -16,10 +16,12 @@ all_order_status = {
 }
 
 
-class AdminProfileSerializer(serializers.ModelSerializer):
+class AdminUserProfileSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='first_name')
+
     class Meta:
         model = UserProfile
-        fields = 'username', 'first_name', 'last_name', 'mobile_number', 'user_type', 'email'
+        fields = ['username', 'name', 'email', 'mobile_number']
 
 
 class OrderListSerializer(serializers.ModelSerializer):
