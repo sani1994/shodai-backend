@@ -107,7 +107,7 @@ class AdminLogout(APIView):  # logout
 
 
 class AdminUserProfile(APIView):
-    # permission_classes = [AdminAuth]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         serializer = AdminUserProfileSerializer(request.user)
@@ -115,6 +115,65 @@ class AdminUserProfile(APIView):
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminUserRegistration(APIView):
+
+    def post(self, request):
+        data = request.data
+        required_fields = ['name',
+                           'mobile_number',
+                           'email',
+                           'password']
+        is_valid = field_validation(required_fields, data)
+
+        if is_valid:
+            string_fields = [data['name'],
+                             data['mobile_number'],
+                             data['email'],
+                             data['password']]
+            is_valid = type_validation(string_fields, str)
+        if is_valid and len(data["mobile_number"]) == 14 and \
+                data["mobile_number"].startswith('+8801') and data["mobile_number"][1:].isdigit():
+            pass
+        else:
+            is_valid = False
+        if is_valid and data["email"]:
+            try:
+                validate_email(data["email"])
+            except Exception:
+                is_valid = False
+        if not is_valid or not data['name'] or not data['password']:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                user_instance = UserProfile.objects.get(mobile_number=data["mobile_number"])
+            except UserProfile.DoesNotExist:
+                user_instance = None
+
+            if not user_instance:
+                user_instance = UserProfile.objects.create(username=data["mobile_number"],
+                                                           first_name=data["name"],
+                                                           last_name="",
+                                                           email=data["email"],
+                                                           mobile_number=data["mobile_number"],
+                                                           user_type="CM",
+                                                           created_on=timezone.now(),
+                                                           verification_code=randint(100000, 999999),
+                                                           is_approved=True)
+                user_instance.set_password(data['password'])
+                user_instance.save()
+                return Response({
+                    "status": "success",
+                    "message": "User Created."}, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "status": "failed",
+                    "message": "User Already Exists!"
+                }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Login(APIView):
@@ -299,11 +358,15 @@ class OrderDetail(APIView):
                         products_updated = False
 
             if data["delivery_address"] != order.address.road:
-                delivery_address = Address.objects.create(road=data["delivery_address"],
-                                                          city="Dhaka",
-                                                          district="Dhaka",
-                                                          country="Bangladesh",
-                                                          user=order.user)
+                address = get_object_or_404(Address, road=data["delivery_address"])
+                if not address:
+                    delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                              city="Dhaka",
+                                                              district="Dhaka",
+                                                              country="Bangladesh",
+                                                              user=order.user)
+                else:
+                    delivery_address = address
             else:
                 delivery_address = order.address
 
@@ -485,11 +548,15 @@ class CreateOrder(APIView):
             #            "\r\n[N.B:Please change your password after login]"
             # send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
 
-        delivery_address = Address.objects.create(road=data["delivery_address"],
-                                                  city="Dhaka",
-                                                  district="Dhaka",
-                                                  country="Bangladesh",
-                                                  user=user_instance)
+        address = get_object_or_404(Address, road=data["delivery_address"])
+        if not address:
+            delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                      city="Dhaka",
+                                                      district="Dhaka",
+                                                      country="Bangladesh",
+                                                      user=user_instance)
+        else:
+            delivery_address = address
 
         order_instance = Order.objects.create(user=user_instance,
                                               delivery_date_time=delivery_date_time,

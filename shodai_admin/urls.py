@@ -5,6 +5,7 @@ app_name = 'shodai_admin'
 urlpatterns = [
     path('login', views.Login.as_view()),
     path('logout', views.Logout.as_view()),
+    path('user/registration', views.AdminUserRegistration.as_view()),
     path('user/profile', views.AdminUserProfile.as_view()),
 
     # orders
