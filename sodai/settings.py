@@ -29,10 +29,11 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS").replace(" ", "").split(',')
 AUTH_USER_MODEL = 'userProfile.UserProfile'
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    # 'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
     # 'DEFAULT_AUTHDENTICATE_CLASSES': 'rest_framework_simplejwt.authentication.JWT',
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE': 10,
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'simple_history',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'import_export',
     # 'django_elasticsearch_dsl',
@@ -78,7 +80,7 @@ INSTALLED_APPS = [
     'search',
     'notifications',
     'customer_service',
-    'shodaiAdmin',
+    'shodai_admin',
 
     'graphene_django',
     'django_filters',

@@ -20,7 +20,8 @@ class Order(BaseModel):
     """Create order object"""
     user = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
     payment_id = models.CharField(max_length=100, blank=True, )
-    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True, )
+    invoice_number = models.CharField(max_length=100, null=True, blank=True, unique=True)
+    order_number = models.CharField(max_length=20, null=True, blank=True, unique=True)
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField()
@@ -57,6 +58,7 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
+    note = models.CharField(max_length=250, blank=True, default="")
     history = HistoricalRecords()
 
     def __str__(self):
@@ -71,10 +73,10 @@ class Order(BaseModel):
     def paid_status(self):
         status = InvoiceInfo.objects.get(order_number_id=self.id).paid_status
         if status:
-            return 'Paid Status'
+            return 'Paid'
         else:
-            return 'Not Paid Status'
-        return 'Not Paid Status'
+            return 'Not Paid'
+        return 'Not Paid'
 
     def save(self, *args, **kwargs):
         if self.order_status == "COM":
