@@ -17,11 +17,20 @@ all_order_status = {
 
 
 class AdminUserProfileSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='first_name')
+    name = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
         fields = ['username', 'name', 'email', 'mobile_number']
+
+    def get_name(self, obj):
+        if obj.user.first_name and obj.user.last_name:
+            staff_name = obj.user.first_name + " " + obj.user.last_name
+        elif obj.user.first_name:
+            staff_name = obj.user.first_name
+        else:
+            staff_name = ""
+        return staff_name
 
 
 class OrderListSerializer(serializers.ModelSerializer):
