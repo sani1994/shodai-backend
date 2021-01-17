@@ -378,8 +378,10 @@ class OrderDetail(APIView):
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
             billing_person_name = order.user.first_name + " " + order.user.last_name
             if products_updated:
-                order.order_status = 'CN'
-                order.save()
+                orders = Order.objects.filter(order_number__icontains=order.order_number).order_by('-created_on')
+                for o in orders:
+                    o.order_status = 'CN'
+                    o.save()
 
                 order = Order.objects.create(user=order.user,
                                              delivery_date_time=delivery_date_time,
@@ -403,14 +405,22 @@ class OrderDetail(APIView):
                     total += float(op.order_product_price_with_vat) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
+                if orders[0].order_number.find('-') != -1:
+                    x = orders[0].order_number.split("-")
+                    x[1] = int(x[1]) + 1
+                    order.order_number = x[0] + "-" + str(x[1])
+                else:
+                    order.order_number = orders[0].order_number + "-1"
                 order.order_total_price = total + invoice.delivery_charge
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order.note = data['note']
                 order.save()
             else:
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+                order.note = data['note']
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
                 order.order_status = all_order_status[data['order_status']]
@@ -437,7 +447,8 @@ class OrderDetail(APIView):
                                        )
             return Response({
                 "status": "success",
-                "message": "Order updated."}, status=status.HTTP_200_OK)
+                "message": "Order updated.",
+                "order_ID": order.id}, status=status.HTTP_200_OK)
 
 
 class CreateOrder(APIView):
@@ -589,7 +600,9 @@ class CreateOrder(APIView):
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.order_number = str(uuid.uuid4().int)[:6]
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.note = data['note']
         order_instance.save()
 
         billing_person_name = user_instance.first_name + " " + user_instance.last_name

@@ -40,13 +40,15 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "created_on", "order_total_price",
+        fields = ["id", "order_number", "created_on", "order_total_price",
                   "customer_name", "customer_mobile_number", "order_status"]
         read_only_fields = ["customer_name", "customer_mobile_number", "order_status"]
 
     def get_customer_name(self, obj):
         if obj.user.first_name and obj.user.last_name:
             customer_name = obj.user.first_name + " " + obj.user.last_name
+        elif obj.user.first_name:
+            customer_name = obj.user.first_name
         else:
             customer_name = ""
         return customer_name
@@ -69,6 +71,8 @@ class CustomerSerializer(serializers.ModelSerializer):
     def get_name(self, obj):
         if obj.first_name and obj.last_name:
             customer_name = obj.first_name + " " + obj.last_name
+        elif obj.first_name:
+            customer_name = obj.first_name
         else:
             customer_name = ""
         return customer_name
@@ -124,7 +128,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price", "order_status",
+            "id", "order_number", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price", "order_status",
             "total_vat", "contact_number", "delivery_address", "customer", "invoice", "products"
         )
 
