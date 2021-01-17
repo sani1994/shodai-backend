@@ -25,7 +25,7 @@ class ProductList(APIView):
     permission_classes = [GenericAuth]
 
     def get(self, request, format=None):
-        products = Product.objects.filter(is_approved=True).distinct()
+        products = Product.objects.filter(is_approved=True)
         serializer = ProductSerializer(products, many=True)
         if serializer:
             datas = serializer.data
@@ -327,7 +327,7 @@ class RecentlyAddedProductList(APIView):  # return list of recently added produc
     permission_classes = [GenericAuth]
 
     def get(self, request):
-        queryset = Product.objects.filter(is_approved=True).order_by('-created_on')[:200].distinct()
+        queryset = Product.objects.filter(is_approved=True).order_by('-created_on')[:200]
         serializer = ProductSerializer(queryset, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -354,7 +354,7 @@ class ProductForCart(APIView):
 
 
 class RecentlyAddedProductListPagination(APIView):
-    # permission_classes = [GenericAuth]
+    permission_classes = [GenericAuth]
 
     def get(self, request, id):
         queryset = Product.objects.filter(is_approved=True).order_by('-created_on')

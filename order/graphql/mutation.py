@@ -109,36 +109,35 @@ class CreateOrder(graphene.Mutation):
                                        created_by=user,
                                        delivery_date_time=input.delivery_date_time,
                                        delivery_place=input.delivery_place,
-                                       total_vat=input.total_vat,
-                                       order_total_price=input.net_pay_able_amount,
                                        lat=input.lat,
                                        long=input.long,
                                        order_status="OD",
                                        order_type=input.order_type,
                                        contact_number=input.contact_number if input.contact_number else user.mobile_number
                                        )
-                order_instance.address = Address.objects.get(id=input.address)
-                order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.save()
-
+                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 product_list = input.products
-                sub_total_without_offer = 0
+                sub_total_without_offer = total_vat = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
-                    total_without_vat = float(product.product_price) * p.order_product_qty
-                    sub_total_without_offer += total_without_vat
-                    OrderProduct.objects.create(product=product,
-                                                order=Order.objects.get(pk=order_instance.pk),
-                                                order_product_qty=p.order_product_qty, )
+                    sub_total_without_offer += float(product.product_price) * p.order_product_qty
+                    op = OrderProduct.objects.create(product=product,
+                                                     order=Order.objects.get(pk=order_instance.pk),
+                                                     order_product_qty=p.order_product_qty, )
+                    total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-                print(sub_total_without_offer)
+                order_instance.address = Address.objects.get(id=input.address)
+                order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.order_number = str(uuid.uuid4().int)[:6]
+                order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.total_vat = total_vat
+                order_instance.order_total_price = input.order_total_price + total_vat + delivery_charge
+                order_instance.save()
+
                 # Create InvoiceInfo Instance
                 billing_person_name = user.first_name + " " + user.last_name
-                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-
                 InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
                                            billing_person_name=billing_person_name,
                                            billing_person_email=user.email,

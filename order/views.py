@@ -101,6 +101,7 @@ class OrderList(APIView):
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.order_number = str(uuid.uuid4().int)[:6]
                 order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
@@ -246,6 +247,8 @@ class OrderProductList(APIView):
             text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
             htmly = get_template('email.html')
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
+            invoice.discount_amount = float(round(total_price_without_offer - sub_total))
+            invoice.save()
 
             d = {'user_name': billing_person_name,
                  'order_id': order_instance.pk,
@@ -432,7 +435,7 @@ class OrderdProducts(APIView):
                     # orderProduct['product'].pop('modified_by')
                     product = orderProduct['product']
                     product['order_price'] = orderProduct['order_product_price']
-                    product['offer_price_with_vat'] = orderProduct['order_product_price_with_vat']
+                    product['order_product_price_with_vat'] = orderProduct['order_product_price_with_vat']
                     product['order_qty'] = orderProduct['order_product_qty']
                     # product['product_unit'] = orderProduct['product']['product_unit'].product_unit
                     # print(orderProduct['product']['product_unit']['product_unit'])
