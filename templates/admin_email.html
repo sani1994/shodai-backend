@@ -47,31 +47,19 @@
   <body>
     <center>
       <div class="container" style="max-width: 600px;padding: 0px 20px 0 20px;font-size: 16px;">
-        <table style="font-size:16px">
+        <table style="font-size: 16px;text-align: left;width: 100%;">
             <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
 
             <tbody>
               <tr>
-                <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
+                <td><strong>Dear Concern,</strong></td>
               </tr>
               <tr>
                 <td>
-                  Thank you for ordering in Shodai.<br/><br/>
-                  We know you are excited to get your grocery just on your doorstep.
-                  The Shodai team has already started working hard to pick and pack your product and deliver it within 24 hours.
-                  Now take a look below for the summary details of your order.<br/><br/>
-                  You have just saved your time and energy by ordering from Shodai.
-                  Hope these valuable times will be beneficial for your other activities.<br/><br/>
-                  Please share your experience with others about shopping in Shodai, and help them to find fresh and
-                  organic products and grow a healthy community.<br/><br/>
+                  <p>The details of Order #{{order_id}} are given below.</p>
+                  Customer Name: {{user_name}}<br/>
+                  Customer Mobile: {{user_mobile}}<br/>
                 </td>
-              </tr>
-
-              <tr>
-                <td>Thanks & Regards</td>
-              </tr>
-              <tr>
-                <td><strong>Team Shodai</strong></td>
               </tr>
 
             </tbody>
@@ -89,23 +77,49 @@
           <tbody>
             <tr>
                 <td style="background:#fbfced">
+                  <strong>Shipping Address</strong><br />
                   {{shipping_address}}<br />
-                  <strong>Mobile</strong><br />
+                  <strong>Contact No.</strong>
                   {{mobile_no}}
                 </td>
 
                 <td style="background:#fbfced">
                   <p>
-                    <strong>Order Number</strong><br />
+                    <strong>Order Number</strong>
                     #{{order_id}}
                   </p>
                   <p>
-                    <strong>Date Ordered:</strong><br />
+                    <strong>Platform:</strong>
+                    {{platform}}
+                  </p>
+                  <p>
+                    <strong>Date Ordered:</strong>
                     {{order_date}}
                   </p>
                   <p>
                     <strong>Preferred Delivery Slot</strong></br>
                     {{delivery_date_time}}
+                  </p>
+                </td>
+            </tr>
+          </tbody>
+        </table>
+        <table style="text-align: center;width: 100%;" class="">
+          <thead>
+            <tr style="color:#545454;">
+              <th style="padding-bottom: 15px"><strong>PAYMENT DETAILS</strong></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+                <td style="background:#fbfced">
+                  <p>
+                    <strong>Invoice Number</strong>
+                    #{{invoice_number}}
+                  </p>
+                  <p>
+                    <strong>Payment Method:</strong></br>
+                    {{payment_method}}
                   </p>
                 </td>
             </tr>
@@ -124,7 +138,6 @@
               <th style="padding: 10px 0 10px 0;">Quantity</th>
               <th style="padding: 10px 0 10px 0;">Total</th>
             </tr>
-
           </thead>
 
           <tbody>
@@ -157,7 +170,7 @@
 
             {% if is_offer %}
                 <tr style="text-align: right;">
-                  <td colspan="4" >
+                  <td colspan={{colspan_value}} >
                       <strong>You Saved:</strong>
                   </td>
                   <td style="text-align: center;">
@@ -165,14 +178,13 @@
                   </td>
                 </tr>
                 <tr style="text-align: right;">
-                  <td colspan="4" >
+                  <td colspan={{colspan_value}} >
                       <strong>Sub-Total:</strong>
                   </td>
                   <td style="text-align: center;">
                       <strong>৳{{sub_total}}</strong>
                   </td>
                 </tr>
-
             {% else %}
                 <tr style="text-align: right;">
                   <td colspan={{colspan_value}} >
@@ -211,19 +223,7 @@
           </tbody>
         </table>
 
-          <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
-          <div style="text-align: center;">
-            <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>
-            <p style="line-height: 20px;">Helpline: <strong>09614-161271</strong><br/>
-              Feel free to contact us at (customer support): <strong>help@shod.ai</strong></p>
-          </div>
-
           <hr style="border:1px solid #E8E8E8"></hr>
-
-          <!-- <div style="text-align: center;padding-bottom: 30px;padding-top: 10px">
-            <p style="font-size: 20px;line-height: 24px;"><strong>Download Mobile App</strong></p>
-            <a href="https://play.google.com/store/apps/details?id=com.mtl.shodaiapp" rel="noopener noreferrer"><img src="https://i.ibb.co/DD955M2/playstore.png" alt="google playstore link"/></a>
-          </div> -->
 
           <div style="text-align: center; background-color:#E5E5E5; color:#5D7079; line-height: 24px;font-size: 16px;padding: 26px 0;">
             &copy; 2020 Shodai  |  All rights reserved<br>
