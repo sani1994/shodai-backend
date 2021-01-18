@@ -2,9 +2,12 @@ import uuid
 from datetime import datetime
 from random import randint
 
+from decouple import config
+from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.core.validators import validate_email
 from django.http import JsonResponse, HttpResponse
+from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from num2words import num2words
@@ -380,8 +383,15 @@ class OrderDetail(APIView):
             if products_updated:
                 order.order_status = 'CN'
                 order.save()
+                if "-" in order.order_number:
+                    x = order.order_number.split("-")
+                    x[1] = int(x[1]) + 1
+                    order_number = x[0] + "-" + str(x[1])
+                else:
+                    order_number = order.order_number + "-1"
 
                 order = Order.objects.create(user=order.user,
+                                             order_number=order_number,
                                              delivery_date_time=delivery_date_time,
                                              delivery_place=order.delivery_place,
                                              lat=order.lat,
@@ -408,15 +418,15 @@ class OrderDetail(APIView):
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order.save()
+                order.note = data['note']
             else:
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
                 order.order_status = all_order_status[data['order_status']]
                 order.address = delivery_address
+                order.note = data['note']
                 # order.modified_by = request.user
-                order.save()
 
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
@@ -435,9 +445,11 @@ class OrderDetail(APIView):
                                        user=order.user,
                                        # created_by=request.user
                                        )
+            order.save()
             return Response({
                 "status": "success",
-                "message": "Order updated."}, status=status.HTTP_200_OK)
+                "message": "Order updated.",
+                "order_id": order.id}, status=status.HTTP_200_OK)
 
 
 class CreateOrder(APIView):
@@ -547,11 +559,11 @@ class CreateOrder(APIView):
             user_instance.set_password(temp_password)
             user_instance.save()
 
-            # sms_body = f"Dear " + customer["name"] + \
-            #            ",\r\nWe have created a account with temporary password [" + temp_password + \
-            #            "] based on your order request." \
-            #            "\r\n[N.B:Please change your password after login]"
-            # send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+            sms_body = f"Dear " + customer["name"] + \
+                       ",\r\nWe have created a account with temporary password [" + temp_password + \
+                       "] based on your order request." \
+                       "\r\n[N.B:Please change your password after login]"
+            send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -590,6 +602,7 @@ class CreateOrder(APIView):
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+        order_instance.note = data['note']
         order_instance.save()
 
         billing_person_name = user_instance.first_name + " " + user_instance.last_name
@@ -610,7 +623,8 @@ class CreateOrder(APIView):
                                    )
 
         return Response({'status': 'success',
-                         'message': 'Order placed.'}, status=status.HTTP_200_OK)
+                         'message': 'Order placed.',
+                         "order_id": order_instance.id}, status=status.HTTP_200_OK)
 
 
 class ProductSearch(APIView):
@@ -746,3 +760,110 @@ class InvoiceDownloadPDF(APIView):
             "status": "failed",
             "message": "Invalid request!"
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SendEmail(APIView):
+    # permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        data = request.data
+        if data['order_id'] and isinstance(data['order_id'], int):
+            order_instance = get_object_or_404(Order, id=data['order_id'])
+            invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[0]
+            product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
+            matrix = []
+            total_price_without_offer = 0
+            is_offer = False
+            for p in product_list:
+                total = float(p.product.product_price) * p.order_product_qty
+                total_price_without_offer += total
+                if p.order_product_price != p.product.product_price:
+                    is_offer = True
+                    total_by_offer = float(p.order_product_price) * p.order_product_qty
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           p.order_product_price, int(p.order_product_qty), total_by_offer]
+                else:
+                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                           "--", int(p.order_product_qty), total]
+                matrix.append(col)
+
+            text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
+            htmly = get_template('email.html')
+
+            time = TimeSlot.objects.get(time=timezone.localtime(order_instance.delivery_date_time).time())
+            if time:
+                time_slot = time
+            else:
+                time_slot = TimeSlot.objects.get(id=1)
+            delivery_charge = invoice.delivery_charge
+            sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
+            client_name = order_instance.user.first_name + " " + order_instance.user.last_name
+
+            d = {'user_name': client_name,
+                 'order_id': order_instance.order_number,
+                 'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                 'mobile_no': order_instance.contact_number,
+                 'order_date': order_instance.created_on.date(),
+                 'delivery_date_time': str(
+                     order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                 'sub_total': sub_total,
+                 'vat': order_instance.total_vat,
+                 'delivery_charge': delivery_charge,
+                 'total': order_instance.order_total_price,
+                 'order_details': matrix,
+                 'is_offer': is_offer,
+                 'saved_amount': float(round(total_price_without_offer - sub_total)),
+                 'colspan_value': "4" if is_offer else "3"
+                 }
+
+            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
+            subject, from_email, to = subject, 'noreply@shod.ai', order_instance.user.email
+            html_content = htmly.render(d)
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+
+            """
+            To send notification to admin
+            """
+
+            if invoice.payment_method == "CASH_ON_DELIVERY":
+                payment_method = "Cash on Delivery"
+            else:
+                payment_method = "Online Payment"
+            content = {'user_name': client_name,
+                       'user_mobile': order_instance.user.mobile_number,
+                       'order_id': order_instance.order_number,
+                       'platform': "Website",
+                       'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                       'mobile_no': order_instance.contact_number,
+                       'order_date': order_instance.created_on.date(),
+                       'delivery_date_time': str(
+                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'invoice_number': invoice.invoice_number,
+                       'payment_method': payment_method,
+                       'sub_total': sub_total,
+                       'vat': order_instance.total_vat,
+                       'delivery_charge': delivery_charge,
+                       'total': order_instance.order_total_price,
+                       'order_details': matrix,
+                       'is_offer': is_offer,
+                       'saved_amount': float(round(total_price_without_offer - sub_total)),
+                       'colspan_value': "4" if is_offer else "3"
+                       }
+            admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
+            admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
+            html_admin = get_template('admin_email.html')
+            html_content = html_admin.render(content)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, admin_email)
+            msg_to_admin.attach_alternative(html_content, "text/html")
+            msg_to_admin.send()
+            return Response({
+                "status": "success",
+                "message": "email sent successfully."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"
+            }, status=status.HTTP_400_BAD_REQUEST)

@@ -161,7 +161,7 @@ class OrderAdmin(MaterialModelAdmin):
             list.append('%s' % obj.product)
         return list
 
-    readonly_fields = ['user', 'invoice_number', 'order_total_price', 'created_by', 'modified_by', 'created_on',
+    readonly_fields = ['user', 'invoice_number', 'order_number', 'order_total_price', 'created_by', 'modified_by', 'created_on',
                        'modified_on', 'delivery_date_time', 'delivery_place', 'address', 'total_vat', order_products]
     list_display = ('id', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products,)
     list_editable = ('order_status',)
@@ -169,7 +169,7 @@ class OrderAdmin(MaterialModelAdmin):
     inlines = [OrderProductInline, InvoiceInfoInline]
     fieldsets = (
         ('Order Detail View', {
-            'fields': ('user', 'invoice_number', 'total_vat', 'order_total_price', 'order_status', 'delivery_date_time',
+            'fields': ('user', 'invoice_number', 'order_number', 'total_vat', 'order_total_price', 'order_status', 'delivery_date_time',
                        'delivery_place', 'address', 'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )
