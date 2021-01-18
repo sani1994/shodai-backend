@@ -364,19 +364,25 @@ class OrderDetail(APIView):
                             break
                     else:
                         products_updated = False
-
-            if data["delivery_address"] != order.address.road:
-                address = Address.objects.filter(road=data["delivery_address"])
-                if not address:
-                    delivery_address = Address.objects.create(road=data["delivery_address"],
-                                                              city="Dhaka",
-                                                              district="Dhaka",
-                                                              country="Bangladesh",
-                                                              user=order.user)
+            if order.address:
+                if data["delivery_address"] != order.address.road:
+                    address = Address.objects.filter(road=data["delivery_address"])
+                    if not address:
+                        delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                                  city="Dhaka",
+                                                                  district="Dhaka",
+                                                                  country="Bangladesh",
+                                                                  user=order.user)
+                    else:
+                        delivery_address = address[0]
                 else:
-                    delivery_address = address[0]
+                    delivery_address = order.address
             else:
-                delivery_address = order.address
+                delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                          city="Dhaka",
+                                                          district="Dhaka",
+                                                          country="Bangladesh",
+                                                          user=order.user)
 
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
             billing_person_name = order.user.first_name + " " + order.user.last_name
@@ -769,6 +775,10 @@ class SendEmail(APIView):
         data = request.data
         if data['order_id'] and isinstance(data['order_id'], int):
             order_instance = get_object_or_404(Order, id=data['order_id'])
+            if "-" in order_instance.order_number:
+                subj = "updated "
+            else:
+                subj = ""
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[0]
             product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
             matrix = []
@@ -816,7 +826,7 @@ class SendEmail(APIView):
                  'colspan_value': "4" if is_offer else "3"
                  }
 
-            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
+            subject = 'Your ' + subj + 'shodai order (#' + str(order_instance.order_number) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', order_instance.user.email
             html_content = htmly.render(d)
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
