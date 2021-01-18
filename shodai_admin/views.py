@@ -381,11 +381,8 @@ class OrderDetail(APIView):
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
             billing_person_name = order.user.first_name + " " + order.user.last_name
             if products_updated:
-                orders = Order.objects.filter(order_number__icontains=order.order_number).order_by('-created_on')
-                for o in orders:
-                    o.order_status = 'CN'
-                    o.save()
-
+                order.order_status = 'CN'
+                order.save()
                 if "-" in order.order_number:
                     x = order.order_number.split("-")
                     x[1] = int(x[1]) + 1
@@ -422,7 +419,6 @@ class OrderDetail(APIView):
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note']
-                order.save()
             else:
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
@@ -431,7 +427,6 @@ class OrderDetail(APIView):
                 order.address = delivery_address
                 order.note = data['note']
                 # order.modified_by = request.user
-                order.save()
 
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
@@ -450,6 +445,7 @@ class OrderDetail(APIView):
                                        user=order.user,
                                        # created_by=request.user
                                        )
+            order.save()
             return Response({
                 "status": "success",
                 "message": "Order updated.",
@@ -563,11 +559,11 @@ class CreateOrder(APIView):
             user_instance.set_password(temp_password)
             user_instance.save()
 
-            # sms_body = f"Dear " + customer["name"] + \
-            #            ",\r\nWe have created a account with temporary password [" + temp_password + \
-            #            "] based on your order request." \
-            #            "\r\n[N.B:Please change your password after login]"
-            # send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+            sms_body = f"Dear " + customer["name"] + \
+                       ",\r\nWe have created a account with temporary password [" + temp_password + \
+                       "] based on your order request." \
+                       "\r\n[N.B:Please change your password after login]"
+            send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -605,7 +601,6 @@ class CreateOrder(APIView):
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-        # order_instance.order_number = str(uuid.uuid4().int)[:6]
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.note = data['note']
         order_instance.save()
@@ -628,7 +623,8 @@ class CreateOrder(APIView):
                                    )
 
         return Response({'status': 'success',
-                         'message': 'Order placed.'}, status=status.HTTP_200_OK)
+                         'message': 'Order placed.',
+                         "order_id": order_instance.id}, status=status.HTTP_200_OK)
 
 
 class ProductSearch(APIView):
