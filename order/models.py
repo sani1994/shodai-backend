@@ -1,4 +1,5 @@
 import uuid
+from random import randint
 from django.contrib.gis.db import models
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
@@ -79,6 +80,11 @@ class Order(BaseModel):
         return 'Not Paid'
 
     def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = str(randint(100000, 999999))
+            while Order.objects.filter(order_number=self.order_number).exists():
+                self.order_number = str(randint(100000, 999999))
+
         if self.order_status == "COM":
             invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)
             if invoice.payment_method == "CASH_ON_DELIVERY":
