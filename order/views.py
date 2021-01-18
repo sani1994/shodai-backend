@@ -101,7 +101,6 @@ class OrderList(APIView):
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.order_number = str(uuid.uuid4().int)[:6]
                 order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
@@ -244,14 +243,14 @@ class OrderProductList(APIView):
             order_instance.save()
 
             # send email to user
-            text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
+            text_content = 'Your Order (#' + str(order_instance.order_number) + ') has been confirmed'
             htmly = get_template('email.html')
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             invoice.discount_amount = float(round(total_price_without_offer - sub_total))
             invoice.save()
 
             d = {'user_name': billing_person_name,
-                 'order_id': order_instance.pk,
+                 'order_id': order_instance.order_number,
                  'shipping_address': address,
                  'mobile_no': order_instance.contact_number,
                  'order_date': order_instance.created_on.date(),
@@ -266,7 +265,7 @@ class OrderProductList(APIView):
                  'colspan_value': "4" if is_offer else "3"
                  }
 
-            subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
+            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
             html_content = htmly.render(d)
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
@@ -282,7 +281,7 @@ class OrderProductList(APIView):
                 payment_method = "Online Payment"
             content = {'user_name': billing_person_name,
                        'user_mobile': invoice.billing_person_mobile_number,
-                       'order_id': order_instance.pk,
+                       'order_id': order_instance.order_number,
                        'platform': "App",
                        'shipping_address': address,
                        'mobile_no': order_instance.contact_number,

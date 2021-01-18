@@ -130,7 +130,6 @@ class CreateOrder(graphene.Mutation):
                 order_instance.address = Address.objects.get(id=input.address)
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.order_number = str(uuid.uuid4().int)[:6]
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.total_vat = total_vat
                 order_instance.order_total_price = input.order_total_price + total_vat + delivery_charge
@@ -198,7 +197,7 @@ class SendEmail(graphene.Mutation):
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
-            text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
+            text_content = 'Your Order (#' + str(order_instance.order_number) + ') has been confirmed'
             htmly = get_template('email.html')
 
             time_slot = TimeSlot.objects.get(id=input.time_slot_id)
@@ -207,7 +206,7 @@ class SendEmail(graphene.Mutation):
             client_name = user.first_name + " " + user.last_name
 
             d = {'user_name': client_name,
-                 'order_id': order_instance.pk,
+                 'order_id': order_instance.order_number,
                  'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                  'mobile_no': order_instance.contact_number,
                  'order_date': order_instance.created_on.date(),
@@ -223,7 +222,7 @@ class SendEmail(graphene.Mutation):
                  'colspan_value': "4" if is_offer else "3"
                  }
 
-            subject = 'Your shodai order (#' + str(order_instance.pk) + ') summary'
+            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
             subject, from_email, to = subject, 'noreply@shod.ai', user.email
             html_content = htmly.render(d)
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
@@ -240,7 +239,7 @@ class SendEmail(graphene.Mutation):
                 payment_method = "Online Payment"
             content = {'user_name': client_name,
                        'user_mobile': user.mobile_number,
-                       'order_id': order_instance.pk,
+                       'order_id': order_instance.order_number,
                        'platform': "Website",
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
@@ -386,8 +385,8 @@ class TransactionMutation(graphene.Mutation):
         invoice_number = transaction_info.invoice_number
 
         try:
-            payment_info = PaymentInfo.objects.get(invoice_number=invoice_number, payment_status='INITIATED')
-        except PaymentInfo.DoesNotExist as e:
+            payment_info = PaymentInfo.objects.filter(invoice_number=invoice_number, payment_status='INITIATED')[0]
+        except PaymentInfo.DoesNotExist:
             payment_info = None
 
         if payment_info and payment_status:

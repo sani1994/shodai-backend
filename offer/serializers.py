@@ -56,7 +56,7 @@ class ProductReadSerializer(serializers.ModelSerializer):
 
 
 class OfferProductListSerializer(serializers.ModelSerializer):
-    offer = serializers.StringRelatedField()
+    offer_name = serializers.StringRelatedField(source='offer')
     product = ProductReadSerializer(read_only=True)
     offer_price_with_vat = serializers.SerializerMethodField()
 
@@ -66,4 +66,4 @@ class OfferProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OfferProduct
-        fields = ('id', 'offer_price', 'offer_price_with_vat', 'offer', 'product')
+        fields = ('id', 'offer_price', 'offer_price_with_vat', 'offer_name', 'product')
