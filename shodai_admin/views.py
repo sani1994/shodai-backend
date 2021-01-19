@@ -252,7 +252,7 @@ class OrderList(APIView):
             if search.startswith("01") and len(search) == 11:
                 queryset = Order.objects.filter(user__mobile_number='+88' + search).order_by(sort_by)
             else:
-                queryset = Order.objects.filter(id__icontains=search).order_by(sort_by)
+                queryset = Order.objects.filter(order_number__icontains=search).order_by(sort_by)
         else:
             queryset = Order.objects.all().order_by(sort_by)
         paginator = CustomPageNumberPagination()
@@ -364,31 +364,23 @@ class OrderDetail(APIView):
                             break
                     else:
                         products_updated = False
-            if order.address:
-                if data["delivery_address"] != order.address.road:
-                    address = Address.objects.filter(road=data["delivery_address"])
-                    if not address:
-                        delivery_address = Address.objects.create(road=data["delivery_address"],
-                                                                  city="Dhaka",
-                                                                  district="Dhaka",
-                                                                  country="Bangladesh",
-                                                                  user=order.user)
-                    else:
-                        delivery_address = address[0]
+
+            if not order.address or data["delivery_address"] != order.address.road:
+                address = Address.objects.filter(road=data["delivery_address"])
+                if not address:
+                    delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                              scity="Dhaka",
+                                                              sdistrict="Dhaka",
+                                                              scountry="Bangladesh",
+                                                              suser=order.user)
                 else:
-                    delivery_address = order.address
+                    delivery_address = address[0]
             else:
-                delivery_address = Address.objects.create(road=data["delivery_address"],
-                                                          city="Dhaka",
-                                                          district="Dhaka",
-                                                          country="Bangladesh",
-                                                          user=order.user)
+                delivery_address = order.address
 
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
             billing_person_name = order.user.first_name + " " + order.user.last_name
             if products_updated:
-                order.order_status = 'CN'
-                order.save()
                 if "-" in order.order_number:
                     x = order.order_number.split("-")
                     x[1] = int(x[1]) + 1
@@ -396,17 +388,26 @@ class OrderDetail(APIView):
                 else:
                     order_number = order.order_number + "-1"
 
-                order = Order.objects.create(user=order.user,
-                                             order_number=order_number,
-                                             delivery_date_time=delivery_date_time,
-                                             delivery_place=order.delivery_place,
-                                             lat=order.lat,
-                                             long=order.long,
-                                             order_status="OA",
-                                             address=delivery_address,
-                                             contact_number=data['contact_number'],
-                                             # created_by=request.user,
-                                             )
+                try:
+                    new_order = Order.objects.create(user=order.user,
+                                                     order_number=order_number,
+                                                     delivery_date_time=delivery_date_time,
+                                                     delivery_place=order.delivery_place,
+                                                     lat=order.lat,
+                                                     long=order.long,
+                                                     order_status="OA",
+                                                     address=delivery_address,
+                                                     contact_number=data['contact_number'],
+                                                     # created_by=request.user,
+                                                     )
+                    order.order_status = 'CN'
+                    order.save()
+                    order = new_order
+                except Exception:
+                    return Response({
+                        "status": "failed",
+                        "message": "Invalid request!"
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
                 total_vat = total = total_price = total_op_price = 0
                 for p in products:
@@ -565,11 +566,11 @@ class CreateOrder(APIView):
             user_instance.set_password(temp_password)
             user_instance.save()
 
-            sms_body = f"Dear " + customer["name"] + \
-                       ",\r\nWe have created a account with temporary password [" + temp_password + \
-                       "] based on your order request." \
-                       "\r\n[N.B:Please change your password after login]"
-            send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+            # sms_body = f"Dear " + customer["name"] + \
+            #            ",\r\nWe have created a account with temporary password [" + temp_password + \
+            #            "] based on your order request." \
+            #            "\r\n[N.B:Please change your password after login]"
+            # send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -737,7 +738,7 @@ class InvoiceDownloadPDF(APIView):
                 'address': order.address,
                 'user_email': order.user.email,
                 'user_mobile': order.user.mobile_number,
-                'order_id': order.id,
+                'order_number': order.order_number,
                 'invoice_number': order.invoice_number,
                 'created_on': order.created_on,
                 'delivery_date': order.delivery_date_time.date(),
@@ -754,31 +755,24 @@ class InvoiceDownloadPDF(APIView):
             pdf = render_to_pdf('pdf/invoice.html', data)
             if pdf:
                 response = HttpResponse(pdf, content_type='application/pdf')
-                filename = "Invoice_of_order#%s.pdf" % order.id
+                filename = "invoice_of_order_%s.pdf" % order.order_number
                 content = "inline; filename=%s" % filename
                 download = request.GET.get("download")
                 if download:
                     content = "attachment; filename=%s" % filename
                 response['Content-Disposition'] = content
                 return response
-            return HttpResponse("Not found")
-        return Response({
-            "status": "failed",
-            "message": "Invalid request!"
-        }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-class SendEmail(APIView):
+class OrderNotification(APIView):
     # permission_classes = [IsAdminUser]
 
     def post(self, request):
         data = request.data
-        if data['order_id'] and isinstance(data['order_id'], int):
+        if data.get('order_id') and isinstance(data['order_id'], int):
             order_instance = get_object_or_404(Order, id=data['order_id'])
-            if "-" in order_instance.order_number:
-                subj = "updated "
-            else:
-                subj = ""
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[0]
             product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
             matrix = []
@@ -797,9 +791,6 @@ class SendEmail(APIView):
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
-            text_content = 'Your Order (#' + str(order_instance.pk) + ') has been confirmed'
-            htmly = get_template('email.html')
-
             time = TimeSlot.objects.get(time=timezone.localtime(order_instance.delivery_date_time).time())
             if time:
                 time_slot = time
@@ -809,27 +800,31 @@ class SendEmail(APIView):
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             client_name = order_instance.user.first_name + " " + order_instance.user.last_name
 
-            d = {'user_name': client_name,
-                 'order_id': order_instance.order_number,
-                 'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
-                 'mobile_no': order_instance.contact_number,
-                 'order_date': order_instance.created_on.date(),
-                 'delivery_date_time': str(
-                     order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                 'sub_total': sub_total,
-                 'vat': order_instance.total_vat,
-                 'delivery_charge': delivery_charge,
-                 'total': order_instance.order_total_price,
-                 'order_details': matrix,
-                 'is_offer': is_offer,
-                 'saved_amount': float(round(total_price_without_offer - sub_total)),
-                 'colspan_value': "4" if is_offer else "3"
-                 }
+            """
+            To send notification to customer
+            """
 
-            subject = 'Your ' + subj + 'shodai order (#' + str(order_instance.order_number) + ') summary'
-            subject, from_email, to = subject, 'noreply@shod.ai', order_instance.user.email
-            html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            content = {'user_name': client_name,
+                       'order_number': order_instance.order_number,
+                       'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                       'mobile_no': order_instance.contact_number,
+                       'order_date': order_instance.created_on.date(),
+                       'delivery_date_time': str(
+                            order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'sub_total': sub_total,
+                       'vat': order_instance.total_vat,
+                       'delivery_charge': delivery_charge,
+                       'total': order_instance.order_total_price,
+                       'order_details': matrix,
+                       'is_offer': is_offer,
+                       'saved_amount': float(round(total_price_without_offer - sub_total)),
+                       'colspan_value': "4" if is_offer else "3"}
+
+            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
+            from_email, to = 'noreply@shod.ai', order_instance.user.email
+            html_customer = get_template('email.html')
+            html_content = html_customer.render(content)
+            msg = EmailMultiAlternatives(subject, from_email, [to])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
@@ -843,7 +838,7 @@ class SendEmail(APIView):
                 payment_method = "Online Payment"
             content = {'user_name': client_name,
                        'user_mobile': order_instance.user.mobile_number,
-                       'order_id': order_instance.order_number,
+                       'order_number': order_instance.order_number,
                        'platform': "Website",
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
@@ -861,17 +856,18 @@ class SendEmail(APIView):
                        'saved_amount': float(round(total_price_without_offer - sub_total)),
                        'colspan_value': "4" if is_offer else "3"
                        }
+
             admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, admin_email)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
             msg_to_admin.send()
             return Response({
                 "status": "success",
                 "message": "email sent successfully."
-            }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_200_OK)
         else:
             return Response({
                 "status": "failed",

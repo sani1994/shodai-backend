@@ -25,7 +25,7 @@ def send_sms(mobile_number, sms_content):
         "message_body": sms_content
     }
 
-    response = post(url, data=body).json()
+    response = post(url, data=body, timeout=30).json()
 
     if response["api_response_message"] == "SUCCESS":
         return 'success'
@@ -44,7 +44,7 @@ def send_sms_otp(mobile_number, sms_content):
         "message_body": sms_content
     }
 
-    response = requests.post(url, data=body).json()
+    response = requests.post(url, data=body, timeout=30).json()
     logging.info("otp sending response: {}".format(response))
     if response["api_response_message"] == "SUCCESS":
         return True

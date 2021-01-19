@@ -14,7 +14,7 @@ urlpatterns = [
     path('orders/timeslots', views.TimeSlotList.as_view()),
     path('orders/status', views.OrderStatusList.as_view()),
     path('orders/create', views.CreateOrder.as_view()),
-    path('orders/send/email', views.SendEmail.as_view()),
+    path('orders/send-notification', views.OrderNotification.as_view()),
 
     # invoices
     path('invoices/download/pdf/<int:id>', views.InvoiceDownloadPDF.as_view()),
