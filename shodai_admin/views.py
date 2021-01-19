@@ -110,7 +110,7 @@ class AdminLogout(APIView):  # logout
 
 
 class AdminUserProfile(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
     def get(self, request):
         serializer = AdminUserProfileSerializer(request.user)
@@ -759,9 +759,6 @@ class InvoiceDownloadPDF(APIView):
                 response = HttpResponse(pdf, content_type='application/pdf')
                 filename = "invoice_of_order_%s.pdf" % order.order_number
                 content = "inline; filename=%s" % filename
-                download = request.GET.get("download")
-                if download:
-                    content = "attachment; filename=%s" % filename
                 response['Content-Disposition'] = content
                 return response
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
