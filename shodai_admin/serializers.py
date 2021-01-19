@@ -24,10 +24,10 @@ class AdminUserProfileSerializer(serializers.ModelSerializer):
         fields = ['username', 'name', 'email', 'mobile_number']
 
     def get_name(self, obj):
-        if obj.user.first_name and obj.user.last_name:
-            staff_name = obj.user.first_name + " " + obj.user.last_name
-        elif obj.user.first_name:
-            staff_name = obj.user.first_name
+        if obj.first_name and obj.last_name:
+            staff_name = obj.first_name + " " + obj.last_name
+        elif obj.first_name:
+            staff_name = obj.first_name
         else:
             staff_name = ""
         return staff_name

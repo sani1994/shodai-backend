@@ -110,7 +110,7 @@ class AdminLogout(APIView):  # logout
 
 
 class AdminUserProfile(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         serializer = AdminUserProfileSerializer(request.user)
@@ -710,59 +710,55 @@ class InvoiceDownloadPDF(APIView):
 
     def get(self, request, id):
         order = get_object_or_404(Order, id=id)
-        if order:
-            product_list = OrderProduct.objects.filter(order=order)
-            matrix = []
-            for p in product_list:
-                today = timezone.now()
-                offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
-                                                            offer__offer_ends_in__gte=today, product=p.product)
+        product_list = OrderProduct.objects.filter(order=order)
+        matrix = []
+        for p in product_list:
+            today = timezone.now()
+            offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                        offer__offer_ends_in__gte=today, product=p.product)
 
-                if offer_product.exists():
-                    total = float(offer_product[0].offer_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
-                           p.product.product_price, offer_product[0].offer_price, total]
-                    matrix.append(col)
-                else:
-                    total = float(p.product.product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
-                           p.product.product_price, "--", total]
-                    matrix.append(col)
-            invoice = InvoiceInfo.objects.filter(invoice_number=order.invoice_number)
-            paid_status = invoice[0].paid_status
-
-            if invoice[0].payment_method == "CASH_ON_DELIVERY":
-                payment_method = "Cash on Delivery"
+            if offer_product.exists():
+                total = float(offer_product[0].offer_price) * p.order_product_qty
+                col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
+                       p.product.product_price, offer_product[0].offer_price, total]
+                matrix.append(col)
             else:
-                payment_method = "Online Payment"
-            data = {
-                'customer_name': order.user.first_name + " " + order.user.last_name,
-                'address': order.address,
-                'user_email': order.user.email,
-                'user_mobile': order.user.mobile_number,
-                'order_number': order.order_number,
-                'invoice_number': order.invoice_number,
-                'created_on': order.created_on,
-                'delivery_date': order.delivery_date_time.date(),
-                'delivery_time': order.delivery_date_time.time(),
-                'order_details': matrix,
-                'delivery': invoice[0].delivery_charge,
-                'vat': order.total_vat,
-                'total': order.order_total_price,
-                'in_words': num2words(order.order_total_price),
-                'payment_method': payment_method if paid_status else 'Cash on Delivery',
-                'paid_status': paid_status,
-                'downloaded_on': datetime.now().replace(microsecond=0)
-            }
-            pdf = render_to_pdf('pdf/invoice.html', data)
-            if pdf:
-                response = HttpResponse(pdf, content_type='application/pdf')
-                filename = "invoice_of_order_%s.pdf" % order.order_number
-                content = "inline; filename=%s" % filename
-                response['Content-Disposition'] = content
-                return response
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+                total = float(p.product.product_price) * p.order_product_qty
+                col = [p.product.product_name, p.product.product_unit.product_unit, p.order_product_qty,
+                       p.product.product_price, "--", total]
+                matrix.append(col)
+        invoice = InvoiceInfo.objects.filter(invoice_number=order.invoice_number)
+        paid_status = invoice[0].paid_status
+
+        if invoice[0].payment_method == "CASH_ON_DELIVERY":
+            payment_method = "Cash on Delivery"
+        else:
+            payment_method = "Online Payment"
+        data = {
+            'customer_name': order.user.first_name + " " + order.user.last_name,
+            'address': order.address,
+            'user_email': order.user.email,
+            'user_mobile': order.user.mobile_number,
+            'order_number': order.order_number,
+            'invoice_number': order.invoice_number,
+            'created_on': order.created_on,
+            'delivery_date': order.delivery_date_time.date(),
+            'delivery_time': order.delivery_date_time.time(),
+            'order_details': matrix,
+            'delivery': invoice[0].delivery_charge,
+            'vat': order.total_vat,
+            'total': order.order_total_price,
+            'in_words': num2words(order.order_total_price),
+            'payment_method': payment_method if paid_status else 'Cash on Delivery',
+            'paid_status': paid_status,
+            'downloaded_on': datetime.now().replace(microsecond=0)
+        }
+        pdf = render_to_pdf('pdf/invoice.html', data)
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = "invoice_of_order_%s.pdf" % order.order_number
+        content = "inline; filename=%s" % filename
+        response['Content-Disposition'] = content
+        return response
 
 
 class OrderNotification(APIView):
