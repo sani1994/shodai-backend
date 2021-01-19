@@ -97,12 +97,13 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
     product_id = serializers.SerializerMethodField(read_only=True)
     product_name = serializers.SerializerMethodField(read_only=True)
     product_image = serializers.SerializerMethodField(read_only=True)
+    vat = serializers.SerializerMethodField(read_only=True)
     product_price_total = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = OrderProduct
         fields = ['order_product_price', 'order_product_unit', 'order_product_qty',
-                  'product_id', 'product_name', 'product_image', 'product_price_total']
+                  'product_id', 'product_name', 'product_image', 'vat', 'product_price_total']
 
     def get_product_id(self, obj):
         return obj.product.id
@@ -112,6 +113,9 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
 
     def get_product_image(self, obj):
         return obj.product.product_image.url
+
+    def get_vat(self, obj):
+        return obj.order_product_price_with_vat - obj.order_product_price
 
     def get_product_price_total(self, obj):
         return obj.order_product_price * obj.order_product_qty
@@ -128,8 +132,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "order_number", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price", "order_status",
-            "total_vat", "contact_number", "delivery_address", "note", "customer", "invoice", "products"
+            "id", "order_number", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price",
+            "order_status", "total_vat", "contact_number", "delivery_address", "note", "customer", "invoice", "products"
         )
 
     def get_delivery_time_slot(self, obj):

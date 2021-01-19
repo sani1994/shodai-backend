@@ -372,6 +372,7 @@ class OrderDetail(APIView):
                                                               city="Dhaka",
                                                               district="Dhaka",
                                                               country="Bangladesh",
+                                                              zip_code="",
                                                               user=order.user)
                 else:
                     delivery_address = address[0]
@@ -578,6 +579,7 @@ class CreateOrder(APIView):
                                                       city="Dhaka",
                                                       district="Dhaka",
                                                       country="Bangladesh",
+                                                      zip_code="",
                                                       user=user_instance)
         else:
             delivery_address = address[0]
@@ -824,7 +826,7 @@ class OrderNotification(APIView):
             from_email, to = 'noreply@shod.ai', order_instance.user.email
             html_customer = get_template('email.html')
             html_content = html_customer.render(content)
-            msg = EmailMultiAlternatives(subject, from_email, [to])
+            msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
@@ -861,7 +863,7 @@ class OrderNotification(APIView):
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, from_email, admin_email)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
             msg_to_admin.send()
             return Response({
