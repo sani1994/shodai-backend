@@ -369,10 +369,10 @@ class OrderDetail(APIView):
                 address = Address.objects.filter(road=data["delivery_address"])
                 if not address:
                     delivery_address = Address.objects.create(road=data["delivery_address"],
-                                                              scity="Dhaka",
-                                                              sdistrict="Dhaka",
-                                                              scountry="Bangladesh",
-                                                              suser=order.user)
+                                                              city="Dhaka",
+                                                              district="Dhaka",
+                                                              country="Bangladesh",
+                                                              user=order.user)
                 else:
                     delivery_address = address[0]
             else:
