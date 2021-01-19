@@ -72,7 +72,10 @@ class Order(BaseModel):
 
     @property
     def paid_status(self):
-        status = InvoiceInfo.objects.get(order_number_id=self.id).paid_status
+        invoice = InvoiceInfo.objects.filter(order_number_id=self.id).order_by('-created_on')
+        status = False
+        if invoice:
+            status = invoice[0].paid_status
         if status:
             return 'Paid'
         else:
@@ -86,7 +89,7 @@ class Order(BaseModel):
                 self.order_number = str(randint(100000, 999999))
 
         if self.order_status == "COM":
-            invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)
+            invoice = InvoiceInfo.objects.filter(invoice_number=self.invoice_number).order_by('-created_on')[0]
             if invoice.payment_method == "CASH_ON_DELIVERY":
                 if not invoice.paid_status:
                     invoice.paid_status = True
