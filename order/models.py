@@ -72,7 +72,10 @@ class Order(BaseModel):
 
     @property
     def paid_status(self):
-        status = InvoiceInfo.objects.filter(order_number=self.id).order_by('-created_on')[0].paid_status
+        invoice = InvoiceInfo.objects.filter(order_number=self).order_by('-created_on')
+        status = False
+        if invoice:
+            status = invoice[0].paid_status
         if status:
             return 'Paid'
         else:
