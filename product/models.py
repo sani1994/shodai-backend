@@ -2,8 +2,6 @@ from django.db import models
 from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 from bases.models import BaseModel
-from django.db.models.signals import pre_save
-
 from utility.models import ProductUnit
 
 
@@ -86,7 +84,7 @@ class Product(BaseModel):
         super(Product, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.product_name + " " + self.product_unit.product_unit + " (price: " + str(self.product_price) + " )"
+        return self.product_name + " " + self.product_unit.product_unit + " (price: " + str(self.product_price) + ")"
 
     @property
     def product_price_with_vat(self):

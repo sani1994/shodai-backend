@@ -51,7 +51,7 @@ class OfferProductAdmin(MaterialModelAdmin):
     list_display = ('offer', 'product', 'offer_price', 'offer_product_balance', 'is_approved')
     list_filter = ('offer', 'product', 'is_approved')
     readonly_fields = ["created_by", "modified_by", ]
-    search_fields = ['product', ]
+    search_fields = ['product__product_name']
 
     def save_model(self, request, obj, form, change):
         if obj.id:

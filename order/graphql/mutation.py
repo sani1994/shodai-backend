@@ -115,18 +115,19 @@ class CreateOrder(graphene.Mutation):
                                        order_type=input.order_type,
                                        contact_number=input.contact_number if input.contact_number else user.mobile_number
                                        )
-                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 product_list = input.products
                 sub_total_without_offer = total_vat = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
-                    sub_total_without_offer += float(product.product_price) * p.order_product_qty
                     op = OrderProduct.objects.create(product=product,
-                                                     order=Order.objects.get(pk=order_instance.pk),
-                                                     order_product_qty=p.order_product_qty, )
+                                                     order=order_instance,
+                                                     order_product_qty=p.order_product_qty)
+
+                    sub_total_without_offer += float(product.product_price) * p.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
+                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 order_instance.address = Address.objects.get(id=input.address)
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -379,14 +380,14 @@ class TransactionMutation(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, **kwargs):
-        user = info.context.user
+        # user = info.context.user
         transaction_info = kwargs["transaction_info"]
         payment_status = kwargs["payment_status"]
         invoice_number = transaction_info.invoice_number
 
         try:
             payment_info = PaymentInfo.objects.filter(invoice_number=invoice_number, payment_status='INITIATED')[0]
-        except PaymentInfo.DoesNotExist:
+        except Exception:
             payment_info = None
 
         if payment_info and payment_status:
