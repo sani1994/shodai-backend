@@ -243,32 +243,31 @@ class OrderProductList(APIView):
             order_instance.save()
 
             # send email to user
-            text_content = 'Your Order (#' + str(order_instance.order_number) + ') has been confirmed'
-            htmly = get_template('email.html')
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             invoice.discount_amount = float(round(total_price_without_offer - sub_total))
             invoice.save()
 
-            d = {'user_name': billing_person_name,
-                 'order_id': order_instance.order_number,
-                 'shipping_address': address,
-                 'mobile_no': order_instance.contact_number,
-                 'order_date': order_instance.created_on.date(),
-                 'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
-                 'sub_total': sub_total,
-                 'vat': total_vat,
-                 'delivery_charge': delivery_charge,
-                 'total': order_instance.order_total_price,
-                 'order_details': matrix,
-                 'is_offer': is_offer,
-                 'saved_amount': float(round(total_price_without_offer - sub_total)),
-                 'colspan_value': "4" if is_offer else "3"
-                 }
+            content = {'user_name': billing_person_name,
+                       'order_id': order_instance.order_number,
+                       'shipping_address': address,
+                       'mobile_no': order_instance.contact_number,
+                       'order_date': order_instance.created_on.date(),
+                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
+                       'sub_total': sub_total,
+                       'vat': total_vat,
+                       'delivery_charge': delivery_charge,
+                       'total': order_instance.order_total_price,
+                       'order_details': matrix,
+                       'is_offer': is_offer,
+                       'saved_amount': float(round(total_price_without_offer - sub_total)),
+                       'colspan_value': "4" if is_offer else "3"
+                       }
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
-            subject, from_email, to = subject, 'noreply@shod.ai', request.user.email
-            html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            from_email, to = 'noreply@shod.ai', request.user.email
+            html_customer = get_template('email.html')
+            html_content = html_customer.render(content)
+            msg = EmailMultiAlternatives(subject, "shodai", from_email, [to])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
@@ -298,11 +297,11 @@ class OrderProductList(APIView):
                        'saved_amount': float(round(total_price_without_offer - sub_total)),
                        'colspan_value': "4" if is_offer else "3"
                        }
-            admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'
+            admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, admin_email)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, "shodai", from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
             msg_to_admin.send()
             return Response(responses)
