@@ -1,5 +1,4 @@
 import uuid
-from random import randint
 from django.contrib.gis.db import models
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
@@ -83,9 +82,10 @@ class Order(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.order_number:
-            self.order_number = str(randint(100000, 999999))
-            while Order.objects.filter(order_number=self.order_number).exists():
-                self.order_number = str(randint(100000, 999999))
+            last_order = Order.objects.last()
+            while "-" in last_order.order_number:
+                last_order = Order.objects.get(id=last_order.id - 1)
+            self.order_number = str(int(last_order.order_number) + 1)
 
         if self.order_status == "COM":
             invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)

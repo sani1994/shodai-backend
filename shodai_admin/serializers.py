@@ -24,10 +24,10 @@ class AdminUserProfileSerializer(serializers.ModelSerializer):
         fields = ['username', 'name', 'email', 'mobile_number']
 
     def get_name(self, obj):
-        if obj.user.first_name and obj.user.last_name:
-            staff_name = obj.user.first_name + " " + obj.user.last_name
-        elif obj.user.first_name:
-            staff_name = obj.user.first_name
+        if obj.first_name and obj.last_name:
+            staff_name = obj.first_name + " " + obj.last_name
+        elif obj.first_name:
+            staff_name = obj.first_name
         else:
             staff_name = ""
         return staff_name
@@ -128,8 +128,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "order_number", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price", "order_status",
-            "total_vat", "contact_number", "delivery_address", "customer", "invoice", "products"
+            "id", "order_number", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price",
+            "order_status", "total_vat", "contact_number", "delivery_address", "note", "customer", "invoice", "products"
         )
 
     def get_delivery_time_slot(self, obj):
