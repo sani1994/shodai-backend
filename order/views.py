@@ -248,7 +248,7 @@ class OrderProductList(APIView):
             invoice.save()
 
             content = {'user_name': billing_person_name,
-                       'order_id': order_instance.order_number,
+                       'order_number': order_instance.order_number,
                        'shipping_address': address,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
@@ -280,7 +280,7 @@ class OrderProductList(APIView):
                 payment_method = "Online Payment"
             content = {'user_name': billing_person_name,
                        'user_mobile': invoice.billing_person_mobile_number,
-                       'order_id': order_instance.order_number,
+                       'order_number': order_instance.order_number,
                        'platform': "App",
                        'shipping_address': address,
                        'mobile_no': order_instance.contact_number,

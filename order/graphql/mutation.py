@@ -207,7 +207,7 @@ class SendEmail(graphene.Mutation):
             client_name = user.first_name + " " + user.last_name
 
             d = {'user_name': client_name,
-                 'order_id': order_instance.order_number,
+                 'order_number': order_instance.order_number,
                  'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                  'mobile_no': order_instance.contact_number,
                  'order_date': order_instance.created_on.date(),
@@ -240,7 +240,7 @@ class SendEmail(graphene.Mutation):
                 payment_method = "Online Payment"
             content = {'user_name': client_name,
                        'user_mobile': user.mobile_number,
-                       'order_id': order_instance.order_number,
+                       'order_number': order_instance.order_number,
                        'platform': "Website",
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
