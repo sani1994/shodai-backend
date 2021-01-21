@@ -5,6 +5,7 @@ from random import randint
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
+from django.conf import settings
 from django.core.validators import validate_email
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import get_template
@@ -86,7 +87,7 @@ class AdminLogin(APIView):
                 }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
 
 
-class AdminLogout(APIView):  # logout
+class AdminLogout(APIView):
     permission_classes = [AdminAuth]
 
     def post(self, request):
@@ -567,11 +568,13 @@ class CreateOrder(APIView):
             user_instance.set_password(temp_password)
             user_instance.save()
 
-            # sms_body = f"Dear " + customer["name"] + \
-            #            ",\r\nWe have created a account with temporary password [" + temp_password + \
-            #            "] based on your order request." \
-            #            "\r\n[N.B:Please change your password after login]"
-            # send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+            if not settings.DEBUG:
+                sms_body = "Dear Customer,\n" + \
+                           "We have created an account with temporary password " + \
+                           "[{}] based on your order request. ".format(temp_password) + \
+                           "Please change your password after login.\n\n" + \
+                           "www.shod.ai"
+                send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -834,7 +837,7 @@ class OrderNotification(APIView):
             content = {'user_name': client_name,
                        'user_mobile': order_instance.user.mobile_number,
                        'order_number': order_instance.order_number,
-                       'platform': "Website",
+                       'platform': "Admin",
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
