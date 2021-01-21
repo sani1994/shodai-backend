@@ -198,35 +198,31 @@ class SendEmail(graphene.Mutation):
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
-            text_content = 'Your Order (#' + str(order_instance.order_number) + ') has been confirmed'
-            htmly = get_template('email.html')
-
             time_slot = TimeSlot.objects.get(id=input.time_slot_id)
             delivery_charge = invoice.delivery_charge
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             client_name = user.first_name + " " + user.last_name
 
-            d = {'user_name': client_name,
-                 'order_number': order_instance.order_number,
-                 'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
-                 'mobile_no': order_instance.contact_number,
-                 'order_date': order_instance.created_on.date(),
-                 'delivery_date_time': str(
-                     order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                 'sub_total': sub_total,
-                 'vat': order_instance.total_vat,
-                 'delivery_charge': delivery_charge,
-                 'total': order_instance.order_total_price,
-                 'order_details': matrix,
-                 'is_offer': is_offer,
-                 'saved_amount': float(round(total_price_without_offer - sub_total)),
-                 'colspan_value': "4" if is_offer else "3"
-                 }
+            content = {'user_name': client_name,
+                       'order_number': order_instance.order_number,
+                       'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                       'mobile_no': order_instance.contact_number,
+                       'order_date': order_instance.created_on.date(),
+                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'sub_total': sub_total,
+                       'vat': order_instance.total_vat,
+                       'delivery_charge': delivery_charge,
+                       'total': order_instance.order_total_price,
+                       'order_details': matrix,
+                       'is_offer': is_offer,
+                       'saved_amount': float(round(total_price_without_offer - sub_total)),
+                       'colspan_value': "4" if is_offer else "3"}
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
-            subject, from_email, to = subject, 'noreply@shod.ai', user.email
-            html_content = htmly.render(d)
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            from_email, to = 'noreply@shod.ai', user.email
+            html_customer = get_template('email.html')
+            html_content = html_customer.render(content)
+            msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
@@ -245,8 +241,7 @@ class SendEmail(graphene.Mutation):
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(
-                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'invoice_number': invoice.invoice_number,
                        'payment_method': payment_method,
                        'sub_total': sub_total,
@@ -258,11 +253,11 @@ class SendEmail(graphene.Mutation):
                        'saved_amount': float(round(total_price_without_offer - sub_total)),
                        'colspan_value': "4" if is_offer else "3"
                        }
-            admin_subject = 'Order (#' + str(order_instance.pk) + ') Has Been Placed'
+            admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, text_content, from_email, admin_email)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
             msg_to_admin.send()
 

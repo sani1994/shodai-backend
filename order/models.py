@@ -58,7 +58,7 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
-    note = models.CharField(max_length=250, blank=True, default="")
+    note = models.CharField(max_length=250, null=True, blank=True, default="")
     history = HistoricalRecords()
 
     def __str__(self):
@@ -72,10 +72,7 @@ class Order(BaseModel):
     @property
     def paid_status(self):
         invoice = InvoiceInfo.objects.filter(order_number=self).order_by('-created_on')
-        status = False
-        if invoice:
-            status = invoice[0].paid_status
-        if status:
+        if invoice and invoice[0].paid_status:
             return 'Paid'
         else:
             return 'Not Paid'
