@@ -46,7 +46,6 @@ class ProductType(DjangoObjectType):
         offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
                                                     offer__offer_ends_in__gte=today, product=self)
         if offer_product:
-            print(offer_product[0].offer_price)
             return offer_product[0].offer_price
         else:
             return None
@@ -105,7 +104,7 @@ class Query(graphene.ObjectType):
                                       product_meta__product_category__is_approved=True,
                                       is_approved=True).order_by('-created_on')
 
-    def resolve_all_products_pagination(root, info, **kwargs):
+    def resolve_all_products_pagination(root, info):
         return Product.objects.filter(product_meta__product_category__is_approved=True,
                                       product_meta__is_approved=True,
                                       is_approved=True).order_by('-created_on')
@@ -115,7 +114,11 @@ class Query(graphene.ObjectType):
 
     def resolve_product_by_slug(self, info, **kwargs):
         slug = kwargs.get('slug')
-        return Product.objects.filter(slug=slug, is_approved=True)
+        product = Product.objects.filter(slug=slug, is_approved=True)
+        if product:
+            return product[0]
+        else:
+            return None
 
     def resolve_product_categories(self, info):
         return ProductCategory.objects.filter(is_approved=True)
