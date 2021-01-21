@@ -238,7 +238,7 @@ class TokenViewAPITest(APIView):  # Sample API test with Authentication
 
 
 class OrderList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         search = request.query_params.get('search', None)
@@ -262,7 +262,7 @@ class OrderList(APIView):
 
 
 class OrderDetail(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get, update order
     """
@@ -399,7 +399,7 @@ class OrderDetail(APIView):
                                                      order_status="OA",
                                                      address=delivery_address,
                                                      contact_number=data['contact_number'],
-                                                     # created_by=request.user,
+                                                     created_by=request.user,
                                                      )
                     order.order_status = 'CN'
                     order.save()
@@ -434,7 +434,7 @@ class OrderDetail(APIView):
                 order.order_status = all_order_status[data['order_status']]
                 order.address = delivery_address
                 order.note = data['note']
-                # order.modified_by = request.user
+                order.modified_by = request.user
 
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
@@ -451,7 +451,7 @@ class OrderDetail(APIView):
                                        payment_method=payment_method,
                                        order_number=order,
                                        user=order.user,
-                                       # created_by=request.user
+                                       created_by=request.user
                                        )
             order.save()
             return Response({
@@ -461,7 +461,7 @@ class OrderDetail(APIView):
 
 
 class CreateOrder(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Create order
     """
@@ -592,7 +592,7 @@ class CreateOrder(APIView):
                                               order_status="OA",
                                               contact_number=data["contact_number"],
                                               address=delivery_address,
-                                              # created_by=request.user,
+                                              created_by=request.user,
                                               )
 
         total_vat = total = total_price = total_op_price = 0
@@ -628,7 +628,7 @@ class CreateOrder(APIView):
                                    payment_method="CASH_ON_DELIVERY",
                                    order_number=order_instance,
                                    user=user_instance,
-                                   # created_by=request.user,
+                                   created_by=request.user,
                                    )
 
         return Response({'status': 'success',
@@ -637,7 +637,7 @@ class CreateOrder(APIView):
 
 
 class ProductSearch(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get Product by name
     """
@@ -653,7 +653,7 @@ class ProductSearch(APIView):
 
 
 class TimeSlotList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get List of Timeslots
     """
@@ -668,7 +668,7 @@ class TimeSlotList(APIView):
 
 
 class OrderStatusList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get All Order Status
     """
@@ -686,7 +686,7 @@ class OrderStatusList(APIView):
 
 
 class CustomerSearch(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get List of Customers by mobile number
     """
@@ -703,7 +703,7 @@ class CustomerSearch(APIView):
 
 
 class InvoiceDownloadPDF(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get PDF of Invoice by order ID
     """
@@ -762,7 +762,7 @@ class InvoiceDownloadPDF(APIView):
 
 
 class OrderNotification(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         data = request.data
