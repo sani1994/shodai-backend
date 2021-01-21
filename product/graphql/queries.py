@@ -115,7 +115,7 @@ class Query(graphene.ObjectType):
 
     def resolve_product_by_slug(self, info, **kwargs):
         slug = kwargs.get('slug')
-        return Product.objects.get(slug=slug, is_approved=True)
+        return Product.objects.filter(slug=slug, is_approved=True)
 
     def resolve_product_categories(self, info):
         return ProductCategory.objects.filter(is_approved=True)

@@ -1,11 +1,9 @@
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 from rest_framework.relations import HyperlinkedIdentityField
 
 from offer.models import OfferProduct
 from product.models import ShopCategory, ProductCategory, ProductMeta, Product
-from utility.models import ProductUnit
 
 
 class ShopCategorySerializer(serializers.ModelSerializer):
@@ -58,42 +56,35 @@ class ProductMetaSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    today = timezone.now()
+    offer_product = None
     offer_name = serializers.SerializerMethodField()
     offer_price = serializers.SerializerMethodField()
     offer_price_with_vat = serializers.SerializerMethodField()
 
     def get_offer_name(self, obj):
+        today = timezone.now()
         offer_product = OfferProduct.objects.filter(product=obj,
                                                     is_approved=True,
                                                     offer__is_approved=True,
-                                                    offer__offer_starts_in__lte=self.today,
-                                                    offer__offer_ends_in__gte=self.today)
+                                                    offer__offer_starts_in__lte=today,
+                                                    offer__offer_ends_in__gte=today)
         if offer_product:
+            self.offer_product = offer_product[0]
             return offer_product[0].offer.offer_name
         else:
+            self.offer_product = None
             return None
 
     def get_offer_price(self, obj):
-        offer_product = OfferProduct.objects.filter(product=obj,
-                                                    is_approved=True,
-                                                    offer__is_approved=True,
-                                                    offer__offer_starts_in__lte=self.today,
-                                                    offer__offer_ends_in__gte=self.today)
-        if offer_product:
-            return offer_product[0].offer_price
+        if self.offer_product:
+            return self.offer_product.offer_price
         else:
             return None
 
     def get_offer_price_with_vat(self, obj):
-        offer_product = OfferProduct.objects.filter(product=obj,
-                                                    is_approved=True,
-                                                    offer__is_approved=True,
-                                                    offer__offer_starts_in__lte=self.today,
-                                                    offer__offer_ends_in__gte=self.today)
-        if offer_product:
-            return round(float(offer_product[0].offer_price) +
-                         (float(offer_product[0].offer_price) * obj.product_meta.vat_amount) / 100)
+        if self.offer_product:
+            return round(float(self.offer_product.offer_price) +
+                         (float(self.offer_product.offer_price) * obj.product_meta.vat_amount) / 100)
         else:
             return None
 
@@ -123,8 +114,8 @@ class RetailerProductSerializer(serializers.ModelSerializer):
 class ProductForCartSerializer(serializers.ModelSerializer):
     product_quantity = serializers.FloatField(default=1.0)
     product_unit = serializers.StringRelatedField()
-    offer_name = serializers.SerializerMethodField()
     offer_product = None
+    offer_name = serializers.SerializerMethodField()
     offer_price = serializers.SerializerMethodField()
     offer_price_with_vat = serializers.SerializerMethodField()
 
