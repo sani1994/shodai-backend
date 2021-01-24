@@ -105,16 +105,16 @@ class CreateOrder(graphene.Mutation):
         user = info.context.user
         if checkAuthentication(user, info):
             if user.user_type == 'CM':
-                order_instance = Order(user=user,
-                                       created_by=user,
-                                       delivery_date_time=input.delivery_date_time,
-                                       delivery_place=input.delivery_place,
-                                       lat=input.lat,
-                                       long=input.long,
-                                       order_status="OD",
-                                       order_type=input.order_type,
-                                       contact_number=input.contact_number if input.contact_number else user.mobile_number
-                                       )
+                order_instance = Order.objects.create(user=user,
+                                                      created_by=user,
+                                                      delivery_date_time=input.delivery_date_time,
+                                                      delivery_place=input.delivery_place,
+                                                      lat=input.lat,
+                                                      long=input.long,
+                                                      order_status="OD",
+                                                      order_type=input.order_type,
+                                                      contact_number=input.contact_number if input.contact_number else user.mobile_number
+                                                      )
                 product_list = input.products
                 sub_total_without_offer = total_vat = 0
                 for p in product_list:
@@ -133,7 +133,7 @@ class CreateOrder(graphene.Mutation):
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.total_vat = total_vat
-                order_instance.order_total_price = input.order_total_price + total_vat + delivery_charge
+                order_instance.order_total_price = float(input.order_total_price) + total_vat + delivery_charge
                 order_instance.save()
 
                 # Create InvoiceInfo Instance
