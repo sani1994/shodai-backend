@@ -5,6 +5,7 @@ from random import randint
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
+from django.conf import settings
 from django.core.validators import validate_email
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import get_template
@@ -86,7 +87,7 @@ class AdminLogin(APIView):
                 }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
 
 
-class AdminLogout(APIView):  # logout
+class AdminLogout(APIView):
     permission_classes = [AdminAuth]
 
     def post(self, request):
@@ -238,7 +239,7 @@ class TokenViewAPITest(APIView):  # Sample API test with Authentication
 
 
 class OrderList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         search = request.query_params.get('search', None)
@@ -262,7 +263,7 @@ class OrderList(APIView):
 
 
 class OrderDetail(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get, update order
     """
@@ -302,7 +303,9 @@ class OrderDetail(APIView):
 
         if is_valid and isinstance(data['products'], list) and data['products']:
             required_fields = ['product_id', 'product_quantity']
+            product_list = []
             for item in data['products']:
+                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
@@ -314,6 +317,9 @@ class OrderDetail(APIView):
                         is_valid = False
                 if not is_valid:
                     break
+            if is_valid:
+                if len(product_list) != len(set(product_list)):
+                    is_valid = False
         else:
             is_valid = False
 
@@ -399,7 +405,7 @@ class OrderDetail(APIView):
                                                      order_status="OA",
                                                      address=delivery_address,
                                                      contact_number=data['contact_number'],
-                                                     # created_by=request.user,
+                                                     created_by=request.user,
                                                      )
                     order.order_status = 'CN'
                     order.save()
@@ -434,7 +440,7 @@ class OrderDetail(APIView):
                 order.order_status = all_order_status[data['order_status']]
                 order.address = delivery_address
                 order.note = data['note']
-                # order.modified_by = request.user
+                order.modified_by = request.user
 
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
@@ -451,7 +457,7 @@ class OrderDetail(APIView):
                                        payment_method=payment_method,
                                        order_number=order,
                                        user=order.user,
-                                       # created_by=request.user
+                                       created_by=request.user
                                        )
             order.save()
             return Response({
@@ -461,7 +467,7 @@ class OrderDetail(APIView):
 
 
 class CreateOrder(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Create order
     """
@@ -508,7 +514,9 @@ class CreateOrder(APIView):
 
         if is_valid and isinstance(products, list) and products:
             required_fields = ['product_id', 'product_quantity']
+            product_list = []
             for item in products:
+                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
@@ -520,6 +528,9 @@ class CreateOrder(APIView):
                         is_valid = False
                 if not is_valid:
                     break
+            if is_valid:
+                if len(product_list) != len(set(product_list)):
+                    is_valid = False
         else:
             is_valid = False
 
@@ -567,11 +578,13 @@ class CreateOrder(APIView):
             user_instance.set_password(temp_password)
             user_instance.save()
 
-            # sms_body = f"Dear " + customer["name"] + \
-            #            ",\r\nWe have created a account with temporary password [" + temp_password + \
-            #            "] based on your order request." \
-            #            "\r\n[N.B:Please change your password after login]"
-            # send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+            if not settings.DEBUG:
+                sms_body = "Dear Customer,\n" + \
+                           "We have created an account with temporary password " + \
+                           "[{}] based on your order request. ".format(temp_password) + \
+                           "Please change your password after login.\n\n" + \
+                           "www.shod.ai"
+                send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -592,7 +605,7 @@ class CreateOrder(APIView):
                                               order_status="OA",
                                               contact_number=data["contact_number"],
                                               address=delivery_address,
-                                              # created_by=request.user,
+                                              created_by=request.user,
                                               )
 
         total_vat = total = total_price = total_op_price = 0
@@ -628,7 +641,7 @@ class CreateOrder(APIView):
                                    payment_method="CASH_ON_DELIVERY",
                                    order_number=order_instance,
                                    user=user_instance,
-                                   # created_by=request.user,
+                                   created_by=request.user,
                                    )
 
         return Response({'status': 'success',
@@ -637,7 +650,7 @@ class CreateOrder(APIView):
 
 
 class ProductSearch(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get Product by name
     """
@@ -653,7 +666,7 @@ class ProductSearch(APIView):
 
 
 class TimeSlotList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get List of Timeslots
     """
@@ -668,7 +681,7 @@ class TimeSlotList(APIView):
 
 
 class OrderStatusList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get All Order Status
     """
@@ -686,7 +699,7 @@ class OrderStatusList(APIView):
 
 
 class CustomerSearch(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get List of Customers by mobile number
     """
@@ -703,7 +716,7 @@ class CustomerSearch(APIView):
 
 
 class InvoiceDownloadPDF(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get PDF of Invoice by order ID
     """
@@ -762,7 +775,7 @@ class InvoiceDownloadPDF(APIView):
 
 
 class OrderNotification(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         data = request.data
@@ -834,7 +847,7 @@ class OrderNotification(APIView):
             content = {'user_name': client_name,
                        'user_mobile': order_instance.user.mobile_number,
                        'order_number': order_instance.order_number,
-                       'platform': "Website",
+                       'platform': "Admin",
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
