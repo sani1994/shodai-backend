@@ -303,7 +303,9 @@ class OrderDetail(APIView):
 
         if is_valid and isinstance(data['products'], list) and data['products']:
             required_fields = ['product_id', 'product_quantity']
+            product_list = []
             for item in data['products']:
+                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
@@ -315,6 +317,9 @@ class OrderDetail(APIView):
                         is_valid = False
                 if not is_valid:
                     break
+            if is_valid:
+                if len(product_list) != len(set(product_list)):
+                    is_valid = False
         else:
             is_valid = False
 
@@ -509,7 +514,9 @@ class CreateOrder(APIView):
 
         if is_valid and isinstance(products, list) and products:
             required_fields = ['product_id', 'product_quantity']
+            product_list = []
             for item in products:
+                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
@@ -521,6 +528,9 @@ class CreateOrder(APIView):
                         is_valid = False
                 if not is_valid:
                     break
+            if is_valid:
+                if len(product_list) != len(set(product_list)):
+                    is_valid = False
         else:
             is_valid = False
 

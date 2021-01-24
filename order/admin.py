@@ -145,7 +145,7 @@ class OrderAdmin(MaterialModelAdmin):
 
     readonly_fields = ['user', 'invoice_number', 'order_number', 'order_total_price', 'created_by', 'modified_by', 'created_on',
                        'modified_on', 'delivery_date_time', 'delivery_place', 'address', 'note', 'total_vat', order_products]
-    list_display = ('id', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products,)
+    list_display = ('id', 'order_number', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products,)
     list_editable = ('order_status',)
     search_fields = ['id', 'invoice_number']
     inlines = [OrderProductInline, InvoiceInfoInline]
