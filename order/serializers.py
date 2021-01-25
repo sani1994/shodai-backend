@@ -33,7 +33,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "id", "created_on", "modified_on", "payment_id", "invoice_number",
             "bill_id", "currency", "delivery_date_time", "delivery_place", "order_total_price",
             "lat", "long", "order_geopoint", "order_status", "home_delivery", "order_type",
-            "contact_number", "created_by", "modified_by", "user", "address", "paid_status",
+            "contact_number", "created_by", "modified_by", "user", "address", "note", "paid_status",
         )
 
         read_only = ('id', "paid_status")

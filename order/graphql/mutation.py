@@ -75,6 +75,7 @@ class OrderInput(graphene.InputObjectType):
     contact_number = graphene.String()
     products = graphene.List(OrderProductInput)
     payment_method = graphene.NonNull(PaymentMethodEnum)
+    note = graphene.String()
 
 
 class EmailInput(graphene.InputObjectType):
@@ -128,6 +129,8 @@ class CreateOrder(graphene.Mutation):
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+                if input.note:
+                    order_instance.note = input.note
                 order_instance.address = Address.objects.get(id=input.address)
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()

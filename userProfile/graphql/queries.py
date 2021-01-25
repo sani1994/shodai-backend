@@ -108,7 +108,7 @@ class Query(graphene.ObjectType):
     def resolve_address_list_by_user(self, info):
         user = info.context.user
         if checkAuthentication(user, info):
-            return Address.objects.filter(user=user)
+            return Address.objects.filter(user=user).order_by('-id')[:5]
 
     def resolve_address_by_id(self, info, **kwargs):
         user = info.context.user
