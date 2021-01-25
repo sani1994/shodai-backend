@@ -744,6 +744,14 @@ class InvoiceDownloadPDF(APIView):
         if not invoice:
             return HttpResponse("Not found")
         invoice = invoice[0]
+
+        if order.user.first_name and order.user.last_name:
+            customer_name = order.user.first_name + " " + order.user.last_name
+        elif order.user.first_name:
+            customer_name = order.user.first_name
+        else:
+            customer_name = ""
+
         delivery_charge = invoice.delivery_charge
         sub_total = order.order_total_price - order.total_vat - delivery_charge
         paid_status = invoice.paid_status
@@ -753,7 +761,7 @@ class InvoiceDownloadPDF(APIView):
         else:
             payment_method = "Online Payment"
         data = {
-            'customer_name': order.user.first_name + " " + order.user.last_name,
+            'customer_name': customer_name,
             'address': order.address,
             'user_email': order.user.email,
             'user_mobile': order.user.mobile_number,
