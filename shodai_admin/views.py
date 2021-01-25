@@ -305,21 +305,21 @@ class OrderDetail(APIView):
             required_fields = ['product_id', 'product_quantity']
             product_list = []
             for item in data['products']:
-                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
                                       item['product_quantity']]
                     is_valid = type_validation(integer_fields, int)
                 if is_valid:
-                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist or not item['product_quantity']:
+                    if item['product_id'] not in product_list:
+                        product_list.append(item['product_id'])
+                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        if not product_exist or not item['product_quantity']:
+                            is_valid = False
+                    else:
                         is_valid = False
                 if not is_valid:
                     break
-            if is_valid:
-                if len(product_list) != len(set(product_list)):
-                    is_valid = False
         else:
             is_valid = False
 
@@ -516,21 +516,21 @@ class CreateOrder(APIView):
             required_fields = ['product_id', 'product_quantity']
             product_list = []
             for item in products:
-                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
                                       item['product_quantity']]
                     is_valid = type_validation(integer_fields, int)
                 if is_valid:
-                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist or not item['product_quantity']:
+                    if item['product_id'] not in product_list:
+                        product_list.append(item['product_id'])
+                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        if not product_exist or not item['product_quantity']:
+                            is_valid = False
+                    else:
                         is_valid = False
                 if not is_valid:
                     break
-            if is_valid:
-                if len(product_list) != len(set(product_list)):
-                    is_valid = False
         else:
             is_valid = False
 
