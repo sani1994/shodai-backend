@@ -305,21 +305,21 @@ class OrderDetail(APIView):
             required_fields = ['product_id', 'product_quantity']
             product_list = []
             for item in data['products']:
-                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
                                       item['product_quantity']]
                     is_valid = type_validation(integer_fields, int)
                 if is_valid:
-                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist or not item['product_quantity']:
+                    if item['product_id'] not in product_list:
+                        product_list.append(item['product_id'])
+                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        if not product_exist or not item['product_quantity']:
+                            is_valid = False
+                    else:
                         is_valid = False
                 if not is_valid:
                     break
-            if is_valid:
-                if len(product_list) != len(set(product_list)):
-                    is_valid = False
         else:
             is_valid = False
 
@@ -516,21 +516,21 @@ class CreateOrder(APIView):
             required_fields = ['product_id', 'product_quantity']
             product_list = []
             for item in products:
-                product_list.append(item['product_id'])
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
                     integer_fields = [item['product_id'],
                                       item['product_quantity']]
                     is_valid = type_validation(integer_fields, int)
                 if is_valid:
-                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist or not item['product_quantity']:
+                    if item['product_id'] not in product_list:
+                        product_list.append(item['product_id'])
+                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        if not product_exist or not item['product_quantity']:
+                            is_valid = False
+                    else:
                         is_valid = False
                 if not is_valid:
                     break
-            if is_valid:
-                if len(product_list) != len(set(product_list)):
-                    is_valid = False
         else:
             is_valid = False
 
@@ -744,6 +744,14 @@ class InvoiceDownloadPDF(APIView):
         if not invoice:
             return HttpResponse("Not found")
         invoice = invoice[0]
+
+        if order.user.first_name and order.user.last_name:
+            customer_name = order.user.first_name + " " + order.user.last_name
+        elif order.user.first_name:
+            customer_name = order.user.first_name
+        else:
+            customer_name = ""
+
         delivery_charge = invoice.delivery_charge
         sub_total = order.order_total_price - order.total_vat - delivery_charge
         paid_status = invoice.paid_status
@@ -753,7 +761,7 @@ class InvoiceDownloadPDF(APIView):
         else:
             payment_method = "Online Payment"
         data = {
-            'customer_name': order.user.first_name + " " + order.user.last_name,
+            'customer_name': customer_name,
             'address': order.address,
             'user_email': order.user.email,
             'user_mobile': order.user.mobile_number,
