@@ -18,11 +18,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination, field_validation, type_validation
-from offer.models import OfferProduct
+from offer.models import OfferProduct, Offer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
-    ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer
+    ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, OfferSerializer
 from sodai.utils.helper import get_user_object
 from sodai.utils.permission import AdminAuth
 from userProfile.models import UserProfile, BlackListedToken, Address
@@ -897,3 +897,17 @@ class OrderNotification(APIView):
                 "status": "failed",
                 "message": "Invalid request!"
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeliveryChargeOfferList(APIView):
+    # permission_classes = [IsAdminUser]
+    """
+    Get All Offers with offer_types DD
+    """
+
+    def get(self, request):
+        today = timezone.now()
+        offers = Offer.objects.filter(offer_types="DD", is_approved=True, offer_starts_in__lte=today,
+                                      offer_ends_in__gte=today)
+        serializer = OfferSerializer(offers, many=True)
+        return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)

@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from offer.models import OfferProduct
+from offer.models import OfferProduct, Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot
 from product.models import Product
 from userProfile.models import UserProfile
@@ -173,3 +173,19 @@ class TimeSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimeSlot
         fields = ('id', 'slot', 'time')
+
+
+class OfferSerializer(serializers.ModelSerializer):
+    updated_shipping_charge = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Offer
+        fields = ('id', 'offer_name', 'updated_shipping_charge')
+
+    def get_updated_shipping_charge(self, obj):
+        cart_offer = CartOffer.objects.filter(offer=obj)
+
+        if cart_offer:
+            return cart_offer[0].updated_shipping_charge
+        else:
+            return None

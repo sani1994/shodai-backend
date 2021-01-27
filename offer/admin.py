@@ -13,6 +13,11 @@ class OfferProductInline(admin.StackedInline):
     autocomplete_fields = ('product',)
 
 
+class CartOfferInline(admin.TabularInline):
+    model = CartOffer
+    fields = ['updated_shipping_charge', ]
+
+
 class OfferAdmin(MaterialModelAdmin):
     list_filter = ('offer_name', 'offer_starts_in', 'offer_ends_in', 'is_approved')
     readonly_fields = ["offer_url", "created_on", "created_by", "modified_on", "modified_by"]
@@ -33,7 +38,7 @@ class OfferAdmin(MaterialModelAdmin):
     offer_products.allow_tags = False
 
     list_display = ('offer_name', 'offer_starts_in', 'offer_ends_in', 'is_approved', _products, offer_products)
-    inlines = (OfferProductInline,)
+    inlines = (CartOfferInline, OfferProductInline)
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -79,8 +84,14 @@ class CouponCodeAdmin(MaterialModelAdmin):
 
 
 class CartOfferAdmin(MaterialModelAdmin):
-    list_display = ('offer', 'sub_total_limit', 'updated_shipping_charge')
-    readonly_fields = ["created_by", "modified_by", ]
+    list_display = ('offer', 'updated_shipping_charge')
+    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on"]
+    fieldsets = (
+        ('Offer Detail View', {
+            'fields': ('offer', 'updated_shipping_charge',
+                       'created_by', 'modified_by', 'created_on', 'modified_on')
+        }),
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -94,4 +105,4 @@ class CartOfferAdmin(MaterialModelAdmin):
 site.register(Offer, OfferAdmin)
 site.register(OfferProduct, OfferProductAdmin)
 # site.register(CouponCode, CouponCodeAdmin)
-# site.register(CartOffer, CartOfferAdmin)
+site.register(CartOffer, CartOfferAdmin)

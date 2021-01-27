@@ -21,7 +21,7 @@ class Offer(BaseModel):
         # (BUNDLE_OFFER, 'Bundle Offer'),
         # (DISCOUNT_ON_SINGLE_PRODUCT, 'Discount on Single Product'),
         # (DISCOUNT_ON_TOTAL, 'Discount on Total'),
-        # (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
+        (DISCOUNT_ON_DELIVERY_CHARGE, 'Discount on Delivery Charge'),
     ]
 
     offer_name = models.CharField(max_length=100)
@@ -57,7 +57,7 @@ class OfferProduct(BaseModel):
 
 
 class CartOffer(BaseModel):
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
+    offer = models.OneToOneField(Offer, on_delete=models.CASCADE)
     sub_total_limit = models.IntegerField(default=0)
     updated_shipping_charge = models.FloatField(default=0)
     discount_amount = models.FloatField(default=0, blank=False, null=False, verbose_name='Discount Amount(%)')
@@ -65,7 +65,7 @@ class CartOffer(BaseModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return self.offer.offer_name + " on " + self.sub_total_limit
+        return self.offer.offer_name + " on " + str(self.sub_total_limit)
 
 
 class CouponCode(BaseModel):
