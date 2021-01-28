@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination, field_validation, type_validation
-from offer.models import Offer
+from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
 from product.models import Product
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
@@ -275,6 +275,7 @@ class OrderDetail(APIView):
 
     def patch(self, request, id):
         data = request.data
+        offer_id = request.data.get('offer_id', None)
         all_order_status = {
             'Ordered': 'OD',
             'Order Accepted': 'OA',
@@ -387,6 +388,20 @@ class OrderDetail(APIView):
 
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
             billing_person_name = order.user.first_name + " " + order.user.last_name
+            delivery_charge = invoice.delivery_charge
+            delivery_charge_discount = 0
+            discount_description = ""
+            if offer_id and isinstance(offer_id, int):
+                today = timezone.now()
+                offer = Offer.objects.filter(id=data['offer_id'], offer_types="DD", is_approved=True,
+                                             offer_starts_in__lte=today, offer_ends_in__gte=today)
+                if offer:
+                    cart_offer = CartOffer.objects.get(offer=offer[0])
+                    if cart_offer:
+                        delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
+                        delivery_charge = cart_offer.updated_delivery_charge
+                        discount_description = "offer id: " + str(offer_id) + "; " + "discount_amount: " + \
+                                               str(delivery_charge) + ","
             if products_updated:
                 if "-" in order.order_number:
                     x = order.order_number.split("-")
@@ -427,7 +442,7 @@ class OrderDetail(APIView):
                     total += float(op.order_product_price_with_vat) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-                order.order_total_price = total + invoice.delivery_charge
+                order.order_total_price = total + delivery_charge
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -443,6 +458,7 @@ class OrderDetail(APIView):
                 order.modified_by = request.user
 
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
+            discount_amount += delivery_charge_discount
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
             InvoiceInfo.objects.create(invoice_number=order.invoice_number,
                                        billing_person_name=billing_person_name,
@@ -451,8 +467,9 @@ class OrderDetail(APIView):
                                        delivery_contact_number=order.contact_number,
                                        delivery_address=delivery_address.road,
                                        delivery_date_time=order.delivery_date_time,
-                                       delivery_charge=invoice.delivery_charge,
+                                       delivery_charge=delivery_charge,
                                        discount_amount=discount_amount,
+                                       discount_description=discount_description,
                                        net_payable_amount=order.order_total_price,
                                        payment_method=payment_method,
                                        order_number=order,
@@ -474,6 +491,7 @@ class CreateOrder(APIView):
 
     def post(self, request):
         data = request.data
+        offer_id = request.data.get('offer_id', None)
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -559,6 +577,20 @@ class CreateOrder(APIView):
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
         delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+        delivery_charge_discount = 0
+        discount_description = ""
+        if offer_id and isinstance(offer_id, int):
+            today = timezone.now()
+            offer = Offer.objects.filter(id=data['offer_id'], offer_types="DD", is_approved=True,
+                                         offer_starts_in__lte=today, offer_ends_in__gte=today)
+            if offer:
+                cart_offer = CartOffer.objects.get(offer=offer[0])
+                if cart_offer:
+                    delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
+                    delivery_charge = cart_offer.updated_delivery_charge
+                    discount_description = "offer id: " + str(offer_id) + "; " + "discount_amount: " +\
+                                           str(delivery_charge) + ","
+
         try:
             user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
         except UserProfile.DoesNotExist:
@@ -636,7 +668,8 @@ class CreateOrder(APIView):
                                    delivery_address=delivery_address.road,
                                    delivery_date_time=order_instance.delivery_date_time,
                                    delivery_charge=delivery_charge,
-                                   discount_amount=total_price - total_op_price,
+                                   discount_description=discount_description,
+                                   discount_amount=total_price - total_op_price + delivery_charge_discount,
                                    net_payable_amount=order_instance.order_total_price,
                                    payment_method="CASH_ON_DELIVERY",
                                    order_number=order_instance,

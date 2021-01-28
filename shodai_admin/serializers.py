@@ -176,16 +176,16 @@ class TimeSlotSerializer(serializers.ModelSerializer):
 
 
 class DeliveryChargeOfferSerializer(serializers.ModelSerializer):
-    updated_shipping_charge = serializers.SerializerMethodField()
+    updated_delivery_charge = serializers.SerializerMethodField()
 
     class Meta:
         model = Offer
-        fields = ('id', 'offer_name', 'updated_shipping_charge')
+        fields = ('id', 'offer_name', 'updated_delivery_charge')
 
-    def get_updated_shipping_charge(self, obj):
+    def get_updated_delivery_charge(self, obj):
         cart_offer = CartOffer.objects.filter(offer=obj)
 
         if cart_offer:
-            return cart_offer[0].updated_shipping_charge
+            return cart_offer[0].updated_delivery_charge
         else:
             return None
