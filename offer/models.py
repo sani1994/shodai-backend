@@ -59,7 +59,7 @@ class OfferProduct(BaseModel):
 class CartOffer(BaseModel):
     offer = models.OneToOneField(Offer, on_delete=models.CASCADE)
     sub_total_limit = models.IntegerField(default=0)
-    updated_shipping_charge = models.FloatField(default=0)
+    updated_delivery_charge = models.FloatField(default=0)
     discount_amount = models.FloatField(default=0, blank=False, null=False, verbose_name='Discount Amount(%)')
     discount_limit = models.IntegerField(default=0)
     history = HistoricalRecords()

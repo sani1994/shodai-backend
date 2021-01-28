@@ -18,7 +18,7 @@ class OfferProductInline(admin.StackedInline):
 
 class CartOfferInline(admin.TabularInline):
     model = CartOffer
-    fields = ['updated_shipping_charge', ]
+    fields = ['updated_delivery_charge', ]
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -90,11 +90,11 @@ class CouponCodeAdmin(MaterialModelAdmin):
 
 
 class CartOfferAdmin(MaterialModelAdmin):
-    list_display = ('offer', 'updated_shipping_charge')
+    list_display = ('offer', 'updated_delivery_charge')
     readonly_fields = ["created_by", "modified_by", "created_on", "modified_on"]
     fieldsets = (
         ('Offer Detail View', {
-            'fields': ('offer', 'updated_shipping_charge',
+            'fields': ('offer', 'updated_delivery_charge',
                        'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )
