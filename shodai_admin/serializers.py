@@ -175,7 +175,7 @@ class TimeSlotSerializer(serializers.ModelSerializer):
         fields = ('id', 'slot', 'time')
 
 
-class OfferSerializer(serializers.ModelSerializer):
+class DeliveryChargeOfferSerializer(serializers.ModelSerializer):
     updated_shipping_charge = serializers.SerializerMethodField()
 
     class Meta:

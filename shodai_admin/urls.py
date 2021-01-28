@@ -26,5 +26,5 @@ urlpatterns = [
     path('products/search', views.ProductSearch.as_view()),
 
     # offers
-    path('offers', views.DeliveryChargeOfferList.as_view()),
+    path('offers/delivery-charge', views.DeliveryChargeOfferList.as_view()),
 ]

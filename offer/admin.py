@@ -12,10 +12,16 @@ class OfferProductInline(admin.StackedInline):
     fields = ['product', 'offer_price', 'offer_product_balance']
     autocomplete_fields = ('product',)
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class CartOfferInline(admin.TabularInline):
     model = CartOffer
     fields = ['updated_shipping_charge', ]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class OfferAdmin(MaterialModelAdmin):
@@ -93,6 +99,9 @@ class CartOfferAdmin(MaterialModelAdmin):
         }),
     )
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
@@ -104,5 +113,5 @@ class CartOfferAdmin(MaterialModelAdmin):
 
 site.register(Offer, OfferAdmin)
 site.register(OfferProduct, OfferProductAdmin)
-# site.register(CouponCode, CouponCodeAdmin)
 site.register(CartOffer, CartOfferAdmin)
+# site.register(CouponCode, CouponCodeAdmin)
