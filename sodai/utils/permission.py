@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Permission
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, BasePermission, SAFE_METHODS
 
 from sodai.utils.helper import get_user_object
@@ -87,3 +87,12 @@ class ReadOnlyAuth(IsAuthenticated):
                 request.method in SAFE_METHODS
             )
         return super().has_permission(request, view)
+
+
+class IsAdminUserQP(TokenAuthentication):
+    def has_permission(self, request, view):
+        token = request.query_params.get('token', None)
+        if token:
+            user, _ = self.authenticate_credentials(token)
+            return user.is_staff
+        return False

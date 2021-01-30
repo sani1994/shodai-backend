@@ -24,7 +24,7 @@ from product.models import Product
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer
 from sodai.utils.helper import get_user_object
-from sodai.utils.permission import AdminAuth
+from sodai.utils.permission import AdminAuth, IsAdminUserQP
 from userProfile.models import UserProfile, BlackListedToken, Address
 
 from django.contrib.auth import authenticate
@@ -749,89 +749,78 @@ class CustomerSearch(APIView):
 
 
 class InvoiceDownloadPDF(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUserQP]
     """
     Get PDF of Invoice by order ID
     """
 
     def get(self, request, id):
         order = get_object_or_404(Order, id=id)
-        token = request.query_params.get('token', None)
-        try:
-            user = Token.objects.get(key=token).user
-        except Token.DoesNotExist:
-            user = None
-        if user and user.is_staff:
-            product_list = OrderProduct.objects.filter(order=order)
-            matrix = []
-            total_price_without_offer = 0
-            is_offer = False
-            for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
-                total_price_without_offer += total
-                if p.order_product_price != p.product.product_price:
-                    is_offer = True
-                    total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
-                           p.order_product_price, int(p.order_product_qty), total_by_offer]
-                else:
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
-                           "--", int(p.order_product_qty), total]
-                matrix.append(col)
-
-            invoice = InvoiceInfo.objects.filter(invoice_number=order.invoice_number)
-            if not invoice:
-                return HttpResponse("Not found")
-            invoice = invoice[0]
-
-            if order.user.first_name and order.user.last_name:
-                customer_name = order.user.first_name + " " + order.user.last_name
-            elif order.user.first_name:
-                customer_name = order.user.first_name
+        product_list = OrderProduct.objects.filter(order=order)
+        matrix = []
+        total_price_without_offer = 0
+        is_offer = False
+        for p in product_list:
+            total = float(p.product.product_price) * p.order_product_qty
+            total_price_without_offer += total
+            if p.order_product_price != p.product.product_price:
+                is_offer = True
+                total_by_offer = float(p.order_product_price) * p.order_product_qty
+                col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                       p.order_product_price, int(p.order_product_qty), total_by_offer]
             else:
-                customer_name = ""
+                col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                       "--", int(p.order_product_qty), total]
+            matrix.append(col)
 
-            delivery_charge = invoice.delivery_charge
-            sub_total = order.order_total_price - order.total_vat - delivery_charge
-            paid_status = invoice.paid_status
+        invoice = InvoiceInfo.objects.filter(invoice_number=order.invoice_number)
+        if not invoice:
+            return HttpResponse("Not found")
+        invoice = invoice[0]
 
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                payment_method = "Cash on Delivery"
-            else:
-                payment_method = "Online Payment"
-            data = {
-                'customer_name': customer_name,
-                'address': order.address,
-                'user_email': order.user.email,
-                'user_mobile': order.user.mobile_number,
-                'order_number': order.order_number,
-                'invoice_number': order.invoice_number,
-                'created_on': order.created_on,
-                'delivery_date': order.delivery_date_time.date(),
-                'order_details': matrix,
-                'delivery': delivery_charge,
-                'vat': order.total_vat,
-                'saved_amount': float(round(total_price_without_offer - sub_total)),
-                'sub_total': sub_total,
-                'total': order.order_total_price,
-                'in_words': num2words(order.order_total_price),
-                'payment_method': payment_method if paid_status else 'Cash on Delivery',
-                'paid_status': paid_status,
-                'is_offer': is_offer,
-                'colspan_value': "4" if is_offer else "3",
-                'downloaded_on': datetime.now().replace(microsecond=0)
-            }
-            pdf = render_to_pdf('pdf/invoice.html', data)
-            response = HttpResponse(pdf, content_type='application/pdf')
-            filename = "invoice_of_order_%s.pdf" % order.order_number
-            content = "inline; filename=%s" % filename
-            response['Content-Disposition'] = content
-            return response
+        if order.user.first_name and order.user.last_name:
+            customer_name = order.user.first_name + " " + order.user.last_name
+        elif order.user.first_name:
+            customer_name = order.user.first_name
         else:
-            return Response({
-                "status": "failed",
-                "message": "Invalid request!"
-            }, status=status.HTTP_401_UNAUTHORIZED)
+            customer_name = ""
+
+        delivery_charge = invoice.delivery_charge
+        sub_total = order.order_total_price - order.total_vat - delivery_charge
+        paid_status = invoice.paid_status
+
+        if invoice.payment_method == "CASH_ON_DELIVERY":
+            payment_method = "Cash on Delivery"
+        else:
+            payment_method = "Online Payment"
+        data = {
+            'customer_name': customer_name,
+            'address': order.address,
+            'user_email': order.user.email,
+            'user_mobile': order.user.mobile_number,
+            'order_number': order.order_number,
+            'invoice_number': order.invoice_number,
+            'created_on': order.created_on,
+            'delivery_date': order.delivery_date_time.date(),
+            'order_details': matrix,
+            'delivery': delivery_charge,
+            'vat': order.total_vat,
+            'saved_amount': float(round(total_price_without_offer - sub_total)),
+            'sub_total': sub_total,
+            'total': order.order_total_price,
+            'in_words': num2words(order.order_total_price),
+            'payment_method': payment_method if paid_status else 'Cash on Delivery',
+            'paid_status': paid_status,
+            'is_offer': is_offer,
+            'colspan_value': "4" if is_offer else "3",
+            'downloaded_on': datetime.now().replace(microsecond=0)
+        }
+        pdf = render_to_pdf('pdf/invoice.html', data)
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = "invoice_of_order_%s.pdf" % order.order_number
+        content = "inline; filename=%s" % filename
+        response['Content-Disposition'] = content
+        return response
 
 
 class OrderNotification(APIView):
@@ -945,7 +934,7 @@ class OrderNotification(APIView):
 
 
 class DeliveryChargeOfferList(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
     """
     Get All Offers with offer_types DD
     """
