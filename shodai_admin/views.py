@@ -826,103 +826,106 @@ class OrderNotification(APIView):
 
     def post(self, request):
         data = request.data
-        if data.get('order_id') and isinstance(data['order_id'], int):
+        if data.get('order_id') and isinstance(data['order_id'], int) and data.get('notify_type') in ['placed', 'updated']:
             order_instance = get_object_or_404(Order, id=data['order_id'])
-            invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[
-                0]
-            product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
-            matrix = []
-            total_price_without_offer = 0
-            is_offer = False
-            for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
-                total_price_without_offer += total
-                if p.order_product_price != p.product.product_price:
-                    is_offer = True
-                    total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
-                           p.order_product_price, int(p.order_product_qty), total_by_offer]
+            if data['notify_type'] == 'updated' and "-" not in order_instance.order_number:
+                pass
+            else:
+                invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[
+                    0]
+                product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
+                matrix = []
+                total_price_without_offer = 0
+                is_offer = False
+                for p in product_list:
+                    total = float(p.product.product_price) * p.order_product_qty
+                    total_price_without_offer += total
+                    if p.order_product_price != p.product.product_price:
+                        is_offer = True
+                        total_by_offer = float(p.order_product_price) * p.order_product_qty
+                        col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                               p.order_product_price, int(p.order_product_qty), total_by_offer]
+                    else:
+                        col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                               "--", int(p.order_product_qty), total]
+                    matrix.append(col)
+
+                time = TimeSlot.objects.get(time=timezone.localtime(order_instance.delivery_date_time).time())
+                if time:
+                    time_slot = time
                 else:
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
-                           "--", int(p.order_product_qty), total]
-                matrix.append(col)
+                    time_slot = TimeSlot.objects.get(id=1)
+                delivery_charge = invoice.delivery_charge
+                sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
+                client_name = order_instance.user.first_name + " " + order_instance.user.last_name
 
-            time = TimeSlot.objects.get(time=timezone.localtime(order_instance.delivery_date_time).time())
-            if time:
-                time_slot = time
-            else:
-                time_slot = TimeSlot.objects.get(id=1)
-            delivery_charge = invoice.delivery_charge
-            sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
-            client_name = order_instance.user.first_name + " " + order_instance.user.last_name
+                """
+                To send notification to customer
+                """
 
-            """
-            To send notification to customer
-            """
+                content = {'user_name': client_name,
+                           'order_number': order_instance.order_number,
+                           'shipping_address': order_instance.address.road + " " + order_instance.address.city,
+                           'mobile_no': order_instance.contact_number,
+                           'order_date': order_instance.created_on.date(),
+                           'delivery_date_time': str(
+                               order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                           'sub_total': sub_total,
+                           'vat': order_instance.total_vat,
+                           'delivery_charge': delivery_charge,
+                           'total': order_instance.order_total_price,
+                           'order_details': matrix,
+                           'is_offer': is_offer,
+                           'saved_amount': float(round(total_price_without_offer - sub_total)),
+                           'colspan_value': "4" if is_offer else "3"}
 
-            content = {'user_name': client_name,
-                       'order_number': order_instance.order_number,
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(
-                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'sub_total': sub_total,
-                       'vat': order_instance.total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_offer': is_offer,
-                       'saved_amount': float(round(total_price_without_offer - sub_total)),
-                       'colspan_value': "4" if is_offer else "3"}
+                subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
+                from_email, to = 'noreply@shod.ai', order_instance.user.email
+                html_customer = get_template('email.html')
+                html_content = html_customer.render(content)
+                msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
 
-            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
-            from_email, to = 'noreply@shod.ai', order_instance.user.email
-            html_customer = get_template('email.html')
-            html_content = html_customer.render(content)
-            msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
+                """
+                To send notification to admin
+                """
 
-            """
-            To send notification to admin
-            """
+                if invoice.payment_method == "CASH_ON_DELIVERY":
+                    payment_method = "Cash on Delivery"
+                else:
+                    payment_method = "Online Payment"
+                content = {'user_name': client_name,
+                           'user_mobile': order_instance.user.mobile_number,
+                           'order_number': order_instance.order_number,
+                           'platform': "Admin",
+                           'shipping_address': order_instance.address.road + " " + order_instance.address.city,
+                           'mobile_no': order_instance.contact_number,
+                           'order_date': order_instance.created_on.date(),
+                           'delivery_date_time': str(
+                               order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                           'invoice_number': invoice.invoice_number,
+                           'payment_method': payment_method,
+                           'sub_total': sub_total,
+                           'vat': order_instance.total_vat,
+                           'delivery_charge': delivery_charge,
+                           'total': order_instance.order_total_price,
+                           'order_details': matrix,
+                           'is_offer': is_offer,
+                           'saved_amount': float(round(total_price_without_offer - sub_total)),
+                           'colspan_value': "4" if is_offer else "3"
+                           }
 
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                payment_method = "Cash on Delivery"
-            else:
-                payment_method = "Online Payment"
-            content = {'user_name': client_name,
-                       'user_mobile': order_instance.user.mobile_number,
-                       'order_number': order_instance.order_number,
-                       'platform': "Admin",
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(
-                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'invoice_number': invoice.invoice_number,
-                       'payment_method': payment_method,
-                       'sub_total': sub_total,
-                       'vat': order_instance.total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_offer': is_offer,
-                       'saved_amount': float(round(total_price_without_offer - sub_total)),
-                       'colspan_value': "4" if is_offer else "3"
-                       }
-
-            admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
-            admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
-            html_admin = get_template('admin_email.html')
-            html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
-            msg_to_admin.attach_alternative(html_content, "text/html")
-            msg_to_admin.send()
+                admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
+                admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
+                html_admin = get_template('admin_email.html')
+                html_content = html_admin.render(content)
+                msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
+                msg_to_admin.attach_alternative(html_content, "text/html")
+                msg_to_admin.send()
             return Response({
                 "status": "success",
-                "message": "email sent successfully."
+                "message": "request received."
             }, status=status.HTTP_200_OK)
         else:
             return Response({

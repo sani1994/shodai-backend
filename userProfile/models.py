@@ -90,7 +90,7 @@ class Address(models.Model):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "{}, {}, {}".format(self.road, self.city, self.district)
+        return self.road
 
 
 class Otp(models.Model):
