@@ -275,7 +275,7 @@ class OrderDetail(APIView):
 
     def patch(self, request, id):
         data = request.data
-        offer_id = request.data.get('offer_id', None)
+        offer_id = data.get('offer_id', None)
         all_order_status = {
             'Ordered': 'OD',
             'Order Accepted': 'OA',
@@ -393,15 +393,15 @@ class OrderDetail(APIView):
             discount_description = ""
             if offer_id and isinstance(offer_id, int):
                 today = timezone.now()
-                offer = Offer.objects.filter(id=data['offer_id'], offer_types="DD", is_approved=True,
+                offer = Offer.objects.filter(id=offer_id, offer_types="DD", is_approved=True,
                                              offer_starts_in__lte=today, offer_ends_in__gte=today)
                 if offer:
                     cart_offer = CartOffer.objects.get(offer=offer[0])
                     if cart_offer:
                         delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
                         delivery_charge = cart_offer.updated_delivery_charge
-                        discount_description = "offer id: " + str(offer_id) + "; " + "discount_amount: " + \
-                                               str(delivery_charge) + ","
+                        discount_description = "offer_id:" + str(offer_id) + "," + \
+                                               "discount_amount:" + str(delivery_charge_discount) + ";"
             if products_updated:
                 if "-" in order.order_number:
                     x = order.order_number.split("-")
@@ -420,8 +420,7 @@ class OrderDetail(APIView):
                                                      order_status="OA",
                                                      address=delivery_address,
                                                      contact_number=data['contact_number'],
-                                                     created_by=request.user,
-                                                     )
+                                                     created_by=request.user)
                     order.order_status = 'CN'
                     order.save()
                     order = new_order
@@ -449,6 +448,7 @@ class OrderDetail(APIView):
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note']
             else:
+                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
@@ -457,6 +457,7 @@ class OrderDetail(APIView):
                 order.note = data['note']
                 order.modified_by = request.user
 
+            # Need to work on discount_amount
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
             discount_amount += delivery_charge_discount
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
@@ -474,8 +475,7 @@ class OrderDetail(APIView):
                                        payment_method=payment_method,
                                        order_number=order,
                                        user=order.user,
-                                       created_by=request.user
-                                       )
+                                       created_by=request.user)
             order.save()
             return Response({
                 "status": "success",
@@ -491,7 +491,7 @@ class CreateOrder(APIView):
 
     def post(self, request):
         data = request.data
-        offer_id = request.data.get('offer_id', None)
+        offer_id = data.get('offer_id', None)
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -581,15 +581,15 @@ class CreateOrder(APIView):
         discount_description = ""
         if offer_id and isinstance(offer_id, int):
             today = timezone.now()
-            offer = Offer.objects.filter(id=data['offer_id'], offer_types="DD", is_approved=True,
+            offer = Offer.objects.filter(id=offer_id, offer_types="DD", is_approved=True,
                                          offer_starts_in__lte=today, offer_ends_in__gte=today)
             if offer:
                 cart_offer = CartOffer.objects.get(offer=offer[0])
                 if cart_offer:
                     delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
                     delivery_charge = cart_offer.updated_delivery_charge
-                    discount_description = "offer id: " + str(offer_id) + "; " + "discount_amount: " +\
-                                           str(delivery_charge) + ","
+                    discount_description = "offer_id:" + str(offer_id) + "," + \
+                                           "discount_amount:" + str(delivery_charge_discount) + ";"
 
         try:
             user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
@@ -637,8 +637,7 @@ class CreateOrder(APIView):
                                               order_status="OA",
                                               contact_number=data["contact_number"],
                                               address=delivery_address,
-                                              created_by=request.user,
-                                              )
+                                              created_by=request.user)
 
         total_vat = total = total_price = total_op_price = 0
         for p in products:
@@ -674,8 +673,7 @@ class CreateOrder(APIView):
                                    payment_method="CASH_ON_DELIVERY",
                                    order_number=order_instance,
                                    user=user_instance,
-                                   created_by=request.user,
-                                   )
+                                   created_by=request.user)
 
         return Response({'status': 'success',
                          'message': 'Order placed.',
