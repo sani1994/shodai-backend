@@ -398,7 +398,7 @@ class OrderDetail(APIView):
                 if offer:
                     cart_offer = CartOffer.objects.get(offer=offer[0])
                     if cart_offer:
-                        delivery_charge_discount = abs(delivery_charge - cart_offer.updated_delivery_charge)
+                        delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
                         delivery_charge = cart_offer.updated_delivery_charge
                         delivery_charge_global = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                         discount_description = "offer_id:" + str(offer_id) + "," + \
@@ -458,13 +458,8 @@ class OrderDetail(APIView):
                 order.note = data['note']
                 order.modified_by = request.user
 
-            # Need to work on discount_amount
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
-            if delivery_charge_discount > 0:
-                if invoice.delivery_charge < cart_offer.updated_delivery_charge:
-                    discount_amount -= delivery_charge_discount
-                elif invoice.delivery_charge > cart_offer.updated_delivery_charge:
-                    discount_amount += delivery_charge_discount
+            discount_amount += delivery_charge_discount
 
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
             InvoiceInfo.objects.create(invoice_number=order.invoice_number,

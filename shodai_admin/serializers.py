@@ -94,8 +94,10 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return 'Cash on Delivery' if obj.payment_method == 'CASH_ON_DELIVERY' else 'Online Payment'
 
     def get_offer_id(self, obj):
-        offer_id = int(obj.discount_description.split(",")[0].split(":")[1])
-        return offer_id
+        if obj.discount_description:
+            return int(obj.discount_description.split(",")[0].split(":")[1])
+        else:
+            return None
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer):
