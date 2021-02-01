@@ -398,7 +398,7 @@ class OrderDetail(APIView):
                 if offer:
                     cart_offer = CartOffer.objects.get(offer=offer[0])
                     if cart_offer:
-                        delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
+                        delivery_charge_discount = abs(delivery_charge - cart_offer.updated_delivery_charge)
                         delivery_charge = cart_offer.updated_delivery_charge
                         discount_description = "offer_id:" + str(offer_id) + "," + \
                                                "discount_amount:" + str(delivery_charge_discount) + ";"
@@ -459,7 +459,12 @@ class OrderDetail(APIView):
 
             # Need to work on discount_amount
             discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
-            discount_amount += delivery_charge_discount
+            if delivery_charge_discount > 0:
+                if invoice.delivery_charge < cart_offer.updated_delivery_charge:
+                    discount_amount -= delivery_charge_discount
+                elif invoice.delivery_charge > cart_offer.updated_delivery_charge:
+                    discount_amount += delivery_charge_discount
+
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
             InvoiceInfo.objects.create(invoice_number=order.invoice_number,
                                        billing_person_name=billing_person_name,
@@ -831,8 +836,7 @@ class OrderNotification(APIView):
             if data['notify_type'] == 'updated' and "-" not in order_instance.order_number:
                 pass
             else:
-                invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[
-                    0]
+                invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[0]
                 product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
                 matrix = []
                 total_price_without_offer = 0
