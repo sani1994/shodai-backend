@@ -400,8 +400,9 @@ class OrderDetail(APIView):
                     if cart_offer:
                         delivery_charge_discount = abs(delivery_charge - cart_offer.updated_delivery_charge)
                         delivery_charge = cart_offer.updated_delivery_charge
+                        delivery_charge_global = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                         discount_description = "offer_id:" + str(offer_id) + "," + \
-                                               "discount_amount:" + str(delivery_charge_discount) + ";"
+                                               "discount_amount:" + str(delivery_charge_global - delivery_charge) + ";"
             if products_updated:
                 if "-" in order.order_number:
                     x = order.order_number.split("-")

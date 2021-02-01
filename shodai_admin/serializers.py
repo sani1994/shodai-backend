@@ -80,17 +80,22 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class InvoiceSerializer(serializers.ModelSerializer):
     payment_method = serializers.SerializerMethodField(read_only=True)
+    offer_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = InvoiceInfo
         fields = (
-            "invoice_number", "delivery_charge",
-            "discount_amount", "paid_status", "payment_method"
+            "invoice_number", "delivery_charge", "discount_amount",
+            "paid_status", "payment_method", "offer_id"
         )
-        read_only_fields = ["invoice_number", "discount_amount", "payment_method"]
+        read_only_fields = ["invoice_number", "discount_amount", "payment_method", "offer_id"]
 
     def get_payment_method(self, obj):
         return 'Cash on Delivery' if obj.payment_method == 'CASH_ON_DELIVERY' else 'Online Payment'
+
+    def get_offer_id(self, obj):
+        offer_id = int(obj.discount_description.split(",")[0].split(":")[1])
+        return offer_id
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer):
@@ -140,7 +145,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             return TimeSlot.objects.get(id=1).id
 
     def get_invoice(self, obj):
-        invoice = InvoiceInfo.objects.filter(order_number=obj).order_by('-created_on')[0]
+        invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)[0]
         return InvoiceSerializer(invoice).data
 
     def get_order_status(self, obj):
