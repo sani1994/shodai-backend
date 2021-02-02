@@ -67,6 +67,7 @@ class Product(BaseModel):
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)
+    decimal_allowed = models.BooleanField(default=False)
     price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
                                          verbose_name='Product Price With Vat')  # Product Price with vat
     history = HistoricalRecords()

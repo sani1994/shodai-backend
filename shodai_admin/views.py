@@ -307,18 +307,22 @@ class OrderDetail(APIView):
             product_list = []
             for item in data['products']:
                 is_valid = field_validation(required_fields, item)
-                if is_valid:
-                    integer_fields = [item['product_id'],
-                                      item['product_quantity']]
-                    is_valid = type_validation(integer_fields, int)
-                if is_valid:
+                if is_valid and isinstance(item['product_id'], int):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
                         if not product_exist or not item['product_quantity']:
                             is_valid = False
+                        if is_valid:
+                            decimal_allowed = product_exist[0].decimal_allowed
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                                is_valid = False
+                            elif decimal_allowed and not isinstance(item['product_quantity'], float):
+                                is_valid = False
                     else:
                         is_valid = False
+                else:
+                    is_valid = False
                 if not is_valid:
                     break
         else:
@@ -536,18 +540,22 @@ class CreateOrder(APIView):
             product_list = []
             for item in products:
                 is_valid = field_validation(required_fields, item)
-                if is_valid:
-                    integer_fields = [item['product_id'],
-                                      item['product_quantity']]
-                    is_valid = type_validation(integer_fields, int)
-                if is_valid:
+                if is_valid and isinstance(item['product_id'], int):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
                         if not product_exist or not item['product_quantity']:
                             is_valid = False
+                        if is_valid:
+                            decimal_allowed = product_exist[0].decimal_allowed
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                                is_valid = False
+                            elif decimal_allowed and not isinstance(item['product_quantity'], float):
+                                is_valid = False
                     else:
                         is_valid = False
+                else:
+                    is_valid = False
                 if not is_valid:
                     break
         else:

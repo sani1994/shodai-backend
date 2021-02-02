@@ -237,7 +237,7 @@ class InvoiceInfo(BaseModel):
     delivery_date_time = models.DateTimeField()
     delivery_charge = models.FloatField(default=0)
     discount_amount = models.FloatField(default=0, null=True, blank=True)
-    discount_description = models.CharField(max_length=100, null=True, blank=True)
+    discount_description = models.CharField(max_length=500, null=True, blank=True)
     net_payable_amount = models.FloatField(default=0, null=False, blank=False)
     paid_status = models.BooleanField(default=False, null=False, blank=False)
     paid_on = models.DateTimeField(null=True, blank=True)

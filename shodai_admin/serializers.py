@@ -171,8 +171,8 @@ class ProductSearchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'product_name', 'product_price',
-                  'product_image', 'product_unit_name', 'offer_price', ]
+        fields = ['id', 'product_name', 'product_price', 'product_image',
+                  'product_unit_name', 'offer_price', 'decimal_allowed']
         read_only_fields = ['offer_price', ]
 
 
