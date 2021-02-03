@@ -43,13 +43,13 @@ class OrderList(APIView):
     def get(self, request):
         if request.user.user_type == 'CM':
             user_id = request.user.id
-            orderList = Order.objects.filter(user_id=user_id)
+            orderList = Order.objects.filter(user_id=user_id).order_by('-created_on')
             serializer = OrderSerializer(orderList, many=True)
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        queryset = Order.objects.all()
+        queryset = Order.objects.all().order_by('-created_on')
         if queryset:
             serializer = OrderSerializer(queryset, many=True, context={'request': request})
             if serializer:
