@@ -835,8 +835,9 @@ class OrderNotification(APIView):
 
     def post(self, request):
         data = request.data
-        if data.get('order_id') and isinstance(data['order_id'], int) and isinstance(data['total_changed'], bool)\
-                and data.get('notify_type') in ['placed', 'updated']:
+        total_changed = data.get('total_changed', None)
+        if data.get('order_id') and isinstance(data['order_id'], int) and data.get('notify_type') in \
+                ['placed', 'updated'] and total_changed is not None and isinstance(total_changed, bool):
             order_instance = get_object_or_404(Order, id=data['order_id'])
             if data['notify_type'] == 'updated' and not data['total_changed']:
                 pass
