@@ -38,7 +38,7 @@ class SelectShopForm(forms.Form):
 class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_meta__product_category', 'product_meta', 'product_name', 'is_approved',)
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
-    readonly_fields = ["created_by", "modified_by", 'price_with_vat', 'slug']
+    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on", 'price_with_vat', 'slug']
     search_fields = ['product_name']
     autocomplete_fields = ('product_unit', 'product_meta',)
     actions = ["save_selected", "export_as_csv", "export_all_as_csv", ]
