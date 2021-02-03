@@ -835,11 +835,18 @@ class OrderNotification(APIView):
 
     def post(self, request):
         data = request.data
-        if data.get('order_id') and isinstance(data['order_id'], int) and data.get('notify_type') in ['placed', 'updated']:
+        if data.get('order_id') and isinstance(data['order_id'], int) and isinstance(data['total_changed'], bool)\
+                and data.get('notify_type') in ['placed', 'updated']:
             order_instance = get_object_or_404(Order, id=data['order_id'])
-            if data['notify_type'] == 'updated' and "-" not in order_instance.order_number:
+            if data['notify_type'] == 'updated' and not data['total_changed']:
                 pass
             else:
+                if data['notify_type'] == 'updated':
+                    customer_subject = 'Your shodai order has been updated (#' + str(order_instance.order_number) + ')'
+                    admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Updated'
+                elif data['notify_type'] == 'placed':
+                    customer_subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
+                    admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
                 invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[0]
                 product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
                 matrix = []
@@ -887,11 +894,10 @@ class OrderNotification(APIView):
                            'saved_amount': float(round(total_price_without_offer - sub_total)),
                            'colspan_value': "4" if is_offer else "3"}
 
-                subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
                 from_email, to = 'noreply@shod.ai', order_instance.user.email
                 html_customer = get_template('email.html')
                 html_content = html_customer.render(content)
-                msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
+                msg = EmailMultiAlternatives(customer_subject, 'shodai', from_email, [to])
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
 
@@ -924,7 +930,6 @@ class OrderNotification(APIView):
                            'colspan_value': "4" if is_offer else "3"
                            }
 
-                admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
                 admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
                 html_admin = get_template('admin_email.html')
                 html_content = html_admin.render(content)
