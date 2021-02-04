@@ -835,10 +835,11 @@ class OrderNotification(APIView):
 
     def post(self, request):
         data = request.data
-        if isinstance(data.get('order_id'), int) and isinstance(data.get('total_changed'), bool) \
-                and data.get('notify_type') in ['placed', 'updated']:
+        if isinstance(data.get('order_id'), int) and data.get('notify_type') in ['placed', 'updated']:
             order_instance = get_object_or_404(Order, id=data['order_id'])
-            if data['notify_type'] == 'updated' and not data['total_changed']:
+            invoices = InvoiceInfo.objects.filter(order_number=order_instance).order_by('-created_on')
+            if data['notify_type'] == 'updated' and len(invoices) > 1 and \
+                    invoices[0].net_payable_amount == invoices[1].net_payable_amount:
                 pass
             else:
                 if data['notify_type'] == 'updated':
