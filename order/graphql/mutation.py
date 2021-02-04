@@ -186,12 +186,10 @@ class SendEmail(graphene.Mutation):
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
             matrix = []
             total_price_without_offer = 0
-            is_offer = False
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 if p.order_product_price != p.product_price:
-                    is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_unit, p.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
@@ -210,15 +208,15 @@ class SendEmail(graphene.Mutation):
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'delivery_date_time': str(
+                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'sub_total': sub_total,
                        'vat': order_instance.total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'is_offer': is_offer,
-                       'saved_amount': float(round(total_price_without_offer - sub_total)),
-                       'colspan_value': "4" if is_offer else "3"}
+                       'saved_amount': float(round(invoice.discount_amount)),
+                       'colspan_value': "4" if invoice.discount_amount != 0 else "3"}
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
             from_email, to = 'noreply@shod.ai', user.email
@@ -243,7 +241,8 @@ class SendEmail(graphene.Mutation):
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'delivery_date_time': str(
+                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'invoice_number': invoice.invoice_number,
                        'payment_method': payment_method,
                        'sub_total': sub_total,
@@ -251,9 +250,8 @@ class SendEmail(graphene.Mutation):
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'is_offer': is_offer,
                        'saved_amount': float(round(total_price_without_offer - sub_total)),
-                       'colspan_value': "4" if is_offer else "3"
+                       'colspan_value': "4" if invoice.discount_amount != 0 else "3"
                        }
             admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
