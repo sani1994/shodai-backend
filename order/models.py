@@ -137,6 +137,7 @@ class OrderProduct(BaseModel):
     vat_amount = models.FloatField(default=0, blank=True, null=True,
                                    verbose_name='Vat Amount(%)')  # Here vat amount 15 is 15%; added to track vat
     order_product_qty = models.FloatField(default=1)
+    product_price = models.FloatField(blank=False, null=False, default=0)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -157,6 +158,7 @@ class OrderProduct(BaseModel):
         self.vat_amount = self.product.product_meta.vat_amount
         self.order_product_price_with_vat = round(self.order_product_price +
                                                   (self.order_product_price * self.vat_amount) / 100)
+        self.product_price = self.product.product_price
         super(OrderProduct, self).save(*args, **kwargs)
 
     class Meta:

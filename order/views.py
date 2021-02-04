@@ -185,16 +185,11 @@ class OrderProductList(APIView):
 
     def post(self, request):
         if request.user.user_type == 'CM':
-            response = {
-                'rspns',
-                'status_code',
-            }
             responses = []
 
             for data in request.data:
-                if data['time_slot']:
-                    time = data['time_slot'].split('||')
-                    slot = time[0]
+                time = data['time_slot'].split('||')
+                slot = time[0]
                 serializer = OrderProductSerializer(data=data, context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
@@ -207,8 +202,7 @@ class OrderProductList(APIView):
             order_instance = Order.objects.filter(pk=serializer.data['order'])[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
             delivery_charge = invoice.delivery_charge
-            # time = TimeSlot.objects.filter(time=order_instance.delivery_date_time.time())[0]
-            # print(time.slot)
+
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
             else:
@@ -229,13 +223,13 @@ class OrderProductList(APIView):
                 total = float(p.product.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 total_vat += float(p.order_product_price_with_vat - p.order_product_price) * p.order_product_qty
-                if p.order_product_price != p.product.product_price:
+                if p.order_product_price != p.product_price:
                     is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                    col = [p.product.product_name, p.product.product_unit, p.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
                 else:
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                    col = [p.product.product_name, p.product.product_unit, p.product_price,
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
@@ -297,7 +291,7 @@ class OrderProductList(APIView):
                        'saved_amount': float(round(total_price_without_offer - sub_total)),
                        'colspan_value': "4" if is_offer else "3"
                        }
-            admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
+            admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
