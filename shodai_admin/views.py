@@ -770,13 +770,13 @@ class InvoiceDownloadPDF(APIView):
         for p in product_list:
             total = float(p.product.product_price) * p.order_product_qty
             total_price_without_offer += total
-            if p.order_product_price != p.product.product_price:
+            if p.order_product_price != p.product_price:
                 is_offer = True
                 total_by_offer = float(p.order_product_price) * p.order_product_qty
-                col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                col = [p.product.product_name, p.product.product_unit, p.product_price,
                        p.order_product_price, int(p.order_product_qty), total_by_offer]
             else:
-                col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                col = [p.product.product_name, p.product.product_unit, p.product_price,
                        "--", int(p.order_product_qty), total]
             matrix.append(col)
 
@@ -848,7 +848,7 @@ class OrderNotification(APIView):
                 elif data['notify_type'] == 'placed':
                     customer_subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
                     admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
-                invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[0]
+                invoice = invoices[0]
                 product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
                 matrix = []
                 total_price_without_offer = 0
@@ -856,13 +856,13 @@ class OrderNotification(APIView):
                 for p in product_list:
                     total = float(p.product.product_price) * p.order_product_qty
                     total_price_without_offer += total
-                    if p.order_product_price != p.product.product_price:
+                    if p.order_product_price != p.product_price:
                         is_offer = True
                         total_by_offer = float(p.order_product_price) * p.order_product_qty
-                        col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                        col = [p.product.product_name, p.product.product_unit, p.product_price,
                                p.order_product_price, int(p.order_product_qty), total_by_offer]
                     else:
-                        col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                        col = [p.product.product_name, p.product.product_unit, p.product_price,
                                "--", int(p.order_product_qty), total]
                     matrix.append(col)
 

@@ -14,7 +14,6 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
 
-from offer.models import OfferProduct
 from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot
@@ -191,13 +190,13 @@ class SendEmail(graphene.Mutation):
             for p in product_list:
                 total = float(p.product.product_price) * p.order_product_qty
                 total_price_without_offer += total
-                if p.order_product_price != p.product.product_price:
+                if p.order_product_price != p.product_price:
                     is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                    col = [p.product.product_name, p.product.product_unit, p.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
                 else:
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                    col = [p.product.product_name, p.product.product_unit, p.product_price,
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
@@ -275,32 +274,6 @@ class SendEmail(graphene.Mutation):
             return SendEmail(msg="email sent successfully")
 
 
-class CreateOrderProduct(graphene.Mutation):
-    class Arguments:
-        input = OrderProductInputA(required=True)
-
-    order_product = graphene.Field(OrderProductType)
-
-    @staticmethod
-    def mutate(root, info, input=None):
-        user = info.context.user
-        if checkAuthentication(user, info):
-            if user.user_type == 'CM':
-                product_id = from_global_id(input.product_id)
-                product = Product.objects.get(id=product_id)
-                print(product.product_name)
-                order_product_instance = OrderProduct(product=product,
-                                                      order=Order.objects.get(pk=input.order_id),
-                                                      order_product_price=product.product_price,
-                                                      order_product_price_with_vat=product.price_with_vat,
-                                                      vat_amount=product.product_meta.vat_amount,
-                                                      order_product_qty=input.order_product_qty, )
-                order_product_instance.save()
-                return CreateOrderProduct(order_product=order_product_instance)
-            else:
-                raise Exception('Unauthorized request!')
-
-
 class PaymentMutation(graphene.Mutation):
     status = graphene.String()
     message = graphene.String()
@@ -337,7 +310,6 @@ class PaymentMutation(graphene.Mutation):
                     "customer_city": address.city if address.city else 'Dhaka',
                     "customer_country": address.country if address.country else 'BD'
                 }
-                print(body)
                 data = json.dumps(body)
                 response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
                 content = response.json()
@@ -430,7 +402,6 @@ class TransactionMutation(graphene.Mutation):
 class Mutation(graphene.ObjectType):
     create_order = CreateOrder.Field()
     send_email = SendEmail.Field()
-    create_order_product = CreateOrderProduct.Field()
     payment = PaymentMutation.Field()
     store_transaction_info = TransactionMutation.Field()
 
