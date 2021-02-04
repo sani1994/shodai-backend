@@ -835,19 +835,18 @@ class OrderNotification(APIView):
 
     def post(self, request):
         data = request.data
-        total_changed = data.get('total_changed', None)
-        if data.get('order_id') and isinstance(data['order_id'], int) and data.get('notify_type') in \
-                ['placed', 'updated'] and total_changed is not None and isinstance(total_changed, bool):
+        if isinstance(data.get('order_id'), int) and isinstance(data.get('total_changed'), bool) \
+                and data.get('notify_type') in ['placed', 'updated']:
             order_instance = get_object_or_404(Order, id=data['order_id'])
             if data['notify_type'] == 'updated' and not data['total_changed']:
                 pass
             else:
                 if data['notify_type'] == 'updated':
-                    customer_subject = 'Your shodai order has been updated (#' + str(order_instance.order_number) + ')'
-                    admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Updated'
+                    customer_subject = 'Your shodai order (#' + str(order_instance.order_number) + ') has been updated'
+                    admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been updated'
                 elif data['notify_type'] == 'placed':
                     customer_subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
-                    admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
+                    admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
                 invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number).order_by('-created_on')[0]
                 product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
                 matrix = []

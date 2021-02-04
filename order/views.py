@@ -297,7 +297,7 @@ class OrderProductList(APIView):
                        'saved_amount': float(round(total_price_without_offer - sub_total)),
                        'colspan_value': "4" if is_offer else "3"
                        }
-            admin_subject = 'Order (#' + str(order_instance.order_number) + ') Has Been Placed'
+            admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
             html_content = html_admin.render(content)
