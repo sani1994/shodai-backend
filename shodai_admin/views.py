@@ -462,8 +462,18 @@ class OrderDetail(APIView):
                 order.note = data['note']
                 order.modified_by = request.user
 
-            discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
-            discount_amount += delivery_charge_discount
+            if products_updated:
+                discount_amount = total_price - total_op_price
+                if delivery_charge_discount == 0 and invoice.discount_description:
+                    prev_delivery_charge_discount = float(
+                        invoice.discount_description.split(",")[1].split(":")[1].split(";")[0])
+                    discount_amount += prev_delivery_charge_discount
+                    discount_description = invoice.discount_description
+                else:
+                    discount_amount += delivery_charge_discount
+            else:
+                discount_amount = invoice.discount_amount
+                discount_amount += delivery_charge_discount
 
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
             InvoiceInfo.objects.create(invoice_number=order.invoice_number,
