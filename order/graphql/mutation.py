@@ -188,7 +188,7 @@ class SendEmail(graphene.Mutation):
             total_price_without_offer = 0
             is_offer = False
             for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
+                total = float(p.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 if p.order_product_price != p.product_price:
                     is_offer = True

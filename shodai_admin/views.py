@@ -767,7 +767,7 @@ class InvoiceDownloadPDF(APIView):
         matrix = []
         is_offer = False
         for p in product_list:
-            total = float(p.product.product_price) * p.order_product_qty
+            total = float(p.product_price) * p.order_product_qty
             if p.order_product_price != p.product_price:
                 is_offer = True
                 total_by_offer = float(p.order_product_price) * p.order_product_qty
@@ -850,7 +850,7 @@ class OrderNotification(APIView):
                 matrix = []
                 is_offer = False
                 for p in product_list:
-                    total = float(p.product.product_price) * p.order_product_qty
+                    total = float(p.product_price) * p.order_product_qty
                     if p.order_product_price != p.product_price:
                         is_offer = True
                         total_by_offer = float(p.order_product_price) * p.order_product_qty

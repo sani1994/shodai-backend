@@ -78,15 +78,15 @@ class OrderAdmin(MaterialModelAdmin):
             total_price_without_offer = 0
             is_offer = False
             for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
+                total = float(p.product_price) * p.order_product_qty
                 total_price_without_offer += total
-                if p.order_product_price != p.product.product_price:
+                if p.order_product_price != p.product_price:
                     is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                    col = [p.product.product_name, p.product.product_unit, p.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
                 else:
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
+                    col = [p.product.product_name, p.product.product_unit, p.product_price,
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 

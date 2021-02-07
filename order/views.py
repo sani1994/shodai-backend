@@ -219,7 +219,7 @@ class OrderProductList(APIView):
             is_offer = False
             total_price_without_offer = total_vat = 0
             for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
+                total = float(p.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 total_vat += float(p.order_product_price_with_vat - p.order_product_price) * p.order_product_qty
                 if p.order_product_price != p.product_price:
