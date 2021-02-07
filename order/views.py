@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
 from sodai.utils.permission import GenericAuth
+from userProfile.models import Address
 from utility.notification import email_notification, send_sms
 
 
@@ -92,8 +93,19 @@ class OrderList(APIView):
         serializer = OrderSerializer(data=request.data, many=isinstance(request.data, list),
                                      context={'request': request})
         if serializer.is_valid():
-
             serializer.save(user=request.user, created_by=request.user)
+
+            # Create Address:
+            delivery_address = Address.objects.filter(road=request.data["delivery_place"])
+            if not delivery_address:
+                delivery_address = Address.objects.create(road=request.data["delivery_place"],
+                                                          city="Dhaka",
+                                                          district="Dhaka",
+                                                          country="Bangladesh",
+                                                          zip_code="",
+                                                          user=request.user)
+            else:
+                delivery_address = delivery_address[0]
 
             # Create InvoiceInfo Instance
             order_instance = Order.objects.get(id=serializer.data['id'])
@@ -101,6 +113,8 @@ class OrderList(APIView):
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+                order_instance.address = delivery_address
+                order_instance.delivery_place = "Dhaka"
                 order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
