@@ -1,3 +1,4 @@
+import math
 import uuid
 from datetime import datetime
 from random import randint
@@ -343,10 +344,10 @@ class OrderDetail(APIView):
                             decimal_allowed = product_exist[0].decimal_allowed
                             if not decimal_allowed and not isinstance(item['product_quantity'], int):
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], float):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
                                 is_valid = False
                         if is_valid and decimal_allowed:
-                            item['product_quantity'] = float(str(item['product_quantity'])[:-1])
+                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 2) / 10 ** 2
                     else:
                         is_valid = False
                 else:
@@ -588,10 +589,10 @@ class CreateOrder(APIView):
                             decimal_allowed = product_exist[0].decimal_allowed
                             if not decimal_allowed and not isinstance(item['product_quantity'], int):
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], float):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
                                 is_valid = False
                         if is_valid and decimal_allowed:
-                            item['product_quantity'] = float(str(item['product_quantity'])[:-1])
+                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 2) / 10 ** 2
                     else:
                         is_valid = False
                 else:
