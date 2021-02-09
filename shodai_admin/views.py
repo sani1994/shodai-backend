@@ -35,6 +35,16 @@ from rest_framework.response import Response
 from utility.notification import send_sms
 from utility.pdf import render_to_pdf
 
+all_order_status = {
+    'Ordered': 'OD',
+    'Order Accepted': 'OA',
+    'Order Ready': 'RE',
+    'Order At Delivery': 'OAD',
+    'Order Completed': 'COM',
+    'Order Cancelled': 'CN',
+    None: None
+}
+
 
 class AdminLogin(APIView):
 
@@ -245,17 +255,42 @@ class OrderList(APIView):
         search = request.query_params.get('search', None)
         sort_by = request.query_params.get('sort_by', '')
         sort_type = request.query_params.get('sort_type', 'dsc')
+        from_date = request.query_params.get('from_date', Order.objects.first().created_on)
+        to_date = request.query_params.get('to_date', timezone.now())
+        order_status = all_order_status[request.query_params.get('order_status', None)]
         if not getattr(Order, sort_by, False):
             sort_by = 'created_on'
         if sort_type != 'asc':
             sort_by = '-' + sort_by
-        if search:
+        if search and order_status:
             if search.startswith("01") and len(search) == 11:
-                queryset = Order.objects.filter(user__mobile_number='+88' + search).order_by(sort_by)
+                queryset = Order.objects.filter(order_status=order_status,
+                                                user__mobile_number='+88' + search,
+                                                created_on__gte=from_date,
+                                                created_on__lte=to_date).order_by(sort_by)
             else:
-                queryset = Order.objects.filter(order_number__icontains=search).order_by(sort_by)
+                queryset = Order.objects.filter(order_status=order_status,
+                                                order_number__icontains=search,
+                                                created_on__gte=from_date,
+                                                created_on__lte=to_date).order_by(sort_by)
+
+        elif search and not order_status:
+            if search.startswith("01") and len(search) == 11:
+                queryset = Order.objects.filter(user__mobile_number='+88' + search,
+                                                created_on__gte=from_date,
+                                                created_on__lte=to_date).order_by(sort_by)
+            else:
+                queryset = Order.objects.filter(order_number__icontains=search,
+                                                created_on__gte=from_date,
+                                                created_on__lte=to_date).order_by(sort_by)
+
+        elif not search and order_status:
+            queryset = Order.objects.filter(order_status=order_status,
+                                            created_on__gte=from_date,
+                                            created_on__lte=to_date).order_by(sort_by)
         else:
-            queryset = Order.objects.all().order_by(sort_by)
+            queryset = Order.objects.filter(created_on__gte=from_date,
+                                            created_on__lte=to_date).order_by(sort_by)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = OrderListSerializer(result_page, many=True, context={'request': request})
@@ -276,15 +311,6 @@ class OrderDetail(APIView):
     def patch(self, request, id):
         data = request.data
         offer_id = data.get('offer_id', None)
-        all_order_status = {
-            'Ordered': 'OD',
-            'Order Accepted': 'OA',
-            'Order Ready': 'RE',
-            'Order At Delivery': 'OAD',
-            'Order Completed': 'COM',
-            'Order Cancelled': 'CN',
-        }
-
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -319,6 +345,8 @@ class OrderDetail(APIView):
                                 is_valid = False
                             elif decimal_allowed and not isinstance(item['product_quantity'], float):
                                 is_valid = False
+                        if is_valid and decimal_allowed:
+                            item['product_quantity'] = float(str(item['product_quantity'])[:-1])
                     else:
                         is_valid = False
                 else:
@@ -562,6 +590,8 @@ class CreateOrder(APIView):
                                 is_valid = False
                             elif decimal_allowed and not isinstance(item['product_quantity'], float):
                                 is_valid = False
+                        if is_valid and decimal_allowed:
+                            item['product_quantity'] = float(str(item['product_quantity'])[:-1])
                     else:
                         is_valid = False
                 else:
