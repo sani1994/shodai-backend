@@ -217,7 +217,8 @@ class SendEmail(graphene.Mutation):
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'saved_amount': float(round(invoice.discount_amount)),
+                       'is_offer': is_offer,
+                       'saved_amount': float(round(total_price_without_offer - sub_total)),
                        'colspan_value': "4" if is_offer else "3"}
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
@@ -252,6 +253,7 @@ class SendEmail(graphene.Mutation):
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
+                       'is_offer': is_offer,
                        'saved_amount': float(round(total_price_without_offer - sub_total)),
                        'colspan_value': "4" if is_offer else "3"
                        }

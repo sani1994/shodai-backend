@@ -775,9 +775,11 @@ class InvoiceDownloadPDF(APIView):
         order = get_object_or_404(Order, id=id)
         product_list = OrderProduct.objects.filter(order=order)
         matrix = []
+        total_price_without_offer = 0
         is_offer = False
         for p in product_list:
             total = float(p.product_price) * p.order_product_qty
+            total_price_without_offer += total
             if p.order_product_price != p.product_price:
                 is_offer = True
                 total_by_offer = float(p.order_product_price) * p.order_product_qty
@@ -820,12 +822,13 @@ class InvoiceDownloadPDF(APIView):
             'order_details': matrix,
             'delivery': delivery_charge,
             'vat': order.total_vat,
-            'saved_amount': float(round(invoice.discount_amount)),
+            'saved_amount': float(round(total_price_without_offer - sub_total)),
             'sub_total': sub_total,
             'total': order.order_total_price,
             'in_words': num2words(order.order_total_price),
             'payment_method': payment_method if paid_status else 'Cash on Delivery',
             'paid_status': paid_status,
+            'is_offer': is_offer,
             'colspan_value': "4" if is_offer else "3",
             'downloaded_on': datetime.now().replace(microsecond=0)
         }
@@ -858,9 +861,11 @@ class OrderNotification(APIView):
                 invoice = invoices[0]
                 product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
                 matrix = []
+                total_price_without_offer = 0
                 is_offer = False
                 for p in product_list:
                     total = float(p.product_price) * p.order_product_qty
+                    total_price_without_offer += total
                     if p.order_product_price != p.product_price:
                         is_offer = True
                         total_by_offer = float(p.order_product_price) * p.order_product_qty
@@ -896,7 +901,8 @@ class OrderNotification(APIView):
                            'delivery_charge': delivery_charge,
                            'total': order_instance.order_total_price,
                            'order_details': matrix,
-                           'saved_amount': float(round(invoice.discount_amount)),
+                           'is_offer': is_offer,
+                           'saved_amount': float(round(total_price_without_offer - sub_total)),
                            'colspan_value': "4" if is_offer else "3"}
 
                 from_email, to = 'noreply@shod.ai', order_instance.user.email
@@ -930,7 +936,8 @@ class OrderNotification(APIView):
                            'delivery_charge': delivery_charge,
                            'total': order_instance.order_total_price,
                            'order_details': matrix,
-                           'saved_amount': float(round(invoice.discount_amount)),
+                           'is_offer': is_offer,
+                           'saved_amount': float(round(total_price_without_offer - sub_total)),
                            'colspan_value': "4" if is_offer else "3"
                            }
 
