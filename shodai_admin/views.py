@@ -1,6 +1,6 @@
 import math
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import randint
 
 from decouple import config
@@ -42,8 +42,7 @@ all_order_status = {
     'Order Ready': 'RE',
     'Order At Delivery': 'OAD',
     'Order Completed': 'COM',
-    'Order Cancelled': 'CN',
-    None: None
+    'Order Cancelled': 'CN'
 }
 
 
@@ -253,45 +252,55 @@ class OrderList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        search = request.query_params.get('search', None)
+        search = request.query_params.get('search')
         sort_by = request.query_params.get('sort_by', '')
         sort_type = request.query_params.get('sort_type', 'dsc')
-        from_date = request.query_params.get('from_date', Order.objects.first().created_on)
-        to_date = request.query_params.get('to_date', timezone.now())
-        order_status = all_order_status[request.query_params.get('order_status', None)]
+        date_from = request.query_params.get('date_from', Order.objects.first().created_on)
+        date_to = request.query_params.get('date_to', timezone.now())
+        order_status = all_order_status.get(request.query_params.get('order_status'))
         if not getattr(Order, sort_by, False):
             sort_by = 'created_on'
         if sort_type != 'asc':
             sort_by = '-' + sort_by
+        if isinstance(date_from, str):
+            try:
+                date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
+            except Exception:
+                date_from = Order.objects.first().created_on
+        if isinstance(date_to, str):
+            try:
+                date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
+            except Exception:
+                date_to = timezone.now()
         if search and order_status:
             if search.startswith("01") and len(search) == 11:
                 queryset = Order.objects.filter(order_status=order_status,
                                                 user__mobile_number='+88' + search,
-                                                created_on__gte=from_date,
-                                                created_on__lte=to_date).order_by(sort_by)
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
             else:
                 queryset = Order.objects.filter(order_status=order_status,
                                                 order_number__icontains=search,
-                                                created_on__gte=from_date,
-                                                created_on__lte=to_date).order_by(sort_by)
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
 
         elif search and not order_status:
             if search.startswith("01") and len(search) == 11:
                 queryset = Order.objects.filter(user__mobile_number='+88' + search,
-                                                created_on__gte=from_date,
-                                                created_on__lte=to_date).order_by(sort_by)
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
             else:
                 queryset = Order.objects.filter(order_number__icontains=search,
-                                                created_on__gte=from_date,
-                                                created_on__lte=to_date).order_by(sort_by)
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
 
         elif not search and order_status:
             queryset = Order.objects.filter(order_status=order_status,
-                                            created_on__gte=from_date,
-                                            created_on__lte=to_date).order_by(sort_by)
+                                            created_on__gte=date_from,
+                                            created_on__lt=date_to).order_by(sort_by)
         else:
-            queryset = Order.objects.filter(created_on__gte=from_date,
-                                            created_on__lte=to_date).order_by(sort_by)
+            queryset = Order.objects.filter(created_on__gte=date_from,
+                                            created_on__lt=date_to).order_by(sort_by)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = OrderListSerializer(result_page, many=True, context={'request': request})
@@ -347,7 +356,7 @@ class OrderDetail(APIView):
                             elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
                                 is_valid = False
                         if is_valid and decimal_allowed:
-                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 2) / 10 ** 2
+                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
                     else:
                         is_valid = False
                 else:
@@ -592,7 +601,7 @@ class CreateOrder(APIView):
                             elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
                                 is_valid = False
                         if is_valid and decimal_allowed:
-                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 2) / 10 ** 2
+                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
                     else:
                         is_valid = False
                 else:
