@@ -101,6 +101,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 
 class OrderProductReadSerializer(serializers.ModelSerializer):
+    decimal_allowed = serializers.SerializerMethodField(read_only=True)
     product_id = serializers.SerializerMethodField(read_only=True)
     product_name = serializers.SerializerMethodField(read_only=True)
     product_image = serializers.SerializerMethodField(read_only=True)
@@ -110,7 +111,10 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct
         fields = ['order_product_price', 'product_price', 'order_product_unit', 'order_product_qty',
-                  'product_id', 'product_name', 'product_image', 'product_price_total']
+                  'decimal_allowed', 'product_id', 'product_name', 'product_image', 'product_price_total']
+
+    def get_decimal_allowed(self, obj):
+        return obj.product.decimal_allowed
 
     def get_product_id(self, obj):
         return obj.product.id
