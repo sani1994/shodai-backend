@@ -29,8 +29,9 @@ class CouponCodeAdmin(MaterialModelAdmin):
     inlines = [CouponUserInline]
     fieldsets = (
         ('Coupon Detail View', {
-            'fields': ('name', 'coupon_code', 'discount_percent', 'discount_amount', 'discount_amount_limit',
-                       'discount_type', 'expiry_date', 'created_by', 'modified_by', 'created_on', 'modified_on',)
+            'fields': ('name', 'coupon_code', 'discount_type', 'discount_percent', 'discount_amount',
+                       'discount_amount_limit', 'expiry_date', 'created_by', 'modified_by', 'created_on',
+                       'modified_on',)
         }),
     )
 

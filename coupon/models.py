@@ -29,7 +29,8 @@ class CouponCode(BaseModel):
     coupon_code = models.CharField(max_length=10, unique=True, null=False, blank=False)
     discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
     discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Flat Discount')
-    discount_amount_limit = models.IntegerField(default=0, blank=True, null=True, )
+    discount_amount_limit = models.IntegerField(default=0, blank=True, null=True, help_text="In case of Discount Type:"
+                                                                                            " Discount Percent(%)")
     max_usage_count = models.IntegerField(default=0, blank=True, null=True, )
     expiry_date = models.DateTimeField(null=False, blank=False)
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
@@ -43,7 +44,7 @@ class CouponCode(BaseModel):
 class CouponUser(BaseModel):
     created_for = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True, verbose_name="Created For")
     remaining_usage_count = models.IntegerField(default=0, blank=True, null=True, )
-    coupon_code = models.ForeignKey(CouponCode, on_delete=models.CASCADE)
+    coupon_code = models.ForeignKey(CouponCode, on_delete=models.CASCADE, related_name='discount_code')
 
     def __str__(self):
         return "{}".format(self.id)
@@ -55,8 +56,9 @@ class CouponCodeHistory(BaseModel):
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
     coupon_code = models.CharField(max_length=10, null=False, blank=False)
     coupon_user = models.ForeignKey(CouponUser, models.SET_NULL, null=True, verbose_name="Reference")
-    order = models.ForeignKey(to='order.Order', on_delete=models.SET_NULL, null=True)
-    invoice_number = models.ForeignKey(to='order.InvoiceInfo', on_delete=models.SET_NULL, null=True)
+    order = models.ForeignKey(to='order.Order', on_delete=models.SET_NULL, null=True, related_name='order_id')
+    invoice_number = models.ForeignKey(to='order.InvoiceInfo', on_delete=models.SET_NULL, null=True,
+                                       related_name='invoices')
 
     def __str__(self):
         return str(self.id) + " - " + "Coupon: " + str(self.coupon_code)
