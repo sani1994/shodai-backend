@@ -51,12 +51,12 @@ class CouponUser(BaseModel):
 
 class CouponCodeHistory(BaseModel):
     discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
-    discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Flat Discount')
+    discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Amount')
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
-    coupon_code = models.ForeignKey(CouponCode, on_delete=models.CASCADE)
-    coupon_user = models.ForeignKey(CouponUser, models.SET_NULL, blank=True, null=True, verbose_name="Created For")
-    order = models.ForeignKey(to='order.Order', on_delete=models.CASCADE)
-    invoice_number = models.ForeignKey(to='order.InvoiceInfo', on_delete=models.CASCADE)
+    coupon_code = models.CharField(max_length=10, null=False, blank=False)
+    coupon_user = models.ForeignKey(CouponUser, models.SET_NULL, null=True, verbose_name="Reference")
+    order = models.ForeignKey(to='order.Order', on_delete=models.SET_NULL, null=True)
+    invoice_number = models.ForeignKey(to='order.InvoiceInfo', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return str(self.id) + " - " + "Coupon: " + str(self.coupon_code)

@@ -47,6 +47,7 @@ class CouponCodeAdmin(MaterialModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
+            obj.modified_on = timezone.now()
         obj.created_by = request.user
         obj.created_on = timezone.now()
         return super().save_model(request, obj, form, change)
@@ -65,15 +66,14 @@ class CouponCodeHistoryAdmin(MaterialModelAdmin):
         }),
     )
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def save_model(self, request, obj, form, change):
-        if obj.id:
-            obj.modified_by = request.user
-        obj.created_by = request.user
-        obj.created_on = timezone.now()
-        return super().save_model(request, obj, form, change)
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 site.register(CouponCode, CouponCodeAdmin)
