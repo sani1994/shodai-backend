@@ -62,7 +62,7 @@ class CouponCodeHistoryAdmin(MaterialModelAdmin):
 
     fieldsets = (
         ('Coupon Detail View', {
-            'fields': ('id', 'coupon_code', 'coupon_user', 'order', 'invoice_number', 'discount_percent',
+            'fields': ('coupon_code', 'coupon_user', 'order', 'invoice_number', 'discount_percent',
                        'discount_amount', 'discount_type', 'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )

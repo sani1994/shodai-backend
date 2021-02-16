@@ -47,7 +47,7 @@ class CouponUser(BaseModel):
     coupon_code = models.ForeignKey(CouponCode, on_delete=models.CASCADE, related_name='discount_code')
 
     def __str__(self):
-        return "{}".format(self.id)
+        return str(self.created_for)
 
 
 class CouponCodeHistory(BaseModel):

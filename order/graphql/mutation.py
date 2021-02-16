@@ -15,7 +15,7 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
 
-from coupon.models import CouponCode, CouponUser
+from coupon.models import CouponCode, CouponUser, CouponCodeHistory
 from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
@@ -163,25 +163,40 @@ class CreateOrder(graphene.Mutation):
                     coupon = CouponCode.objects.filter(coupon_code=input.code, expiry_date__gte=timezone.now())
                     if coupon:
                         coupon = coupon[0]
-                        if coupon.coupon_code_type == 'DC' or coupon.coupon_code_type == 'PC':
-                            is_using = CouponUser.objects.get(coupon_code=coupon,
-                                                              created_for=user,
-                                                              remaining_usage_count=1)
-                            is_using.remaining_usage_count -= 1
-                            is_using.save()
+                        is_using = CouponUser.objects.get(coupon_code=coupon,
+                                                          created_for=user,
+                                                          remaining_usage_count=1)
+                        is_using.remaining_usage_count -= 1
+                        is_using.save()
                         if coupon.coupon_code_type == 'RC':
-                            CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                      name="Discount Code",
-                                                      discount_percent=5,
-                                                      max_usage_count=1,
-                                                      discount_amount_limit=200,
-                                                      expiry_date=timezone.now() + datetime.timedelta(days=30),
-                                                      discount_type='DP',
-                                                      coupon_code_type='DC',
-                                                      created_by=user)
-                            CouponUser.objects.create(coupon_code=coupon,
+                            coupon.max_usage_count -= 1
+                            coupon.save()
+                            new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                                   name="Discount Code",
+                                                                   discount_percent=5,
+                                                                   max_usage_count=1,
+                                                                   discount_amount_limit=200,
+                                                                   expiry_date=timezone.now() + datetime.timedelta(
+                                                                       days=30),
+                                                                   discount_type='DP',
+                                                                   coupon_code_type='DC',
+                                                                   created_by=user,
+                                                                   created_on=timezone.now())
+                            CouponUser.objects.create(coupon_code=new_coupon,
                                                       created_for=coupon.created_by,
                                                       remaining_usage_count=1)
+                        coupon_history = CouponCodeHistory.objects.create(discount_type=coupon.discount_type,
+                                                                          coupon_code=input.code,
+                                                                          coupon_user=is_using,
+                                                                          order=order_instance,
+                                                                          invoice_number=invoice,
+                                                                          created_by=user,
+                                                                          created_on=timezone.now())
+                        if coupon.discount_type == 'DP':
+                            coupon_history.discount_percent = coupon.discount_percent
+                        else:
+                            coupon_history.discount_amount = coupon.discount_amount
+                        coupon_history.save()
                         DiscountInfo.objects.create(discount_amount=input.coupon_discount,
                                                     discount_type='CP',
                                                     coupon=coupon,

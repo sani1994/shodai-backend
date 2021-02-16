@@ -275,4 +275,4 @@ class DiscountInfo(BaseModel):
     invoice = models.ForeignKey(InvoiceInfo, on_delete=models.CASCADE, related_name='invoice_info')
 
     def __str__(self):
-        return str(self.id) + " - " + "InvoiceNumber: " + str(self.invoice_number)
+        return str(self.id) + " - " + "InvoiceNumber: " + str(self.invoice.invoice_number)
