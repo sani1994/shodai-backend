@@ -22,8 +22,7 @@ class ApplyCoupon(graphene.Mutation):
     def mutate(root, info, input=None):
         user = info.context.user
         if checkAuthentication(user, info):
-            code = input.code
-            coupon = CouponCode.objects.filter(coupon_code=code, expiry_date__gte=timezone.now())
+            coupon = CouponCode.objects.filter(coupon_code=input.code, expiry_date__gte=timezone.now())
             if coupon:
                 coupon = coupon[0]
                 coupon_type = coupon.coupon_code_type
@@ -37,7 +36,7 @@ class ApplyCoupon(graphene.Mutation):
                 elif coupon_type == 'DC':
                     using = CouponUser.objects.filter(coupon_code=coupon, created_for=user,
                                                       remaining_usage_count__gt=0)
-                    if using and coupon.max_usage_count != 0:
+                    if using:
                         coupon_is_valid = True
                 elif coupon_type == 'PC':
                     using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)

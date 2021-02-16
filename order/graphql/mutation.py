@@ -1,3 +1,4 @@
+import datetime
 import json
 import uuid
 
@@ -14,9 +15,10 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
 
+from coupon.models import CouponCode, CouponUser
 from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
-from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot
+from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
 from product.models import Product
 from userProfile.models import Address, BlackListedToken
 
@@ -75,6 +77,8 @@ class OrderInput(graphene.InputObjectType):
     products = graphene.List(OrderProductInput)
     payment_method = graphene.NonNull(PaymentMethodEnum)
     note = graphene.String()
+    code = graphene.String()
+    coupon_discount = graphene.Float()
 
 
 class EmailInput(graphene.InputObjectType):
@@ -140,20 +144,51 @@ class CreateOrder(graphene.Mutation):
 
                 # Create InvoiceInfo Instance
                 billing_person_name = user.first_name + " " + user.last_name
-                InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                           billing_person_name=billing_person_name,
-                                           billing_person_email=user.email,
-                                           billing_person_mobile_number=user.mobile_number,
-                                           delivery_contact_number=order_instance.contact_number,
-                                           delivery_address=order_instance.address.road,
-                                           delivery_date_time=order_instance.delivery_date_time,
-                                           delivery_charge=delivery_charge,
-                                           discount_amount=sub_total_without_offer - float(input.order_total_price),
-                                           net_payable_amount=input.net_pay_able_amount,
-                                           payment_method=input.payment_method,
-                                           order_number=order_instance,
-                                           user=user,
-                                           created_by=user)
+                invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                                     billing_person_name=billing_person_name,
+                                                     billing_person_email=user.email,
+                                                     billing_person_mobile_number=user.mobile_number,
+                                                     delivery_contact_number=order_instance.contact_number,
+                                                     delivery_address=order_instance.address.road,
+                                                     delivery_date_time=order_instance.delivery_date_time,
+                                                     delivery_charge=delivery_charge,
+                                                     discount_amount=sub_total_without_offer - float(
+                                                         input.order_total_price),
+                                                     net_payable_amount=input.net_pay_able_amount,
+                                                     payment_method=input.payment_method,
+                                                     order_number=order_instance,
+                                                     user=user,
+                                                     created_by=user)
+                if input.code:
+                    coupon = CouponCode.objects.filter(coupon_code=input.code, expiry_date__gte=timezone.now())
+                    if coupon:
+                        coupon = coupon[0]
+                        if coupon.coupon_code_type == 'DC' or coupon.coupon_code_type == 'PC':
+                            is_using = CouponUser.objects.get(coupon_code=coupon,
+                                                              created_for=user,
+                                                              remaining_usage_count=1)
+                            is_using.remaining_usage_count -= 1
+                            is_using.save()
+                        if coupon.coupon_code_type == 'RC':
+                            CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                      name="Discount Code",
+                                                      discount_percent=5,
+                                                      max_usage_count=1,
+                                                      discount_amount_limit=200,
+                                                      expiry_date=timezone.now() + datetime.timedelta(days=30),
+                                                      discount_type='DP',
+                                                      coupon_code_type='DC',
+                                                      created_by=user)
+                            CouponUser.objects.create(coupon_code=coupon,
+                                                      created_for=coupon.created_by,
+                                                      remaining_usage_count=1)
+                        DiscountInfo.objects.create(discount_amount=input.coupon_discount,
+                                                    discount_type='CP',
+                                                    coupon=coupon,
+                                                    invoice=invoice)
+                        invoice.discount_amount += input.coupon_discount
+                        invoice.save()
+
                 return CreateOrder(order=order_instance)
             else:
                 raise Exception('Unauthorized request!')
