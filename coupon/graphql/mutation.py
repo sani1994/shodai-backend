@@ -29,19 +29,26 @@ class ApplyCoupon(graphene.Mutation):
                 coupon_type = coupon.coupon_code_type
                 coupon_is_valid = False
                 if coupon_type == 'RC':
-                    if coupon.max_usage_count != 0:
+                    is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
+                    if is_using:
+                        if is_using[0].remaining_usage_count > 0 and coupon.max_usage_count > 0:
+                            coupon_is_valid = True
+                    elif coupon.max_usage_count > 0:
                         coupon_is_valid = True
                         CouponUser.objects.create(coupon_code=coupon,
                                                   created_for=user,
                                                   remaining_usage_count=1)
                 elif coupon_type == 'DC':
-                    using = CouponUser.objects.filter(coupon_code=coupon, created_for=user,
-                                                      remaining_usage_count__gt=0)
-                    if using and coupon.max_usage_count != 0:
+                    is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user,
+                                                         remaining_usage_count__gt=0)
+                    if is_using:
                         coupon_is_valid = True
                 elif coupon_type == 'PC':
-                    using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
-                    if not using:
+                    is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
+                    if is_using:
+                        if is_using[0].remaining_usage_count > 0:
+                            coupon_is_valid = True
+                    else:
                         coupon_is_valid = True
                         CouponUser.objects.create(coupon_code=coupon,
                                                   created_for=user,
