@@ -453,25 +453,26 @@ class OrderDetail(APIView):
                 else:
                     order_number = order.order_number + "-1"
 
-                try:
-                    new_order = Order.objects.create(user=order.user,
-                                                     order_number=order_number,
-                                                     delivery_date_time=delivery_date_time,
-                                                     delivery_place=order.delivery_place,
-                                                     lat=order.lat,
-                                                     long=order.long,
-                                                     order_status="OA",
-                                                     address=delivery_address,
-                                                     contact_number=data['contact_number'],
-                                                     created_by=request.user)
-                    order.order_status = 'CN'
-                    order.save()
-                    order = new_order
-                except Exception:
+                is_used = Order.objects.filter(order_number=order_number).count()
+                if is_used:
                     return Response({
                         "status": "failed",
                         "message": "Invalid request!"
                     }, status=status.HTTP_400_BAD_REQUEST)
+
+                order.order_status = 'CN'
+                order.save()
+
+                order = Order.objects.create(user=order.user,
+                                             order_number=order_number,
+                                             delivery_date_time=delivery_date_time,
+                                             delivery_place=order.delivery_place,
+                                             lat=order.lat,
+                                             long=order.long,
+                                             order_status="OA",
+                                             address=delivery_address,
+                                             contact_number=data['contact_number'],
+                                             created_by=request.user)
 
                 total_vat = total = total_price = total_op_price = 0
                 for p in products:
