@@ -188,7 +188,7 @@ class SendEmail(graphene.Mutation):
             total_price_without_offer = 0
             is_offer = False
             for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
+                total = float(p.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 if p.order_product_price != p.product_price:
                     is_offer = True
@@ -210,7 +210,8 @@ class SendEmail(graphene.Mutation):
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'delivery_date_time': str(
+                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'sub_total': sub_total,
                        'vat': order_instance.total_vat,
                        'delivery_charge': delivery_charge,
@@ -243,7 +244,8 @@ class SendEmail(graphene.Mutation):
                        'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
+                       'delivery_date_time': str(
+                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'invoice_number': invoice.invoice_number,
                        'payment_method': payment_method,
                        'sub_total': sub_total,

@@ -1,5 +1,6 @@
+import math
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import randint
 
 from decouple import config
@@ -34,6 +35,15 @@ from rest_framework.response import Response
 
 from utility.notification import send_sms
 from utility.pdf import render_to_pdf
+
+all_order_status = {
+    'Ordered': 'OD',
+    'Order Accepted': 'OA',
+    'Order Ready': 'RE',
+    'Order At Delivery': 'OAD',
+    'Order Completed': 'COM',
+    'Order Cancelled': 'CN'
+}
 
 
 class AdminLogin(APIView):
@@ -242,20 +252,55 @@ class OrderList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        search = request.query_params.get('search', None)
+        search = request.query_params.get('search')
         sort_by = request.query_params.get('sort_by', '')
         sort_type = request.query_params.get('sort_type', 'dsc')
+        date_from = request.query_params.get('date_from', Order.objects.first().created_on)
+        date_to = request.query_params.get('date_to', timezone.now())
+        order_status = all_order_status.get(request.query_params.get('order_status'))
         if not getattr(Order, sort_by, False):
             sort_by = 'created_on'
         if sort_type != 'asc':
             sort_by = '-' + sort_by
-        if search:
+        if isinstance(date_from, str):
+            try:
+                date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
+            except Exception:
+                date_from = Order.objects.first().created_on
+        if isinstance(date_to, str):
+            try:
+                date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
+            except Exception:
+                date_to = timezone.now()
+        if search and order_status:
             if search.startswith("01") and len(search) == 11:
-                queryset = Order.objects.filter(user__mobile_number='+88' + search).order_by(sort_by)
+                queryset = Order.objects.filter(order_status=order_status,
+                                                user__mobile_number='+88' + search,
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
             else:
-                queryset = Order.objects.filter(order_number__icontains=search).order_by(sort_by)
+                queryset = Order.objects.filter(order_status=order_status,
+                                                order_number__icontains=search,
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
+
+        elif search and not order_status:
+            if search.startswith("01") and len(search) == 11:
+                queryset = Order.objects.filter(user__mobile_number='+88' + search,
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
+            else:
+                queryset = Order.objects.filter(order_number__icontains=search,
+                                                created_on__gte=date_from,
+                                                created_on__lt=date_to).order_by(sort_by)
+
+        elif not search and order_status:
+            queryset = Order.objects.filter(order_status=order_status,
+                                            created_on__gte=date_from,
+                                            created_on__lt=date_to).order_by(sort_by)
         else:
-            queryset = Order.objects.all().order_by(sort_by)
+            queryset = Order.objects.filter(created_on__gte=date_from,
+                                            created_on__lt=date_to).order_by(sort_by)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = OrderListSerializer(result_page, many=True, context={'request': request})
@@ -276,15 +321,6 @@ class OrderDetail(APIView):
     def patch(self, request, id):
         data = request.data
         offer_id = data.get('offer_id', None)
-        all_order_status = {
-            'Ordered': 'OD',
-            'Order Accepted': 'OA',
-            'Order Ready': 'RE',
-            'Order At Delivery': 'OAD',
-            'Order Completed': 'COM',
-            'Order Cancelled': 'CN',
-        }
-
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -317,8 +353,10 @@ class OrderDetail(APIView):
                             decimal_allowed = product_exist[0].decimal_allowed
                             if not decimal_allowed and not isinstance(item['product_quantity'], int):
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], float):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
                                 is_valid = False
+                        if is_valid and decimal_allowed:
+                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
                     else:
                         is_valid = False
                 else:
@@ -415,25 +453,26 @@ class OrderDetail(APIView):
                 else:
                     order_number = order.order_number + "-1"
 
-                try:
-                    new_order = Order.objects.create(user=order.user,
-                                                     order_number=order_number,
-                                                     delivery_date_time=delivery_date_time,
-                                                     delivery_place=order.delivery_place,
-                                                     lat=order.lat,
-                                                     long=order.long,
-                                                     order_status="OA",
-                                                     address=delivery_address,
-                                                     contact_number=data['contact_number'],
-                                                     created_by=request.user)
-                    order.order_status = 'CN'
-                    order.save()
-                    order = new_order
-                except Exception:
+                is_used = Order.objects.filter(order_number=order_number).count()
+                if is_used:
                     return Response({
                         "status": "failed",
                         "message": "Invalid request!"
                     }, status=status.HTTP_400_BAD_REQUEST)
+
+                order.order_status = 'CN'
+                order.save()
+
+                order = Order.objects.create(user=order.user,
+                                             order_number=order_number,
+                                             delivery_date_time=delivery_date_time,
+                                             delivery_place=order.delivery_place,
+                                             lat=order.lat,
+                                             long=order.long,
+                                             order_status="OA",
+                                             address=delivery_address,
+                                             contact_number=data['contact_number'],
+                                             created_by=request.user)
 
                 total_vat = total = total_price = total_op_price = 0
                 for p in products:
@@ -446,7 +485,7 @@ class OrderDetail(APIView):
                     total += float(op.order_product_price_with_vat) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-                order.order_total_price = total + delivery_charge
+                order.order_total_price = round(total) + delivery_charge
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -462,8 +501,18 @@ class OrderDetail(APIView):
                 order.note = data['note']
                 order.modified_by = request.user
 
-            discount_amount = total_price - total_op_price if products_updated else invoice.discount_amount
-            discount_amount += delivery_charge_discount
+            if products_updated:
+                discount_amount = total_price - total_op_price
+                if delivery_charge_discount == 0 and invoice.discount_description:
+                    prev_delivery_charge_discount = float(
+                        invoice.discount_description.split(",")[1].split(":")[1].split(";")[0])
+                    discount_amount += prev_delivery_charge_discount
+                    discount_description = invoice.discount_description
+                else:
+                    discount_amount += delivery_charge_discount
+            else:
+                discount_amount = invoice.discount_amount
+                discount_amount += delivery_charge_discount
 
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
             InvoiceInfo.objects.create(invoice_number=order.invoice_number,
@@ -550,8 +599,10 @@ class CreateOrder(APIView):
                             decimal_allowed = product_exist[0].decimal_allowed
                             if not decimal_allowed and not isinstance(item['product_quantity'], int):
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], float):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
                                 is_valid = False
+                        if is_valid and decimal_allowed:
+                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
                     else:
                         is_valid = False
                 else:
@@ -659,7 +710,7 @@ class CreateOrder(APIView):
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        order_instance.order_total_price = total + delivery_charge
+        order_instance.order_total_price = round(total) + delivery_charge
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -768,7 +819,7 @@ class InvoiceDownloadPDF(APIView):
         total_price_without_offer = 0
         is_offer = False
         for p in product_list:
-            total = float(p.product.product_price) * p.order_product_qty
+            total = float(p.product_price) * p.order_product_qty
             total_price_without_offer += total
             if p.order_product_price != p.product_price:
                 is_offer = True
@@ -854,7 +905,7 @@ class OrderNotification(APIView):
                 total_price_without_offer = 0
                 is_offer = False
                 for p in product_list:
-                    total = float(p.product.product_price) * p.order_product_qty
+                    total = float(p.product_price) * p.order_product_qty
                     total_price_without_offer += total
                     if p.order_product_price != p.product_price:
                         is_offer = True
