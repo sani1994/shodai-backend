@@ -164,8 +164,7 @@ class CreateOrder(graphene.Mutation):
                     if coupon:
                         coupon = coupon[0]
                         is_using = CouponUser.objects.get(coupon_code=coupon,
-                                                          created_for=user,
-                                                          remaining_usage_count=1)
+                                                          created_for=user)
                         is_using.remaining_usage_count -= 1
                         is_using.save()
                         if coupon.coupon_code_type == 'RC':
@@ -194,8 +193,9 @@ class CreateOrder(graphene.Mutation):
                                                                           created_on=timezone.now())
                         if coupon.discount_type == 'DP':
                             coupon_history.discount_percent = coupon.discount_percent
+                            coupon_history.discount_amount = input.coupon_discount
                         else:
-                            coupon_history.discount_amount = coupon.discount_amount
+                            coupon_history.discount_amount = input.coupon_discount
                         coupon_history.save()
                         DiscountInfo.objects.create(discount_amount=input.coupon_discount,
                                                     discount_type='CP',
