@@ -5,6 +5,8 @@ import uuid
 import geocoder
 import graphene
 import requests
+from django.conf import settings
+
 from bases.views import checkAuthentication
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
@@ -184,6 +186,14 @@ class CreateOrder(graphene.Mutation):
                             CouponUser.objects.create(coupon_code=new_coupon,
                                                       created_for=coupon.created_by,
                                                       remaining_usage_count=1)
+                            if not settings.DEBUG:
+                                sms_body = "Dear Customer,\n" + \
+                                           "Congratulations! \nYou have received this " + \
+                                           "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
+                                           "successful referral.\n Use this code to " + \
+                                           "avail exciting discount on your next purchase.\n\n" + \
+                                           "www.shod.ai"
+                                send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
                         coupon_history = CouponCodeHistory.objects.create(discount_type=coupon.discount_type,
                                                                           coupon_code=input.code,
                                                                           coupon_user=is_using,
