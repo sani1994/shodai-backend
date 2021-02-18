@@ -88,7 +88,14 @@ INSTALLED_APPS = [
     'graphene_gis',
     'corsheaders',
     'leaflet',
+    'django_q'
 ]
+
+Q_CLUSTER = {
+    "name": "task_q",
+    "orm": "default",
+}
+
 # ELASTICSEARCH_DSL = {
 #     'default': {
 #         'hosts': 'localhost:9200'
@@ -235,6 +242,8 @@ else:
     LEAFLET_CONFIG['TILES'] = 'https://mapserver.koth.ai/v2/raster/normal/?z={z}&y={y}&x={x}&token=' + config("MAP_TOKEN")
 
 CORS_ORIGIN_ALLOW_ALL = True
+API_DOMAIN = config("API_DOMAIN")
+INTERNAL_BRICKBOX_API_URL = config("INTERNAL_BRICKBOX_API_URL")
 
 # try:
 #     from .local_settings import *
