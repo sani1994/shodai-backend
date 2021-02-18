@@ -13,7 +13,7 @@ from material.admin.sites import site
 from num2words import num2words
 
 from offer.models import OfferProduct
-from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
+from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo, DiscountInfo
 
 # Register your models here.
 from utility.pdf import render_to_pdf
@@ -28,8 +28,9 @@ class TimeSlotAdmin(MaterialModelAdmin):
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct
-    fields = ['product', 'order_product_price', 'order_product_qty', 'order_product_total_price']
-    readonly_fields = ['product', 'order_product_price', 'order_product_qty', 'order_product_total_price']
+    fields = ['product', 'product_price', 'order_product_price', 'order_product_qty', 'order_product_total_price']
+    readonly_fields = ['product', 'product_price', 'order_product_price', 'order_product_qty',
+                       'order_product_total_price']
 
     def order_product_total_price(self, obj):
         return obj.order_product_price * obj.order_product_qty
@@ -199,7 +200,7 @@ class OrderProductAdmin(MaterialModelAdmin):
     list_display = ('product', 'order_id', 'order_product_price', 'order_product_qty',
                     order_date)
     list_filter = ('order', 'order__delivery_date_time',)
-    readonly_fields = ['product', 'order', 'order_product_price', 'order_product_price_with_vat', 'vat_amount',
+    readonly_fields = ['product', 'product_price', 'order', 'order_product_price', 'order_product_price_with_vat', 'vat_amount',
                        'order_product_qty', 'created_by', 'modified_by', 'created_on']
     actions = ["export_as_csv"]
 
@@ -375,6 +376,21 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
             return super().save_model(request, obj, form, change)
 
 
+class DiscountInfoAdmin(MaterialModelAdmin):
+    list_display = ['id', 'discount_amount', 'discount_type', 'invoice', ]
+
+    search_fields = ['id', ]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 site.register(TimeSlot, TimeSlotAdmin)
 site.register(Order, OrderAdmin)
 site.register(OrderProduct, OrderProductAdmin)
@@ -382,3 +398,4 @@ site.register(Vat, VatAdmin)
 site.register(DeliveryCharge, DeliveryChargeAdmin)
 site.register(PaymentInfo, PaymentInfoAdmin)
 site.register(InvoiceInfo, InvoiceInfoAdmin)
+site.register(DiscountInfo, DiscountInfoAdmin)

@@ -1,6 +1,10 @@
+import datetime
+import uuid
+
 import graphene
 from datetime import timedelta
 
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from random import randint
@@ -8,6 +12,7 @@ from random import randint
 from django.utils.crypto import get_random_string
 
 from bases.views import checkAuthentication
+from coupon.models import CouponCode
 from utility.notification import send_sms, email_notification, otp_text, send_sms_otp
 from .queries import UserType, AddressType
 from ..models import UserProfile, Address, BlackListedToken
@@ -71,6 +76,7 @@ class UserCreateMutation(graphene.Mutation):
     otp_status = graphene.String()
     token = graphene.String()
     refresh_token = graphene.String()
+    code = graphene.String()
 
     class Arguments:
         input = UserInfoInput(required=True)
@@ -105,10 +111,29 @@ class UserCreateMutation(graphene.Mutation):
             otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                 otp_code))
             otp_status = "OTP send successfully" if otp_flag else "OTP failed"
+            coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                               name="Referral Code",
+                                               discount_percent=5,
+                                               max_usage_count=3,
+                                               discount_amount_limit=200,
+                                               expiry_date=timezone.now() + datetime.timedelta(
+                                                   days=30),
+                                               discount_type='DP',
+                                               coupon_code_type='RC',
+                                               created_by=user_instance,
+                                               created_on=timezone.now())
+            if not settings.DEBUG:
+                sms_body = "Dear Customer,\n" + \
+                           "Congratulations on creating your Shodai account! \n" + \
+                           "Share the code [{}] with your friends and ".format(coupon.coupon_code) + \
+                           "family to avail exciting discount on your next purchase.\n\n" + \
+                           "www.shod.ai"
+                send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
             return UserCreateMutation(user=user_instance,
                                       token=token,
                                       refresh_token=refresh_token,
-                                      otp_status=otp_status)
+                                      otp_status=otp_status,
+                                      code=coupon.coupon_code)
 
 
 class UserUpdateMutation(graphene.Mutation):
