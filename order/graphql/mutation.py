@@ -122,7 +122,7 @@ class CreateOrder(graphene.Mutation):
                                                       contact_number=input.contact_number if input.contact_number else user.mobile_number
                                                       )
                 product_list = input.products
-                sub_total_without_offer = total_vat = 0
+                sub_total_without_offer = total_vat = sub_total = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
@@ -131,6 +131,7 @@ class CreateOrder(graphene.Mutation):
                                                      order_product_qty=p.order_product_qty)
 
                     sub_total_without_offer += float(product.product_price) * p.order_product_qty
+                    sub_total += float(op.order_product_price) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
@@ -154,15 +155,14 @@ class CreateOrder(graphene.Mutation):
                                                      delivery_address=order_instance.address.road,
                                                      delivery_date_time=order_instance.delivery_date_time,
                                                      delivery_charge=delivery_charge,
-                                                     discount_amount=sub_total_without_offer - float(
-                                                         input.order_total_price),
-                                                     net_payable_amount=input.net_pay_able_amount,
+                                                     discount_amount=sub_total_without_offer - sub_total,
+                                                     net_payable_amount=order_instance.order_total_price,
                                                      payment_method=input.payment_method,
                                                      order_number=order_instance,
                                                      user=user,
                                                      created_by=user)
-                if sub_total_without_offer != float(input.order_total_price):
-                    DiscountInfo.objects.create(discount_amount=input.coupon_discount,
+                if sub_total_without_offer != sub_total:
+                    DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
                                                 discount_type='OP',
                                                 invoice=invoice)
                 if input.code:
