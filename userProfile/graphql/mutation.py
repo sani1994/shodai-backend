@@ -124,9 +124,10 @@ class UserCreateMutation(graphene.Mutation):
                                                created_on=timezone.now())
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
-                           "Congratulations on creating your Shodai account! \n" + \
+                           "Congratulations for your Shodai account! \n" + \
                            "Share the code [{}] with your friends and ".format(coupon.coupon_code) + \
-                           "family to avail exciting discount on your next purchase.\n\n" + \
+                           "family to avail them discount on their next purchase.\n" + \
+                           "Also receive exciting discount after each successful referral.\n\n" +\
                            "www.shod.ai"
                 send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
             return UserCreateMutation(user=user_instance,

@@ -263,9 +263,11 @@ class InvoiceInfo(BaseModel):
 class DiscountInfo(BaseModel):
     OFFER_DISCOUNT = 'OF'
     COUPON_DISCOUNT = 'CP'
+    PRODUCT_DISCOUNT = 'OP'
     DISCOUNT_TYPE = [
         (OFFER_DISCOUNT, 'Offer Discount'),
         (COUPON_DISCOUNT, 'Coupon Discount'),
+        (PRODUCT_DISCOUNT, 'Offer Product Discount'),
     ]
     discount_amount = models.FloatField(default=0, blank=True, null=True, )
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=OFFER_DISCOUNT)

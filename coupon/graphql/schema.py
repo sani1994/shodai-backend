@@ -1,6 +1,6 @@
 import graphene
 
 from .mutation import Mutation
-# from .queries import Query
+from .queries import Query
 
-schema = graphene.Schema(mutation=Mutation)
+schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -161,6 +161,10 @@ class CreateOrder(graphene.Mutation):
                                                      order_number=order_instance,
                                                      user=user,
                                                      created_by=user)
+                if sub_total_without_offer != float(input.order_total_price):
+                    DiscountInfo.objects.create(discount_amount=input.coupon_discount,
+                                                discount_type='OP',
+                                                invoice=invoice)
                 if input.code:
                     coupon = CouponCode.objects.filter(coupon_code=input.code, expiry_date__gte=timezone.now())
                     if coupon:
@@ -192,7 +196,7 @@ class CreateOrder(graphene.Mutation):
                                            "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
                                            "successful referral.\n Use this code to " + \
                                            "avail exciting discount on your next purchase.\n\n" + \
-                                           "www.shod.ai"
+                                           "Visit www.shod.ai for detail."
                                 send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
                         coupon_history = CouponCodeHistory.objects.create(discount_type=coupon.discount_type,
                                                                           coupon_code=input.code,
