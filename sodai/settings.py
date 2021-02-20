@@ -242,8 +242,10 @@ else:
     LEAFLET_CONFIG['TILES'] = 'https://mapserver.koth.ai/v2/raster/normal/?z={z}&y={y}&x={x}&token=' + config("MAP_TOKEN")
 
 CORS_ORIGIN_ALLOW_ALL = True
+
 API_DOMAIN = config("API_DOMAIN")
 INTERNAL_BRICKBOX_API_URL = config("INTERNAL_BRICKBOX_API_URL")
+INTERNAL_BRICKBOX_API_TOKEN = config("INTERNAL_BRICKBOX_API_TOKEN")
 
 # try:
 #     from .local_settings import *
