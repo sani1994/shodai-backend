@@ -28,7 +28,9 @@ class ProductUnitAdmin(MaterialModelAdmin):
         else:
             obj.created_by = request.user
         obj.save()
-        return super().save_model(request, obj, form, change)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class RemarksAdmin(MaterialModelAdmin):

@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 from bases.models import BaseModel
 from utility.models import ProductUnit
@@ -71,18 +70,6 @@ class Product(BaseModel):
     price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
                                          verbose_name='Product Price With Vat')  # Product Price with vat
     history = HistoricalRecords()
-
-    def save(self, *args, **kwargs):
-        """calculte price_with_vat using vat field from product meta object"""
-        if self.product_meta.vat_amount:
-            price = float(self.product_price) + (float(self.product_price) * self.product_meta.vat_amount) / 100
-            self.price_with_vat = round(price)
-            super(Product, self).save(*args, **kwargs)
-        else:
-            self.price_with_vat = self.product_price
-
-        self.slug = slugify(self.product_name) + "-" + slugify(self.product_unit.product_unit)
-        super(Product, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.product_name + " " + self.product_unit.product_unit + " (price: " + str(self.product_price) + ")"
