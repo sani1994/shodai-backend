@@ -4,7 +4,7 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 
 from bases.models import BaseModel
-# from order.models import Order, InvoiceInfo
+from order.models import InvoiceInfo
 from userProfile.models import UserProfile
 
 DISCOUNT_PERCENT = 'DP'
@@ -42,23 +42,21 @@ class CouponCode(BaseModel):
 
 
 class CouponUser(BaseModel):
-    created_for = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True, verbose_name="Created For")
+    created_for = models.ForeignKey(UserProfile, models.SET_NULL, blank=True, null=True)
     remaining_usage_count = models.IntegerField(default=0, blank=True, null=True, )
-    coupon_code = models.ForeignKey(CouponCode, on_delete=models.CASCADE, related_name='discount_code')
+    coupon_code = models.ForeignKey(CouponCode, models.CASCADE, related_name='discount_code')
 
     def __str__(self):
         return str(self.created_for)
 
 
-class CouponCodeHistory(BaseModel):
+class CouponUsageHistory(BaseModel):
     discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
     discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Amount')
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
     coupon_code = models.CharField(max_length=10, null=False, blank=False)
     coupon_user = models.ForeignKey(CouponUser, models.SET_NULL, null=True, verbose_name="Reference")
-    order = models.ForeignKey(to='order.Order', on_delete=models.SET_NULL, null=True, related_name='order_id')
-    invoice_number = models.ForeignKey(to='order.InvoiceInfo', on_delete=models.SET_NULL, null=True,
-                                       related_name='invoices')
+    invoice_number = models.ForeignKey(InvoiceInfo, models.SET_NULL, null=True)
 
     def __str__(self):
         return str(self.id) + " - " + "Coupon: " + str(self.coupon_code)

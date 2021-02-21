@@ -5,8 +5,7 @@ from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import ugettext_lazy as _
 
-from coupon.models import CouponCode
-from offer.models import OfferProduct, Offer
+from offer.models import OfferProduct
 from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
@@ -261,20 +260,18 @@ class InvoiceInfo(BaseModel):
 
 
 class DiscountInfo(BaseModel):
-    OFFER_DISCOUNT = 'OF'
     COUPON_DISCOUNT = 'CP'
-    PRODUCT_DISCOUNT = 'OP'
+    PRODUCT_DISCOUNT = 'PD'
+    DELIVERY_CHARGE_DISCOUNT = 'DC'
     DISCOUNT_TYPE = [
-        (OFFER_DISCOUNT, 'Offer Discount'),
         (COUPON_DISCOUNT, 'Coupon Discount'),
-        (PRODUCT_DISCOUNT, 'Offer Product Discount'),
+        (PRODUCT_DISCOUNT, 'Product Discount'),
+        (DELIVERY_CHARGE_DISCOUNT, 'Delivery Charge Discount')
     ]
     discount_amount = models.FloatField(default=0, blank=True, null=True, )
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=OFFER_DISCOUNT)
-    coupon = models.ForeignKey(CouponCode, on_delete=models.CASCADE, related_name='code', null=True, blank=True)
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offers',
-                              null=True, blank=True)
-    invoice = models.ForeignKey(InvoiceInfo, on_delete=models.CASCADE, related_name='invoice_info')
+    discount_description = models.CharField(max_length=500, null=True, blank=True)
+    invoice = models.ForeignKey(InvoiceInfo, models.CASCADE, related_name='discounts')
 
     def __str__(self):
         return str(self.id) + " - " + "InvoiceNumber: " + str(self.invoice.invoice_number)
