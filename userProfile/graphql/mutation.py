@@ -1,4 +1,3 @@
-import datetime
 import uuid
 
 import graphene
@@ -116,18 +115,17 @@ class UserCreateMutation(graphene.Mutation):
                                                discount_percent=5,
                                                max_usage_count=3,
                                                discount_amount_limit=200,
-                                               expiry_date=timezone.now() + datetime.timedelta(
-                                                   days=30),
+                                               expiry_date=timezone.now() + timedelta(days=90),
                                                discount_type='DP',
                                                coupon_code_type='RC',
                                                created_by=user_instance,
                                                created_on=timezone.now())
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
-                           "Congratulations for your Shodai account! \n" + \
-                           "Share the code [{}] with your friends and ".format(coupon.coupon_code) + \
-                           "family to avail them discount on their next purchase.\n" + \
-                           "Also receive exciting discount after each successful referral.\n\n" +\
+                           "Congratulations for your Shodai account!\n" + \
+                           "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
+                           "family to avail them discount on their next purchase and " + \
+                           "receive exciting discount after each successful referral.\n\n" +\
                            "www.shod.ai"
                 send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
             return UserCreateMutation(user=user_instance,
@@ -191,7 +189,7 @@ class RetailerProducerCreateMutation(graphene.Mutation):
             user_instance.save()
 
             """
-            To send notification to admin 
+            To send notification to admin
             """
             sub = "Approval Request For Retailer Account"
             body = f"Dear Concern,\r\n User phone number :{user_instance.mobile_number} " \

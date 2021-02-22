@@ -9,6 +9,7 @@ from ..models import CouponCode, CouponUser
 class CouponType(DjangoObjectType):
     class Meta:
         model = CouponCode
+        fields = ['coupon_code', 'expiry_date']
 
 
 class Query(graphene.ObjectType):
