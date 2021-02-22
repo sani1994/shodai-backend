@@ -10,10 +10,12 @@ from utility.graphql.schema import Query as utility_query
 from customer_service.graphql.schema import Mutation as customer_service_mutation
 from customer_service.graphql.schema import Query as customer_service_query
 from offer.graphql.schema import Query as offer_query
+from coupon.graphql.schema import Query as coupon_query
 from coupon.graphql.schema import Mutation as coupon_mutation
 
 
-class Query(product_query, user_query, order_query, utility_query, customer_service_query, offer_query):
+class Query(product_query, user_query, order_query, utility_query, customer_service_query,
+            offer_query, coupon_query):
     # This class will inherit from multiple Queries
     pass
 

@@ -1,10 +1,11 @@
-import datetime
 import json
 import uuid
 
 import geocoder
 import graphene
 import requests
+
+from datetime import timedelta
 from django.conf import settings
 
 from bases.views import checkAuthentication
@@ -17,7 +18,8 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 from graphql_relay.utils import unbase64
 
-from coupon.models import CouponCode, CouponUser, CouponCodeHistory
+from coupon.models import CouponCode, CouponUser, CouponUsageHistory
+from coupon.graphql.mutation import coupon_checker
 from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
@@ -80,7 +82,6 @@ class OrderInput(graphene.InputObjectType):
     payment_method = graphene.NonNull(PaymentMethodEnum)
     note = graphene.String()
     code = graphene.String()
-    coupon_discount = graphene.Float()
 
 
 class EmailInput(graphene.InputObjectType):
@@ -119,10 +120,10 @@ class CreateOrder(graphene.Mutation):
                                                       long=input.long,
                                                       order_status="OD",
                                                       order_type=input.order_type,
-                                                      contact_number=input.contact_number if input.contact_number else user.mobile_number
-                                                      )
+                                                      contact_number=input.contact_number if input.contact_number else user.mobile_number)
+
                 product_list = input.products
-                sub_total_without_offer = total_vat = 0
+                sub_total_without_offer = total_vat = sub_total = 0
                 for p in product_list:
                     product_id = from_global_id(p.product_id)
                     product = Product.objects.get(id=product_id)
@@ -131,7 +132,48 @@ class CreateOrder(graphene.Mutation):
                                                      order_product_qty=p.order_product_qty)
 
                     sub_total_without_offer += float(product.product_price) * p.order_product_qty
+                    sub_total += float(op.order_product_price) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
+
+                coupon_discount_amount = 0
+                if input.code:
+                    coupon_is_valid, coupon, is_using = coupon_checker(input.code, user)
+                    if coupon_is_valid:
+                        is_using.remaining_usage_count -= 1
+                        is_using.save()
+                        coupon.max_usage_count -= 1
+                        coupon.save()
+                        if coupon.coupon_code_type == 'RC':
+                            new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                                   name="Discount Code",
+                                                                   discount_percent=5,
+                                                                   max_usage_count=1,
+                                                                   discount_amount_limit=200,
+                                                                   expiry_date=timezone.now() + timedelta(days=30),
+                                                                   discount_type='DP',
+                                                                   coupon_code_type='DC',
+                                                                   created_by=user,
+                                                                   created_on=timezone.now())
+                            CouponUser.objects.create(coupon_code=new_coupon,
+                                                      created_for=coupon.created_by,
+                                                      remaining_usage_count=1,
+                                                      created_by=user,
+                                                      created_on=timezone.now())
+                            if not settings.DEBUG:
+                                sms_body = "Dear Customer,\n" + \
+                                           "Congratulations! You have received this " + \
+                                           "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
+                                           "successful referral. Use this code to " + \
+                                           "avail exciting discount on your next purchase.\n\n" + \
+                                           "www.shod.ai"
+                                send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
+
+                        if coupon.discount_type == 'DP':
+                            coupon_discount_amount = round(sub_total * (coupon.discount_percent / 100))
+                            if coupon_discount_amount > coupon.discount_amount_limit:
+                                coupon_discount_amount = coupon.discount_amount_limit
+                        elif coupon.discount_type == 'DA':
+                            coupon_discount_amount = coupon.discount_amount
 
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 if input.note:
@@ -141,11 +183,15 @@ class CreateOrder(graphene.Mutation):
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.total_vat = total_vat
-                order_instance.order_total_price = float(input.order_total_price) + total_vat + delivery_charge
+                order_instance.order_total_price = sub_total + total_vat + delivery_charge - coupon_discount_amount
                 order_instance.save()
 
-                # Create InvoiceInfo Instance
-                billing_person_name = user.first_name + " " + user.last_name
+                if user.first_name and user.last_name:
+                    billing_person_name = user.first_name + " " + user.last_name
+                elif user.first_name:
+                    billing_person_name = user.first_name
+                else:
+                    billing_person_name = ""
                 invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
                                                      billing_person_name=billing_person_name,
                                                      billing_person_email=user.email,
@@ -154,65 +200,30 @@ class CreateOrder(graphene.Mutation):
                                                      delivery_address=order_instance.address.road,
                                                      delivery_date_time=order_instance.delivery_date_time,
                                                      delivery_charge=delivery_charge,
-                                                     discount_amount=sub_total_without_offer - float(
-                                                         input.order_total_price),
-                                                     net_payable_amount=input.net_pay_able_amount,
+                                                     discount_amount=sub_total_without_offer - sub_total + coupon_discount_amount,
+                                                     net_payable_amount=order_instance.order_total_price,
                                                      payment_method=input.payment_method,
                                                      order_number=order_instance,
                                                      user=user,
                                                      created_by=user)
-                if input.code:
-                    coupon = CouponCode.objects.filter(coupon_code=input.code, expiry_date__gte=timezone.now())
-                    if coupon:
-                        coupon = coupon[0]
-                        is_using = CouponUser.objects.get(coupon_code=coupon,
-                                                          created_for=user)
-                        is_using.remaining_usage_count -= 1
-                        is_using.save()
-                        if coupon.coupon_code_type == 'RC':
-                            coupon.max_usage_count -= 1
-                            coupon.save()
-                            new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                                   name="Discount Code",
-                                                                   discount_percent=5,
-                                                                   max_usage_count=1,
-                                                                   discount_amount_limit=200,
-                                                                   expiry_date=timezone.now() + datetime.timedelta(
-                                                                       days=30),
-                                                                   discount_type='DP',
-                                                                   coupon_code_type='DC',
-                                                                   created_by=user,
-                                                                   created_on=timezone.now())
-                            CouponUser.objects.create(coupon_code=new_coupon,
-                                                      created_for=coupon.created_by,
-                                                      remaining_usage_count=1)
-                            if not settings.DEBUG:
-                                sms_body = "Dear Customer,\n" + \
-                                           "Congratulations! \nYou have received this " + \
-                                           "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
-                                           "successful referral.\n Use this code to " + \
-                                           "avail exciting discount on your next purchase.\n\n" + \
-                                           "www.shod.ai"
-                                send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
-                        coupon_history = CouponCodeHistory.objects.create(discount_type=coupon.discount_type,
-                                                                          coupon_code=input.code,
-                                                                          coupon_user=is_using,
-                                                                          order=order_instance,
-                                                                          invoice_number=invoice,
-                                                                          created_by=user,
-                                                                          created_on=timezone.now())
-                        if coupon.discount_type == 'DP':
-                            coupon_history.discount_percent = coupon.discount_percent
-                            coupon_history.discount_amount = input.coupon_discount
-                        else:
-                            coupon_history.discount_amount = input.coupon_discount
-                        coupon_history.save()
-                        DiscountInfo.objects.create(discount_amount=input.coupon_discount,
-                                                    discount_type='CP',
-                                                    coupon=coupon,
-                                                    invoice=invoice)
-                        invoice.discount_amount += input.coupon_discount
-                        invoice.save()
+
+                if sub_total_without_offer != sub_total:
+                    DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
+                                                discount_type='PD',
+                                                invoice=invoice)
+                if coupon_is_valid:
+                    DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
+                                                discount_type='CP',
+                                                discount_description='Coupon Code: {}'.format(input.code),
+                                                invoice=invoice)
+                    CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
+                                                      discount_percent=coupon.discount_percent,
+                                                      discount_amount=coupon_discount_amount,
+                                                      coupon_code=input.code,
+                                                      coupon_user=is_using,
+                                                      invoice_number=invoice,
+                                                      created_by=user,
+                                                      created_on=timezone.now())
 
                 return CreateOrder(order=order_instance)
             else:
