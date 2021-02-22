@@ -5,7 +5,7 @@ from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 
-from coupon.models import CouponCode, CouponCodeHistory, CouponUser
+from coupon.models import CouponCode, CouponUser, CouponUsageHistory
 
 
 class CouponUserInline(admin.TabularInline):
@@ -35,9 +35,6 @@ class CouponCodeAdmin(MaterialModelAdmin):
         }),
     )
 
-    def has_delete_permission(self, request, obj=None):
-        return False
-
     def get_readonly_fields(self, request, obj=None):
         if obj:
             return ['name', 'coupon_code', 'discount_percent', 'discount_amount', 'discount_amount_limit',
@@ -49,20 +46,22 @@ class CouponCodeAdmin(MaterialModelAdmin):
         if obj.id:
             obj.modified_by = request.user
             obj.modified_on = timezone.now()
-        obj.created_by = request.user
-        obj.created_on = timezone.now()
-        return super().save_model(request, obj, form, change)
+        else:
+            obj.created_by = request.user
+            obj.created_on = timezone.now()
+        obj.save()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
-class CouponCodeHistoryAdmin(MaterialModelAdmin):
-    list_display = ['id', 'coupon_code', 'coupon_user', 'order', 'invoice_number']
+class CouponUsageHistoryAdmin(MaterialModelAdmin):
+    list_display = ['id', 'coupon_code', 'coupon_user', 'invoice_number']
     list_filter = ['created_on']
-    readonly_fields = ['id', 'coupon_code', 'coupon_user', 'order', 'invoice_number', 'discount_percent',
-                       'discount_amount', 'discount_type', 'created_by', 'modified_by', 'created_on', 'modified_on']
 
     fieldsets = (
         ('Coupon Detail View', {
-            'fields': ('coupon_code', 'coupon_user', 'order', 'invoice_number', 'discount_percent',
+            'fields': ('coupon_code', 'coupon_user', 'invoice_number', 'discount_percent',
                        'discount_amount', 'discount_type', 'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )
@@ -78,4 +77,4 @@ class CouponCodeHistoryAdmin(MaterialModelAdmin):
 
 
 site.register(CouponCode, CouponCodeAdmin)
-site.register(CouponCodeHistory, CouponCodeHistoryAdmin)
+site.register(CouponUsageHistory, CouponUsageHistoryAdmin)
