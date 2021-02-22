@@ -294,6 +294,20 @@ class PaymentInfoAdmin(MaterialModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+class DiscountInfoInline(admin.TabularInline):
+    model = DiscountInfo
+    fields = ['discount_amount', 'discount_type', 'discount_description']
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 class InvoiceInfoAdmin(MaterialModelAdmin):
     list_display = ['id', 'invoice_number', 'order_number', 'paid_status', 'paid_on']
 
@@ -316,6 +330,7 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
     )
 
     actions = ["export_as_csv"]
+    inlines = [DiscountInfoInline]
 
     def get_actions(self, request):
         actions = super(InvoiceInfoAdmin, self).get_actions(request)

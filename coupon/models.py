@@ -4,7 +4,6 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 
 from bases.models import BaseModel
-from order.models import InvoiceInfo
 from userProfile.models import UserProfile
 
 DISCOUNT_PERCENT = 'DP'
@@ -56,7 +55,7 @@ class CouponUsageHistory(BaseModel):
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
     coupon_code = models.CharField(max_length=10, null=False, blank=False)
     coupon_user = models.ForeignKey(CouponUser, models.SET_NULL, null=True, verbose_name="Reference")
-    invoice_number = models.ForeignKey(InvoiceInfo, models.SET_NULL, null=True)
+    invoice_number = models.ForeignKey(to='order.InvoiceInfo', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return str(self.id) + " - " + "Coupon: " + str(self.coupon_code)

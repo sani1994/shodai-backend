@@ -5,7 +5,8 @@ from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import ugettext_lazy as _
 
-from offer.models import OfferProduct
+from coupon.models import CouponCode
+from offer.models import OfferProduct, Offer
 from userProfile.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
@@ -269,8 +270,11 @@ class DiscountInfo(BaseModel):
         (DELIVERY_CHARGE_DISCOUNT, 'Delivery Charge Discount')
     ]
     discount_amount = models.FloatField(default=0, blank=True, null=True, )
-    discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=OFFER_DISCOUNT)
+    discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=PRODUCT_DISCOUNT)
     discount_description = models.CharField(max_length=500, null=True, blank=True)
+    coupon = models.ForeignKey(CouponCode, on_delete=models.CASCADE, related_name='code', null=True, blank=True)
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offers',
+                              null=True, blank=True)
     invoice = models.ForeignKey(InvoiceInfo, models.CASCADE, related_name='discounts')
 
     def __str__(self):
