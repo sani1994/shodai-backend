@@ -272,9 +272,8 @@ class DiscountInfo(BaseModel):
     discount_amount = models.FloatField(default=0, blank=True, null=True, )
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=PRODUCT_DISCOUNT)
     discount_description = models.CharField(max_length=500, null=True, blank=True)
-    coupon = models.ForeignKey(CouponCode, on_delete=models.CASCADE, related_name='code', null=True, blank=True)
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offers',
-                              null=True, blank=True)
+    coupon = models.ForeignKey(CouponCode, models.SET_NULL, null=True)
+    offer = models.ForeignKey(Offer, models.SET_NULL, null=True)
     invoice = models.ForeignKey(InvoiceInfo, models.CASCADE, related_name='discounts')
 
     def __str__(self):
