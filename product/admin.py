@@ -4,7 +4,7 @@ import numpy as np
 
 from builtins import super
 from django.contrib import admin, messages
-from django.forms import forms
+from django import forms
 from django.shortcuts import redirect, render
 from django.urls import path
 from material.admin.options import MaterialModelAdmin
