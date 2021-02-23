@@ -81,7 +81,7 @@ class OrderInput(graphene.InputObjectType):
     products = graphene.List(OrderProductInput)
     payment_method = graphene.NonNull(PaymentMethodEnum)
     note = graphene.String()
-    code = graphene.String()
+    code = graphene.String(required=True)
 
 
 class EmailInput(graphene.InputObjectType):
@@ -215,6 +215,7 @@ class CreateOrder(graphene.Mutation):
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
                                                 discount_type='CP',
                                                 discount_description='Coupon Code: {}'.format(input.code),
+                                                coupon=coupon,
                                                 invoice=invoice)
                     CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
                                                       discount_percent=coupon.discount_percent,
