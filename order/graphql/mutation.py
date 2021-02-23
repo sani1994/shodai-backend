@@ -211,7 +211,7 @@ class CreateOrder(graphene.Mutation):
                     DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
                                                 discount_type='PD',
                                                 invoice=invoice)
-                if coupon_is_valid:
+                if input.code and coupon_is_valid:
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
                                                 discount_type='CP',
                                                 discount_description='Coupon Code: {}'.format(input.code),
@@ -219,7 +219,7 @@ class CreateOrder(graphene.Mutation):
                     CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
                                                       discount_percent=coupon.discount_percent,
                                                       discount_amount=coupon_discount_amount,
-                                                      coupon_code=input.code,
+                                                      coupon_code=coupon.coupon_code,
                                                       coupon_user=is_using,
                                                       invoice_number=invoice,
                                                       created_by=user,
