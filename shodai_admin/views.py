@@ -20,7 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination, field_validation, type_validation
 from offer.models import Offer, CartOffer
-from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot
+from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
 from product.models import Product
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer
@@ -515,21 +515,21 @@ class OrderDetail(APIView):
                 discount_amount += delivery_charge_discount
 
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
-            InvoiceInfo.objects.create(invoice_number=order.invoice_number,
-                                       billing_person_name=billing_person_name,
-                                       billing_person_email=order.user.email,
-                                       billing_person_mobile_number=order.user.mobile_number,
-                                       delivery_contact_number=order.contact_number,
-                                       delivery_address=delivery_address.road,
-                                       delivery_date_time=order.delivery_date_time,
-                                       delivery_charge=delivery_charge,
-                                       discount_amount=discount_amount,
-                                       discount_description=discount_description,
-                                       net_payable_amount=order.order_total_price,
-                                       payment_method=payment_method,
-                                       order_number=order,
-                                       user=order.user,
-                                       created_by=request.user)
+            invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                                 billing_person_name=billing_person_name,
+                                                 billing_person_email=order.user.email,
+                                                 billing_person_mobile_number=order.user.mobile_number,
+                                                 delivery_contact_number=order.contact_number,
+                                                 delivery_address=delivery_address.road,
+                                                 delivery_date_time=order.delivery_date_time,
+                                                 delivery_charge=delivery_charge,
+                                                 discount_amount=discount_amount,
+                                                 discount_description=discount_description,
+                                                 net_payable_amount=order.order_total_price,
+                                                 payment_method=payment_method,
+                                                 order_number=order,
+                                                 user=order.user,
+                                                 created_by=request.user)
             order.save()
             return Response({
                 "status": "success",
@@ -719,21 +719,32 @@ class CreateOrder(APIView):
         order_instance.save()
 
         billing_person_name = user_instance.first_name + " " + user_instance.last_name
-        InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                   billing_person_name=billing_person_name,
-                                   billing_person_email=user_instance.email,
-                                   billing_person_mobile_number=user_instance.mobile_number,
-                                   delivery_contact_number=order_instance.contact_number,
-                                   delivery_address=delivery_address.road,
-                                   delivery_date_time=order_instance.delivery_date_time,
-                                   delivery_charge=delivery_charge,
-                                   discount_description=discount_description,
-                                   discount_amount=total_price - total_op_price + delivery_charge_discount,
-                                   net_payable_amount=order_instance.order_total_price,
-                                   payment_method="CASH_ON_DELIVERY",
-                                   order_number=order_instance,
-                                   user=user_instance,
-                                   created_by=request.user)
+        invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                             billing_person_name=billing_person_name,
+                                             billing_person_email=user_instance.email,
+                                             billing_person_mobile_number=user_instance.mobile_number,
+                                             delivery_contact_number=order_instance.contact_number,
+                                             delivery_address=delivery_address.road,
+                                             delivery_date_time=order_instance.delivery_date_time,
+                                             delivery_charge=delivery_charge,
+                                             discount_description=discount_description,
+                                             discount_amount=total_price - total_op_price + delivery_charge_discount,
+                                             net_payable_amount=order_instance.order_total_price,
+                                             payment_method="CASH_ON_DELIVERY",
+                                             order_number=order_instance,
+                                             user=user_instance,
+                                             created_by=request.user)
+        if total_price != total_op_price:
+            DiscountInfo.objects.create(discount_amount=total_price - total_op_price,
+                                        discount_type='PD',
+                                        discount_description='Product Offer Discount',
+                                        invoice=invoice)
+        if delivery_charge_discount > 0:
+            DiscountInfo.objects.create(discount_amount=delivery_charge_discount,
+                                        discount_type='DC',
+                                        discount_description='Offer ID: {}'.format(offer_id),
+                                        offer=offer[0],
+                                        invoice=invoice)
 
         return Response({'status': 'success',
                          'message': 'Order placed.',

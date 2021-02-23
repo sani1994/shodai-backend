@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from offer.models import OfferProduct, Offer, CartOffer
-from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot
+from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo
 from product.models import Product
 from userProfile.models import UserProfile
 
@@ -94,8 +94,9 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return 'Cash on Delivery' if obj.payment_method == 'CASH_ON_DELIVERY' else 'Online Payment'
 
     def get_offer_id(self, obj):
-        if obj.discount_description:
-            return int(obj.discount_description.split(",")[0].split(":")[1])
+        discount = DiscountInfo.objects.filter(discount_type='DC', invoice=obj)
+        if discount:
+            return discount[0].offer.id
         else:
             return None
 
