@@ -432,7 +432,6 @@ class OrderDetail(APIView):
             billing_person_name = order.user.first_name + " " + order.user.last_name
             delivery_charge = invoice.delivery_charge
             delivery_charge_discount = 0
-            discount_description = ""
             if offer_id and isinstance(offer_id, int):
                 today = timezone.now()
                 offer = Offer.objects.filter(id=offer_id, offer_types="DD", is_approved=True,
@@ -443,8 +442,7 @@ class OrderDetail(APIView):
                         delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
                         delivery_charge = cart_offer.updated_delivery_charge
                         delivery_charge_global = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-                        discount_description = "offer_id:" + str(offer_id) + "," + \
-                                               "discount_amount:" + str(delivery_charge_global - delivery_charge) + ";"
+
             if products_updated:
                 if "-" in order.order_number:
                     x = order.order_number.split("-")
@@ -503,11 +501,10 @@ class OrderDetail(APIView):
 
             if products_updated:
                 discount_amount = total_price - total_op_price
-                if delivery_charge_discount == 0 and invoice.discount_description:
-                    prev_delivery_charge_discount = float(
-                        invoice.discount_description.split(",")[1].split(":")[1].split(";")[0])
+                discount = DiscountInfo.objects.filter(discount_type='DC', invoice=invoice)
+                if delivery_charge_discount == 0 and discount:
+                    prev_delivery_charge_discount = discount[0].discount_amount
                     discount_amount += prev_delivery_charge_discount
-                    discount_description = invoice.discount_description
                 else:
                     discount_amount += delivery_charge_discount
             else:
@@ -524,13 +521,24 @@ class OrderDetail(APIView):
                                                  delivery_date_time=order.delivery_date_time,
                                                  delivery_charge=delivery_charge,
                                                  discount_amount=discount_amount,
-                                                 discount_description=discount_description,
                                                  net_payable_amount=order.order_total_price,
                                                  payment_method=payment_method,
                                                  order_number=order,
                                                  user=order.user,
                                                  created_by=request.user)
             order.save()
+
+            if products_updated and total_price != total_op_price:
+                DiscountInfo.objects.create(discount_amount=total_price - total_op_price,
+                                            discount_type='PD',
+                                            discount_description='Product Offer Discount',
+                                            invoice=invoice)
+            if delivery_charge_discount != 0:
+                DiscountInfo.objects.create(discount_amount=delivery_charge_global - delivery_charge,
+                                            discount_type='DC',
+                                            discount_description='Offer ID: {}'.format(offer_id),
+                                            offer=offer[0],
+                                            invoice=invoice)
             return Response({
                 "status": "success",
                 "message": "Order updated.",
@@ -638,7 +646,6 @@ class CreateOrder(APIView):
 
         delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
         delivery_charge_discount = 0
-        discount_description = ""
         if offer_id and isinstance(offer_id, int):
             today = timezone.now()
             offer = Offer.objects.filter(id=offer_id, offer_types="DD", is_approved=True,
@@ -648,8 +655,6 @@ class CreateOrder(APIView):
                 if cart_offer:
                     delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
                     delivery_charge = cart_offer.updated_delivery_charge
-                    discount_description = "offer_id:" + str(offer_id) + "," + \
-                                           "discount_amount:" + str(delivery_charge_discount) + ";"
 
         try:
             user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
@@ -727,7 +732,6 @@ class CreateOrder(APIView):
                                              delivery_address=delivery_address.road,
                                              delivery_date_time=order_instance.delivery_date_time,
                                              delivery_charge=delivery_charge,
-                                             discount_description=discount_description,
                                              discount_amount=total_price - total_op_price + delivery_charge_discount,
                                              net_payable_amount=order_instance.order_total_price,
                                              payment_method="CASH_ON_DELIVERY",
