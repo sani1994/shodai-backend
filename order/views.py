@@ -12,7 +12,7 @@ from rest_framework.generics import get_object_or_404
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
     OrderDetailPaymentSerializer, TimeSlotSerializer
-from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo
+from order.models import OrderProduct, Order, Vat, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo, DiscountInfo
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -254,6 +254,10 @@ class OrderProductList(APIView):
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             invoice.discount_amount = float(round(total_price_without_offer - sub_total))
             invoice.save()
+            if total_price_without_offer != sub_total:
+                DiscountInfo.objects.create(discount_amount=total_price_without_offer - sub_total,
+                                            discount_type='PD',
+                                            invoice=invoice)
 
             content = {'user_name': billing_person_name,
                        'order_number': order_instance.order_number,
