@@ -81,12 +81,13 @@ class CustomerSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     payment_method = serializers.SerializerMethodField(read_only=True)
     offer_id = serializers.SerializerMethodField(read_only=True)
+    coupon_discount = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = InvoiceInfo
         fields = (
             "invoice_number", "delivery_charge", "discount_amount",
-            "paid_status", "payment_method", "offer_id"
+            "paid_status", "payment_method", "offer_id", "coupon_discount"
         )
         read_only_fields = ["invoice_number", "discount_amount", "payment_method", "offer_id"]
 
@@ -96,7 +97,15 @@ class InvoiceSerializer(serializers.ModelSerializer):
     def get_offer_id(self, obj):
         discount = DiscountInfo.objects.filter(discount_type='DC', invoice=obj)
         if discount:
+            print(discount)
             return discount[0].offer.id
+        else:
+            return None
+
+    def get_coupon_discount(self, obj):
+        discount = DiscountInfo.objects.filter(discount_type='CP', invoice=obj)
+        if discount:
+            return discount[0].discount_amount
         else:
             return None
 

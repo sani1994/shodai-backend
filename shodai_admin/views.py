@@ -512,33 +512,41 @@ class OrderDetail(APIView):
                 discount_amount += delivery_charge_discount
 
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
-            invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
-                                                 billing_person_name=billing_person_name,
-                                                 billing_person_email=order.user.email,
-                                                 billing_person_mobile_number=order.user.mobile_number,
-                                                 delivery_contact_number=order.contact_number,
-                                                 delivery_address=delivery_address.road,
-                                                 delivery_date_time=order.delivery_date_time,
-                                                 delivery_charge=delivery_charge,
-                                                 discount_amount=discount_amount,
-                                                 net_payable_amount=order.order_total_price,
-                                                 payment_method=payment_method,
-                                                 order_number=order,
-                                                 user=order.user,
-                                                 created_by=request.user)
+            new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                                     billing_person_name=billing_person_name,
+                                                     billing_person_email=order.user.email,
+                                                     billing_person_mobile_number=order.user.mobile_number,
+                                                     delivery_contact_number=order.contact_number,
+                                                     delivery_address=delivery_address.road,
+                                                     delivery_date_time=order.delivery_date_time,
+                                                     delivery_charge=delivery_charge,
+                                                     discount_amount=discount_amount,
+                                                     net_payable_amount=order.order_total_price,
+                                                     payment_method=payment_method,
+                                                     order_number=order,
+                                                     user=order.user,
+                                                     created_by=request.user)
             order.save()
+
+            coupon = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+            if coupon:
+                coupon = coupon[0]
+                DiscountInfo.objects.create(discount_amount=coupon.discount_amount,
+                                            discount_type='CP',
+                                            discount_description=coupon.discount_description,
+                                            invoice=new_invoice)
 
             if products_updated and total_price != total_op_price:
                 DiscountInfo.objects.create(discount_amount=total_price - total_op_price,
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
-                                            invoice=invoice)
+                                            invoice=new_invoice)
             if delivery_charge_discount != 0:
                 DiscountInfo.objects.create(discount_amount=delivery_charge_global - delivery_charge,
                                             discount_type='DC',
                                             discount_description='Offer ID: {}'.format(offer_id),
                                             offer=offer[0],
-                                            invoice=invoice)
+                                            invoice=new_invoice)
             return Response({
                 "status": "success",
                 "message": "Order updated.",
