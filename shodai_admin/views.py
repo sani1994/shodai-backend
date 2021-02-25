@@ -429,6 +429,7 @@ class OrderDetail(APIView):
                 delivery_address = order.address
 
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
+            coupon = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
             billing_person_name = order.user.first_name + " " + order.user.last_name
             delivery_charge = invoice.delivery_charge
             delivery_charge_discount = 0
@@ -483,13 +484,23 @@ class OrderDetail(APIView):
                     total += float(op.order_product_price_with_vat) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-                order.order_total_price = round(total) + delivery_charge
+                if coupon:
+                    coupon_code = coupon[0].coupon
+                    if coupon_code.discount_type == 'DP':
+                        coupon_discount = round(total * (coupon_code.discount_percent / 100))
+                        if coupon_discount > coupon_code.discount_amount_limit:
+                            coupon_discount = coupon_code.discount_amount_limit
+                    elif coupon_code.discount_type == 'DA':
+                        coupon_discount = coupon_code.discount_amount
+
+                order.order_total_price = round(total) + delivery_charge - coupon_discount
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note']
             else:
+                coupon_discount = coupon[0].discount_amount if coupon else 0
                 order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
@@ -501,9 +512,9 @@ class OrderDetail(APIView):
 
             if products_updated:
                 discount_amount = total_price - total_op_price
-                discount = DiscountInfo.objects.filter(discount_type='DC', invoice=invoice)
-                if delivery_charge_discount == 0 and discount:
-                    prev_delivery_charge_discount = discount[0].discount_amount
+                delivery_discount = DiscountInfo.objects.filter(discount_type='DC', invoice=invoice)
+                if delivery_charge_discount == 0 and delivery_discount:
+                    prev_delivery_charge_discount = delivery_discount[0].discount_amount
                     discount_amount += prev_delivery_charge_discount
                 else:
                     discount_amount += delivery_charge_discount
@@ -528,13 +539,13 @@ class OrderDetail(APIView):
                                                      created_by=request.user)
             order.save()
 
-            coupon = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
             if coupon:
                 coupon = coupon[0]
-                DiscountInfo.objects.create(discount_amount=coupon.discount_amount,
+                DiscountInfo.objects.create(discount_amount=coupon_discount,
                                             discount_type='CP',
                                             discount_description=coupon.discount_description,
-                                            invoice=new_invoice)
+                                            invoice=new_invoice,
+                                            coupon=coupon.coupon)
 
             if products_updated and total_price != total_op_price:
                 DiscountInfo.objects.create(discount_amount=total_price - total_op_price,

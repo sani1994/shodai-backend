@@ -97,7 +97,6 @@ class InvoiceSerializer(serializers.ModelSerializer):
     def get_offer_id(self, obj):
         discount = DiscountInfo.objects.filter(discount_type='DC', invoice=obj)
         if discount:
-            print(discount)
             return discount[0].offer.id
         else:
             return None
