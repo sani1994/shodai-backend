@@ -13,18 +13,19 @@ def coupon_checker(coupon_code, user):
         coupon = coupon[0]
         coupon_type = coupon.coupon_code_type
         if coupon_type == 'RC':
-            is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
-            if is_using:
-                is_using = is_using[0]
-                if is_using.remaining_usage_count > 0 and coupon.max_usage_count > 0:
+            if coupon.created_by != user:
+                is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
+                if is_using:
+                    is_using = is_using[0]
+                    if is_using.remaining_usage_count > 0 and coupon.max_usage_count > 0:
+                        coupon_is_valid = True
+                elif coupon.max_usage_count > 0:
                     coupon_is_valid = True
-            elif coupon.max_usage_count > 0:
-                coupon_is_valid = True
-                is_using = CouponUser.objects.create(coupon_code=coupon,
-                                                     created_for=user,
-                                                     remaining_usage_count=1,
-                                                     created_by=user,
-                                                     created_on=timezone.now())
+                    is_using = CouponUser.objects.create(coupon_code=coupon,
+                                                         created_for=user,
+                                                         remaining_usage_count=1,
+                                                         created_by=user,
+                                                         created_on=timezone.now())
         elif coupon_type == 'DC':
             is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user,
                                                  remaining_usage_count__gt=0)
