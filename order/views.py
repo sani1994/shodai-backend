@@ -250,15 +250,18 @@ class OrderProductList(APIView):
             order_instance.total_vat = total_vat
             order_instance.save()
 
-            # send email to user
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             invoice.discount_amount = float(round(total_price_without_offer - sub_total))
             invoice.save()
             if total_price_without_offer != sub_total:
                 DiscountInfo.objects.create(discount_amount=total_price_without_offer - sub_total,
                                             discount_type='PD',
+                                            discount_description='Product Offer Discount',
                                             invoice=invoice)
 
+            """
+            To send notification to customer
+            """
             content = {'user_name': billing_person_name,
                        'order_number': order_instance.order_number,
                        'shipping_address': address,
