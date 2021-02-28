@@ -861,13 +861,12 @@ class InvoiceDownloadPDF(APIView):
             total = float(p.product_price) * p.order_product_qty
             total_price_without_offer += total
             if p.order_product_price != p.product_price:
-                is_offer = True
                 total_by_offer = float(p.order_product_price) * p.order_product_qty
                 col = [p.product.product_name, p.product.product_unit, p.product_price,
-                       p.order_product_price, int(p.order_product_qty), total_by_offer]
+                       p.order_product_price, p.order_product_qty, total_by_offer]
             else:
                 col = [p.product.product_name, p.product.product_unit, p.product_price,
-                       "--", int(p.order_product_qty), total]
+                       "--", p.order_product_qty, total]
             matrix.append(col)
 
         invoice = InvoiceInfo.objects.filter(invoice_number=order.invoice_number)
@@ -885,6 +884,8 @@ class InvoiceDownloadPDF(APIView):
         delivery_charge = invoice.delivery_charge
         sub_total = order.order_total_price - order.total_vat - delivery_charge
         paid_status = invoice.paid_status
+        if invoice.discount_amount > 0:
+            is_offer = True
 
         if invoice.payment_method == "CASH_ON_DELIVERY":
             payment_method = "Cash on Delivery"
@@ -943,17 +944,18 @@ class OrderNotification(APIView):
                 matrix = []
                 total_price_without_offer = 0
                 is_offer = False
+                if invoice.discount_amount > 0:
+                    is_offer = True
                 for p in product_list:
                     total = float(p.product_price) * p.order_product_qty
                     total_price_without_offer += total
                     if p.order_product_price != p.product_price:
-                        is_offer = True
                         total_by_offer = float(p.order_product_price) * p.order_product_qty
                         col = [p.product.product_name, p.product.product_unit, p.product_price,
-                               p.order_product_price, int(p.order_product_qty), total_by_offer]
+                               p.order_product_price, p.order_product_qty, total_by_offer]
                     else:
                         col = [p.product.product_name, p.product.product_unit, p.product_price,
-                               "--", int(p.order_product_qty), total]
+                               "--", p.order_product_qty, total]
                     matrix.append(col)
 
                 time = TimeSlot.objects.get(time=timezone.localtime(order_instance.delivery_date_time).time())
