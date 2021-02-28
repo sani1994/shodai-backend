@@ -81,7 +81,7 @@ class OrderInput(graphene.InputObjectType):
     products = graphene.List(OrderProductInput)
     payment_method = graphene.NonNull(PaymentMethodEnum)
     note = graphene.String()
-    code = graphene.String()
+    code = graphene.String(required=True)
 
 
 class EmailInput(graphene.InputObjectType):
@@ -215,6 +215,7 @@ class CreateOrder(graphene.Mutation):
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
                                                 discount_type='CP',
                                                 discount_description='Coupon Code: {}'.format(input.code),
+                                                coupon=coupon,
                                                 invoice=invoice)
                     CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
                                                       discount_percent=coupon.discount_percent,
@@ -258,11 +259,12 @@ class SendEmail(graphene.Mutation):
             matrix = []
             total_price_without_offer = 0
             is_offer = False
+            if invoice.discount_amount > 0:
+                is_offer = True
             for p in product_list:
                 total = float(p.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 if p.order_product_price != p.product_price:
-                    is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
                     col = [p.product.product_name, p.product.product_unit, p.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
