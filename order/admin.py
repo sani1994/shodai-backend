@@ -47,7 +47,7 @@ class OrderProductInline(admin.TabularInline):
 
 class InvoiceInfoInline(admin.TabularInline):
     model = InvoiceInfo
-    fields = ['invoice_number', 'paid_status', 'payment_method']
+    fields = ['invoice_number', 'paid_status', 'payment_method', 'discount_amount']
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -71,72 +71,6 @@ class OrderAdmin(MaterialModelAdmin):
             return []
         else:
             return actions
-
-    def response_change(self, request, obj):
-        if "_download-pdf" in request.POST:
-            product_list = OrderProduct.objects.filter(order__pk=obj.id)
-            matrix = []
-            total_price_without_offer = 0
-            is_offer = False
-            for p in product_list:
-                total = float(p.product.product_price) * p.order_product_qty
-                total_price_without_offer += total
-                if p.order_product_price != p.product.product_price:
-                    is_offer = True
-                    total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
-                           p.order_product_price, int(p.order_product_qty), total_by_offer]
-                else:
-                    col = [p.product.product_name, p.product.product_unit, p.product.product_price,
-                           "--", int(p.order_product_qty), total]
-                matrix.append(col)
-
-            invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
-            if not invoice:
-                return HttpResponse("Not found")
-            invoice = invoice[0]
-            delivery_charge = invoice.delivery_charge
-            sub_total = obj.order_total_price - obj.total_vat - delivery_charge
-            paid_status = invoice.paid_status
-
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                payment_method = "Cash on Delivery"
-            else:
-                payment_method = "Online Payment"
-            data = {
-                'customer_name': obj.user.first_name + " " + obj.user.last_name,
-                'address': obj.address,
-                'user_email': obj.user.email,
-                'user_mobile': obj.user.mobile_number,
-                'order_id': obj.id,
-                'invoice_number': obj.invoice_number,
-                'created_on': obj.created_on,
-                'delivery_date': obj.delivery_date_time.date(),
-                'order_details': matrix,
-                'delivery': delivery_charge,
-                'vat': obj.total_vat,
-                'saved_amount': float(round(total_price_without_offer - sub_total)),
-                'sub_total': sub_total,
-                'total': obj.order_total_price,
-                'in_words': num2words(obj.order_total_price),
-                'payment_method': payment_method if paid_status else 'Cash on Delivery',
-                'paid_status': paid_status,
-                'is_offer': is_offer,
-                'colspan_value': "4" if is_offer else "3",
-                'downloaded_on': datetime.datetime.now().replace(microsecond=0)
-            }
-            pdf = render_to_pdf('pdf/invoice.html', data)
-            if pdf:
-                response = HttpResponse(pdf, content_type='application/pdf')
-                filename = "Invoice_of_order#%s.pdf" % obj.id
-                # content = "inline; filename=%s" % filename
-                # download = request.GET.get("download")
-                # if download:
-                content = "attachment; filename=%s" % filename
-                response['Content-Disposition'] = content
-                return response
-            return HttpResponse("Not found")
-        return super().response_change(request, obj)
 
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'user', 'invoice_number', 'order_total_price',

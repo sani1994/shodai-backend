@@ -83,4 +83,5 @@ class Query(graphene.ObjectType):
         user = info.context.user
         if checkAuthentication(user, info):
             order_id = kwargs.get('order_id')
-            return InvoiceInfo.objects.get(order_number__pk=order_id, user=user)
+            invoice = Order.objects.get(id=order_id).invoice_number
+            return InvoiceInfo.objects.get(invoice_number=invoice, user=user)
