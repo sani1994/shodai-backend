@@ -320,7 +320,7 @@ class OrderDetail(APIView):
 
     def patch(self, request, id):
         data = request.data
-        offer_id = data.get('offer_id', None)
+        offer_id = data.get('offer_id')
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -429,10 +429,10 @@ class OrderDetail(APIView):
                 delivery_address = order.address
 
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
-            coupon = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
-            billing_person_name = order.user.first_name + " " + order.user.last_name
             delivery_charge = invoice.delivery_charge
-            delivery_charge_discount = 0
+
+            is_delivery_discount = DiscountInfo.objects.filter(discount_type='DC', invoice=invoice)
+            delivery_charge_discount = is_delivery_discount[0].discount_amount if is_delivery_discount else 0
             if offer_id and isinstance(offer_id, int):
                 today = timezone.now()
                 offer = Offer.objects.filter(id=offer_id, offer_types="DD", is_approved=True,
@@ -440,9 +440,12 @@ class OrderDetail(APIView):
                 if offer:
                     cart_offer = CartOffer.objects.get(offer=offer[0])
                     if cart_offer:
-                        delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
+                        delivery_charge_without_offer = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                         delivery_charge = cart_offer.updated_delivery_charge
-                        delivery_charge_global = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+                        delivery_charge_discount = delivery_charge_without_offer - delivery_charge
+
+            is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+            coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
 
             if products_updated:
                 if "-" in order.order_number:
@@ -484,8 +487,8 @@ class OrderDetail(APIView):
                     total += float(op.order_product_price_with_vat) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-                if coupon:
-                    coupon_code = coupon[0].coupon
+                if coupon_discount:
+                    coupon_code = is_coupon_discount[0].coupon
                     if coupon_code.discount_type == 'DP':
                         coupon_discount = round(total * (coupon_code.discount_percent / 100))
                         if coupon_discount > coupon_code.discount_amount_limit:
@@ -500,7 +503,6 @@ class OrderDetail(APIView):
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note']
             else:
-                coupon_discount = coupon[0].discount_amount if coupon else 0
                 order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
@@ -511,17 +513,19 @@ class OrderDetail(APIView):
                 order.modified_by = request.user
 
             if products_updated:
-                discount_amount = total_price - total_op_price
-                delivery_discount = DiscountInfo.objects.filter(discount_type='DC', invoice=invoice)
-                if delivery_charge_discount == 0 and delivery_discount:
-                    prev_delivery_charge_discount = delivery_discount[0].discount_amount
-                    discount_amount += prev_delivery_charge_discount
-                else:
-                    discount_amount += delivery_charge_discount
+                product_discount = total_price - total_op_price
             else:
-                discount_amount = invoice.discount_amount
-                discount_amount += delivery_charge_discount
+                is_product_discount = DiscountInfo.objects.filter(discount_type='PD', invoice=invoice)
+                product_discount = is_product_discount[0].discount_amount if is_product_discount else 0
 
+            discount_amount = delivery_charge_discount + coupon_discount + product_discount
+
+            if order.user.first_name and order.user.last_name:
+                billing_person_name = order.user.first_name + " " + order.user.last_name
+            elif order.user.first_name:
+                billing_person_name = order.user.first_name
+            else:
+                billing_person_name = ""
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
             new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
                                                      billing_person_name=billing_person_name,
@@ -539,24 +543,25 @@ class OrderDetail(APIView):
                                                      created_by=request.user)
             order.save()
 
-            if coupon:
-                coupon = coupon[0]
+            if coupon_discount:
                 DiscountInfo.objects.create(discount_amount=coupon_discount,
                                             discount_type='CP',
-                                            discount_description=coupon.discount_description,
-                                            invoice=new_invoice,
-                                            coupon=coupon.coupon)
+                                            discount_description=is_coupon_discount[0].discount_description,
+                                            coupon=is_coupon_discount[0].coupon,
+                                            invoice=new_invoice)
 
-            if products_updated and total_price != total_op_price:
-                DiscountInfo.objects.create(discount_amount=total_price - total_op_price,
+            if product_discount:
+                DiscountInfo.objects.create(discount_amount=product_discount,
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
                                             invoice=new_invoice)
-            if delivery_charge_discount != 0:
-                DiscountInfo.objects.create(discount_amount=delivery_charge_global - delivery_charge,
+
+            if delivery_charge_discount:
+                DiscountInfo.objects.create(discount_amount=delivery_charge_discount,
                                             discount_type='DC',
-                                            discount_description='Offer ID: {}'.format(offer_id),
-                                            offer=offer[0],
+                                            discount_description='Offer ID: {}'.format(offer_id)
+                                            if offer_id else is_delivery_discount[0].discount_description,
+                                            offer=offer[0] if offer_id else is_delivery_discount[0].offer,
                                             invoice=new_invoice)
             return Response({
                 "status": "success",
