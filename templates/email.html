@@ -107,6 +107,12 @@
                     <strong>Preferred Delivery Slot</strong></br>
                     {{delivery_date_time}}
                   </p>
+                  {% if note != null %}
+                  <p>
+                    <strong>Remarks</strong></br>
+                    {{note}}
+                  </p>
+                  {% endif %}
                 </td>
             </tr>
           </tbody>
@@ -154,17 +160,7 @@
             </tr>
             {% endfor %}
 
-
-            {% if is_offer %}
-                <tr style="text-align: right;">
-                  <td colspan={{colspan_value}} >
-                      <strong>You Saved:</strong>
-                  </td>
-                  <td style="text-align: center;">
-                      <strong><span style="color:green;font-weight:bold">৳{{saved_amount}}</span></strong>
-                  </td>
-                </tr>
-                <tr style="text-align: right;">
+            <tr style="text-align: right;">
                   <td colspan={{colspan_value}} >
                       <strong>Sub-Total:</strong>
                   </td>
@@ -172,17 +168,6 @@
                       <strong>৳{{sub_total}}</strong>
                   </td>
                 </tr>
-
-            {% else %}
-                <tr style="text-align: right;">
-                  <td colspan={{colspan_value}} >
-                      <strong>Sub-Total:</strong>
-                  </td>
-                  <td style="text-align: center;">
-                      <strong>৳{{sub_total}}</strong>
-                  </td>
-                </tr>
-            {% endif %}
             <tr style="text-align: right;">
               <td colspan={{colspan_value}} >
                   <strong>Vat:</strong>
@@ -208,6 +193,16 @@
                 <strong>৳{{total}}</strong>
               </td>
             </tr>
+            {% if is_offer %}
+                <tr style="text-align: right;">
+                  <td colspan={{colspan_value}} >
+                      <strong>You Saved:</strong>
+                  </td>
+                  <td style="text-align: center;">
+                      <strong><span style="color:green;font-weight:bold">৳{{saved_amount}}</span></strong>
+                  </td>
+                </tr>
+            {% endif %}
           </tbody>
         </table>
 

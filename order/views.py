@@ -273,7 +273,8 @@ class OrderProductList(APIView):
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
                        'is_offer': is_offer,
-                       'saved_amount': float(round(total_price_without_offer - sub_total)),
+                       'saved_amount': invoice.discount_amount,
+                       'note': order_instance.note if order_instance.note else None,
                        'colspan_value': "4" if is_offer else "3"
                        }
 
@@ -308,7 +309,8 @@ class OrderProductList(APIView):
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
                        'is_offer': is_offer,
-                       'saved_amount': float(round(total_price_without_offer - sub_total)),
+                       'saved_amount': invoice.discount_amount,
+                       'note': order_instance.note if order_instance.note else None,
                        'colspan_value': "4" if is_offer else "3"
                        }
             admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'

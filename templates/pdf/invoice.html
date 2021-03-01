@@ -92,6 +92,9 @@
             Invoice No: # {{invoice_number}}<br/>
             Order Placed: {{created_on}} <br/>
             Delivery Date: {{delivery_date}}<br/>
+            {% if note != null %}
+               Remarks: {{note}}<br/>
+            {% endif %}
 
             <table style="margin: 25px 0 13px 0; width: 100%" class="productsTable">
                 <tr class="productRow">
@@ -115,33 +118,14 @@
                 </tr>
                 {% endfor %}
 
-                {% if is_offer %}
-                    <tr>
-                        <td colspan="{{colspan_value}}" style="text-align: center;">
-                            You Saved:
-                        </td>
-                        <td style="text-align: center;">
-                            <span style="color:black;font-weight:bold">{{saved_amount}}</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan={{colspan_value}} style="text-align: center;">
+                <tr>
+                    <td colspan={{colspan_value}} style="text-align: center;">
                             Sub-Total:
-                        </td>
-                        <td style="text-align: center;">
+                    </td>
+                    <td style="text-align: center;">
                             {{sub_total}}
-                        </td>
-                    </tr>
-                {% else %}
-                     <tr>
-                        <td colspan={{colspan_value}} style="text-align: center;">
-                            Sub-Total:
-                        </td>
-                        <td style="text-align: center;">
-                            {{sub_total}}
-                        </td>
-                    </tr>
-                {% endif %}
+                    </td>
+                </tr>
                 <tr>
                     <td colspan={{colspan_value}} style="text-align: center;">
                         Vat:
@@ -166,6 +150,16 @@
                         {{total}}
                     </td>
                 </tr>
+                {% if is_offer %}
+                    <tr>
+                        <td colspan="{{colspan_value}}" style="text-align: center;">
+                            You Saved:
+                        </td>
+                        <td style="text-align: center;">
+                            <span style="color:black;font-weight:bold">{{saved_amount}}</span>
+                        </td>
+                    </tr>
+                {% endif %}
             </table>
             </div>
         <div class='details'>

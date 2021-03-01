@@ -22,7 +22,8 @@ class OfferList(APIView):
         today = timezone.now()
         queryset = Offer.objects.filter(is_approved=True,
                                         offer_starts_in__lte=today,
-                                        offer_ends_in__gte=today)
+                                        offer_ends_in__gte=today,
+                                        offer_types='SP')
         if queryset:
             serializer = OfferSerializer(queryset, many=True)
             if serializer:
