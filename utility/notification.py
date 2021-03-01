@@ -4,7 +4,7 @@ import requests
 from decouple import config
 from django.core.mail import send_mail
 from requests import post
-from sodai import settings
+from shodai import settings
 
 otp_text = "{} - OTP for Shodai Login. Valid for next five (5) minutes."
 

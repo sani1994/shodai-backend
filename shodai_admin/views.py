@@ -24,8 +24,8 @@ from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeS
 from product.models import Product
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer
-from sodai.utils.helper import get_user_object
-from sodai.utils.permission import AdminAuth, IsAdminUserQP
+from shodai.utils.helper import get_user_object
+from shodai.utils.permission import AdminAuth, IsAdminUserQP
 from userProfile.models import UserProfile, BlackListedToken, Address
 
 from django.contrib.auth import authenticate

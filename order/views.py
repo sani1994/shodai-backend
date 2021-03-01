@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
-from sodai.utils.permission import GenericAuth
+from shodai.utils.permission import GenericAuth
 from userProfile.models import Address
 from utility.notification import email_notification, send_sms
 

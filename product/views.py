@@ -4,7 +4,6 @@ from rest_framework.generics import get_object_or_404, ListAPIView
 
 import qrcode
 
-from product.pagination import CustomPagination
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
     ProductMetaSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
@@ -15,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from sodai.utils.permission import GenericAuth
+from shodai.utils.permission import GenericAuth
 
 
 class ProductList(APIView):
@@ -365,5 +364,3 @@ class RecentlyAddedProductListPagination(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-

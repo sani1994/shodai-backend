@@ -9,9 +9,9 @@ from django.views.generic import TemplateView
 from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
 
-from sodai import settings
-from sodai.utils.helper import get_user_object
-from sodai.utils.permission import GenericAuth
+from shodai import settings
+from shodai.utils.helper import get_user_object
+from shodai.utils.permission import GenericAuth
 from userProfile.serializers import UserProfileSerializer, AddressSerializer, UserRegistrationSerializer, \
     RetailerRegistrationSreializer
 from userProfile.models import Address, BlackListedToken

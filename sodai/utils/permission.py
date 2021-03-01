@@ -1,7 +1,7 @@
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, BasePermission, SAFE_METHODS
 
-from sodai.utils.helper import get_user_object
+from shodai.utils.helper import get_user_object
 from userProfile.models import BlackListedToken, UserProfile
 
 

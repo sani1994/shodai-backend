@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from httplib2 import Response
 from rest_framework.views import APIView
-from sodai.utils.permission import GenericAuth
+from shodai.utils.permission import GenericAuth
 from utility.models import Area, ProductUnit, Remarks
 from utility.serializers import AreaSerializer, ProductUnitSerializer, RemarksSerializer
 from rest_framework.response import Response

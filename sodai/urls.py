@@ -1,4 +1,4 @@
-"""sodai URL Configuration
+"""shodai URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.0/topics/http/urls/
@@ -24,7 +24,7 @@ from graphene_django.views import GraphQLView
 from rest_framework import routers
 from django.conf.urls.static import static
 
-# from sodai import settings
+# from shodai import settings
 
 from .schema import schema
 

@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
 from httplib2 import Response
 
-from sodai import settings
+from shodai import settings
 from userProfile.models import UserProfile, Address
 from rest_framework import serializers
 
