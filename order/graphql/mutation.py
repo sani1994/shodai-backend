@@ -257,23 +257,27 @@ class SendEmail(graphene.Mutation):
 
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
             matrix = []
-            is_offer = False
-            if invoice.discount_amount > 0:
-                is_offer = True
+            is_product_discount = False
+            product_total_price = 0
             for p in product_list:
-                total = float(p.product_price) * p.order_product_qty
                 if p.order_product_price != p.product_price:
+                    is_product_discount = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
+                    product_total_price += total_by_offer
                     col = [p.product.product_name, p.product.product_unit, p.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
                 else:
+                    total = float(p.product_price) * p.order_product_qty
+                    product_total_price += total
                     col = [p.product.product_name, p.product.product_unit, p.product_price,
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
+            is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+            coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
+
             time_slot = TimeSlot.objects.get(id=input.time_slot_id)
-            delivery_charge = invoice.delivery_charge
-            sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
+            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
             client_name = user.first_name + " " + user.last_name
 
             content = {'user_name': client_name,
@@ -283,15 +287,17 @@ class SendEmail(graphene.Mutation):
                        'order_date': order_instance.created_on.date(),
                        'delivery_date_time': str(
                            order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'sub_total': sub_total,
+                       'sub_total': product_total_price,
                        'vat': order_instance.total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'is_offer': is_offer,
+                       'is_product_discount': is_product_discount,
+                       'coupon_discount': coupon_discount,
+                       'delivery_charge_discount': 0,
                        'saved_amount': invoice.discount_amount,
                        'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_offer else "3"}
+                       'colspan_value': "4" if is_product_discount else "3"}
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
             from_email, to = 'noreply@shod.ai', user.email
@@ -320,16 +326,18 @@ class SendEmail(graphene.Mutation):
                            order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
                        'invoice_number': invoice.invoice_number,
                        'payment_method': payment_method,
-                       'sub_total': sub_total,
+                       'sub_total': product_total_price,
                        'vat': order_instance.total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'is_offer': is_offer,
+                       'is_product_discount': is_product_discount,
+                       'coupon_discount': coupon_discount,
+                       'delivery_charge_discount': 0,
                        'saved_amount': invoice.discount_amount,
                        'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_offer else "3"
-                       }
+                       'colspan_value': "4" if is_product_discount else "3"}
+
             admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')

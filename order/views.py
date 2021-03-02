@@ -215,7 +215,7 @@ class OrderProductList(APIView):
 
             order_instance = Order.objects.filter(pk=serializer.data['order'])[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
-            delivery_charge = invoice.delivery_charge
+            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
 
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
@@ -230,18 +230,18 @@ class OrderProductList(APIView):
 
             product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
             matrix = []
-            is_offer = False
-            total_price_without_offer = total_vat = 0
+            total_price_without_offer = total_vat = product_total_price = 0
             for p in product_list:
                 total = float(p.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 total_vat += float(p.order_product_price_with_vat - p.order_product_price) * p.order_product_qty
                 if p.order_product_price != p.product_price:
-                    is_offer = True
                     total_by_offer = float(p.order_product_price) * p.order_product_qty
+                    product_total_price += total_by_offer
                     col = [p.product.product_name, p.product.product_unit, p.product_price,
                            p.order_product_price, int(p.order_product_qty), total_by_offer]
                 else:
+                    product_total_price += total
                     col = [p.product.product_name, p.product.product_unit, p.product_price,
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
@@ -252,7 +252,10 @@ class OrderProductList(APIView):
             sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
             invoice.discount_amount = float(round(total_price_without_offer - sub_total))
             invoice.save()
+
+            is_product_discount = False
             if total_price_without_offer != sub_total:
+                is_product_discount = True
                 DiscountInfo.objects.create(discount_amount=total_price_without_offer - sub_total,
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
@@ -267,16 +270,17 @@ class OrderProductList(APIView):
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
                        'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
-                       'sub_total': sub_total,
+                       'sub_total': product_total_price,
                        'vat': total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'is_offer': is_offer,
+                       'is_product_discount': is_product_discount,
+                       'coupon_discount': 0,
+                       'delivery_charge_discount': 0,
                        'saved_amount': invoice.discount_amount,
                        'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_offer else "3"
-                       }
+                       'colspan_value': "4" if is_product_discount else "3"}
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
             from_email, to = 'noreply@shod.ai', request.user.email
@@ -303,16 +307,17 @@ class OrderProductList(APIView):
                        'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
                        'invoice_number': invoice.invoice_number,
                        'payment_method': payment_method,
-                       'sub_total': sub_total,
+                       'sub_total': product_total_price,
                        'vat': total_vat,
                        'delivery_charge': delivery_charge,
                        'total': order_instance.order_total_price,
                        'order_details': matrix,
-                       'is_offer': is_offer,
+                       'is_product_discount': is_product_discount,
+                       'coupon_discount': 0,
+                       'delivery_charge_discount': 0,
                        'saved_amount': invoice.discount_amount,
                        'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_offer else "3"
-                       }
+                       'colspan_value': "4" if is_product_discount else "3"}
             admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
             admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
             html_admin = get_template('admin_email.html')
