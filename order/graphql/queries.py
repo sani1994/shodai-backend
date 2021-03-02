@@ -36,14 +36,14 @@ class InvoiceInfoType(DjangoObjectType):
     class Meta:
         model = InvoiceInfo
 
+    coupon_discount = graphene.Float()
 
-class DiscountInfoType(DjangoObjectType):
-    class Meta:
-        model = DiscountInfo
-
-    @classmethod
-    def get_queryset(cls, queryset, info):
-        return queryset.filter(discount_type='CP')
+    def resolve_coupon_discount(self, info):
+        discount = DiscountInfo.objects.filter(discount_type='CP', invoice=self)
+        if discount:
+            return discount[0].discount_amount
+        else:
+            return None
 
 
 class Query(graphene.ObjectType):

@@ -19,6 +19,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination, field_validation, type_validation
+from coupon.models import CouponCode
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
 from product.models import Product
@@ -699,6 +700,17 @@ class CreateOrder(APIView):
             user_instance.set_password(temp_password)
             user_instance.save()
 
+            coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                               name="Referral Code",
+                                               discount_percent=5,
+                                               max_usage_count=3,
+                                               discount_amount_limit=200,
+                                               expiry_date=timezone.now() + timedelta(days=90),
+                                               discount_type='DP',
+                                               coupon_code_type='RC',
+                                               created_by=user_instance,
+                                               created_on=timezone.now())
+
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
                            "We have created an account with temporary password " + \
@@ -706,6 +718,13 @@ class CreateOrder(APIView):
                            "Please change your password after login.\n\n" + \
                            "www.shod.ai"
                 send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+                coupon_sms_body = "Dear Customer,\n" + \
+                                  "Congratulations for your Shodai account!\n" + \
+                                  "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
+                                  "family to avail them discount on their next purchase and " + \
+                                  "receive exciting discount after each successful referral.\n\n" + \
+                                  "www.shod.ai"
+                send_sms(mobile_number=user_instance.mobile_number, sms_content=coupon_sms_body)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:

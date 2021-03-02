@@ -106,10 +106,7 @@ class UserCreateMutation(graphene.Mutation):
             user_instance.save()
             token = get_token(user_instance)
             refresh_token = create_refresh_token(user_instance)
-            otp_code = user_instance.verification_code
-            otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
-                otp_code))
-            otp_status = "OTP send successfully" if otp_flag else "OTP failed"
+
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Code",
                                                discount_percent=5,
@@ -128,6 +125,10 @@ class UserCreateMutation(graphene.Mutation):
                            "receive exciting discount after each successful referral.\n\n" +\
                            "www.shod.ai"
                 send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
+                otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
+                    user_instance.verification_code))
+
+            otp_status = "OTP send successfully" if otp_flag else "OTP failed"
             return UserCreateMutation(user=user_instance,
                                       token=token,
                                       refresh_token=refresh_token,
