@@ -855,14 +855,18 @@ class InvoiceDownloadPDF(APIView):
         order = get_object_or_404(Order, id=id)
         product_list = OrderProduct.objects.filter(order=order)
         matrix = []
-        is_offer = False
+        is_product_offer = False
+        sub_total = 0
         for p in product_list:
-            total = float(p.product_price) * p.order_product_qty
             if p.order_product_price != p.product_price:
+                is_product_offer = True
                 total_by_offer = float(p.order_product_price) * p.order_product_qty
+                sub_total += total_by_offer
                 col = [p.product.product_name, p.product.product_unit, p.product_price,
                        p.order_product_price, p.order_product_qty, total_by_offer]
             else:
+                total = float(p.product_price) * p.order_product_qty
+                sub_total += total
                 col = [p.product.product_name, p.product.product_unit, p.product_price,
                        "--", p.order_product_qty, total]
             matrix.append(col)
@@ -872,18 +876,10 @@ class InvoiceDownloadPDF(APIView):
             return HttpResponse("Not found")
         invoice = invoice[0]
 
-        if order.user.first_name and order.user.last_name:
-            customer_name = order.user.first_name + " " + order.user.last_name
-        elif order.user.first_name:
-            customer_name = order.user.first_name
-        else:
-            customer_name = ""
-
-        delivery_charge = invoice.delivery_charge
-        sub_total = order.order_total_price - order.total_vat - delivery_charge
+        customer_name = invoice.billing_person_name
         paid_status = invoice.paid_status
-        if invoice.discount_amount > 0:
-            is_offer = True
+        is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+        coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
 
         if invoice.payment_method == "CASH_ON_DELIVERY":
             payment_method = "Cash on Delivery"
@@ -899,17 +895,16 @@ class InvoiceDownloadPDF(APIView):
             'created_on': order.created_on,
             'delivery_date': order.delivery_date_time.date(),
             'order_details': matrix,
-            'delivery': delivery_charge,
+            'delivery': invoice.delivery_charge,
             'vat': order.total_vat,
-            'saved_amount': invoice.discount_amount,
             'sub_total': sub_total,
             'total': order.order_total_price,
             'in_words': num2words(order.order_total_price),
             'payment_method': payment_method if paid_status else 'Cash on Delivery',
             'paid_status': paid_status,
-            'is_offer': is_offer,
+            'is_offer': is_product_offer,
             'note': order.note if order.note else None,
-            'colspan_value': "4" if is_offer else "3",
+            'colspan_value': "4" if is_product_offer else "3",
             'downloaded_on': datetime.now().replace(microsecond=0)
         }
         pdf = render_to_pdf('pdf/invoice.html', data)
@@ -939,18 +934,23 @@ class OrderNotification(APIView):
                     customer_subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
                     admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
                 invoice = invoices[0]
+                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+                delivery_charge_discount = delivery_charge - invoice.delivery_charge
+                client_name = invoice.billing_person_name
                 product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
                 matrix = []
                 is_offer = False
-                if invoice.discount_amount > 0:
-                    is_offer = True
+                sub_total = 0
                 for p in product_list:
-                    total = float(p.product_price) * p.order_product_qty
                     if p.order_product_price != p.product_price:
+                        is_offer = True
                         total_by_offer = float(p.order_product_price) * p.order_product_qty
+                        sub_total += total_by_offer
                         col = [p.product.product_name, p.product.product_unit, p.product_price,
                                p.order_product_price, p.order_product_qty, total_by_offer]
                     else:
+                        total = float(p.product_price) * p.order_product_qty
+                        sub_total += total
                         col = [p.product.product_name, p.product.product_unit, p.product_price,
                                "--", p.order_product_qty, total]
                     matrix.append(col)
@@ -960,9 +960,8 @@ class OrderNotification(APIView):
                     time_slot = time
                 else:
                     time_slot = TimeSlot.objects.get(id=1)
-                delivery_charge = invoice.delivery_charge
-                sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
-                client_name = order_instance.user.first_name + " " + order_instance.user.last_name
+                is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+                coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
 
                 """
                 To send notification to customer
@@ -980,7 +979,9 @@ class OrderNotification(APIView):
                            'delivery_charge': delivery_charge,
                            'total': order_instance.order_total_price,
                            'order_details': matrix,
-                           'is_offer': is_offer,
+                           'is_product_discount': is_offer,
+                           'coupon_discount': coupon_discount,
+                           'delivery_charge_discount': delivery_charge_discount,
                            'saved_amount': invoice.discount_amount,
                            'note': order_instance.note if order_instance.note else None,
                            'colspan_value': "4" if is_offer else "3"}
@@ -1016,7 +1017,9 @@ class OrderNotification(APIView):
                            'delivery_charge': delivery_charge,
                            'total': order_instance.order_total_price,
                            'order_details': matrix,
-                           'is_offer': is_offer,
+                           'is_product_discount': is_offer,
+                           'coupon_discount': coupon_discount,
+                           'delivery_charge_discount': delivery_charge_discount,
                            'saved_amount': invoice.discount_amount,
                            'note': order_instance.note if order_instance.note else None,
                            'colspan_value': "4" if is_offer else "3"

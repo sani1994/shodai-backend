@@ -278,7 +278,7 @@ class SendEmail(graphene.Mutation):
 
             time_slot = TimeSlot.objects.get(id=input.time_slot_id)
             delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-            client_name = user.first_name + " " + user.last_name
+            client_name = invoice.billing_person_name
 
             content = {'user_name': client_name,
                        'order_number': order_instance.order_number,

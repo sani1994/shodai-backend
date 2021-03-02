@@ -4,7 +4,7 @@ from graphene_gis.converter import gis_converter
 
 from bases.views import checkAuthentication
 from userProfile.models import BlackListedToken
-from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo
+from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo
 
 
 class OrderType(DjangoObjectType):
@@ -35,6 +35,15 @@ class TimeSlotType(DjangoObjectType):
 class InvoiceInfoType(DjangoObjectType):
     class Meta:
         model = InvoiceInfo
+
+
+class DiscountInfoType(DjangoObjectType):
+    class Meta:
+        model = DiscountInfo
+
+    @classmethod
+    def get_queryset(cls, queryset, info):
+        return queryset.filter(discount_type='CP')
 
 
 class Query(graphene.ObjectType):

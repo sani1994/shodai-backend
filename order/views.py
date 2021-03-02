@@ -217,10 +217,6 @@ class OrderProductList(APIView):
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
             delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
 
-            if request.user.first_name and request.user.last_name:
-                billing_person_name = request.user.first_name + " " + request.user.last_name
-            else:
-                billing_person_name = request.user.username
             if order_instance.address:
                 if order_instance.address.road:
                     address = order_instance.address.road
@@ -264,7 +260,7 @@ class OrderProductList(APIView):
             """
             To send notification to customer
             """
-            content = {'user_name': billing_person_name,
+            content = {'user_name': invoice.billing_person_name,
                        'order_number': order_instance.order_number,
                        'shipping_address': address,
                        'mobile_no': order_instance.contact_number,
@@ -297,7 +293,7 @@ class OrderProductList(APIView):
                 payment_method = "Cash on Delivery"
             else:
                 payment_method = "Online Payment"
-            content = {'user_name': billing_person_name,
+            content = {'user_name': invoice.billing_person_name,
                        'user_mobile': invoice.billing_person_mobile_number,
                        'order_number': order_instance.order_number,
                        'platform': "App",
