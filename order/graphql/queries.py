@@ -37,9 +37,17 @@ class InvoiceInfoType(DjangoObjectType):
         model = InvoiceInfo
 
     coupon_discount = graphene.Float()
+    delivery_charge_discount = graphene.Float()
 
     def resolve_coupon_discount(self, info):
         discount = DiscountInfo.objects.filter(discount_type='CP', invoice=self)
+        if discount:
+            return discount[0].discount_amount
+        else:
+            return None
+
+    def resolve_delivery_charge_discount(self, info):
+        discount = DiscountInfo.objects.filter(discount_type='DC', invoice=self)
         if discount:
             return discount[0].discount_amount
         else:

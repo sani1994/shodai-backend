@@ -127,6 +127,8 @@ class UserCreateMutation(graphene.Mutation):
                 send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
                 otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                     user_instance.verification_code))
+            else:
+                otp_flag = True
 
             otp_status = "OTP send successfully" if otp_flag else "OTP failed"
             return UserCreateMutation(user=user_instance,
