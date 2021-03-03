@@ -25,4 +25,4 @@ def product_data_preprocessing(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Product)
 def product_created_or_updated(sender, instance, created, **kwargs):
-    async_task('product.tasks.send_product_data', instance, created)
+    async_task('product.tasks.send_product_data', instance)

@@ -7,8 +7,9 @@ headers = {"Content-Type": "application/json",
            "Authorization": "Bearer {}".format(settings.INTERNAL_BRICKBOX_API_TOKEN)}
 
 
-def send_product_data(product, created):
-    payload = {"product_name": product.product_name,
+def send_product_data(product):
+    payload = {"product_id": product.id,
+               "product_name": product.product_name,
                "product_name_bn": product.product_name_bn,
                "product_description": product.product_description,
                "product_description_bn": product.product_description_bn,
@@ -29,11 +30,6 @@ def send_product_data(product, created):
                "product_subcategory_image_url": settings.API_DOMAIN + product.product_meta.img.url if product.product_meta.img else None,
                "is_approved": product.is_approved}
 
-    if created:
-        payload["product_id"] = product.id
-        url = settings.INTERNAL_BRICKBOX_API_URL + '/shodai/product'
-        response = requests.post(url, headers=headers, json=payload).json()
-    else:
-        url = settings.INTERNAL_BRICKBOX_API_URL + '/shodai/product/{}'.format(product.id)
-        response = requests.put(url, headers=headers, json=payload).json()
+    url = settings.INTERNAL_BRICKBOX_API_URL + '/shodai/product'
+    response = requests.post(url, headers=headers, json=payload).json()
     return response
