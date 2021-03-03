@@ -1,3 +1,4 @@
+from graphql_relay.utils import unbase64
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from userProfile.models import BlackListedToken
@@ -33,6 +34,16 @@ def type_validation(items, typ):
         if not isinstance(val, typ):
             return False
     return True
+
+
+def from_global_id(global_id):
+    """
+    Takes the "global ID" created by toGlobalID, and returns ID
+    used to create it.
+    """
+    unbased_global_id = unbase64(global_id)
+    _type, _id = unbased_global_id.split(':', 1)
+    return _id
 
 
 class CustomPageNumberPagination(PageNumberPagination):

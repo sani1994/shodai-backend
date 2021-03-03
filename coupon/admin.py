@@ -29,16 +29,17 @@ class CouponCodeAdmin(MaterialModelAdmin):
     inlines = [CouponUserInline]
     fieldsets = (
         ('Coupon Detail View', {
-            'fields': ('name', 'coupon_code', 'coupon_code_type', 'discount_type', 'discount_percent', 'discount_amount',
-                       'discount_amount_limit', 'expiry_date', 'created_by', 'modified_by', 'created_on',
-                       'modified_on',)
+            'fields': ('name', 'coupon_code', 'coupon_code_type', 'discount_type', 'discount_amount',
+                       'minimum_purchase_limit', 'discount_percent', 'discount_amount_limit', 'expiry_date',
+                       'created_by', 'modified_by', 'created_on', 'modified_on',)
         }),
     )
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return ['name', 'coupon_code', 'coupon_code_type', 'discount_type', 'discount_percent', 'discount_amount',
-                    'discount_amount_limit', 'expiry_date', 'created_by', 'modified_by', 'created_on', 'modified_on']
+            return ['name', 'coupon_code', 'coupon_code_type', 'discount_type', 'discount_percent',
+                    'minimum_purchase_limit', 'discount_amount', 'discount_amount_limit', 'expiry_date',
+                    'created_by', 'modified_by', 'created_on', 'modified_on']
         else:
             return ['coupon_code_type', 'created_on', 'modified_on', 'created_by', 'modified_by']
 

@@ -8,7 +8,7 @@ import requests
 from datetime import timedelta
 from django.conf import settings
 
-from bases.views import checkAuthentication
+from bases.views import checkAuthentication, from_global_id
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context
@@ -16,7 +16,6 @@ from django.template.loader import get_template
 from django.utils import timezone
 
 from graphene_django import DjangoObjectType
-from graphql_relay.utils import unbase64
 
 from coupon.models import CouponCode, CouponUser, CouponUsageHistory
 from coupon.graphql.mutation import coupon_checker
@@ -137,7 +136,7 @@ class CreateOrder(graphene.Mutation):
 
                 coupon_discount_amount = 0
                 if input.code:
-                    coupon_is_valid, coupon, is_using = coupon_checker(input.code, user)
+                    coupon_is_valid, coupon, is_using, total_price = coupon_checker(input.code, user, product_list)
                     if coupon_is_valid:
                         is_using.remaining_usage_count -= 1
                         is_using.save()
@@ -169,7 +168,7 @@ class CreateOrder(graphene.Mutation):
                                 send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
                         if coupon.discount_type == 'DP':
-                            coupon_discount_amount = round(sub_total * (coupon.discount_percent / 100))
+                            coupon_discount_amount = round(total_price * (coupon.discount_percent / 100))
                             if coupon_discount_amount > coupon.discount_amount_limit:
                                 coupon_discount_amount = coupon.discount_amount_limit
                         elif coupon.discount_type == 'DA':
@@ -487,13 +486,3 @@ class Mutation(graphene.ObjectType):
     send_email = SendEmail.Field()
     payment = PaymentMutation.Field()
     store_transaction_info = TransactionMutation.Field()
-
-
-def from_global_id(global_id):
-    """
-    Takes the "global ID" created by toGlobalID, and returns ID
-    used to create it.
-    """
-    unbased_global_id = unbase64(global_id)
-    _type, _id = unbased_global_id.split(':', 1)
-    return _id
