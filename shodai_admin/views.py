@@ -585,8 +585,7 @@ class CreateOrder(APIView):
                            'contact_number',
                            'customer',
                            'products',
-                           'note',
-                           'coupon_code']
+                           'note']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -596,8 +595,7 @@ class CreateOrder(APIView):
             string_fields = [data['delivery_date'],
                              data['delivery_address'],
                              data['contact_number'],
-                             data['note'],
-                             data['coupon_code']]
+                             data['note']]
             is_valid = type_validation(string_fields, str)
 
         if is_valid:

@@ -111,6 +111,7 @@ class UserCreateMutation(graphene.Mutation):
                                                name="Referral Code",
                                                discount_percent=5,
                                                max_usage_count=3,
+                                               minimum_purchase_limit=0,
                                                discount_amount_limit=200,
                                                expiry_date=timezone.now() + timedelta(days=90),
                                                discount_type='DP',

@@ -148,6 +148,7 @@ class CreateOrder(graphene.Mutation):
                                                                    name="Discount Code",
                                                                    discount_percent=5,
                                                                    max_usage_count=1,
+                                                                   minimum_purchase_limit=0,
                                                                    discount_amount_limit=200,
                                                                    expiry_date=timezone.now() + timedelta(days=30),
                                                                    discount_type='DP',

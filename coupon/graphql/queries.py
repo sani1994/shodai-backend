@@ -9,7 +9,18 @@ from ..models import CouponCode, CouponUser
 class CouponType(DjangoObjectType):
     class Meta:
         model = CouponCode
-        fields = ['coupon_code', 'expiry_date']
+        fields = ['coupon_code', 'expiry_date', 'discount_percent', 'discount_amount_limit']
+
+    coupon_status = graphene.String()
+
+    def resolve_coupon_status(self, info):
+        user = info.context.user
+        coupon_used = CouponUser.objects.filter(coupon_code=self, created_for=user)[0]
+        if self.expiry_date < timezone.now():
+            return "Expired"
+        elif self.coupon_code_type == 'DC' and coupon_used.remaining_usage_count == 0:
+            return "Used"
+        return "Available"
 
 
 class Query(graphene.ObjectType):
@@ -20,9 +31,7 @@ class Query(graphene.ObjectType):
         user = info.context.user
         if checkAuthentication(user, info):
             all_coupons = CouponCode.objects.filter(coupon_code_type='DC',
-                                                    expiry_date__gte=timezone.now(),
                                                     discount_code__in=CouponUser.objects.filter(
-                                                        remaining_usage_count__gt=0,
                                                         created_for=user))
             return all_coupons
 
