@@ -18,7 +18,7 @@ def coupon_checker(coupon_code, products, user):
         product = Product.objects.filter(id=product_id, is_approved=True)
         if product:
             product = product[0]
-            total = product.product_price * p.order_product_qty
+            total = float(product.product_price) * p.order_product_qty
             sub_total += total
             offer_product = OfferProduct.objects.filter(product=product,
                                                         is_approved=True,
