@@ -9,7 +9,7 @@ from ..models import CouponCode, CouponUser
 
 def coupon_checker(coupon_code, products, user):
     coupon_is_valid = is_under_limit = False
-    is_using = None
+    is_using = discount_amount = None
     total_price_regular_product = sub_total = 0
     today = timezone.now()
 
@@ -68,8 +68,20 @@ def coupon_checker(coupon_code, products, user):
                                                          created_on=today)
         else:
             is_under_limit = True
+        if coupon_is_valid:
+            if coupon.discount_type == 'DP':
+                discount_amount = round(total_price_regular_product * (coupon.discount_percent / 100))
+                if discount_amount > coupon.discount_amount_limit:
+                    discount_amount = coupon.discount_amount_limit
+            elif coupon.discount_type == 'DA':
+                if total_price_regular_product == 0:
+                    discount_amount = 0
+                elif total_price_regular_product < coupon.discount_amount:
+                    discount_amount = total_price_regular_product
+                else:
+                    discount_amount = coupon.discount_amount
 
-    return coupon_is_valid, coupon, is_using, total_price_regular_product, is_under_limit
+    return discount_amount, coupon, is_using, total_price_regular_product, is_under_limit
 
 
 class ProductListInput(graphene.InputObjectType):
@@ -89,27 +101,23 @@ class ApplyCoupon(graphene.Mutation):
     msg = graphene.String()
     discount_amount = graphene.Float()
     coupon_code = graphene.String()
+    status = graphene.Boolean()
 
     @staticmethod
     def mutate(root, info, input=None):
         user = info.context.user
         if checkAuthentication(user, info):
-            coupon_is_valid, coupon, _, total_price, is_under_limit = coupon_checker(input.code, input.products, user)
+            discount_amount, coupon, _, total_price, is_under_limit = coupon_checker(input.code, input.products, user)
             if not is_under_limit:
-                if coupon_is_valid:
-                    if coupon.discount_type == 'DP':
-                        discount_amount = round(total_price * (coupon.discount_percent / 100))
-                        if discount_amount > coupon.discount_amount_limit:
-                            discount_amount = coupon.discount_amount_limit
-                    elif coupon.discount_type == 'DA':
-                        discount_amount = coupon.discount_amount
-                    return ApplyCoupon(msg="Code applied successfully.",
+                if discount_amount is not None:
+                    return ApplyCoupon(status=True,
+                                       msg="Code applied successfully.",
                                        discount_amount=discount_amount,
                                        coupon_code=coupon.coupon_code)
-                return ApplyCoupon(msg="Invalid Code!")
+                return ApplyCoupon(status=False, msg="Invalid Code!")
             else:
                 msg = "Total Price Must Be {} Or More".format(coupon.minimum_purchase_limit)
-                return ApplyCoupon(msg=msg)
+                return ApplyCoupon(status=False, msg=msg)
 
 
 class Mutation(graphene.ObjectType):

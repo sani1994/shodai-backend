@@ -136,8 +136,9 @@ class CreateOrder(graphene.Mutation):
 
                 coupon_discount_amount = 0
                 if input.code:
-                    coupon_is_valid, coupon, is_using, total_price, _ = coupon_checker(input.code, product_list, user)
-                    if coupon_is_valid:
+                    discount_amount, coupon, is_using, total_price, _ = coupon_checker(input.code, product_list, user)
+                    if discount_amount is not None:
+                        coupon_discount_amount = discount_amount
                         is_using.remaining_usage_count -= 1
                         is_using.save()
                         coupon.max_usage_count -= 1
@@ -166,13 +167,6 @@ class CreateOrder(graphene.Mutation):
                                            "avail exciting discount on your next purchase.\n\n" + \
                                            "www.shod.ai"
                                 send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
-
-                        if coupon.discount_type == 'DP':
-                            coupon_discount_amount = round(total_price * (coupon.discount_percent / 100))
-                            if coupon_discount_amount > coupon.discount_amount_limit:
-                                coupon_discount_amount = coupon.discount_amount_limit
-                        elif coupon.discount_type == 'DA':
-                            coupon_discount_amount = coupon.discount_amount
 
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 if input.note:
@@ -210,7 +204,7 @@ class CreateOrder(graphene.Mutation):
                     DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
                                                 discount_type='PD',
                                                 invoice=invoice)
-                if input.code and coupon_is_valid:
+                if input.code and discount_amount is not None:
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
                                                 discount_type='CP',
                                                 discount_description='Coupon Code: {}'.format(input.code),
