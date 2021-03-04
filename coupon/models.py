@@ -30,7 +30,7 @@ class CouponCode(BaseModel):
     discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Flat Discount')
     discount_amount_limit = models.IntegerField(default=0, blank=True, null=True,
                                                 help_text="In case of Discount Type: Discount Percent(%)")
-    minimum_purchase_limit = models.IntegerField(blank=True, null=True, verbose_name="Minimum Purchase Amount")
+    minimum_purchase_limit = models.IntegerField(null=True, verbose_name="Minimum Purchase Amount")
     max_usage_count = models.IntegerField(default=0, blank=True, null=True, )
     expiry_date = models.DateTimeField(null=False, blank=False)
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
