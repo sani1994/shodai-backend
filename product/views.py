@@ -92,7 +92,7 @@ class ProductMetaList(APIView):
     ## list of Prodect Meta (original product name with comapny name)
 
     def get(self, request, format=None):
-        product_meta = ProductMeta.objects.all()
+        product_meta = ProductMeta.objects.filter(is_approved=True)
         serializer = ProductMetaSerializer(product_meta, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -153,7 +153,7 @@ class ProductCategoryList(APIView):
     ## list of Prodect category
 
     def get(self, request, format=None):
-        product_catagory = ProductCategory.objects.all()
+        product_catagory = ProductCategory.objects.filter(is_approved=True)
         serializer = ProductCategorySerializer(product_catagory, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -218,7 +218,7 @@ class ShopCategoryList(
     ## list of Shop category
 
     def get(self, request, format=None):
-        shop_catagory = ShopCategory.objects.all()
+        shop_catagory = ShopCategory.objects.filter(is_approved=True)
         serializer = ShopCategorySerializer(shop_catagory, many=True, context={'request': request})
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -285,7 +285,7 @@ class ProductCategoryDetails(
     def get(self, request, id):
         obj = ProductCategory.objects.filter(id=id).first()
         if obj:
-            productMetaList = obj.productmeta_set.all()
+            productMetaList = obj.productmeta_set.filter(is_approved=True)
             serializer = ProductMetaSerializer(productMetaList, many=True)
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -304,7 +304,7 @@ class ProductMetaDetails(APIView):  # get product meta id to get all the product
     def get(self, request, id):
         obj = ProductMeta.objects.filter(id=id).first()
         if obj:
-            productList = obj.product_set.all()
+            productList = obj.product_set.filter(is_approved=True)
             serializer = ProductSerializer(productList, many=True)
             if serializer:
                 datas = serializer.data
