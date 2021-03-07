@@ -15,10 +15,9 @@ class CouponType(DjangoObjectType):
     coupon_status = graphene.String()
 
     def resolve_coupon_status(self, info):
-        coupon_used = CouponUser.objects.filter(coupon_code=self)
         if self.expiry_date < timezone.now():
             return "Expired"
-        elif self.coupon_code_type == 'DC' and coupon_used[0].remaining_usage_count == 0:
+        elif self.max_usage_count == 0:
             return "Used"
         return "Available"
 

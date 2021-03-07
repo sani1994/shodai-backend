@@ -28,11 +28,14 @@ class ApplyCoupon(graphene.Mutation):
         if checkAuthentication(user, info):
             discount_amount, coupon, _, is_under_limit = coupon_checker(input.code, input.products, user)
             if not is_under_limit:
-                if discount_amount is not None:
+                if discount_amount:
                     return ApplyCoupon(status=True,
                                        msg="Code applied successfully.",
                                        discount_amount=discount_amount,
                                        coupon_code=coupon.coupon_code)
+                elif discount_amount == 0:
+                    msg = "Coupon Discount Is Not Applicable On Products With Offer"
+                    return ApplyCoupon(status=False, msg=msg)
                 return ApplyCoupon(status=False, msg="Invalid Code!")
             else:
                 msg = "Total Price Must Be {} Or More".format(coupon.minimum_purchase_limit)

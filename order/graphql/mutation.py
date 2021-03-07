@@ -133,7 +133,7 @@ class CreateOrder(graphene.Mutation):
                 coupon_discount_amount = 0
                 if input.code:
                     discount_amount, coupon, is_using, _ = coupon_checker(input.code, product_list, user)
-                    if discount_amount is not None:
+                    if discount_amount:
                         coupon_discount_amount = discount_amount
                         is_using.remaining_usage_count -= 1
                         is_using.save()
@@ -201,7 +201,7 @@ class CreateOrder(graphene.Mutation):
                     DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
                                                 discount_type='PD',
                                                 invoice=invoice)
-                if input.code and discount_amount is not None:
+                if input.code and discount_amount:
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
                                                 discount_type='CP',
                                                 discount_description='Coupon Code: {}'.format(input.code),
