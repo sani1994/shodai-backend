@@ -9,16 +9,16 @@ from ..models import CouponCode, CouponUser
 class CouponType(DjangoObjectType):
     class Meta:
         model = CouponCode
-        fields = ['coupon_code', 'expiry_date', 'discount_percent', 'discount_amount_limit']
+        fields = ['coupon_code', 'expiry_date', 'discount_percent', 'discount_amount_limit',
+                  'discount_amount', 'minimum_purchase_limit']
 
     coupon_status = graphene.String()
 
     def resolve_coupon_status(self, info):
-        user = info.context.user
-        coupon_used = CouponUser.objects.filter(coupon_code=self, created_for=user)[0]
+        coupon_used = CouponUser.objects.filter(coupon_code=self)
         if self.expiry_date < timezone.now():
             return "Expired"
-        elif self.coupon_code_type == 'DC' and coupon_used.remaining_usage_count == 0:
+        elif self.coupon_code_type == 'DC' and coupon_used[0].remaining_usage_count == 0:
             return "Used"
         return "Available"
 
