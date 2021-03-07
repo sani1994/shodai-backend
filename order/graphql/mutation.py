@@ -7,18 +7,14 @@ import requests
 
 from datetime import timedelta
 from django.conf import settings
-
-from bases.views import checkAuthentication, from_global_id
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
-from django.template import Context
 from django.template.loader import get_template
 from django.utils import timezone
-
 from graphene_django import DjangoObjectType
 
+from bases.views import checkAuthentication, from_global_id, coupon_checker
 from coupon.models import CouponCode, CouponUser, CouponUsageHistory
-from coupon.graphql.mutation import coupon_checker
 from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
