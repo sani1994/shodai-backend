@@ -704,6 +704,7 @@ class CreateOrder(APIView):
                                                name="Referral Code",
                                                discount_percent=5,
                                                max_usage_count=3,
+                                               minimum_purchase_limit=0,
                                                discount_amount_limit=200,
                                                expiry_date=timezone.now() + timedelta(days=90),
                                                discount_type='DP',
@@ -753,7 +754,7 @@ class CreateOrder(APIView):
             op = OrderProduct.objects.create(product=product,
                                              order=order_instance,
                                              order_product_qty=p["product_quantity"])
-            total_price += float(product.product_price) * op.order_product_qty
+            total_price += float(op.product_price) * op.order_product_qty
             total_op_price += op.order_product_price * op.order_product_qty
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
@@ -763,7 +764,7 @@ class CreateOrder(APIView):
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.note = data['note']
+        order_instance.note = data['note'][:250]
         order_instance.save()
 
         billing_person_name = user_instance.first_name + " " + user_instance.last_name
@@ -806,7 +807,7 @@ class ProductSearch(APIView):
 
     def get(self, request):
         query = request.query_params.get('query', '')
-        product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:10]
+        product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:20]
         serializer = ProductSearchSerializer(product, many=True)
         if serializer:
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
