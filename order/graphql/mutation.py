@@ -132,7 +132,7 @@ class CreateOrder(graphene.Mutation):
 
                 coupon_discount_amount = 0
                 if input.code:
-                    discount_amount, coupon, is_using, _ = coupon_checker(input.code, product_list, user)
+                    discount_amount, coupon, is_using, _ = coupon_checker(input.code, product_list, user, False)
                     if discount_amount:
                         coupon_discount_amount = discount_amount
                         is_using.remaining_usage_count -= 1

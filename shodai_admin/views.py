@@ -18,7 +18,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from bases.views import CustomPageNumberPagination, field_validation, type_validation
+from bases.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
 from coupon.models import CouponCode
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
@@ -1074,3 +1074,78 @@ class DeliveryChargeOfferList(APIView):
                                       offer_ends_in__gte=today)
         serializer = DeliveryChargeOfferSerializer(offers, many=True)
         return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+class VerifyCoupon(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        data = request.data
+        required_fields = ['coupon_code',
+                           'products',
+                           'mobile_number']
+        is_valid = field_validation(required_fields, data)
+        products = data['products']
+
+        if is_valid and isinstance(products, list) and products:
+            required_fields = ['product_id', 'product_quantity']
+            product_list = []
+            for item in products:
+                is_valid = field_validation(required_fields, item)
+                if is_valid and isinstance(item['product_id'], int):
+                    if item['product_id'] not in product_list:
+                        product_list.append(item['product_id'])
+                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        if not product_exist or not item['product_quantity']:
+                            is_valid = False
+                        if is_valid:
+                            decimal_allowed = product_exist[0].decimal_allowed
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                                is_valid = False
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
+                                is_valid = False
+                        if is_valid and decimal_allowed:
+                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
+                    else:
+                        is_valid = False
+                else:
+                    is_valid = False
+                if not is_valid:
+                    break
+        else:
+            is_valid = False
+
+        if is_valid and len(data["mobile_number"]) == 14 and \
+                data["mobile_number"].startswith('+8801') and data["mobile_number"][1:].isdigit():
+            pass
+        else:
+            is_valid = False
+
+        if is_valid:
+            user = UserProfile.objects.filter(mobile_number__icontains=data["mobile_number"],
+                                              user_type="CM")
+            if not user:
+                is_valid = False
+
+        if not is_valid or not isinstance(data['coupon_code'], str):
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+        user = user[0]
+        discount_amount, coupon, _, is_under_limit = coupon_checker(data['coupon_code'], data['products'], user, True)
+        if not is_under_limit:
+            if discount_amount:
+                return Response({'status': 'success',
+                                 'msg': "Code applied successfully.",
+                                 "discount_amount": discount_amount,
+                                 "coupon_code": coupon.coupon_code}, status=status.HTTP_200_OK)
+            elif discount_amount == 0:
+                msg = "Coupon Discount Is Not Applicable On Products With Offer"
+                return Response({'status': 'failed',
+                                 'msg': msg}, status=status.HTTP_200_OK)
+            return Response({'status': 'failed',
+                             'msg': "Invalid Code!"}, status=status.HTTP_200_OK)
+        else:
+            msg = "Total Price Must Be {} Or More".format(coupon.minimum_purchase_limit)
+            return Response({'status': 'failed',
+                             'msg': msg}, status=status.HTTP_200_OK)
