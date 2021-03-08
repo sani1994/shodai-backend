@@ -328,7 +328,8 @@ class OrderDetail(APIView):
                            'contact_number',
                            'order_status',
                            'products',
-                           'note']
+                           'note',
+                           'coupon_code']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -336,7 +337,8 @@ class OrderDetail(APIView):
                              data['delivery_address'],
                              data['contact_number'],
                              data['order_status'],
-                             data['note']]
+                             data['note'],
+                             data['coupon_code']]
             is_valid = type_validation(string_fields, str)
 
         if is_valid and isinstance(data['products'], list) and data['products']:
@@ -688,6 +690,41 @@ class CreateOrder(APIView):
         except UserProfile.DoesNotExist:
             user_instance = None
 
+        coupon_discount_amount = 0
+        if data['coupon_code'] and user_instance is not None:
+            discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, user_instance, True)
+            if discount_amount:
+                coupon_discount_amount = discount_amount
+                is_using.remaining_usage_count -= 1
+                is_using.save()
+                coupon.max_usage_count -= 1
+                coupon.save()
+                if coupon.coupon_code_type == 'RC':
+                    new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                           name="Discount Code",
+                                                           discount_percent=5,
+                                                           max_usage_count=1,
+                                                           minimum_purchase_limit=0,
+                                                           discount_amount_limit=200,
+                                                           expiry_date=timezone.now() + timedelta(days=30),
+                                                           discount_type='DP',
+                                                           coupon_code_type='DC',
+                                                           created_by=user_instance,
+                                                           created_on=timezone.now())
+                    CouponUser.objects.create(coupon_code=new_coupon,
+                                              created_for=coupon.created_by,
+                                              remaining_usage_count=1,
+                                              created_by=user_instance,
+                                              created_on=timezone.now())
+                    if not settings.DEBUG:
+                        sms_body = "Dear Customer,\n" + \
+                                   "Congratulations! You have received this " + \
+                                   "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
+                                   "successful referral. Use this code to " + \
+                                   "avail exciting discount on your next purchase.\n\n" + \
+                                   "www.shod.ai"
+                        send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
+
         if not user_instance:
             user_instance = UserProfile.objects.create(username=customer["mobile_number"],
                                                        first_name=customer["name"],
@@ -706,6 +743,7 @@ class CreateOrder(APIView):
                                                name="Referral Code",
                                                discount_percent=5,
                                                max_usage_count=3,
+                                               minimum_purchase_limit=0,
                                                discount_amount_limit=200,
                                                expiry_date=timezone.now() + timedelta(days=90),
                                                discount_type='DP',
@@ -760,41 +798,6 @@ class CreateOrder(APIView):
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        coupon_discount_amount = 0
-        if data['coupon_code']:
-            discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, user_instance, True)
-            if discount_amount:
-                coupon_discount_amount = discount_amount
-                is_using.remaining_usage_count -= 1
-                is_using.save()
-                coupon.max_usage_count -= 1
-                coupon.save()
-                if coupon.coupon_code_type == 'RC':
-                    new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                           name="Discount Code",
-                                                           discount_percent=5,
-                                                           max_usage_count=1,
-                                                           minimum_purchase_limit=0,
-                                                           discount_amount_limit=200,
-                                                           expiry_date=timezone.now() + timedelta(days=30),
-                                                           discount_type='DP',
-                                                           coupon_code_type='DC',
-                                                           created_by=user_instance,
-                                                           created_on=timezone.now())
-                    CouponUser.objects.create(coupon_code=new_coupon,
-                                              created_for=coupon.created_by,
-                                              remaining_usage_count=1,
-                                              created_by=user_instance,
-                                              created_on=timezone.now())
-                    if not settings.DEBUG:
-                        sms_body = "Dear Customer,\n" + \
-                                   "Congratulations! You have received this " + \
-                                   "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
-                                   "successful referral. Use this code to " + \
-                                   "avail exciting discount on your next purchase.\n\n" + \
-                                   "www.shod.ai"
-                        send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
-
         order_instance.order_total_price = round(total) + delivery_charge - coupon_discount_amount
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -830,20 +833,21 @@ class CreateOrder(APIView):
                                         offer=offer[0],
                                         invoice=invoice)
 
-        if data['coupon_code'] and discount_amount:
-            DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
-                                        discount_type='CP',
-                                        discount_description='Coupon Code: {}'.format(data['coupon_code']),
-                                        coupon=coupon,
-                                        invoice=invoice)
-            CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
-                                              discount_percent=coupon.discount_percent,
-                                              discount_amount=coupon_discount_amount,
-                                              coupon_code=coupon.coupon_code,
-                                              coupon_user=is_using,
-                                              invoice_number=invoice,
-                                              created_by=user_instance,
-                                              created_on=timezone.now())
+        if data['coupon_code']:
+            if discount_amount:
+                DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
+                                            discount_type='CP',
+                                            discount_description='Coupon Code: {}'.format(data['coupon_code']),
+                                            coupon=coupon,
+                                            invoice=invoice)
+                CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
+                                                  discount_percent=coupon.discount_percent,
+                                                  discount_amount=coupon_discount_amount,
+                                                  coupon_code=coupon.coupon_code,
+                                                  coupon_user=is_using,
+                                                  invoice_number=invoice,
+                                                  created_by=user_instance,
+                                                  created_on=timezone.now())
 
         return Response({'status': 'success',
                          'message': 'Order placed.',
