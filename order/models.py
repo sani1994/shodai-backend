@@ -59,7 +59,7 @@ class Order(BaseModel):
     ]
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
-    note = models.CharField(max_length=250, null=True, blank=True, default="")
+    note = models.CharField(max_length=500, null=True, blank=True, default="")
     history = HistoricalRecords()
 
     def __str__(self):

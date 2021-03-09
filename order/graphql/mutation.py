@@ -158,16 +158,16 @@ class CreateOrder(graphene.Mutation):
                                                       created_on=timezone.now())
                             if not settings.DEBUG:
                                 sms_body = "Dear Customer,\n" + \
-                                           "Congratulations! You have received this " + \
-                                           "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
-                                           "successful referral. Use this code to " + \
+                                           "Congratulations! You have received 5% discount " + \
+                                           "based on your successful referral. " + \
+                                           "Use this code [{}] to ".format(new_coupon.coupon_code) + \
                                            "avail exciting discount on your next purchase.\n\n" + \
                                            "www.shod.ai"
                                 send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 if input.note:
-                    order_instance.note = input.note
+                    order_instance.note = input.note[:500]
                 order_instance.address = Address.objects.get(id=input.address)
                 order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -201,7 +201,7 @@ class CreateOrder(graphene.Mutation):
                     DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
                                                 discount_type='PD',
                                                 invoice=invoice)
-                if input.code and discount_amount:
+                if coupon_discount_amount:
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
                                                 discount_type='CP',
                                                 discount_description='Coupon Code: {}'.format(input.code),

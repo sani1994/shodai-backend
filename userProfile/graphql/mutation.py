@@ -122,7 +122,7 @@ class UserCreateMutation(graphene.Mutation):
                 sms_body = "Dear Customer,\n" + \
                            "Congratulations for your Shodai account!\n" + \
                            "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
-                           "family to avail them discount on their next purchase and " + \
+                           "family to avail them 5% discount on their next purchase and " + \
                            "receive exciting discount after each successful referral.\n\n" +\
                            "www.shod.ai"
                 send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)

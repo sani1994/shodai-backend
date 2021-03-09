@@ -502,7 +502,7 @@ class OrderDetail(APIView):
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order.note = data['note']
+                order.note = data['note'][:500]
             else:
                 order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -510,7 +510,7 @@ class OrderDetail(APIView):
                 order.contact_number = data['contact_number']
                 order.order_status = all_order_status[data['order_status']]
                 order.address = delivery_address
-                order.note = data['note']
+                order.note = data['note'][:500]
                 order.modified_by = request.user
 
             if products_updated:
@@ -721,7 +721,7 @@ class CreateOrder(APIView):
                 coupon_sms_body = "Dear Customer,\n" + \
                                   "Congratulations for your Shodai account!\n" + \
                                   "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
-                                  "family to avail them discount on their next purchase and " + \
+                                  "family to avail them 5% discount on their next purchase and " + \
                                   "receive exciting discount after each successful referral.\n\n" + \
                                   "www.shod.ai"
                 send_sms(mobile_number=user_instance.mobile_number, sms_content=coupon_sms_body)
@@ -763,7 +763,7 @@ class CreateOrder(APIView):
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.note = data['note']
+        order_instance.note = data['note'][:500]
         order_instance.save()
 
         billing_person_name = user_instance.first_name + " " + user_instance.last_name
