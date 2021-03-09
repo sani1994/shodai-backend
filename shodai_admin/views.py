@@ -479,7 +479,7 @@ class OrderDetail(APIView):
                                              contact_number=data['contact_number'],
                                              created_by=request.user)
 
-                total_vat = total = total_price = total_op_price = 0
+                total_vat = total = total_price = total_op_price = total_price_regular_product = 0
                 for p in products:
                     product = Product.objects.get(id=p["product_id"])
                     op = OrderProduct.objects.create(product=product,
@@ -489,15 +489,58 @@ class OrderDetail(APIView):
                     total_op_price += op.order_product_price * op.order_product_qty
                     total += float(op.order_product_price_with_vat) * op.order_product_qty
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
+                    if product.product_price == op.order_product_price:
+                        total_price_regular_product += float(product.product_price) * op.order_product_qty
 
                 if coupon_discount:
                     coupon_code = is_coupon_discount[0].coupon
-                    if coupon_code.discount_type == 'DP':
-                        coupon_discount = round(total * (coupon_code.discount_percent / 100))
-                        if coupon_discount > coupon_code.discount_amount_limit:
-                            coupon_discount = coupon_code.discount_amount_limit
-                    elif coupon_code.discount_type == 'DA':
-                        coupon_discount = coupon_code.discount_amount
+                    if total-total_vat >= coupon_code.minimum_purchase_limit:
+                        if coupon_code.discount_type == 'DP':
+                            coupon_discount = round(total_price_regular_product * (coupon_code.discount_percent / 100))
+                            if coupon_discount > coupon_code.discount_amount_limit:
+                                coupon_discount = coupon_code.discount_amount_limit
+                        elif coupon_code.discount_type == 'DA':
+                            if total_price_regular_product < coupon_code.discount_amount:
+                                coupon_discount = total_price_regular_product
+                            else:
+                                coupon_discount = coupon_code.discount_amount
+                    else:
+                        coupon_discount = 0
+
+                elif data['coupon_code']:
+                    discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, order.user,
+                                                                          True)
+                    if discount_amount:
+                        coupon_discount = discount_amount
+                        is_using.remaining_usage_count -= 1
+                        is_using.save()
+                        coupon.max_usage_count -= 1
+                        coupon.save()
+                        if coupon.coupon_code_type == 'RC':
+                            new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                                   name="Discount Code",
+                                                                   discount_percent=5,
+                                                                   max_usage_count=1,
+                                                                   minimum_purchase_limit=0,
+                                                                   discount_amount_limit=200,
+                                                                   expiry_date=timezone.now() + timedelta(days=30),
+                                                                   discount_type='DP',
+                                                                   coupon_code_type='DC',
+                                                                   created_by=order.user,
+                                                                   created_on=timezone.now())
+                            CouponUser.objects.create(coupon_code=new_coupon,
+                                                      created_for=coupon.created_by,
+                                                      remaining_usage_count=1,
+                                                      created_by=order.user,
+                                                      created_on=timezone.now())
+                            if not settings.DEBUG:
+                                sms_body = "Dear Customer,\n" + \
+                                           "Congratulations! You have received this " + \
+                                           "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
+                                           "successful referral. Use this code to " + \
+                                           "avail 5% discount on your next purchase.\n\n" + \
+                                           "www.shod.ai"
+                                send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
                 order.order_total_price = round(total) + delivery_charge - coupon_discount
                 order.total_vat = total_vat
