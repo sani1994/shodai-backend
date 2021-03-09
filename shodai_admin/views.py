@@ -673,6 +673,11 @@ class CreateOrder(APIView):
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
+        except UserProfile.DoesNotExist:
+            user_instance = None
+
         delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
         delivery_charge_discount = 0
         if offer_id and isinstance(offer_id, int):
@@ -685,16 +690,11 @@ class CreateOrder(APIView):
                     delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
                     delivery_charge = cart_offer.updated_delivery_charge
 
-        try:
-            user_instance = UserProfile.objects.get(mobile_number=customer["mobile_number"])
-        except UserProfile.DoesNotExist:
-            user_instance = None
-
-        coupon_discount_amount = 0
-        if data['coupon_code'] and user_instance is not None:
+        coupon_discount = 0
+        if data['coupon_code'] and user_instance:
             discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, user_instance, True)
             if discount_amount:
-                coupon_discount_amount = discount_amount
+                coupon_discount = discount_amount
                 is_using.remaining_usage_count -= 1
                 is_using.save()
                 coupon.max_usage_count -= 1
@@ -798,13 +798,16 @@ class CreateOrder(APIView):
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount_amount
+        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.note = data['note']
         order_instance.save()
+
+        product_discount = total_price - total_op_price
+        discount_amount = delivery_charge_discount + coupon_discount + product_discount
 
         billing_person_name = user_instance.first_name + " " + user_instance.last_name
         invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
@@ -815,39 +818,38 @@ class CreateOrder(APIView):
                                              delivery_address=delivery_address.road,
                                              delivery_date_time=order_instance.delivery_date_time,
                                              delivery_charge=delivery_charge,
-                                             discount_amount=total_price - total_op_price + delivery_charge_discount + coupon_discount_amount,
+                                             discount_amount=discount_amount,
                                              net_payable_amount=order_instance.order_total_price,
                                              payment_method="CASH_ON_DELIVERY",
                                              order_number=order_instance,
                                              user=user_instance,
                                              created_by=request.user)
-        if total_price != total_op_price:
+        if product_discount:
             DiscountInfo.objects.create(discount_amount=total_price - total_op_price,
                                         discount_type='PD',
                                         discount_description='Product Offer Discount',
                                         invoice=invoice)
-        if delivery_charge_discount > 0:
+        if delivery_charge_discount:
             DiscountInfo.objects.create(discount_amount=delivery_charge_discount,
                                         discount_type='DC',
                                         discount_description='Offer ID: {}'.format(offer_id),
                                         offer=offer[0],
                                         invoice=invoice)
 
-        if data['coupon_code']:
-            if discount_amount:
-                DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
-                                            discount_type='CP',
-                                            discount_description='Coupon Code: {}'.format(data['coupon_code']),
-                                            coupon=coupon,
-                                            invoice=invoice)
-                CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
-                                                  discount_percent=coupon.discount_percent,
-                                                  discount_amount=coupon_discount_amount,
-                                                  coupon_code=coupon.coupon_code,
-                                                  coupon_user=is_using,
-                                                  invoice_number=invoice,
-                                                  created_by=user_instance,
-                                                  created_on=timezone.now())
+        if coupon_discount:
+            DiscountInfo.objects.create(discount_amount=coupon_discount,
+                                        discount_type='CP',
+                                        discount_description='Coupon Code: {}'.format(data['coupon_code']),
+                                        coupon=coupon,
+                                        invoice=invoice)
+            CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
+                                              discount_percent=coupon.discount_percent,
+                                              discount_amount=coupon_discount,
+                                              coupon_code=coupon.coupon_code,
+                                              coupon_user=is_using,
+                                              invoice_number=invoice,
+                                              created_by=user_instance,
+                                              created_on=timezone.now())
 
         return Response({'status': 'success',
                          'message': 'Order placed.',
@@ -1173,35 +1175,31 @@ class VerifyCoupon(APIView):
 
         if is_valid and len(data["mobile_number"]) == 14 and \
                 data["mobile_number"].startswith('+8801') and data["mobile_number"][1:].isdigit():
-            pass
+            user = UserProfile.objects.filter(mobile_number=data["mobile_number"])
+            if not user:
+                is_valid = False
         else:
             is_valid = False
 
-        if is_valid:
-            user = UserProfile.objects.filter(mobile_number__icontains=data["mobile_number"],
-                                              user_type="CM")
-            if not user:
-                is_valid = False
-
-        if not is_valid or not isinstance(data['coupon_code'], str):
+        if not is_valid or not isinstance(data['coupon_code'], str) or not data['coupon_code']:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
         user = user[0]
         discount_amount, coupon, _, is_under_limit = coupon_checker(data['coupon_code'], products, user, True)
         if not is_under_limit:
             if discount_amount:
                 return Response({'status': 'success',
-                                 'msg': "Code applied successfully.",
                                  "discount_amount": discount_amount,
                                  "coupon_code": coupon.coupon_code}, status=status.HTTP_200_OK)
             elif discount_amount == 0:
-                msg = "Coupon Discount Is Not Applicable On Products With Offer"
+                msg = "Discount is not applicable on products with offer."
                 return Response({'status': 'failed',
-                                 'msg': msg}, status=status.HTTP_200_OK)
+                                 'message': msg}, status=status.HTTP_200_OK)
             return Response({'status': 'failed',
-                             'msg': "Invalid Code!"}, status=status.HTTP_200_OK)
+                             'message': "Invalid coupon!"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            msg = "Total Price Must Be {} Or More".format(coupon.minimum_purchase_limit)
+            msg = "Total price must be {} or more.".format(coupon.minimum_purchase_limit)
             return Response({'status': 'failed',
-                             'msg': msg}, status=status.HTTP_200_OK)
+                             'message': msg}, status=status.HTTP_200_OK)

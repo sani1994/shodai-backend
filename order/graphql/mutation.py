@@ -201,7 +201,7 @@ class CreateOrder(graphene.Mutation):
                     DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
                                                 discount_type='PD',
                                                 invoice=invoice)
-                if input.code and discount_amount:
+                if coupon_discount_amount:
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
                                                 discount_type='CP',
                                                 discount_description='Coupon Code: {}'.format(input.code),
