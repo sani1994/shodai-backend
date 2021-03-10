@@ -21,10 +21,10 @@ def product_data_preprocessing(sender, instance, **kwargs):
         instance.price_with_vat = instance.product_price
 
     instance.slug = slugify(instance.product_name) + "-" + slugify(instance.product_unit.product_unit)
-    instance.product_sku = "{}-{}-{}-{}".format(instance.product_meta.product_category.code,
-                                                instance.product_meta.code,
-                                                instance.product_manufacturer.code,
-                                                instance.code)
+    # instance.product_sku = "{}-{}-{}-{}".format(instance.product_meta.product_category.code,
+    #                                             instance.product_meta.code,
+    #                                             instance.product_manufacturer.code,
+    #                                             instance.code)
 
 
 @receiver(post_save, sender=Product)
