@@ -1,8 +1,11 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from bases.views import field_validation, coupon_checker, type_validation
+from coupon.models import CouponUser, CouponCode
+from coupon.serializers import CouponListSerializer
 from product.models import Product
 from shodai.utils.permission import GenericAuth
 
@@ -58,3 +61,38 @@ class VerifyCoupon(APIView):
             msg = "Total price must be {} or more.".format(coupon.minimum_purchase_limit)
             return Response({'status': 'failed',
                              'message': msg}, status=status.HTTP_200_OK)
+
+
+class CouponList(APIView):
+    permission_class = [GenericAuth]
+
+    def get(self, request):
+        queryset = CouponCode.objects.filter(coupon_code_type='DC',
+                                             expiry_date__gte=timezone.now(),
+                                             discount_code__in=CouponUser.objects.filter(
+                                                 created_for=request.user))
+
+        serializer = CouponListSerializer(queryset, many=True)
+        if serializer:
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReferralCoupon(APIView):
+    permission_class = [GenericAuth]
+
+    def get(self, request):
+        queryset = CouponCode.objects.filter(coupon_code_type='RC',
+                                             expiry_date__gte=timezone.now(),
+                                             max_usage_count__gt=0,
+                                             created_by=request.user)
+
+        if queryset:
+            serializer = CouponListSerializer(queryset, many=True)
+            if serializer:
+                return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"status": "failed", 'data': "No Content"}, status=status.HTTP_204_NO_CONTENT)
