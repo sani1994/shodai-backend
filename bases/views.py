@@ -50,18 +50,23 @@ def from_global_id(global_id):
     return _id
 
 
-def coupon_checker(coupon_code, products, user):
+def coupon_checker(coupon_code, products, user, is_admin):
     coupon_is_valid = is_under_limit = False
     is_using = discount_amount = None
     total_price_regular_product = sub_total = 0
     today = timezone.now()
 
     for p in products:
-        product_id = from_global_id(p.product_id)
+        if is_admin:
+            product_id = p['product_id']
+            product_quantity = p['product_quantity']
+        else:
+            product_id = from_global_id(p.product_id)
+            product_quantity = p.order_product_qty
         product = Product.objects.filter(id=product_id, is_approved=True)
         if product:
             product = product[0]
-            total = float(product.product_price) * p.order_product_qty
+            total = float(product.product_price) * product_quantity
             sub_total += total
             offer_product = OfferProduct.objects.filter(product=product,
                                                         is_approved=True,
