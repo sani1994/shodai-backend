@@ -23,6 +23,7 @@ class VerifyCoupon(APIView):
 
         if is_valid and isinstance(products, list) and products:
             required_fields = ['product_id', 'product_quantity']
+            product_list = []
             for item in products:
                 is_valid = field_validation(required_fields, item)
                 if is_valid:
@@ -30,8 +31,12 @@ class VerifyCoupon(APIView):
                                       item['product_quantity']]
                     is_valid = type_validation(integer_fields, int)
                 if is_valid and item['product_id']:
-                    product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                    if not product_exist or not item['product_quantity']:
+                    if item['product_id'] not in product_list:
+                        product_list.append(item['product_id'])
+                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        if not product_exist or not item['product_quantity']:
+                            is_valid = False
+                    else:
                         is_valid = False
                 else:
                     is_valid = False
@@ -89,7 +94,7 @@ class ReferralCoupon(APIView):
                                              created_by=request.user)
 
         if queryset:
-            serializer = CouponListSerializer(queryset, many=True)
+            serializer = CouponListSerializer(queryset[0])
             if serializer:
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
             else:
