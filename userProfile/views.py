@@ -29,21 +29,11 @@ class UserProfileList(APIView):  # this view returns list of user and create use
     # permission_classes = (IsAuthenticated,)
     permission_classes = [GenericAuth]
 
-    ## list of UserProfile list
-
     def get(self, request, format=None):
-        # is_staff = request.user.is_staff
-        user_profile = UserProfile.objects.all()
-        # if is_staff:
-        #     # user = UserProfile.objects.all()
-        #     return Response(user_profile)
-        # else:
         user_obj = UserProfile.objects.filter(id=request.user.id,
                                               is_approved=True)  # takes only requestd users object
         if user_obj:
             serializer = UserProfileSerializer(user_obj, many=True)
-            # obj = []    #front-end requested to return the object as list
-            # obj.append(serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({"User is not approved"}, status=status.HTTP_200_OK)
@@ -196,21 +186,15 @@ class UserRegistration(CreateAPIView):  # user registration class
     serializer_class = UserRegistrationSerializer
 
     def create(self, request, *args, **kwargs):
-        mobile_number = request.data['mobile_number']
-        # print(mobile_number)
-        # if UserProfile.objects.filter(mobile_number=mobile_number).exists():
-        #     return Response({"message":"This mobile number already taken"}, status=status.HTTP_200_OK)
-        #     # user_NID
-        # else:
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         if serializer.data['user_type'] == 'RT' or serializer.data['user_type'] == 'PD':
-            sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval.Please keep patients.\r\n\r\nShodai Team"
-            u = send_sms(serializer.data['mobile_number'], sms_body)
+            sms_body = f"Dear sir,\r\nYour account is waiting for shodai admin approval." \
+                       f"Please keep patients.\r\n\r\nShodai Team"
+            send_sms(serializer.data['mobile_number'], sms_body)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 

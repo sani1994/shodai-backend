@@ -1,12 +1,17 @@
+import uuid
+from datetime import timedelta
+
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
+from django.utils import timezone
 from httplib2 import Response
 
+from coupon.models import CouponCode
 from shodai import settings
 from userProfile.models import UserProfile, Address
 from rest_framework import serializers
 
-from utility.notification import email_notification
+from utility.notification import email_notification, send_sms
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -68,6 +73,8 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    code = None
+    coupon_code = serializers.SerializerMethodField(read_only=True)
 
     def create(self, validated_data):
         if not validated_data:
@@ -83,6 +90,26 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if user:
             user.set_password(validated_data['password'])
             user.save()
+            coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                               name="Referral Code",
+                                               discount_percent=5,
+                                               max_usage_count=3,
+                                               minimum_purchase_limit=0,
+                                               discount_amount_limit=200,
+                                               expiry_date=timezone.now() + timedelta(days=90),
+                                               discount_type='DP',
+                                               coupon_code_type='RC',
+                                               created_by=user,
+                                               created_on=timezone.now())
+            self.code = coupon.coupon_code
+            if not settings.DEBUG:
+                sms_body = "Dear Customer,\n" + \
+                           "Congratulations for your Shodai account!\n" + \
+                           "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
+                           "family to avail them 5% discount on their next purchase and " + \
+                           "receive exciting discount after each successful referral.\n\n" + \
+                           "www.shod.ai"
+                send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
             if user.user_type == 'PD':
                 sub = "Approval Request"
                 body = f"Dear Concern,\r\n User phone number :{user.mobile_number} \r\nUser type: {user.user_type} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
@@ -91,7 +118,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ('user_type', 'mobile_number', 'first_name', 'last_name', 'email', 'password')
+        fields = ('user_type', 'mobile_number', 'first_name', 'last_name',
+                  'email', 'password', 'coupon_code')
+
+    def get_coupon_code(self, obj):
+        return self.code
 
 
 class RetailerRegistrationSreializer(serializers.ModelSerializer):

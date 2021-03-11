@@ -2,13 +2,18 @@ import csv
 import datetime
 import uuid
 
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q
 from decouple import config
 from django.http import HttpResponse
 from django.template.loader import get_template
+from django.utils import timezone
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
+
+from bases.views import coupon_checker
+from coupon.models import CouponCode, CouponUser, CouponUsageHistory
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
     OrderDetailPaymentSerializer, TimeSlotSerializer
@@ -19,7 +24,7 @@ from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
 from shodai.utils.permission import GenericAuth
 from userProfile.models import Address
-from utility.notification import email_notification, send_sms
+from utility.notification import send_sms
 
 
 class TimeSlotList(APIView):
@@ -202,6 +207,7 @@ class OrderProductList(APIView):
             responses = []
 
             for data in request.data:
+                coupon_code = data.get('coupon_code', None)
                 time = data['time_slot'].split('||')
                 slot = time[0]
                 serializer = OrderProductSerializer(data=data, context={'request': request.data})
@@ -216,7 +222,8 @@ class OrderProductList(APIView):
             order_instance = Order.objects.filter(pk=serializer.data['order'])[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
             delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-
+            product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
+            products = []
             if order_instance.address:
                 if order_instance.address.road:
                     address = order_instance.address.road
@@ -224,10 +231,12 @@ class OrderProductList(APIView):
                 if order_instance.delivery_place:
                     address = order_instance.delivery_place
 
-            product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
             matrix = []
             total_price_without_offer = total_vat = product_total_price = 0
             for p in product_list:
+                product_data = {'product_id': p.product.id,
+                                'product_quantity': p.order_product_qty}
+                products.append(product_data)
                 total = float(p.product_price) * p.order_product_qty
                 total_price_without_offer += total
                 total_vat += float(p.order_product_price_with_vat - p.order_product_price) * p.order_product_qty
@@ -242,20 +251,70 @@ class OrderProductList(APIView):
                            "--", int(p.order_product_qty), total]
                 matrix.append(col)
 
+            coupon_discount = 0
+            if coupon_code:
+                discount_amount, coupon, is_using, _ = coupon_checker(coupon_code, products, request.user,
+                                                                      True)
+                if discount_amount:
+                    coupon_discount = discount_amount
+                    is_using.remaining_usage_count -= 1
+                    is_using.save()
+                    coupon.max_usage_count -= 1
+                    coupon.save()
+                    if coupon.coupon_code_type == 'RC':
+                        new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                               name="Discount Code",
+                                                               discount_percent=5,
+                                                               max_usage_count=1,
+                                                               minimum_purchase_limit=0,
+                                                               discount_amount_limit=200,
+                                                               expiry_date=timezone.now() + datetime.timedelta(days=30),
+                                                               discount_type='DP',
+                                                               coupon_code_type='DC',
+                                                               created_by=request.user,
+                                                               created_on=timezone.now())
+                        CouponUser.objects.create(coupon_code=new_coupon,
+                                                  created_for=coupon.created_by,
+                                                  remaining_usage_count=1,
+                                                  created_by=request.user,
+                                                  created_on=timezone.now())
+                        if not settings.DEBUG:
+                            sms_body = "Dear Customer,\n" + \
+                                       "Congratulations! You have received this " + \
+                                       "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
+                                       "successful referral. Use this code to " + \
+                                       "avail 5% discount on your next purchase.\n\n" + \
+                                       "www.shod.ai"
+                            send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
+
             order_instance.total_vat = total_vat
+            order_instance.order_total_price = product_total_price + total_vat + delivery_charge - coupon_discount
             order_instance.save()
 
-            sub_total = order_instance.order_total_price - order_instance.total_vat - delivery_charge
-            invoice.discount_amount = float(round(total_price_without_offer - sub_total))
+            invoice.discount_amount = (total_price_without_offer - product_total_price) + coupon_discount
             invoice.save()
 
             is_product_discount = False
-            if total_price_without_offer != sub_total:
+            if total_price_without_offer != product_total_price:
                 is_product_discount = True
-                DiscountInfo.objects.create(discount_amount=total_price_without_offer - sub_total,
+                DiscountInfo.objects.create(discount_amount=total_price_without_offer - product_total_price,
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
                                             invoice=invoice)
+            if coupon_discount:
+                DiscountInfo.objects.create(discount_amount=coupon_discount,
+                                            discount_type='CP',
+                                            discount_description='Coupon Code: {}'.format(coupon_code),
+                                            coupon=coupon,
+                                            invoice=invoice)
+                CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
+                                                  discount_percent=coupon.discount_percent,
+                                                  discount_amount=coupon_discount,
+                                                  coupon_code=coupon.coupon_code,
+                                                  coupon_user=is_using,
+                                                  invoice_number=invoice,
+                                                  created_by=request.user,
+                                                  created_on=timezone.now())
 
             """
             To send notification to customer
