@@ -3,6 +3,7 @@ import uuid
 import graphene
 from datetime import timedelta
 
+from decouple import config
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -109,11 +110,11 @@ class UserCreateMutation(graphene.Mutation):
 
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Code",
-                                               discount_percent=5,
-                                               max_usage_count=3,
+                                               discount_percent=int(config("RC_DISCOUNT_PERCENT")),
+                                               max_usage_count=int(config("RC_MAX_USAGE_COUNT")),
                                                minimum_purchase_limit=0,
-                                               discount_amount_limit=200,
-                                               expiry_date=timezone.now() + timedelta(days=90),
+                                               discount_amount_limit=int(config("RC_DISCOUNT_LIMIT")),
+                                               expiry_date=timezone.now() + timedelta(days=int(config("RC_VALIDITY_PERIOD"))),
                                                discount_type='DP',
                                                coupon_code_type='RC',
                                                created_by=user_instance,
@@ -122,7 +123,7 @@ class UserCreateMutation(graphene.Mutation):
                 sms_body = "Dear Customer,\n" + \
                            "Congratulations for your Shodai account!\n" + \
                            "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
-                           "family to avail them 5% discount on their next purchase and " + \
+                           "family to avail them {}% discount on their next purchase and ".format(config("RC_DISCOUNT_PERCENT")) + \
                            "receive exciting discount after each successful referral.\n\n" +\
                            "www.shod.ai"
                 send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
