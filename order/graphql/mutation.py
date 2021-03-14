@@ -144,7 +144,7 @@ class CreateOrder(graphene.Mutation):
                                                                    name="Discount Code",
                                                                    discount_percent=int(config("DC_DISCOUNT_PERCENT")),
                                                                    max_usage_count=1,
-                                                                   minimum_purchase_limit=0,
+                                                                   minimum_purchase_limit=int(config("DC_MIN_PURCHASE_LIMIT")),
                                                                    discount_amount_limit=int(config("DC_DISCOUNT_LIMIT")),
                                                                    expiry_date=timezone.now() + timedelta(days=int(config("DC_VALIDITY_PERIOD"))),
                                                                    discount_type='DP',
@@ -200,6 +200,7 @@ class CreateOrder(graphene.Mutation):
                 if sub_total_without_offer != sub_total:
                     DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
                                                 discount_type='PD',
+                                                discount_description='Product Offer Discount',
                                                 invoice=invoice)
                 if coupon_discount_amount:
                     DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
