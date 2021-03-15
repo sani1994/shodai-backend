@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import graphene
 from django.utils import timezone
 from graphene_django import DjangoObjectType
@@ -10,7 +12,7 @@ class CouponType(DjangoObjectType):
     class Meta:
         model = CouponCode
         fields = ['coupon_code', 'expiry_date', 'discount_percent', 'discount_amount_limit',
-                  'discount_amount', 'minimum_purchase_limit']
+                  'discount_amount', 'minimum_purchase_limit', 'max_usage_count']
 
     coupon_status = graphene.String()
 
@@ -38,7 +40,6 @@ class Query(graphene.ObjectType):
         user = info.context.user
         if checkAuthentication(user, info):
             referral_code = CouponCode.objects.filter(coupon_code_type='RC',
-                                                      expiry_date__gte=timezone.now(),
-                                                      max_usage_count__gt=0,
+                                                      expiry_date__gte=timezone.now() - timedelta(days=7),
                                                       created_by=user)
             return referral_code[0] if referral_code else None
