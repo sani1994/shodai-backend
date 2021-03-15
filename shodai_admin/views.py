@@ -1248,7 +1248,7 @@ class VerifyCoupon(APIView):
                 return Response({'status': 'failed',
                                  'message': msg}, status=status.HTTP_200_OK)
             return Response({'status': 'failed',
-                             'message': "Invalid coupon!"}, status=status.HTTP_400_BAD_REQUEST)
+                             'message': "Invalid coupon!"}, status=status.HTTP_200_OK)
         else:
             msg = "Total price must be {} or more.".format(coupon.minimum_purchase_limit)
             return Response({'status': 'failed',
