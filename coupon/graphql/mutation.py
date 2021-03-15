@@ -26,7 +26,7 @@ class ApplyCoupon(graphene.Mutation):
     def mutate(root, info, input=None):
         user = info.context.user
         if checkAuthentication(user, info):
-            discount_amount, coupon, _, is_under_limit = coupon_checker(input.code, input.products, user)
+            discount_amount, coupon, _, is_under_limit = coupon_checker(input.code, input.products, user, False)
             if not is_under_limit:
                 if discount_amount:
                     return ApplyCoupon(status=True,
