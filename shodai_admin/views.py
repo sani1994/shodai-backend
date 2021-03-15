@@ -449,10 +449,15 @@ class OrderDetail(APIView):
 
             coupon_discount = 0
             is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+
             if is_coupon_discount:
-                coupon_discount = is_coupon_discount[0].discount_amount
+                discount_amount, coupon, is_using, _ = coupon_checker(is_coupon_discount[0].coupon, products,
+                                                                      order.user, True, True)
+                if discount_amount:
+                    coupon_discount = discount_amount
             elif data['coupon_code']:
-                discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, order.user, True)
+                discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, order.user, True,
+                                                                      False)
                 if discount_amount:
                     coupon_discount = discount_amount
                     is_using.remaining_usage_count -= 1
@@ -481,7 +486,8 @@ class OrderDetail(APIView):
                                        "Congratulations! You have received this " + \
                                        "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
                                        "successful referral. Use this code to " + \
-                                       "avail exciting discount on your next purchase.\n\n" + \
+                                       "avail {} discount on your next purchase.\n\n".format(
+                                           config("DC_DISCOUNT_PERCENT")) + \
                                        "www.shod.ai"
                             send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
@@ -526,19 +532,6 @@ class OrderDetail(APIView):
                     total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
                     if op.product_price == op.order_product_price:
                         total_price_regular_product += float(op.product_price) * op.order_product_qty
-
-                if is_coupon_discount:
-                    coupon = is_coupon_discount[0].coupon
-                    if total_price >= coupon.minimum_purchase_limit:
-                        if coupon.discount_type == 'DP':
-                            coupon_discount = round(total_price_regular_product * (coupon.discount_percent / 100))
-                            if coupon_discount > coupon.discount_amount_limit:
-                                coupon_discount = coupon.discount_amount_limit
-                        elif coupon.discount_type == 'DA':
-                            if total_price_regular_product < coupon.discount_amount:
-                                coupon_discount = total_price_regular_product
-                            else:
-                                coupon_discount = coupon.discount_amount
 
                 order.order_total_price = round(total) + delivery_charge - coupon_discount
                 order.total_vat = total_vat
@@ -736,7 +729,8 @@ class CreateOrder(APIView):
 
         coupon_discount = 0
         if data['coupon_code'] and user_instance:
-            discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, user_instance, True)
+            discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, user_instance, True,
+                                                                  False)
             if discount_amount:
                 coupon_discount = discount_amount
                 is_using.remaining_usage_count -= 1
@@ -1183,6 +1177,7 @@ class VerifyCoupon(APIView):
 
     def post(self, request):
         data = request.data
+        order_id = data.get('order_id', None)
         required_fields = ['coupon_code',
                            'products',
                            'mobile_number']
@@ -1225,13 +1220,24 @@ class VerifyCoupon(APIView):
         else:
             is_valid = False
 
-        if not is_valid or not isinstance(data['coupon_code'], str) or not data['coupon_code']:
+        if not is_valid or not isinstance(data['coupon_code'], str):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
         user = user[0]
-        discount_amount, coupon, _, is_under_limit = coupon_checker(data['coupon_code'], products, user, True)
+        is_edit = False
+        if order_id:
+            order = Order.objects.get(id=order_id)
+            invoice = InvoiceInfo.objects.get(invoice_number=order.invoice_number)
+            discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+            if discount and discount[0].coupon:
+                coupon_code = discount[0].coupon
+                is_edit = True
+        else:
+            coupon_code = data['coupon_code']
+
+        discount_amount, coupon, _, is_under_limit = coupon_checker(coupon_code, products, user, True, is_edit)
         if not is_under_limit:
             if discount_amount:
                 return Response({'status': 'success',

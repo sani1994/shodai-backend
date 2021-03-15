@@ -50,14 +50,14 @@ def from_global_id(global_id):
     return _id
 
 
-def coupon_checker(coupon_code, products, user, is_admin):
+def coupon_checker(coupon_code, products, user, is_rest_api, is_edit):
     coupon_is_valid = is_under_limit = False
     is_using = discount_amount = None
     total_price_regular_product = sub_total = 0
     today = timezone.now()
 
     for p in products:
-        if is_admin:
+        if is_rest_api:
             product_id = p['product_id']
             product_quantity = p['product_quantity']
         else:
@@ -76,48 +76,50 @@ def coupon_checker(coupon_code, products, user, is_admin):
             if not offer_product:
                 total_price_regular_product += total
 
-    coupon = CouponCode.objects.filter(coupon_code=coupon_code, expiry_date__gte=today)
-    if coupon:
-        coupon = coupon[0]
-        if sub_total >= coupon.minimum_purchase_limit:
-            coupon_type = coupon.coupon_code_type
-            if coupon_type == 'RC':
-                if coupon.created_by != user:
+    if not is_edit:
+        coupon = CouponCode.objects.filter(coupon_code=coupon_code, expiry_date__gte=today)
+        if coupon:
+            coupon = coupon[0]
+            if sub_total >= coupon.minimum_purchase_limit:
+                coupon_type = coupon.coupon_code_type
+                if coupon_type == 'RC':
+                    if coupon.created_by != user:
+                        is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
+                        if is_using:
+                            is_using = is_using[0]
+                            if is_using.remaining_usage_count > 0 and coupon.max_usage_count > 0:
+                                coupon_is_valid = True
+                        elif coupon.max_usage_count > 0:
+                            coupon_is_valid = True
+                            is_using = CouponUser.objects.create(coupon_code=coupon,
+                                                                 created_for=user,
+                                                                 remaining_usage_count=1,
+                                                                 created_by=user,
+                                                                 created_on=today)
+                elif coupon_type == 'DC':
+                    is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user,
+                                                         remaining_usage_count__gt=0)
+                    if is_using:
+                        is_using = is_using[0]
+                        coupon_is_valid = True
+                elif coupon_type == 'PC':
                     is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
                     if is_using:
                         is_using = is_using[0]
-                        if is_using.remaining_usage_count > 0 and coupon.max_usage_count > 0:
+                        if is_using.remaining_usage_count > 0:
                             coupon_is_valid = True
-                    elif coupon.max_usage_count > 0:
+                    else:
                         coupon_is_valid = True
                         is_using = CouponUser.objects.create(coupon_code=coupon,
                                                              created_for=user,
                                                              remaining_usage_count=1,
                                                              created_by=user,
                                                              created_on=today)
-            elif coupon_type == 'DC':
-                is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user,
-                                                     remaining_usage_count__gt=0)
-                if is_using:
-                    is_using = is_using[0]
-                    coupon_is_valid = True
-            elif coupon_type == 'PC':
-                is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user)
-                if is_using:
-                    is_using = is_using[0]
-                    if is_using.remaining_usage_count > 0:
-                        coupon_is_valid = True
-                else:
-                    coupon_is_valid = True
-                    is_using = CouponUser.objects.create(coupon_code=coupon,
-                                                         created_for=user,
-                                                         remaining_usage_count=1,
-                                                         created_by=user,
-                                                         created_on=today)
-        else:
-            is_under_limit = True
+    else:
+        coupon = coupon_code
 
-        if coupon_is_valid:
+    if coupon_is_valid or is_edit:
+        if sub_total >= coupon.minimum_purchase_limit:
             if coupon.discount_type == 'DP':
                 discount_amount = round(total_price_regular_product * (coupon.discount_percent / 100))
                 if discount_amount > coupon.discount_amount_limit:
@@ -127,6 +129,8 @@ def coupon_checker(coupon_code, products, user, is_admin):
                     discount_amount = total_price_regular_product
                 else:
                     discount_amount = coupon.discount_amount
+        else:
+            is_under_limit = True
 
     return discount_amount, coupon, is_using, is_under_limit
 
