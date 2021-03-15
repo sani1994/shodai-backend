@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -89,8 +91,7 @@ class ReferralCoupon(APIView):
 
     def get(self, request):
         queryset = CouponCode.objects.filter(coupon_code_type='RC',
-                                             expiry_date__gte=timezone.now(),
-                                             max_usage_count__gt=0,
+                                             expiry_date__gte=timezone.now() - timedelta(days=7),
                                              created_by=request.user)
 
         if queryset:

@@ -264,11 +264,13 @@ class OrderProductList(APIView):
                     if coupon.coupon_code_type == 'RC':
                         new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                                name="Discount Code",
-                                                               discount_percent=5,
+                                                               discount_percent=int(config("DC_DISCOUNT_PERCENT")),
                                                                max_usage_count=1,
-                                                               minimum_purchase_limit=0,
-                                                               discount_amount_limit=200,
-                                                               expiry_date=timezone.now() + datetime.timedelta(days=30),
+                                                               minimum_purchase_limit=int(
+                                                                   config("DC_MIN_PURCHASE_LIMIT")),
+                                                               discount_amount_limit=int(config("DC_DISCOUNT_LIMIT")),
+                                                               expiry_date=timezone.now() + datetime.timedelta(
+                                                                   days=int(config("DC_VALIDITY_PERIOD"))),
                                                                discount_type='DP',
                                                                coupon_code_type='DC',
                                                                created_by=request.user,
