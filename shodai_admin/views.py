@@ -322,6 +322,9 @@ class OrderDetail(APIView):
     def patch(self, request, id):
         data = request.data
         offer_id = data.get('offer_id')
+        order = Order.objects.filter(id=id)
+        products = data['products']
+        product_list = []
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -341,15 +344,14 @@ class OrderDetail(APIView):
                              data['coupon_code']]
             is_valid = type_validation(string_fields, str)
 
-        if is_valid and isinstance(data['products'], list) and data['products']:
+        if is_valid and isinstance(products, list) and products:
             required_fields = ['product_id', 'product_quantity']
-            product_list = []
-            for item in data['products']:
+            for item in products:
                 is_valid = field_validation(required_fields, item)
                 if is_valid and isinstance(item['product_id'], int):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
-                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        product_exist = Product.objects.filter(id=item['product_id'])
                         if not product_exist or not item['product_quantity']:
                             is_valid = False
                         if is_valid:
@@ -368,6 +370,23 @@ class OrderDetail(APIView):
                     break
         else:
             is_valid = False
+
+        if is_valid and order:
+            order = order[0]
+            all_order_products = OrderProduct.objects.filter(order=order)
+            order_products = []
+            order_product_id = []
+            for item in all_order_products:
+                product_data = {'product_id': item.product.id,
+                                'product_quantity': item.order_product_qty}
+                order_product_id.append(item.product.id)
+                order_products.append(product_data)
+            for item in product_list:
+                if item not in order_product_id:
+                    product_validity = Product.objects.filter(id=item, is_approved=True)
+                    if not product_validity:
+                        is_valid = False
+                        break
 
         if is_valid and isinstance(data['delivery_time_slot_id'], int):
             time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
@@ -388,28 +407,18 @@ class OrderDetail(APIView):
         else:
             is_valid = False
 
-        order = Order.objects.filter(id=id)
-        if not is_valid or not order or not data['delivery_address'] or data['order_status'] not in all_order_status:
+        if not is_valid or not data['delivery_address'] or data['order_status'] not in all_order_status:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
-            order = order[0]
-            products = data['products']
             products_updated = True
-
             if order.order_status == 'COM' or order.order_status == 'CN' or \
                     data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
                 products_updated = False
 
             if products_updated:
-                all_order_products = OrderProduct.objects.filter(order=order)
-                order_products = []
-                for item in all_order_products:
-                    product_data = {'product_id': item.product.id,
-                                    'product_quantity': item.order_product_qty}
-                    order_products.append(product_data)
                 if len(order_products) == len(products):
                     for i in products:
                         if i not in order_products:
@@ -481,7 +490,7 @@ class OrderDetail(APIView):
                                        "Congratulations! You have received this " + \
                                        "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
                                        "successful referral. Use this code to " + \
-                                       "avail {} discount on your next purchase.\n\n".format(
+                                       "avail {}% discount on your next purchase.\n\n".format(
                                            config("DC_DISCOUNT_PERCENT")) + \
                                        "www.shod.ai"
                             send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
