@@ -51,20 +51,20 @@ def from_global_id(global_id):
     return _id
 
 
-def coupon_checker(coupon_code, products, user, is_rest_api, is_edit):
+def coupon_checker(coupon_code, products, user, is_graphql=False, is_used=False):
     coupon_is_valid = is_under_limit = False
     is_using = discount_amount = None
     total_price = sub_total = 0
+    allow_offer_product = config("APPLY_DISCOUNT_ON_OFFER", cast=bool)
     today = timezone.now()
-    allow_offer_product = bool(config("APPLY_DISCOUNT_ON_OFFER="))
 
     for p in products:
-        if is_rest_api:
-            product_id = p['product_id']
-            product_quantity = p['product_quantity']
-        else:
+        if is_graphql:
             product_id = from_global_id(p.product_id)
             product_quantity = p.order_product_qty
+        else:
+            product_id = p['product_id']
+            product_quantity = p['product_quantity']
         product = Product.objects.filter(id=product_id, is_approved=True)
         if product:
             product = product[0]
@@ -81,7 +81,7 @@ def coupon_checker(coupon_code, products, user, is_rest_api, is_edit):
                 if not offer_product:
                     total_price += total
 
-    if not is_edit:
+    if not is_used:
         coupon = CouponCode.objects.filter(coupon_code=coupon_code, expiry_date__gte=today)
         if coupon:
             coupon = coupon[0]
@@ -120,22 +120,26 @@ def coupon_checker(coupon_code, products, user, is_rest_api, is_edit):
                                                              remaining_usage_count=1,
                                                              created_by=user,
                                                              created_on=today)
+            else:
+                is_under_limit = True
     else:
-        coupon = coupon_code
-
-    if coupon_is_valid or is_edit:
+        coupon = CouponCode.objects.get(coupon_code=coupon_code)
         if sub_total >= coupon.minimum_purchase_limit:
-            if coupon.discount_type == 'DP':
-                discount_amount = round(total_price * (coupon.discount_percent / 100))
-                if discount_amount > coupon.discount_amount_limit:
-                    discount_amount = coupon.discount_amount_limit
-            elif coupon.discount_type == 'DA':
-                if total_price < coupon.discount_amount:
-                    discount_amount = total_price
-                else:
-                    discount_amount = coupon.discount_amount
+            coupon_is_valid = True
+            is_using = CouponUser.objects.get(coupon_code=coupon, created_for=user)
         else:
             is_under_limit = True
+
+    if coupon_is_valid:
+        if coupon.discount_type == 'DP':
+            discount_amount = round(total_price * (coupon.discount_percent / 100))
+            if discount_amount > coupon.discount_amount_limit:
+                discount_amount = coupon.discount_amount_limit
+        elif coupon.discount_type == 'DA':
+            if total_price < coupon.discount_amount:
+                discount_amount = total_price
+            else:
+                discount_amount = coupon.discount_amount
 
     return discount_amount, coupon, is_using, is_under_limit
 
