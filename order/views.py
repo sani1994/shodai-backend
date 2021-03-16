@@ -285,7 +285,7 @@ class OrderProductList(APIView):
                                        "Congratulations! You have received this " + \
                                        "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
                                        "successful referral. Use this code to " + \
-                                       "avail 5% discount on your next purchase.\n\n" + \
+                                       "avail {}% discount on your next purchase.\n\n".format(config("DC_DISCOUNT_PERCENT")) + \
                                        "www.shod.ai"
                             send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
