@@ -1220,7 +1220,8 @@ class VerifyCoupon(APIView):
         else:
             is_valid = False
 
-        if not is_valid or not isinstance(data['coupon_code'], str) or not data['coupon_code']:
+        if not is_valid or not isinstance(data['coupon_code'], str) or \
+                (not order_id and not data['coupon_code']):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)

@@ -155,8 +155,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "order_number", "created_on", "delivery_date_time", "delivery_time_slot", "order_total_price",
-            "order_status", "total_vat", "contact_number", "delivery_address", "note", "customer", "invoice", "products"
+            "id", "order_number", "created_on", "modified_on", "delivery_date_time",
+            "delivery_time_slot", "order_total_price", "order_status", "total_vat",
+            "contact_number", "delivery_address", "note", "customer", "invoice", "products",
         )
 
     def get_delivery_time_slot(self, obj):
