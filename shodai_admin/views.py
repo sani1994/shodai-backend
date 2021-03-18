@@ -331,7 +331,7 @@ class OrderDetail(APIView):
                            'products',
                            'note',
                            'coupon_code',
-                           'special_discount']
+                           'additional_discount']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -410,7 +410,7 @@ class OrderDetail(APIView):
             is_valid = False
 
         if not is_valid or not data['delivery_address'] or data['order_status'] not in all_order_status or \
-                not isinstance(data['special_discount'], float):
+                not isinstance(data['additional_discount'], float):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
@@ -458,7 +458,7 @@ class OrderDetail(APIView):
                         delivery_charge = cart_offer.updated_delivery_charge
                         delivery_charge_discount = delivery_charge_without_offer - delivery_charge
 
-            coupon_discount = prev_special_discount = 0
+            coupon_discount = prev_additional_discount = 0
             is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
             if is_coupon_discount:
                 coupon_discount = is_coupon_discount[0].discount_amount
@@ -466,6 +466,7 @@ class OrderDetail(APIView):
                 discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, order.user)
                 if discount_amount:
                     coupon_discount = discount_amount
+                    coupon_discount_description = 'Coupon Code: {}'.format(data['coupon_code'])
                     is_using.remaining_usage_count -= 1
                     is_using.save()
                     coupon.max_usage_count -= 1
@@ -497,9 +498,9 @@ class OrderDetail(APIView):
                                        "www.shod.ai"
                             send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
-            is_special_discount = DiscountInfo.objects.filter(discount_type='AD', invoice=invoice)
-            if is_special_discount:
-                prev_special_discount = is_special_discount[0].discount_amount
+            is_additional_discount = DiscountInfo.objects.filter(discount_type='AD', invoice=invoice)
+            if is_additional_discount:
+                prev_additional_discount = is_additional_discount[0].discount_amount
 
             if products_updated:
                 if "-" in order.order_number:
@@ -544,20 +545,21 @@ class OrderDetail(APIView):
                         total_price_regular_product += float(op.product_price) * op.order_product_qty
 
                 if is_coupon_discount:
-                    discount_amount, _, _, _ = coupon_checker(is_coupon_discount[0].coupon, products,
+                    discount_amount, _, _, _ = coupon_checker(is_coupon_discount[0].coupon.coupon_code,
+                                                              products,
                                                               order.user, is_used=True)
                     if discount_amount:
                         coupon_discount = discount_amount
+                        coupon_discount_description = is_coupon_discount[0].discount_description
 
-                order.order_total_price = round(total) + delivery_charge - coupon_discount - data['special_discount']
+                order.order_total_price = round(total) + delivery_charge - coupon_discount - data['additional_discount']
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note']
             else:
-                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge \
-                                          + prev_special_discount - data['special_discount']
+                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge + prev_additional_discount - data['additional_discount']
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
@@ -575,7 +577,8 @@ class OrderDetail(APIView):
                 is_product_discount = DiscountInfo.objects.filter(discount_type='PD', invoice=invoice)
                 product_discount = is_product_discount[0].discount_amount if is_product_discount else 0
 
-            discount_amount = delivery_charge_discount + coupon_discount + product_discount
+            discount_amount = delivery_charge_discount + coupon_discount + product_discount + data[
+                'additional_discount']
 
             if order.user.first_name and order.user.last_name:
                 billing_person_name = order.user.first_name + " " + order.user.last_name
@@ -603,7 +606,7 @@ class OrderDetail(APIView):
             if coupon_discount:
                 DiscountInfo.objects.create(discount_amount=coupon_discount,
                                             discount_type='CP',
-                                            discount_description=is_coupon_discount[0].discount_description,
+                                            discount_description=coupon_discount_description,
                                             coupon=is_coupon_discount[0].coupon,
                                             invoice=new_invoice)
 
@@ -621,11 +624,11 @@ class OrderDetail(APIView):
                                             offer=offer[0] if offer_id else is_delivery_discount[0].offer,
                                             invoice=new_invoice)
 
-            if data['special_discount']:
-                DiscountInfo.objects.create(discount_amount=data['special_discount'],
+            if data['additional_discount']:
+                DiscountInfo.objects.create(discount_amount=data['additional_discount'],
                                             discount_type='AD',
-                                            discount_description='Special Additional Discount',
-                                            invoice=invoice)
+                                            discount_description='Additional Discount',
+                                            invoice=new_invoice)
             return Response({
                 "status": "success",
                 "message": "Order updated.",
@@ -649,7 +652,7 @@ class CreateOrder(APIView):
                            'products',
                            'note',
                            'coupon_code',
-                           'special_discount']
+                           'additional_discount']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -729,7 +732,7 @@ class CreateOrder(APIView):
         else:
             is_valid = False
 
-        if not is_valid or not data['delivery_address'] or not isinstance(data['special_discount'], float):
+        if not is_valid or not data['delivery_address'] or not isinstance(data['additional_discount'], float):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
@@ -859,7 +862,8 @@ class CreateOrder(APIView):
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount - data['special_discount']
+        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount - data[
+            'additional_discount']
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -911,10 +915,10 @@ class CreateOrder(APIView):
                                               invoice_number=invoice,
                                               created_by=user_instance,
                                               created_on=timezone.now())
-        if data['special_discount']:
-            DiscountInfo.objects.create(discount_amount=data['special_discount'],
+        if data['additional_discount']:
+            DiscountInfo.objects.create(discount_amount=data['additional_discount'],
                                         discount_type='AD',
-                                        discount_description='Special Additional Discount',
+                                        discount_description='Additional Discount',
                                         invoice=invoice)
 
         return Response({'status': 'success',
