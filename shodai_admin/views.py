@@ -322,9 +322,7 @@ class OrderDetail(APIView):
     def patch(self, request, id):
         data = request.data
         offer_id = data.get('offer_id')
-        order = Order.objects.filter(id=id)
         products = data['products']
-        product_list = []
         required_fields = ['delivery_date',
                            'delivery_time_slot_id',
                            'delivery_address',
@@ -344,14 +342,34 @@ class OrderDetail(APIView):
                              data['coupon_code']]
             is_valid = type_validation(string_fields, str)
 
+        order = Order.objects.filter(id=id)
+        if is_valid and order:
+            order = order[0]
+            all_order_products = OrderProduct.objects.filter(order=order)
+
+            order_products = []
+            order_product_list = []
+            for item in all_order_products:
+                product_data = {'product_id': item.product.id,
+                                'product_quantity': item.order_product_qty}
+                order_product_list.append(item.product.id)
+                order_products.append(product_data)
+        else:
+            is_valid = False
+
         if is_valid and isinstance(products, list) and products:
             required_fields = ['product_id', 'product_quantity']
+
+            product_list = []
             for item in products:
                 is_valid = field_validation(required_fields, item)
                 if is_valid and isinstance(item['product_id'], int):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
-                        product_exist = Product.objects.filter(id=item['product_id'])
+                        if item['product_id'] in order_product_list:
+                            product_exist = Product.objects.filter(id=item['product_id'])
+                        else:
+                            product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
                         if not product_exist or not item['product_quantity']:
                             is_valid = False
                         if is_valid:
@@ -370,23 +388,6 @@ class OrderDetail(APIView):
                     break
         else:
             is_valid = False
-
-        if is_valid and order:
-            order = order[0]
-            all_order_products = OrderProduct.objects.filter(order=order)
-            order_products = []
-            order_product_id = []
-            for item in all_order_products:
-                product_data = {'product_id': item.product.id,
-                                'product_quantity': item.order_product_qty}
-                order_product_id.append(item.product.id)
-                order_products.append(product_data)
-            for item in product_list:
-                if item not in order_product_id:
-                    product_validity = Product.objects.filter(id=item, is_approved=True)
-                    if not product_validity:
-                        is_valid = False
-                        break
 
         if is_valid and isinstance(data['delivery_time_slot_id'], int):
             time = TimeSlot.objects.filter(id=data['delivery_time_slot_id'])
@@ -418,13 +419,12 @@ class OrderDetail(APIView):
                     data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
                 products_updated = False
 
-            if products_updated:
-                if len(order_products) == len(products):
-                    for i in products:
-                        if i not in order_products:
-                            break
-                    else:
-                        products_updated = False
+            if products_updated and len(order_products) == len(products):
+                for i in products:
+                    if i not in order_products:
+                        break
+                else:
+                    products_updated = False
 
             if not order.address or data["delivery_address"] != order.address.road:
                 address = Address.objects.filter(road=data["delivery_address"])
