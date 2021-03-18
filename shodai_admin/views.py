@@ -330,7 +330,8 @@ class OrderDetail(APIView):
                            'order_status',
                            'products',
                            'note',
-                           'coupon_code']
+                           'coupon_code',
+                           'special_discount']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -408,7 +409,8 @@ class OrderDetail(APIView):
         else:
             is_valid = False
 
-        if not is_valid or not data['delivery_address'] or data['order_status'] not in all_order_status:
+        if not is_valid or not data['delivery_address'] or data['order_status'] not in all_order_status or \
+                not isinstance(data['special_discount'], float):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
@@ -456,7 +458,7 @@ class OrderDetail(APIView):
                         delivery_charge = cart_offer.updated_delivery_charge
                         delivery_charge_discount = delivery_charge_without_offer - delivery_charge
 
-            coupon_discount = 0
+            coupon_discount = prev_special_discount = 0
             is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
             if is_coupon_discount:
                 coupon_discount = is_coupon_discount[0].discount_amount
@@ -494,6 +496,10 @@ class OrderDetail(APIView):
                                            config("DC_DISCOUNT_PERCENT")) + \
                                        "www.shod.ai"
                             send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
+
+            is_special_discount = DiscountInfo.objects.filter(discount_type='AD', invoice=invoice)
+            if is_special_discount:
+                prev_special_discount = is_special_discount[0].discount_amount
 
             if products_updated:
                 if "-" in order.order_number:
@@ -543,14 +549,15 @@ class OrderDetail(APIView):
                     if discount_amount:
                         coupon_discount = discount_amount
 
-                order.order_total_price = round(total) + delivery_charge - coupon_discount
+                order.order_total_price = round(total) + delivery_charge - coupon_discount - data['special_discount']
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note']
             else:
-                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge
+                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge \
+                                          + prev_special_discount - data['special_discount']
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
@@ -613,6 +620,12 @@ class OrderDetail(APIView):
                                             if offer_id else is_delivery_discount[0].discount_description,
                                             offer=offer[0] if offer_id else is_delivery_discount[0].offer,
                                             invoice=new_invoice)
+
+            if data['special_discount']:
+                DiscountInfo.objects.create(discount_amount=data['special_discount'],
+                                            discount_type='AD',
+                                            discount_description='Special Additional Discount',
+                                            invoice=invoice)
             return Response({
                 "status": "success",
                 "message": "Order updated.",
@@ -635,7 +648,8 @@ class CreateOrder(APIView):
                            'customer',
                            'products',
                            'note',
-                           'coupon_code']
+                           'coupon_code',
+                           'special_discount']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -715,7 +729,7 @@ class CreateOrder(APIView):
         else:
             is_valid = False
 
-        if not is_valid or not data['delivery_address']:
+        if not is_valid or not data['delivery_address'] or not isinstance(data['special_discount'], float):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
@@ -845,7 +859,7 @@ class CreateOrder(APIView):
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount
+        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount - data['special_discount']
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -897,6 +911,11 @@ class CreateOrder(APIView):
                                               invoice_number=invoice,
                                               created_by=user_instance,
                                               created_on=timezone.now())
+        if data['special_discount']:
+            DiscountInfo.objects.create(discount_amount=data['special_discount'],
+                                        discount_type='AD',
+                                        discount_description='Special Additional Discount',
+                                        invoice=invoice)
 
         return Response({'status': 'success',
                          'message': 'Order placed.',

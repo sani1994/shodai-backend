@@ -268,7 +268,7 @@ class DiscountInfo(BaseModel):
     DISCOUNT_TYPE = [
         (COUPON_DISCOUNT, 'Coupon Discount'),
         (PRODUCT_DISCOUNT, 'Product Discount'),
-        (DELIVERY_CHARGE_DISCOUNT, 'Delivery Charge Discount')
+        (DELIVERY_CHARGE_DISCOUNT, 'Delivery Charge Discount'),
         (ADDITIONAL_DISCOUNT, 'Additional Discount')
     ]
     discount_amount = models.FloatField(default=0, blank=True, null=True, )
