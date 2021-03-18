@@ -1186,8 +1186,8 @@ class VerifyCoupon(APIView):
 
     def post(self, request):
         data = request.data
-        order_id = data.get('order_id')
         required_fields = ['coupon_code',
+                           'order_id',
                            'products',
                            'mobile_number']
         is_valid = field_validation(required_fields, data)
@@ -1229,26 +1229,29 @@ class VerifyCoupon(APIView):
         else:
             is_valid = False
 
-        if not is_valid or not isinstance(data['coupon_code'], str) or \
-                (not order_id and not data['coupon_code']):
-            return Response({
-                "status": "failed",
-                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = user[0]
-
-        if order_id and isinstance(order_id, int):
-            invoice = InvoiceInfo.objects.filter(order_number=order_id).order_by('-created_on')
+        if is_valid and data['order_id'] and isinstance(data['order_id'], int):
+            invoice = InvoiceInfo.objects.filter(order_number=data['order_id']).order_by('-created_on')
             if invoice:
                 discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice[0])
                 if discount and discount[0].coupon:
                     coupon_code = discount[0].coupon.coupon_code
                     is_used = True
-        else:
+                else:
+                    is_valid = False
+            else:
+                is_valid = False
+        elif is_valid and data['coupon_code'] and isinstance(data['coupon_code'], str):
             coupon_code = data['coupon_code']
             is_used = False
+        else:
+            is_valid = False
 
-        discount_amount, coupon, _, is_under_limit = coupon_checker(coupon_code, products, user, is_used=is_used)
+        if not is_valid:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        discount_amount, coupon, _, is_under_limit = coupon_checker(coupon_code, products, user[0], is_used=is_used)
         if not is_under_limit:
             if discount_amount:
                 return Response({'status': 'success',
