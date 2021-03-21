@@ -498,6 +498,7 @@ class OrderDetail(APIView):
                                        "www.shod.ai"
                             send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
+            additional_discount = data['additional_discount']
             is_additional_discount = DiscountInfo.objects.filter(discount_type='AD', invoice=invoice)
             if is_additional_discount:
                 prev_additional_discount = is_additional_discount[0].discount_amount
@@ -546,20 +547,19 @@ class OrderDetail(APIView):
 
                 if is_coupon_discount:
                     discount_amount, _, _, _ = coupon_checker(is_coupon_discount[0].coupon.coupon_code,
-                                                              products,
-                                                              order.user, is_used=True)
+                                                              products, order.user, is_used=True)
                     if discount_amount:
                         coupon_discount = discount_amount
                         coupon_discount_description = is_coupon_discount[0].discount_description
 
-                order.order_total_price = round(total) + delivery_charge - coupon_discount - data['additional_discount']
+                order.order_total_price = round(total) + delivery_charge - coupon_discount - additional_discount
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note']
             else:
-                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge + prev_additional_discount - data['additional_discount']
+                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge + prev_additional_discount - additional_discount
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
@@ -571,14 +571,17 @@ class OrderDetail(APIView):
                 if not is_coupon_discount and data['coupon_code']:
                     order.order_total_price -= coupon_discount
 
+            if order.order_total_price < 0:
+                order.order_total_price += additional_discount
+                additional_discount = 0
+
             if products_updated:
                 product_discount = total_price - total_op_price
             else:
                 is_product_discount = DiscountInfo.objects.filter(discount_type='PD', invoice=invoice)
                 product_discount = is_product_discount[0].discount_amount if is_product_discount else 0
 
-            discount_amount = delivery_charge_discount + coupon_discount + product_discount + data[
-                'additional_discount']
+            discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
 
             if order.user.first_name and order.user.last_name:
                 billing_person_name = order.user.first_name + " " + order.user.last_name
@@ -624,8 +627,8 @@ class OrderDetail(APIView):
                                             offer=offer[0] if offer_id else is_delivery_discount[0].offer,
                                             invoice=new_invoice)
 
-            if data['additional_discount']:
-                DiscountInfo.objects.create(discount_amount=data['additional_discount'],
+            if additional_discount:
+                DiscountInfo.objects.create(discount_amount=additional_discount,
                                             discount_type='AD',
                                             discount_description='Additional Discount',
                                             invoice=new_invoice)
@@ -789,6 +792,8 @@ class CreateOrder(APIView):
                                    "www.shod.ai"
                         send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
+        additional_discount = data['additional_discount']
+
         if not user_instance:
             user_instance = UserProfile.objects.create(username=customer["mobile_number"],
                                                        first_name=customer["name"],
@@ -862,17 +867,21 @@ class CreateOrder(APIView):
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount - data[
-            'additional_discount']
+        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount - additional_discount
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.note = data['note']
+
+        if order_instance.order_total_price < 0:
+            order_instance.order_total_price += additional_discount
+            additional_discount = 0
+
         order_instance.save()
 
         product_discount = total_price - total_op_price
-        discount_amount = delivery_charge_discount + coupon_discount + product_discount
+        discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
 
         billing_person_name = user_instance.first_name + " " + user_instance.last_name
         invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
@@ -915,8 +924,8 @@ class CreateOrder(APIView):
                                               invoice_number=invoice,
                                               created_by=user_instance,
                                               created_on=timezone.now())
-        if data['additional_discount']:
-            DiscountInfo.objects.create(discount_amount=data['additional_discount'],
+        if additional_discount:
+            DiscountInfo.objects.create(discount_amount=additional_discount,
                                         discount_type='AD',
                                         discount_description='Additional Discount',
                                         invoice=invoice)
