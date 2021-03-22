@@ -102,3 +102,21 @@ class ReferralCoupon(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"status": "failed", 'data': "No Content"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ReferralCouponOne(APIView):
+    permission_class = [GenericAuth]
+
+    def get(self, request):
+        queryset = CouponCode.objects.filter(coupon_code_type='RC',
+                                             expiry_date__gte=timezone.now() - timedelta(days=7),
+                                             created_by=request.user)
+        if queryset:
+            serializer = CouponListSerializer(queryset[0])
+            if not request.user.is_customer:
+                request.user.is_customer = True
+                request.user.save()
+                return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "failed", 'data': "No Content"},
+                                status=status.HTTP_204_NO_CONTENT)

@@ -7,6 +7,7 @@ urlpatterns = [
     path('verify-coupon/', views.VerifyCoupon.as_view()),
     path('coupon-list/', views.CouponList.as_view()),
     path('referral-coupon/', views.ReferralCoupon.as_view()),
+    path('referral-coupon-one/', views.ReferralCouponOne.as_view()),
 
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

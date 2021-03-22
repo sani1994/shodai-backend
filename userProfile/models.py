@@ -62,15 +62,11 @@ class UserProfile(AbstractUser):
             self.created_on = timezone.now()
             if self.user_type == 'RT':
                 self.is_retailer = True
-            if self.user_type == 'CM':
-                self.is_customer = True
             if self.user_type == 'PD':
                 self.is_producer = True
             return super(UserProfile, self).save(*args, **kwargs)
         if self.user_type == 'RT':
             self.is_retailer = True
-        if self.user_type == 'CM':
-            self.is_customer = True
         if self.user_type == 'PD':
             self.is_producer = True
         return super(UserProfile, self).save(*args, **kwargs)
