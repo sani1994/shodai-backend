@@ -1,11 +1,14 @@
 import uuid
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import ugettext_lazy as _
 
-from coupon.models import CouponCode
+from coupon.models import CouponCode, CouponUser
 from offer.models import OfferProduct, Offer
 from userProfile.models import UserProfile
 from product.models import ProductMeta
@@ -15,6 +18,7 @@ from userProfile.models import Address
 
 
 # Create your models here.
+from utility.notification import send_sms
 
 
 class Order(BaseModel):
@@ -98,6 +102,34 @@ class Order(BaseModel):
                     invoice.paid_status = True
                     invoice.paid_on = timezone.now()
                     invoice.save()
+            discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
+            if discount and discount[0].coupon:
+                coupon = discount[0].coupon
+                if coupon.coupon_code_type == 'RC':
+                    new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                           name="Discount Code",
+                                                           discount_percent=5,
+                                                           max_usage_count=1,
+                                                           minimum_purchase_limit=0,
+                                                           discount_amount_limit=200,
+                                                           expiry_date=timezone.now() + timedelta(days=30),
+                                                           discount_type='DP',
+                                                           coupon_code_type='DC',
+                                                           created_by=self.user,
+                                                           created_on=timezone.now())
+                    CouponUser.objects.create(coupon_code=new_coupon,
+                                              created_for=coupon.created_by,
+                                              remaining_usage_count=1,
+                                              created_by=self.user,
+                                              created_on=timezone.now())
+                    if not settings.DEBUG:
+                        sms_body = "Dear Customer,\n" + \
+                                   "Congratulations! You have received this " + \
+                                   "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
+                                   "successful referral. Use this code to " + \
+                                   "avail exciting discount on your next purchase.\n\n" + \
+                                   "www.shod.ai"
+                        send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
         self.currency = 'BDT'
         self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
         super(Order, self).save(*args, **kwargs)

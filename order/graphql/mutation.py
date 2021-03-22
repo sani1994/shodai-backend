@@ -5,8 +5,6 @@ import geocoder
 import graphene
 import requests
 
-from datetime import timedelta
-from django.conf import settings
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
@@ -14,8 +12,7 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 
 from bases.views import checkAuthentication, from_global_id, coupon_checker
-from coupon.models import CouponCode, CouponUser, CouponUsageHistory
-from utility.notification import email_notification, send_sms
+from coupon.models import CouponUsageHistory
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
 from product.models import Product
@@ -139,31 +136,6 @@ class CreateOrder(graphene.Mutation):
                         is_using.save()
                         coupon.max_usage_count -= 1
                         coupon.save()
-                        if coupon.coupon_code_type == 'RC':
-                            new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                                   name="Discount Code",
-                                                                   discount_percent=5,
-                                                                   max_usage_count=1,
-                                                                   minimum_purchase_limit=0,
-                                                                   discount_amount_limit=200,
-                                                                   expiry_date=timezone.now() + timedelta(days=30),
-                                                                   discount_type='DP',
-                                                                   coupon_code_type='DC',
-                                                                   created_by=user,
-                                                                   created_on=timezone.now())
-                            CouponUser.objects.create(coupon_code=new_coupon,
-                                                      created_for=coupon.created_by,
-                                                      remaining_usage_count=1,
-                                                      created_by=user,
-                                                      created_on=timezone.now())
-                            if not settings.DEBUG:
-                                sms_body = "Dear Customer,\n" + \
-                                           "Congratulations! You have received this " + \
-                                           "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
-                                           "successful referral. Use this code to " + \
-                                           "avail exciting discount on your next purchase.\n\n" + \
-                                           "www.shod.ai"
-                                send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 if input.note:

@@ -81,8 +81,8 @@ class Product(BaseModel):
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)
     decimal_allowed = models.BooleanField(default=False)
-    product_manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE, null=True)
-    code = models.IntegerField(null=True, unique=True)
+    product_manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE, null=True, blank=True)
+    code = models.IntegerField(null=True, blank=True, unique=True)
     product_sku = models.CharField(max_length=20, null=True, blank=True, unique=True)
     price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
                                          verbose_name='Product Price With Vat')  # Product Price with vat

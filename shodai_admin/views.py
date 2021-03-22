@@ -471,32 +471,6 @@ class OrderDetail(APIView):
                     is_using.save()
                     coupon.max_usage_count -= 1
                     coupon.save()
-                    if coupon.coupon_code_type == 'RC':
-                        new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                               name="Discount Code",
-                                                               discount_percent=5,
-                                                               max_usage_count=1,
-                                                               minimum_purchase_limit=0,
-                                                               discount_amount_limit=200,
-                                                               expiry_date=timezone.now() + timedelta(days=30),
-                                                               discount_type='DP',
-                                                               coupon_code_type='DC',
-                                                               created_by=order.user,
-                                                               created_on=timezone.now())
-                        CouponUser.objects.create(coupon_code=new_coupon,
-                                                  created_for=coupon.created_by,
-                                                  remaining_usage_count=1,
-                                                  created_by=order.user,
-                                                  created_on=timezone.now())
-                        if not settings.DEBUG:
-                            sms_body = "Dear Customer,\n" + \
-                                       "Congratulations! You have received this " + \
-                                       "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
-                                       "successful referral. Use this code to " + \
-                                       "avail {}% discount on your next purchase.\n\n".format(
-                                           config("DC_DISCOUNT_PERCENT")) + \
-                                       "www.shod.ai"
-                            send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
             additional_discount = data['additional_discount']
             is_additional_discount = DiscountInfo.objects.filter(discount_type='AD', invoice=invoice)
@@ -766,31 +740,6 @@ class CreateOrder(APIView):
                 is_using.save()
                 coupon.max_usage_count -= 1
                 coupon.save()
-                if coupon.coupon_code_type == 'RC':
-                    new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                           name="Discount Code",
-                                                           discount_percent=5,
-                                                           max_usage_count=1,
-                                                           minimum_purchase_limit=0,
-                                                           discount_amount_limit=200,
-                                                           expiry_date=timezone.now() + timedelta(days=30),
-                                                           discount_type='DP',
-                                                           coupon_code_type='DC',
-                                                           created_by=user_instance,
-                                                           created_on=timezone.now())
-                    CouponUser.objects.create(coupon_code=new_coupon,
-                                              created_for=coupon.created_by,
-                                              remaining_usage_count=1,
-                                              created_by=user_instance,
-                                              created_on=timezone.now())
-                    if not settings.DEBUG:
-                        sms_body = "Dear Customer,\n" + \
-                                   "Congratulations! You have received this " + \
-                                   "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
-                                   "successful referral. Use this code to " + \
-                                   "avail exciting discount on your next purchase.\n\n" + \
-                                   "www.shod.ai"
-                        send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
         additional_discount = data['additional_discount']
 
@@ -1140,7 +1089,7 @@ class OrderNotification(APIView):
                            'coupon_discount': coupon_discount,
                            'delivery_charge_discount': delivery_charge_discount,
                            'saved_amount': invoice.discount_amount,
-                           'note': order_instance.note if order_instance.note else None,
+                           'note': None,
                            'colspan_value': "4" if is_offer else "3"}
 
                 from_email, to = 'noreply@shod.ai', order_instance.user.email
