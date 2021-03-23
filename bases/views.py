@@ -95,7 +95,7 @@ def coupon_checker(coupon_code, products, user, is_admin):
                                                              remaining_usage_count=1,
                                                              created_by=user,
                                                              created_on=today)
-            elif coupon_type == 'DC':
+            elif coupon_type == 'DC' or coupon_type == 'GC1' or coupon_type == 'GC2':
                 is_using = CouponUser.objects.filter(coupon_code=coupon, created_for=user,
                                                      remaining_usage_count__gt=0)
                 if is_using:

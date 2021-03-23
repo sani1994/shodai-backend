@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination, field_validation, type_validation
-from coupon.models import CouponCode
+from coupon.models import CouponCode, CouponSettings
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
 from product.models import Product
@@ -700,17 +700,32 @@ class CreateOrder(APIView):
             user_instance.set_password(temp_password)
             user_instance.save()
 
+            referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Code",
-                                               discount_percent=config('RC_DISCOUNT_PERCENT', cast=int),
-                                               max_usage_count=config('RC_MAX_USAGE_COUNT', cast=int),
-                                               minimum_purchase_limit=config("RC_MIN_PURCHASE_LIMIT", cast=int),
-                                               discount_amount_limit=config('RC_DISCOUNT_LIMIT', cast=int),
-                                               expiry_date=timezone.now() + timedelta(days=config('RC_VALIDITY_PERIOD', cast=int)),
+                                               discount_percent=referral_discount_settings.discount_percent,
+                                               max_usage_count=referral_discount_settings.max_usage_count,
+                                               minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                               discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                               expiry_date=timezone.now() + timedelta(
+                                                   days=referral_discount_settings.validity_period),
                                                discount_type='DP',
                                                coupon_code_type='RC',
                                                created_by=user_instance,
                                                created_on=timezone.now())
+            gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
+            gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                    name="Sign Up Coupon",
+                                                    discount_percent=gift_discount_settings.discount_percent,
+                                                    max_usage_count=gift_discount_settings.max_usage_count,
+                                                    minimum_purchase_limit=gift_discount_settings.minimum_purchase_limit,
+                                                    discount_amount_limit=gift_discount_settings.discount_amount_limit,
+                                                    expiry_date=timezone.now() + timedelta(
+                                                        days=gift_discount_settings.validity_period),
+                                                    discount_type='DP',
+                                                    coupon_code_type='GC1',
+                                                    created_by=user_instance,
+                                                    created_on=timezone.now())
 
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
@@ -719,14 +734,21 @@ class CreateOrder(APIView):
                            "Please change your password after login.\n\n" + \
                            "www.shod.ai"
                 send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
-                coupon_sms_body = "Dear Customer,\n" + \
-                                  "Congratulations for your Shodai account!\n" + \
-                                  "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
-                                  "family to avail them {}% discount on their next purchase and ".format(
-                                      config("RC_DISCOUNT_PERCENT")) + \
-                                  "receive exciting discount after each successful referral.\n\n" + \
-                                  "www.shod.ai"
-                send_sms(mobile_number=user_instance.mobile_number, sms_content=coupon_sms_body)
+                coupon_sms_body1 = "Dear Customer,\n" + \
+                            "Congratulations for your Shodai account!\n" + \
+                            "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
+                            "family to avail them {}% discount on their next purchase and ".format(
+                                referral_discount_settings.discount_percent) + \
+                            "receive exciting discount after each successful referral.\n\n" + \
+                            "www.shod.ai"
+                coupon_sms_body2 = "Dear Customer,\n" + \
+                            "Congratulations on your new Shodai account!\n" + \
+                            "Use this code [{}] ".format(gift_coupon.coupon_code) + \
+                            "to avail a {}% discount on your first order.\n\n".format(
+                                gift_discount_settings.discount_percent) + \
+                            "www.shod.ai"
+                send_sms(mobile_number=user_instance.mobile_number, sms_content=coupon_sms_body1)
+                send_sms(mobile_number=user_instance.mobile_number, sms_content=coupon_sms_body2)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:

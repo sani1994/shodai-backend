@@ -160,7 +160,7 @@ class CreateOrder(graphene.Mutation):
                                                       created_on=timezone.now())
                             if not settings.DEBUG:
                                 sms_body = "Dear Customer,\n" + \
-                                           "Congratulations! You have received {}% discount ".format(config("DC_DISCOUNT_PERCENT")) + \
+                                           "Congratulations! You have received {}% discount ".format(discount_settings.discount_percent) + \
                                            "based on your successful referral. " + \
                                            "Use this code [{}] to ".format(new_coupon.coupon_code) + \
                                            "avail exciting discount on your next purchase.\n\n" + \

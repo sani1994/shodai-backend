@@ -89,28 +89,48 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if user:
             user.set_password(validated_data['password'])
             user.save()
-            discount_settings = CouponSettings.objects.get(coupon_type='RC')
+            referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Code",
-                                               discount_percent=discount_settings.discount_percent,
-                                               max_usage_count=discount_settings.max_usage_count,
-                                               minimum_purchase_limit=discount_settings.minimum_purchase_limit,
-                                               discount_amount_limit=discount_settings.discount_amount_limit,
+                                               discount_percent=referral_discount_settings.discount_percent,
+                                               max_usage_count=referral_discount_settings.max_usage_count,
+                                               minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                               discount_amount_limit=referral_discount_settings.discount_amount_limit,
                                                expiry_date=timezone.now() + timedelta(
-                                                   days=discount_settings.validity_period),
+                                                   days=referral_discount_settings.validity_period),
                                                discount_type='DP',
                                                coupon_code_type='RC',
                                                created_by=user,
                                                created_on=timezone.now())
+            gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
+            gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                    name="Sign Up Coupon",
+                                                    discount_percent=gift_discount_settings.discount_percent,
+                                                    max_usage_count=gift_discount_settings.max_usage_count,
+                                                    minimum_purchase_limit=gift_discount_settings.minimum_purchase_limit,
+                                                    discount_amount_limit=gift_discount_settings.discount_amount_limit,
+                                                    expiry_date=timezone.now() + timedelta(
+                                                        days=gift_discount_settings.validity_period),
+                                                    discount_type='DP',
+                                                    coupon_code_type='GC1',
+                                                    created_by=user,
+                                                    created_on=timezone.now())
             if not settings.DEBUG:
-                sms_body = "Dear Customer,\n" + \
-                           "Congratulations for your Shodai account!\n" + \
-                           "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
-                           "family to avail them {}% discount on their next purchase and ".format(
-                               config("RC_DISCOUNT_PERCENT")) + \
-                           "receive exciting discount after each successful referral.\n\n" + \
-                           "www.shod.ai"
-                send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
+                sms_body1 = "Dear Customer,\n" + \
+                            "Congratulations for your Shodai account!\n" + \
+                            "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
+                            "family to avail them {}% discount on their next purchase and ".format(
+                                referral_discount_settings.discount_percent) + \
+                            "receive exciting discount after each successful referral.\n\n" + \
+                            "www.shod.ai"
+                sms_body2 = "Dear Customer,\n" + \
+                            "Congratulations on your new Shodai account!\n" + \
+                            "Use this code [{}] ".format(gift_coupon.coupon_code) + \
+                            "to avail a {}% discount on your first order.\n\n".format(
+                                gift_discount_settings.discount_percent) + \
+                            "www.shod.ai"
+                send_sms(mobile_number=user.mobile_number, sms_content=sms_body1)
+                send_sms(mobile_number=user.mobile_number, sms_content=sms_body2)
             if user.user_type == 'PD':
                 sub = "Approval Request"
                 body = f"Dear Concern,\r\n User phone number :{user.mobile_number} \r\nUser type: {user.user_type} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
