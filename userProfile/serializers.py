@@ -74,8 +74,6 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    code = None
-    coupon_code = serializers.SerializerMethodField(read_only=True)
 
     def create(self, validated_data):
         if not validated_data:
@@ -103,7 +101,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                coupon_code_type='RC',
                                                created_by=user,
                                                created_on=timezone.now())
-            self.code = coupon.coupon_code
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
                            "Congratulations for your Shodai account!\n" + \
@@ -122,10 +119,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('user_type', 'mobile_number', 'first_name', 'last_name',
-                  'email', 'password', 'coupon_code')
-
-    def get_coupon_code(self, obj):
-        return self.code
+                  'email', 'password')
 
 
 class RetailerRegistrationSreializer(serializers.ModelSerializer):

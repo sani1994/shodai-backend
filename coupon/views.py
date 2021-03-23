@@ -118,5 +118,12 @@ class ReferralCouponOne(APIView):
                 request.user.save()
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
             else:
-                return Response({"status": "failed", 'data': "No Content"},
-                                status=status.HTTP_204_NO_CONTENT)
+                return Response({"status": "failed", 'data': {
+                    "coupon_code": "",
+                    "expiry_date": "",
+                    "discount_percent": "",
+                    "discount_amount_limit": "",
+                    "status": "",
+                    "minimum_purchase_limit": "",
+                    "max_usage_count": ""
+                }}, status=status.HTTP_200_OK)
