@@ -120,6 +120,7 @@ class OrderList(APIView):
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.address = delivery_address
                 order_instance.delivery_place = "Dhaka"
+                order_instance.platform = "APP",
                 order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
@@ -285,7 +286,8 @@ class OrderProductList(APIView):
                                        "Congratulations! You have received this " + \
                                        "discount code [{}] based on your ".format(new_coupon.coupon_code) + \
                                        "successful referral. Use this code to " + \
-                                       "avail {}% discount on your next purchase.\n\n".format(config("DC_DISCOUNT_PERCENT")) + \
+                                       "avail {}% discount on your next purchase.\n\n".format(
+                                           config("DC_DISCOUNT_PERCENT")) + \
                                        "www.shod.ai"
                             send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 

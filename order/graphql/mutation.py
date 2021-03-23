@@ -14,7 +14,7 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 
 from bases.views import checkAuthentication, from_global_id, coupon_checker
-from coupon.models import CouponCode, CouponUser, CouponUsageHistory
+from coupon.models import CouponCode, CouponUser, CouponUsageHistory, CouponSettings
 from utility.notification import email_notification, send_sms
 from .queries import OrderType, OrderProductType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
@@ -109,6 +109,7 @@ class CreateOrder(graphene.Mutation):
             if user.user_type == 'CM':
                 order_instance = Order.objects.create(user=user,
                                                       created_by=user,
+                                                      platform="WB",
                                                       delivery_date_time=input.delivery_date_time,
                                                       delivery_place=input.delivery_place,
                                                       lat=input.lat,
@@ -140,13 +141,14 @@ class CreateOrder(graphene.Mutation):
                         coupon.max_usage_count -= 1
                         coupon.save()
                         if coupon.coupon_code_type == 'RC':
+                            discount_settings = CouponSettings.objects.get(coupon_type='DC')
                             new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                                    name="Discount Code",
-                                                                   discount_percent=int(config("DC_DISCOUNT_PERCENT")),
-                                                                   max_usage_count=1,
-                                                                   minimum_purchase_limit=int(config("DC_MIN_PURCHASE_LIMIT")),
-                                                                   discount_amount_limit=int(config("DC_DISCOUNT_LIMIT")),
-                                                                   expiry_date=timezone.now() + timedelta(days=int(config("DC_VALIDITY_PERIOD"))),
+                                                                   discount_percent=discount_settings.discount_percent,
+                                                                   max_usage_count=discount_settings.max_usage_count,
+                                                                   minimum_purchase_limit=discount_settings.minimum_purchase_limit,
+                                                                   discount_amount_limit=discount_settings.discount_amount_limit,
+                                                                   expiry_date=timezone.now() + timedelta(days=discount_settings.validity_period),
                                                                    discount_type='DP',
                                                                    coupon_code_type='DC',
                                                                    created_by=user,

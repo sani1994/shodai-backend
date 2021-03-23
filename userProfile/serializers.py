@@ -7,7 +7,7 @@ from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from httplib2 import Response
 
-from coupon.models import CouponCode
+from coupon.models import CouponCode, CouponSettings
 from shodai import settings
 from userProfile.models import UserProfile, Address
 from rest_framework import serializers
@@ -89,14 +89,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if user:
             user.set_password(validated_data['password'])
             user.save()
+            discount_settings = CouponSettings.objects.get(coupon_type='RC')
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Code",
-                                               discount_percent=int(config("RC_DISCOUNT_PERCENT")),
-                                               max_usage_count=int(config("RC_MAX_USAGE_COUNT")),
-                                               minimum_purchase_limit=int(config("RC_MIN_PURCHASE_LIMIT")),
-                                               discount_amount_limit=int(config("RC_DISCOUNT_LIMIT")),
+                                               discount_percent=discount_settings.discount_percent,
+                                               max_usage_count=discount_settings.max_usage_count,
+                                               minimum_purchase_limit=discount_settings.minimum_purchase_limit,
+                                               discount_amount_limit=discount_settings.discount_amount_limit,
                                                expiry_date=timezone.now() + timedelta(
-                                                   days=int(config("RC_VALIDITY_PERIOD"))),
+                                                   days=discount_settings.validity_period),
                                                discount_type='DP',
                                                coupon_code_type='RC',
                                                created_by=user,

@@ -18,10 +18,14 @@ class CouponCode(BaseModel):
     REFERRAL_CODE = 'RC'
     DISCOUNT_CODE = 'DC'
     PROMOTIONAL_CODE = 'PC'
+    GIFT_COUPON_1 = 'GC1'
+    GIFT_COUPON_2 = 'GC2'
     COUPON_TYPE = [
         (REFERRAL_CODE, 'Referral Code'),
         (DISCOUNT_CODE, 'Discount Code'),
         (PROMOTIONAL_CODE, 'Promotional Code'),
+        (GIFT_COUPON_1, 'Sign Up Coupon'),
+        (GIFT_COUPON_2, 'Purchase Coupon'),
     ]
 
     name = models.CharField(max_length=100, default="")
@@ -60,3 +64,25 @@ class CouponUsageHistory(BaseModel):
 
     def __str__(self):
         return str(self.id) + " - " + "Coupon: " + str(self.coupon_code)
+
+
+class CouponSettings(BaseModel):
+    REFERRAL_CODE = 'RC'
+    DISCOUNT_CODE = 'DC'
+    GIFT_COUPON_1 = 'GC1'
+    GIFT_COUPON_2 = 'GC2'
+    COUPON_TYPE = [
+        (REFERRAL_CODE, 'Referral Code'),
+        (DISCOUNT_CODE, 'Discount Code'),
+        (GIFT_COUPON_1, 'Sign Up Coupon'),
+        (GIFT_COUPON_2, 'Purchase Coupon'),
+    ]
+    coupon_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=DISCOUNT_CODE)
+    discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
+    discount_amount_limit = models.IntegerField(default=0, blank=True, null=True)
+    minimum_purchase_limit = models.IntegerField(null=True, verbose_name="Minimum Purchase Amount")
+    max_usage_count = models.IntegerField(default=1)
+    validity_period = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.coupon_type

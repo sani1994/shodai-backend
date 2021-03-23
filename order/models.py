@@ -60,6 +60,15 @@ class Order(BaseModel):
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
     note = models.CharField(max_length=500, null=True, blank=True, default="")
+    WEBSITE = 'WB'
+    ADMIN_WEBSITE = 'AD'
+    MOBILE_APPLICATION = 'APP'
+    PLATFORM = [
+        (WEBSITE, 'Website'),
+        (ADMIN_WEBSITE, 'Admin Website'),
+        (MOBILE_APPLICATION, 'Mobile Application')
+    ]
+    platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
     history = HistoricalRecords()
 
     def __str__(self):

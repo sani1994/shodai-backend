@@ -5,7 +5,7 @@ from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 
-from coupon.models import CouponCode, CouponUser, CouponUsageHistory
+from coupon.models import CouponCode, CouponUser, CouponUsageHistory, CouponSettings
 
 
 class CouponUserInline(admin.TabularInline):
@@ -77,5 +77,30 @@ class CouponUsageHistoryAdmin(MaterialModelAdmin):
         return False
 
 
+class CouponSettingsAdmin(MaterialModelAdmin):
+    list_display = ['coupon_type', 'discount_percent', 'validity_period']
+
+    fieldsets = (
+        ('Coupon Detail View', {
+            'fields': ('coupon_type', 'discount_percent', 'discount_amount_limit',
+                       'minimum_purchase_limit', 'max_usage_count', 'validity_period',
+                       'modified_by', 'modified_on')
+        }),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj.coupon_type == 'RC':
+            return ['coupon_type', 'modified_by', 'modified_on']
+        else:
+            return ['coupon_type', 'max_usage_count', 'modified_on', 'modified_by']
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 site.register(CouponCode, CouponCodeAdmin)
 site.register(CouponUsageHistory, CouponUsageHistoryAdmin)
+site.register(CouponSettings, CouponSettingsAdmin)

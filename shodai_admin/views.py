@@ -740,6 +740,7 @@ class CreateOrder(APIView):
             delivery_address = address[0]
 
         order_instance = Order.objects.create(user=user_instance,
+                                              platform="AD",
                                               delivery_date_time=delivery_date_time,
                                               delivery_place="Dhaka",
                                               lat=23.7733,

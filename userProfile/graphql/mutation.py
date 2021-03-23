@@ -12,7 +12,7 @@ from random import randint
 from django.utils.crypto import get_random_string
 
 from bases.views import checkAuthentication
-from coupon.models import CouponCode
+from coupon.models import CouponCode, CouponSettings
 from utility.notification import send_sms, email_notification, otp_text, send_sms_otp
 from .queries import UserType, AddressType
 from ..models import UserProfile, Address, BlackListedToken
@@ -108,13 +108,15 @@ class UserCreateMutation(graphene.Mutation):
             token = get_token(user_instance)
             refresh_token = create_refresh_token(user_instance)
 
+            discount_settings = CouponSettings.objects.get(coupon_type='RC')
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Code",
-                                               discount_percent=int(config("RC_DISCOUNT_PERCENT")),
-                                               max_usage_count=int(config("RC_MAX_USAGE_COUNT")),
-                                               minimum_purchase_limit=int(config("RC_MIN_PURCHASE_LIMIT")),
-                                               discount_amount_limit=int(config("RC_DISCOUNT_LIMIT")),
-                                               expiry_date=timezone.now() + timedelta(days=int(config("RC_VALIDITY_PERIOD"))),
+                                               discount_percent=discount_settings.discount_percent,
+                                               max_usage_count=discount_settings.max_usage_count,
+                                               minimum_purchase_limit=discount_settings.minimum_purchase_limit,
+                                               discount_amount_limit=discount_settings.discount_amount_limit,
+                                               expiry_date=timezone.now() + timedelta(
+                                                   days=discount_settings.validity_period),
                                                discount_type='DP',
                                                coupon_code_type='RC',
                                                created_by=user_instance,
