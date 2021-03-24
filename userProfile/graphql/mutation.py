@@ -11,7 +11,7 @@ from django.utils.crypto import get_random_string
 from django_q.tasks import async_task
 
 from bases.views import checkAuthentication
-from coupon.models import CouponCode, CouponSettings
+from coupon.models import CouponCode, CouponSettings, CouponUser
 from utility.notification import send_sms, email_notification, otp_text, send_sms_otp
 from .queries import UserType, AddressType
 from ..models import UserProfile, Address, BlackListedToken
@@ -133,6 +133,11 @@ class UserCreateMutation(graphene.Mutation):
                                                     coupon_code_type='GC1',
                                                     created_by=user_instance,
                                                     created_on=timezone.now())
+            CouponUser.objects.create(coupon_code=gift_coupon,
+                                      created_for=user_instance,
+                                      remaining_usage_count=1,
+                                      created_by=user_instance,
+                                      created_on=timezone.now())
             if not settings.DEBUG:
                 sms_body1 = "Dear Customer,\n" + \
                            "Congratulations for your Shodai account!\n" + \

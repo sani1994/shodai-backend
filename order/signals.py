@@ -78,6 +78,11 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                                     coupon_code_type='GC2',
                                                     created_by=instance.user,
                                                     created_on=timezone.now())
+            CouponUser.objects.create(coupon_code=gift_coupon,
+                                      created_for=instance.user,
+                                      remaining_usage_count=1,
+                                      created_by=instance.user,
+                                      created_on=timezone.now())
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
                            "Congratulations! You have received {}% discount ".format(

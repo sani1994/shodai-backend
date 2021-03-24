@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import graphene
+from django.db.models import Q
 from django.utils import timezone
 from graphene_django import DjangoObjectType
 
@@ -31,7 +32,8 @@ class Query(graphene.ObjectType):
     def resolve_coupon_list(self, info):
         user = info.context.user
         if checkAuthentication(user, info):
-            all_coupons = CouponCode.objects.filter(coupon_code_type='DC',
+            all_coupons = CouponCode.objects.filter(Q(coupon_code_type='DC') |
+                                                    Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
                                                     discount_code__in=CouponUser.objects.filter(
                                                         created_for=user))
             return all_coupons

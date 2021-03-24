@@ -8,7 +8,7 @@ from django.utils import timezone
 from django_q.tasks import async_task
 from httplib2 import Response
 
-from coupon.models import CouponCode, CouponSettings
+from coupon.models import CouponCode, CouponSettings, CouponUser
 from shodai import settings
 from userProfile.models import UserProfile, Address
 from rest_framework import serializers
@@ -116,6 +116,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                     coupon_code_type='GC1',
                                                     created_by=user,
                                                     created_on=timezone.now())
+            CouponUser.objects.create(coupon_code=gift_coupon,
+                                      created_for=user,
+                                      remaining_usage_count=1,
+                                      created_by=user,
+                                      created_on=timezone.now())
             if not settings.DEBUG:
                 sms_body1 = "Dear Customer,\n" + \
                             "Congratulations for your Shodai account!\n" + \
