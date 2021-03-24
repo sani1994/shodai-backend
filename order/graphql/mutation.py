@@ -11,6 +11,7 @@ from decouple import config
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.utils import timezone
+from django_q.tasks import async_task
 from graphene_django import DjangoObjectType
 
 from bases.views import checkAuthentication, from_global_id, coupon_checker
@@ -151,6 +152,35 @@ class CreateOrder(graphene.Mutation):
                 order_instance.total_vat = total_vat
                 order_instance.order_total_price = sub_total + total_vat + delivery_charge - coupon_discount_amount
                 order_instance.save()
+
+                referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
+                                                            created_by=order_instance.user)
+                if referral_coupon:
+                    referral_coupon = referral_coupon[0]
+                    if referral_coupon.expiry_date < timezone.now():
+                        referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
+                        referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                                    name="Referral Coupon",
+                                                                    discount_percent=referral_discount_settings.discount_percent,
+                                                                    max_usage_count=referral_discount_settings.max_usage_count,
+                                                                    minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                                    discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                                    expiry_date=timezone.now() + timedelta(
+                                                                        days=referral_discount_settings.validity_period),
+                                                                    discount_type=referral_discount_settings.discount_type,
+                                                                    coupon_code_type='RC',
+                                                                    created_by=order_instance.user,
+                                                                    created_on=timezone.now())
+
+                    if not settings.DEBUG:
+                        sms_body = "Dear Customer,\n" + \
+                                   "Don't forget to share this code [{}] with your ".format(
+                                       referral_coupon.coupon_code) + \
+                                   "friends and family to avail them {}% discount on their next purchase and ".format(
+                                       referral_coupon.discount_percent) + \
+                                   "receive exciting discount after each successful referral.\n\n" + \
+                                   "www.shod.ai"
+                        async_task('utility.notification.send_sms', order_instance.user.mobile_number, sms_body)
 
                 if user.first_name and user.last_name:
                     billing_person_name = user.first_name + " " + user.last_name
