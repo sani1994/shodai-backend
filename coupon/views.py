@@ -98,10 +98,15 @@ class ReferralCoupon(APIView):
             serializer = CouponListSerializer(queryset[0])
             if serializer:
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "failed", 'data': "No Content"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"status": "failed", 'data': {
+                                                    "coupon_code": "",
+                                                    "expiry_date": "",
+                                                    "discount_percent": "",
+                                                    "discount_amount_limit": "",
+                                                    "status": "",
+                                                    "minimum_purchase_limit": "",
+                                                    "max_usage_count": ""
+                                                }}, status=status.HTTP_200_OK)
 
 
 class ReferralCouponOne(APIView):
@@ -113,17 +118,16 @@ class ReferralCouponOne(APIView):
                                              created_by=request.user)
         if queryset:
             serializer = CouponListSerializer(queryset[0])
-            if not request.user.is_customer:
+            if serializer and not request.user.is_customer:
                 request.user.is_customer = True
                 request.user.save()
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
-            else:
-                return Response({"status": "failed", 'data': {
-                    "coupon_code": "",
-                    "expiry_date": "",
-                    "discount_percent": "",
-                    "discount_amount_limit": "",
-                    "status": "",
-                    "minimum_purchase_limit": "",
-                    "max_usage_count": ""
-                }}, status=status.HTTP_200_OK)
+        return Response({"status": "failed", 'data': {
+                                                    "coupon_code": "",
+                                                    "expiry_date": "",
+                                                    "discount_percent": "",
+                                                    "discount_amount_limit": "",
+                                                    "status": "",
+                                                    "minimum_purchase_limit": "",
+                                                    "max_usage_count": ""
+                                                }}, status=status.HTTP_200_OK)

@@ -15,15 +15,15 @@ DISCOUNT_TYPE = [
 
 
 class CouponCode(BaseModel):
-    REFERRAL_CODE = 'RC'
-    DISCOUNT_CODE = 'DC'
-    PROMOTIONAL_CODE = 'PC'
+    REFERRAL_COUPON = 'RC'
+    DISCOUNT_COUPON = 'DC'
+    PROMOTIONAL_COUPON = 'PC'
     GIFT_COUPON_1 = 'GC1'
     GIFT_COUPON_2 = 'GC2'
     COUPON_TYPE = [
-        (REFERRAL_CODE, 'Referral Code'),
-        (DISCOUNT_CODE, 'Discount Code'),
-        (PROMOTIONAL_CODE, 'Promotional Code'),
+        (REFERRAL_COUPON, 'Referral Coupon'),
+        (DISCOUNT_COUPON, 'Discount Coupon'),
+        (PROMOTIONAL_COUPON, 'Promotional Coupon'),
         (GIFT_COUPON_1, 'Sign Up Coupon'),
         (GIFT_COUPON_2, 'Purchase Coupon'),
     ]
@@ -38,7 +38,7 @@ class CouponCode(BaseModel):
     max_usage_count = models.IntegerField(default=0, blank=True, null=True, )
     expiry_date = models.DateTimeField(null=False, blank=False)
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
-    coupon_code_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=PROMOTIONAL_CODE)
+    coupon_code_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=PROMOTIONAL_COUPON)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -67,17 +67,18 @@ class CouponUsageHistory(BaseModel):
 
 
 class CouponSettings(BaseModel):
-    REFERRAL_CODE = 'RC'
-    DISCOUNT_CODE = 'DC'
+    REFERRAL_COUPON = 'RC'
+    DISCOUNT_COUPON = 'DC'
     GIFT_COUPON_1 = 'GC1'
     GIFT_COUPON_2 = 'GC2'
     COUPON_TYPE = [
-        (REFERRAL_CODE, 'Referral Code'),
-        (DISCOUNT_CODE, 'Discount Code'),
+        (REFERRAL_COUPON, 'Referral Coupon'),
+        (DISCOUNT_COUPON, 'Discount Coupon'),
         (GIFT_COUPON_1, 'Sign Up Coupon'),
         (GIFT_COUPON_2, 'Purchase Coupon'),
     ]
-    coupon_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=DISCOUNT_CODE)
+    coupon_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=DISCOUNT_COUPON)
+    discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
     discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
     discount_amount_limit = models.IntegerField(default=0, blank=True, null=True)
     minimum_purchase_limit = models.IntegerField(null=True, verbose_name="Minimum Purchase Amount")

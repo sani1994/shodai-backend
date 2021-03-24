@@ -98,7 +98,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                discount_amount_limit=referral_discount_settings.discount_amount_limit,
                                                expiry_date=timezone.now() + timedelta(
                                                    days=referral_discount_settings.validity_period),
-                                               discount_type='DP',
+                                               discount_type=referral_discount_settings.discount_type,
                                                coupon_code_type='RC',
                                                created_by=user,
                                                created_on=timezone.now())
@@ -111,7 +111,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                     discount_amount_limit=gift_discount_settings.discount_amount_limit,
                                                     expiry_date=timezone.now() + timedelta(
                                                         days=gift_discount_settings.validity_period),
-                                                    discount_type='DP',
+                                                    discount_type=gift_discount_settings.discount_type,
                                                     coupon_code_type='GC1',
                                                     created_by=user,
                                                     created_on=timezone.now())

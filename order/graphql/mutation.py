@@ -149,7 +149,7 @@ class CreateOrder(graphene.Mutation):
                                                                    minimum_purchase_limit=discount_settings.minimum_purchase_limit,
                                                                    discount_amount_limit=discount_settings.discount_amount_limit,
                                                                    expiry_date=timezone.now() + timedelta(days=discount_settings.validity_period),
-                                                                   discount_type='DP',
+                                                                   discount_type=discount_settings.discount_type,
                                                                    coupon_code_type='DC',
                                                                    created_by=user,
                                                                    created_on=timezone.now())

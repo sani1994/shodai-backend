@@ -12,6 +12,7 @@ from django.http import JsonResponse, HttpResponse
 from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from django_q.tasks import async_task
 from num2words import num2words
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
@@ -34,7 +35,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from utility.notification import send_sms
 from utility.pdf import render_to_pdf
 
 all_order_status = {
@@ -467,6 +467,7 @@ class OrderDetail(APIView):
                 order.save()
 
                 order = Order.objects.create(user=order.user,
+                                             platform=order.platform,
                                              order_number=order_number,
                                              delivery_date_time=delivery_date_time,
                                              delivery_place=order.delivery_place,
@@ -709,7 +710,7 @@ class CreateOrder(APIView):
                                                discount_amount_limit=referral_discount_settings.discount_amount_limit,
                                                expiry_date=timezone.now() + timedelta(
                                                    days=referral_discount_settings.validity_period),
-                                               discount_type='DP',
+                                               discount_type=referral_discount_settings.discount_type,
                                                coupon_code_type='RC',
                                                created_by=user_instance,
                                                created_on=timezone.now())
@@ -722,7 +723,7 @@ class CreateOrder(APIView):
                                                     discount_amount_limit=gift_discount_settings.discount_amount_limit,
                                                     expiry_date=timezone.now() + timedelta(
                                                         days=gift_discount_settings.validity_period),
-                                                    discount_type='DP',
+                                                    discount_type=gift_discount_settings.discount_type,
                                                     coupon_code_type='GC1',
                                                     created_by=user_instance,
                                                     created_on=timezone.now())
@@ -733,22 +734,22 @@ class CreateOrder(APIView):
                            "[{}] based on your order request. ".format(temp_password) + \
                            "Please change your password after login.\n\n" + \
                            "www.shod.ai"
-                send_sms(mobile_number=customer["mobile_number"], sms_content=sms_body)
+                async_task('utility.notification.send_sms', customer["mobile_number"], sms_body)
                 coupon_sms_body1 = "Dear Customer,\n" + \
-                            "Congratulations for your Shodai account!\n" + \
-                            "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
-                            "family to avail them {}% discount on their next purchase and ".format(
-                                referral_discount_settings.discount_percent) + \
-                            "receive exciting discount after each successful referral.\n\n" + \
-                            "www.shod.ai"
+                                   "Congratulations for your Shodai account!\n" + \
+                                   "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
+                                   "family to avail them {}% discount on their next purchase and ".format(
+                                       referral_discount_settings.discount_percent) + \
+                                   "receive exciting discount after each successful referral.\n\n" + \
+                                   "www.shod.ai"
                 coupon_sms_body2 = "Dear Customer,\n" + \
-                            "Congratulations on your new Shodai account!\n" + \
-                            "Use this code [{}] ".format(gift_coupon.coupon_code) + \
-                            "to avail a {}% discount on your first order.\n\n".format(
-                                gift_discount_settings.discount_percent) + \
-                            "www.shod.ai"
-                send_sms(mobile_number=user_instance.mobile_number, sms_content=coupon_sms_body1)
-                send_sms(mobile_number=user_instance.mobile_number, sms_content=coupon_sms_body2)
+                                   "Congratulations on your new Shodai account!\n" + \
+                                   "Use this code [{}] ".format(gift_coupon.coupon_code) + \
+                                   "to avail a {}% discount on your first order.\n\n".format(
+                                       gift_discount_settings.discount_percent) + \
+                                   "www.shod.ai"
+                async_task('utility.notification.send_sms', user_instance.mobile_number, coupon_sms_body1)
+                async_task('utility.notification.send_sms', user_instance.mobile_number, coupon_sms_body2)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:

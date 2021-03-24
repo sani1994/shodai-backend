@@ -61,11 +61,11 @@ class Order(BaseModel):
     contact_number = models.CharField(max_length=20, null=True, blank=True)
     note = models.CharField(max_length=500, null=True, blank=True, default="")
     WEBSITE = 'WB'
-    ADMIN_WEBSITE = 'AD'
+    ADMIN_PANEL = 'AD'
     MOBILE_APPLICATION = 'APP'
     PLATFORM = [
         (WEBSITE, 'Website'),
-        (ADMIN_WEBSITE, 'Admin Website'),
+        (ADMIN_PANEL, 'Admin Panel'),
         (MOBILE_APPLICATION, 'Mobile Application')
     ]
     platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)

@@ -23,6 +23,6 @@ def product_data_preprocessing(sender, instance, **kwargs):
     instance.slug = slugify(instance.product_name) + "-" + slugify(instance.product_unit.product_unit)
 
 
-@receiver(post_save, sender=Product)
-def product_created_or_updated(sender, instance, created, **kwargs):
-    async_task('product.tasks.send_product_data', instance)
+# @receiver(post_save, sender=Product)
+# def product_created_or_updated(sender, instance, created, **kwargs):
+#     async_task('product.tasks.send_product_data', instance)
