@@ -8,6 +8,7 @@ from django.utils import timezone
 from random import randint
 
 from django.utils.crypto import get_random_string
+from django_q.tasks import async_task
 
 from bases.views import checkAuthentication
 from coupon.models import CouponCode, CouponSettings
@@ -108,7 +109,7 @@ class UserCreateMutation(graphene.Mutation):
 
             referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                               name="Referral Code",
+                                               name="Referral Coupon",
                                                discount_percent=referral_discount_settings.discount_percent,
                                                max_usage_count=referral_discount_settings.max_usage_count,
                                                minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
@@ -146,8 +147,8 @@ class UserCreateMutation(graphene.Mutation):
                             "to avail a {}% discount on your first order.\n\n".format(
                                 gift_discount_settings.discount_percent) + \
                             "www.shod.ai"
-                send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body1)
-                send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body2)
+                async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body1)
+                async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body2)
                 otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                     user_instance.verification_code))
             else:

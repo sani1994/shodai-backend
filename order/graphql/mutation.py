@@ -140,32 +140,6 @@ class CreateOrder(graphene.Mutation):
                         is_using.save()
                         coupon.max_usage_count -= 1
                         coupon.save()
-                        if coupon.coupon_code_type == 'RC':
-                            discount_settings = CouponSettings.objects.get(coupon_type='DC')
-                            new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                                   name="Discount Code",
-                                                                   discount_percent=discount_settings.discount_percent,
-                                                                   max_usage_count=discount_settings.max_usage_count,
-                                                                   minimum_purchase_limit=discount_settings.minimum_purchase_limit,
-                                                                   discount_amount_limit=discount_settings.discount_amount_limit,
-                                                                   expiry_date=timezone.now() + timedelta(days=discount_settings.validity_period),
-                                                                   discount_type=discount_settings.discount_type,
-                                                                   coupon_code_type='DC',
-                                                                   created_by=user,
-                                                                   created_on=timezone.now())
-                            CouponUser.objects.create(coupon_code=new_coupon,
-                                                      created_for=coupon.created_by,
-                                                      remaining_usage_count=1,
-                                                      created_by=user,
-                                                      created_on=timezone.now())
-                            if not settings.DEBUG:
-                                sms_body = "Dear Customer,\n" + \
-                                           "Congratulations! You have received {}% discount ".format(discount_settings.discount_percent) + \
-                                           "based on your successful referral. " + \
-                                           "Use this code [{}] to ".format(new_coupon.coupon_code) + \
-                                           "avail exciting discount on your next purchase.\n\n" + \
-                                           "www.shod.ai"
-                                send_sms(mobile_number=coupon.created_by.mobile_number, sms_content=sms_body)
 
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 if input.note:

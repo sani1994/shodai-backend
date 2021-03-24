@@ -78,7 +78,7 @@ class CouponSettings(BaseModel):
         (GIFT_COUPON_2, 'Purchase Coupon'),
     ]
     coupon_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=DISCOUNT_COUPON)
-    discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
+    discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_PERCENT)
     discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
     discount_amount_limit = models.IntegerField(default=0, blank=True, null=True)
     minimum_purchase_limit = models.IntegerField(null=True, verbose_name="Minimum Purchase Amount")

@@ -5,6 +5,7 @@ from decouple import config
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
 from django.utils import timezone
+from django_q.tasks import async_task
 from httplib2 import Response
 
 from coupon.models import CouponCode, CouponSettings
@@ -91,7 +92,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             user.save()
             referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                               name="Referral Code",
+                                               name="Referral Coupon",
                                                discount_percent=referral_discount_settings.discount_percent,
                                                max_usage_count=referral_discount_settings.max_usage_count,
                                                minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
@@ -129,8 +130,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                             "to avail a {}% discount on your first order.\n\n".format(
                                 gift_discount_settings.discount_percent) + \
                             "www.shod.ai"
-                send_sms(mobile_number=user.mobile_number, sms_content=sms_body1)
-                send_sms(mobile_number=user.mobile_number, sms_content=sms_body2)
+                async_task('utility.notification.send_sms', user.mobile_number, sms_body1)
+                async_task('utility.notification.send_sms', user.mobile_number, sms_body2)
             if user.user_type == 'PD':
                 sub = "Approval Request"
                 body = f"Dear Concern,\r\n User phone number :{user.mobile_number} \r\nUser type: {user.user_type} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"

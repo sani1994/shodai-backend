@@ -87,30 +87,6 @@ class Order(BaseModel):
         else:
             return 'Not Paid'
 
-    def save(self, *args, **kwargs):
-        if not self.order_number:
-            last_order = Order.objects.last()
-            while "-" in last_order.order_number:
-                last_order = Order.objects.get(id=last_order.id - 1)
-            self.order_number = str(int(last_order.order_number) + 1)
-
-        if self.order_status == "COM":
-            invoice = InvoiceInfo.objects.get(invoice_number=self.invoice_number)
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                if not invoice.paid_status:
-                    invoice.paid_status = True
-                    invoice.paid_on = timezone.now()
-                    invoice.save()
-            elif invoice.payment_method == "SSLCOMMERZ":
-                if not invoice.paid_status:
-                    invoice.payment_method = "CASH_ON_DELIVERY"
-                    invoice.paid_status = True
-                    invoice.paid_on = timezone.now()
-                    invoice.save()
-        self.currency = 'BDT'
-        self.order_geopoint = GEOSGeometry('POINT(%f %f)' % (self.long, self.lat))
-        super(Order, self).save(*args, **kwargs)
-
     @property
     def order_product_name(self):
         orders = OrderProduct.objects.filter(order=self)
