@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django_q.tasks import async_task
@@ -70,24 +70,27 @@ def order_data_preprocessing(sender, instance, **kwargs):
                     async_task('utility.notification.send_sms', coupon.created_by.mobile_number, sms_body)
 
         if instance.platform == 'WB':
-            gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
-            gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                    name="Purchase Coupon",
-                                                    discount_percent=gift_coupon_settings.discount_percent,
-                                                    max_usage_count=gift_coupon_settings.max_usage_count,
-                                                    minimum_purchase_limit=gift_coupon_settings.minimum_purchase_limit,
-                                                    discount_amount_limit=gift_coupon_settings.discount_amount_limit,
-                                                    expiry_date=timezone.now() + timedelta(
-                                                        days=gift_coupon_settings.validity_period),
-                                                    discount_type=gift_coupon_settings.discount_type,
-                                                    coupon_code_type='GC2',
-                                                    created_by=instance.user,
-                                                    created_on=timezone.now())
-            CouponUser.objects.create(coupon_code=gift_coupon,
-                                      created_for=instance.user,
-                                      remaining_usage_count=1,
-                                      created_by=instance.user,
-                                      created_on=timezone.now())
+            gift_coupon_settings = CouponSettings.objects.filter(coupon_type='GC2', is_active=True)
+            if gift_coupon_settings:
+                gift_coupon_settings = gift_coupon_settings[0]
+                gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                        name="Purchase Coupon",
+                                                        discount_percent=gift_coupon_settings.discount_percent,
+                                                        discount_amount=gift_coupon_settings.discount_amount,
+                                                        max_usage_count=gift_coupon_settings.max_usage_count,
+                                                        minimum_purchase_limit=gift_coupon_settings.minimum_purchase_limit,
+                                                        discount_amount_limit=gift_coupon_settings.discount_amount_limit,
+                                                        expiry_date=timezone.now() + timedelta(
+                                                            days=gift_coupon_settings.validity_period),
+                                                        discount_type=gift_coupon_settings.discount_type,
+                                                        coupon_code_type='GC2',
+                                                        created_by=instance.user,
+                                                        created_on=timezone.now())
+                CouponUser.objects.create(coupon_code=gift_coupon,
+                                          created_for=instance.user,
+                                          remaining_usage_count=1,
+                                          created_by=instance.user,
+                                          created_on=timezone.now())
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
                            "Congratulations! You have received {}% discount ".format(

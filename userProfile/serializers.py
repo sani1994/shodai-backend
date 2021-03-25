@@ -105,24 +105,27 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                created_by=user,
                                                created_on=timezone.now())
 
-            gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
-            gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                    name="Sign Up Coupon",
-                                                    discount_percent=gift_discount_settings.discount_percent,
-                                                    max_usage_count=gift_discount_settings.max_usage_count,
-                                                    minimum_purchase_limit=gift_discount_settings.minimum_purchase_limit,
-                                                    discount_amount_limit=gift_discount_settings.discount_amount_limit,
-                                                    expiry_date=timezone.now() + timedelta(
-                                                        days=gift_discount_settings.validity_period),
-                                                    discount_type=gift_discount_settings.discount_type,
-                                                    coupon_code_type='GC1',
-                                                    created_by=user,
-                                                    created_on=timezone.now())
-            CouponUser.objects.create(coupon_code=gift_coupon,
-                                      created_for=user,
-                                      remaining_usage_count=1,
-                                      created_by=user,
-                                      created_on=timezone.now())
+            gift_discount_settings = CouponSettings.objects.filter(coupon_type='GC1', is_active=True)
+            if gift_discount_settings:
+                gift_discount_settings = gift_discount_settings[0]
+                gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                        name="Sign Up Coupon",
+                                                        discount_percent=gift_discount_settings.discount_percent,
+                                                        discount_amount=gift_discount_settings.discount_amount,
+                                                        max_usage_count=gift_discount_settings.max_usage_count,
+                                                        minimum_purchase_limit=gift_discount_settings.minimum_purchase_limit,
+                                                        discount_amount_limit=gift_discount_settings.discount_amount_limit,
+                                                        expiry_date=timezone.now() + timedelta(
+                                                            days=gift_discount_settings.validity_period),
+                                                        discount_type=gift_discount_settings.discount_type,
+                                                        coupon_code_type='GC1',
+                                                        created_by=user,
+                                                        created_on=timezone.now())
+                CouponUser.objects.create(coupon_code=gift_coupon,
+                                          created_for=user,
+                                          remaining_usage_count=1,
+                                          created_by=user,
+                                          created_on=timezone.now())
 
             if not settings.DEBUG:
                 sms_body1 = "Dear Customer,\n" + \

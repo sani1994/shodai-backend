@@ -15,12 +15,11 @@ from django_q.tasks import async_task
 from graphene_django import DjangoObjectType
 
 from bases.views import checkAuthentication, from_global_id, coupon_checker
-from coupon.models import CouponCode, CouponUser, CouponUsageHistory, CouponSettings
-from utility.notification import email_notification, send_sms
-from .queries import OrderType, OrderProductType
+from coupon.models import CouponCode, CouponUsageHistory, CouponSettings
+from .queries import OrderType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
 from product.models import Product
-from userProfile.models import Address, BlackListedToken
+from userProfile.models import Address
 
 
 class OrderStatusEnum(graphene.Enum):
@@ -172,7 +171,7 @@ class CreateOrder(graphene.Mutation):
                                                                     created_by=order_instance.user,
                                                                     created_on=timezone.now())
 
-                    if not settings.DEBUG:
+                    if not settings.DEBUG and referral_coupon.max_usage_count > 0:
                         sms_body = "Dear Customer,\n" + \
                                    "Don't forget to share this code [{}] with your ".format(
                                        referral_coupon.coupon_code) + \

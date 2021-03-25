@@ -115,12 +115,6 @@ class OrderAdmin(MaterialModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def save_model(self, request, obj, form, change):
-        if obj.id:
-            obj.modified_by = request.user
-        obj.save()
-        return super().save_model(request, obj, form, change)
-
 
 class OrderProductAdmin(MaterialModelAdmin):
     def order_date(self):

@@ -83,7 +83,7 @@ class CouponSettingsAdmin(MaterialModelAdmin):
     fieldsets = (
         ('Coupon Detail View', {
             'fields': ('coupon_type', 'discount_percent', 'discount_amount', 'discount_amount_limit',
-                       'minimum_purchase_limit', 'max_usage_count', 'validity_period',
+                       'minimum_purchase_limit', 'max_usage_count', 'validity_period', 'is_active',
                        'modified_by', 'modified_on')
         }),
     )
@@ -99,6 +99,12 @@ class CouponSettingsAdmin(MaterialModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+            obj.modified_on = timezone.now()
+        obj.save()
 
 
 site.register(CouponCode, CouponCodeAdmin)
