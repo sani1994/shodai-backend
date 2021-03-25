@@ -120,6 +120,7 @@ class UserCreateMutation(graphene.Mutation):
                                                coupon_code_type='RC',
                                                created_by=user_instance,
                                                created_on=timezone.now())
+
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
             gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                     name="Sign Up Coupon",
@@ -138,6 +139,7 @@ class UserCreateMutation(graphene.Mutation):
                                       remaining_usage_count=1,
                                       created_by=user_instance,
                                       created_on=timezone.now())
+
             if not settings.DEBUG:
                 sms_body1 = "Dear Customer,\n" + \
                            "Congratulations for your Shodai account!\n" + \
@@ -154,6 +156,7 @@ class UserCreateMutation(graphene.Mutation):
                             "www.shod.ai"
                 async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body1)
                 async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body2)
+
                 otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                     user_instance.verification_code))
             else:

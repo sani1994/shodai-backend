@@ -154,7 +154,7 @@ class CreateOrder(graphene.Mutation):
                 order_instance.save()
 
                 referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
-                                                            created_by=order_instance.user)
+                                                            created_by=order_instance.user).order_by('-created_on')
                 if referral_coupon:
                     referral_coupon = referral_coupon[0]
                     if referral_coupon.expiry_date < timezone.now():

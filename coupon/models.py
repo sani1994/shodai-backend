@@ -80,10 +80,12 @@ class CouponSettings(BaseModel):
     coupon_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=DISCOUNT_COUPON)
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_PERCENT)
     discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
+    discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Flat Discount')
     discount_amount_limit = models.IntegerField(default=0, blank=True, null=True)
     minimum_purchase_limit = models.IntegerField(null=True, verbose_name="Minimum Purchase Amount")
     max_usage_count = models.IntegerField(default=1)
     validity_period = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.coupon_type

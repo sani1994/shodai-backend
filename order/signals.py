@@ -19,6 +19,10 @@ def order_data_preprocessing(sender, instance, **kwargs):
         while "-" in last_order.order_number:
             last_order = Order.objects.get(id=last_order.id - 1)
         instance.order_number = str(int(last_order.order_number) + 1)
+
+    instance.currency = 'BDT'
+    instance.order_geopoint = GEOSGeometry('POINT(%f %f)' % (instance.long, instance.lat))
+
     if instance.order_status == "COM":
         invoice = InvoiceInfo.objects.get(invoice_number=instance.invoice_number)
         if invoice.payment_method == "CASH_ON_DELIVERY":
@@ -32,6 +36,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
                 invoice.paid_status = True
                 invoice.paid_on = timezone.now()
                 invoice.save()
+
         discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
         if discount and discount[0].coupon:
             coupon = discount[0].coupon
@@ -92,5 +97,3 @@ def order_data_preprocessing(sender, instance, **kwargs):
                            "avail this discount on your next order.\n\n" + \
                            "www.shod.ai"
                 async_task('utility.notification.send_sms', instance.user.mobile_number, sms_body)
-    instance.currency = 'BDT'
-    instance.order_geopoint = GEOSGeometry('POINT(%f %f)' % (instance.long, instance.lat))

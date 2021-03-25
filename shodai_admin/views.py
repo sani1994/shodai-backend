@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from bases.views import CustomPageNumberPagination, field_validation, type_validation
-from coupon.models import CouponCode, CouponSettings
+from coupon.models import CouponCode, CouponSettings, CouponUser
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
 from product.models import Product
@@ -714,6 +714,7 @@ class CreateOrder(APIView):
                                                coupon_code_type='RC',
                                                created_by=user_instance,
                                                created_on=timezone.now())
+
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
             gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                     name="Sign Up Coupon",
@@ -727,6 +728,11 @@ class CreateOrder(APIView):
                                                     coupon_code_type='GC1',
                                                     created_by=user_instance,
                                                     created_on=timezone.now())
+            CouponUser.objects.create(coupon_code=gift_coupon,
+                                      created_for=user_instance,
+                                      remaining_usage_count=1,
+                                      created_by=user_instance,
+                                      created_on=timezone.now())
 
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
@@ -734,7 +740,8 @@ class CreateOrder(APIView):
                            "[{}] based on your order request. ".format(temp_password) + \
                            "Please change your password after login.\n\n" + \
                            "www.shod.ai"
-                async_task('utility.notification.send_sms', customer["mobile_number"], sms_body)
+                async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body)
+
                 coupon_sms_body1 = "Dear Customer,\n" + \
                                    "Congratulations for your Shodai account!\n" + \
                                    "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \

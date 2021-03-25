@@ -90,6 +90,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if user:
             user.set_password(validated_data['password'])
             user.save()
+
             referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Coupon",
@@ -103,6 +104,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                coupon_code_type='RC',
                                                created_by=user,
                                                created_on=timezone.now())
+
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
             gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                     name="Sign Up Coupon",
@@ -121,6 +123,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                       remaining_usage_count=1,
                                       created_by=user,
                                       created_on=timezone.now())
+
             if not settings.DEBUG:
                 sms_body1 = "Dear Customer,\n" + \
                             "Congratulations for your Shodai account!\n" + \
@@ -137,6 +140,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                             "www.shod.ai"
                 async_task('utility.notification.send_sms', user.mobile_number, sms_body1)
                 async_task('utility.notification.send_sms', user.mobile_number, sms_body2)
+
             if user.user_type == 'PD':
                 sub = "Approval Request"
                 body = f"Dear Concern,\r\n User phone number :{user.mobile_number} \r\nUser type: {user.user_type} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
