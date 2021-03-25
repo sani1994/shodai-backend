@@ -32,10 +32,20 @@ class SelectShopForm(forms.Form):
 class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_meta__product_category', 'product_meta', 'product_name', 'is_approved',)
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
-    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on", 'price_with_vat', 'slug']
+    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on",
+                       'price_with_vat', 'slug']
     search_fields = ['product_name']
     autocomplete_fields = ('product_unit', 'product_meta',)
     actions = ["save_selected", "export_as_csv", "export_all_as_csv", ]
+    fieldsets = (
+        ('Product Detail View', {
+            'fields': (
+                'product_name', 'product_name_bn', 'product_image', 'product_description',
+                'product_description_bn', 'product_price', 'product_price_bn', 'product_unit',
+                'product_meta', 'product_last_price', 'is_approved', 'decimal_allowed', 'price_with_vat',
+                'created_by', 'modified_by', 'created_on', 'modified_on')
+        }),
+    )
 
     def get_actions(self, request):
         actions = super(ProductAdmin, self).get_actions(request)
@@ -239,24 +249,24 @@ class ProductMetaAdmin(admin.ModelAdmin):
         return False
 
 
-class ManufacturerAdmin(admin.ModelAdmin):
-    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on", "code"]
-    list_display = ('id', 'name', 'code', 'is_approved')
-
-    def save_model(self, request, obj, form, change):
-        if obj.id:
-            obj.modified_by = request.user
-        else:
-            obj.created_by = request.user
-        obj.save()
-
-    def has_delete_permission(self, request, obj=None):
-        return False
+# class ManufacturerAdmin(admin.ModelAdmin):
+#     readonly_fields = ["created_by", "modified_by", "created_on", "modified_on", "code"]
+#     list_display = ('id', 'name', 'code', 'is_approved')
+#
+#     def save_model(self, request, obj, form, change):
+#         if obj.id:
+#             obj.modified_by = request.user
+#         else:
+#             obj.created_by = request.user
+#         obj.save()
+#
+#     def has_delete_permission(self, request, obj=None):
+#         return False
 
 
 site.register(Product, ProductAdmin)
 site.register(ShopCategory, ShopCategoryAdmin)
 site.register(ProductCategory, ProductCategoryAdmin)
 site.register(ProductMeta, ProductMetaAdmin)
-site.register(Manufacturer, ManufacturerAdmin)
+# site.register(Manufacturer, ManufacturerAdmin)
 # site.register(ProductUnit, ProductUnitAdmin)

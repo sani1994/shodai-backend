@@ -409,7 +409,7 @@ class OrderDetail(APIView):
             is_valid = False
 
         if not is_valid or not data['delivery_address'] or data['order_status'] not in all_order_status or \
-                not isinstance(data['additional_discount'], float):
+                not isinstance(data['additional_discount'], (float, int)):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
@@ -526,14 +526,15 @@ class OrderDetail(APIView):
                         coupon_discount = discount_amount
                         coupon_discount_description = is_coupon_discount[0].discount_description
 
-                order.order_total_price = round(total) + delivery_charge - coupon_discount - additional_discount
+                order.order_total_price = round(total + delivery_charge - coupon_discount - additional_discount)
                 order.total_vat = total_vat
                 order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note'][:500]
             else:
-                order.order_total_price = order.order_total_price - invoice.delivery_charge + delivery_charge + prev_additional_discount - additional_discount
+                order.order_total_price = round(order.order_total_price - invoice.delivery_charge + delivery_charge + \
+                                                prev_additional_discount - additional_discount)
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
@@ -847,7 +848,7 @@ class CreateOrder(APIView):
             total += float(op.order_product_price_with_vat) * op.order_product_qty
             total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-        order_instance.order_total_price = round(total) + delivery_charge - coupon_discount - additional_discount
+        order_instance.order_total_price = round(total + delivery_charge - coupon_discount - additional_discount)
         order_instance.total_vat = total_vat
         order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
