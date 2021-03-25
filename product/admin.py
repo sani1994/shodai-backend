@@ -13,7 +13,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from product.models import ShopCategory, ProductCategory, ProductMeta, Product
+from product.models import ShopCategory, ProductCategory, ProductMeta, Product, Manufacturer
 from retailer.models import Shop
 
 
@@ -136,7 +136,7 @@ class ProductAdmin(MaterialModelAdmin):
                             flag = False
                             if isinstance(data["product_price"][i],
                                           (np.int64, np.float32)) and product.product_price != float(
-                                    data["product_price"][i]):
+                                data["product_price"][i]):
                                 product.product_last_price = product.product_price
                                 product.product_price = float(data["product_price"][i])
                                 flag = True
@@ -152,7 +152,7 @@ class ProductAdmin(MaterialModelAdmin):
                             # message = "row " + str(i) + " in your csv failed because product does not exist"
                             # messages.success(request, message)
                     else:
-                        print("Required information is empty in row {}".format(i+1))
+                        print("Required information is empty in row {}".format(i + 1))
                         # message = "row " + str(i) + " in your csv failed because of empty value"
                         # messages.success(request, message)
 
@@ -239,8 +239,24 @@ class ProductMetaAdmin(admin.ModelAdmin):
         return False
 
 
+class ManufacturerAdmin(admin.ModelAdmin):
+    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on", "code"]
+    list_display = ('id', 'name', 'code', 'is_approved')
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        else:
+            obj.created_by = request.user
+        obj.save()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 site.register(Product, ProductAdmin)
 site.register(ShopCategory, ShopCategoryAdmin)
 site.register(ProductCategory, ProductCategoryAdmin)
 site.register(ProductMeta, ProductMetaAdmin)
+site.register(Manufacturer, ManufacturerAdmin)
 # site.register(ProductUnit, ProductUnitAdmin)

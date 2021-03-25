@@ -23,6 +23,7 @@ class ProductCategory(BaseModel):
     type_of_product_bn = models.CharField(max_length=90, null=True, blank=True, verbose_name='পন্যের ধরন')
     img = models.ImageField(upload_to='pictures/productcategory/', blank=True, null=True)
     is_approved = models.BooleanField(default=False)
+    code = models.IntegerField(null=True, unique=True)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -42,6 +43,7 @@ class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapn
     vat_amount = models.FloatField(default=0, blank=True, null=True,
                                    verbose_name='Vat Amount(%)')  # Here vat amount 15 is 15%
     is_approved = models.BooleanField(default=False)
+    code = models.IntegerField(null=True, unique=True)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -50,6 +52,18 @@ class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapn
     class Meta:
         verbose_name = 'Product Meta'
         verbose_name_plural = 'Product Meta'
+
+
+class Manufacturer(BaseModel):
+    name = models.CharField(max_length=200)
+    code = models.IntegerField(null=True, unique=True)
+    address = models.CharField(max_length=250, blank=True, null=True)
+    contact_number = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
 
 
 class Product(BaseModel):
@@ -67,6 +81,9 @@ class Product(BaseModel):
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)
     decimal_allowed = models.BooleanField(default=False)
+    product_manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE, null=True, blank=True)
+    code = models.IntegerField(null=True, blank=True, unique=True)
+    product_sku = models.CharField(max_length=20, null=True, blank=True, unique=True)
     price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
                                          verbose_name='Product Price With Vat')  # Product Price with vat
     history = HistoricalRecords()

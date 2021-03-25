@@ -1,13 +1,13 @@
 import json
 import uuid
+from datetime import timedelta
 
 import geocoder
 import graphene
 import requests
 
-from datetime import timedelta
-from django.conf import settings
 from decouple import config
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.utils import timezone
@@ -133,7 +133,7 @@ class CreateOrder(graphene.Mutation):
 
                 coupon_discount_amount = 0
                 if input.code:
-                    discount_amount, coupon, is_using, _ = coupon_checker(input.code, product_list, user, False)
+                    discount_amount, coupon, is_using, _ = coupon_checker(input.code, product_list, user, True)
                     if discount_amount:
                         coupon_discount_amount = discount_amount
                         is_using.remaining_usage_count -= 1

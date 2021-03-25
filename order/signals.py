@@ -7,7 +7,6 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django_q.tasks import async_task
-
 from coupon.models import CouponCode, CouponUser, CouponSettings
 from order.models import Order, InvoiceInfo, DiscountInfo
 
@@ -91,12 +90,12 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                           remaining_usage_count=1,
                                           created_by=instance.user,
                                           created_on=timezone.now())
-            if not settings.DEBUG:
-                sms_body = "Dear Customer,\n" + \
-                           "Congratulations! You have received {}% discount ".format(
-                               gift_coupon_settings.discount_percent) + \
-                           "based on your successful purchase. " + \
-                           "Use code [{}] to ".format(gift_coupon.coupon_code) + \
-                           "avail this discount on your next order.\n\n" + \
-                           "www.shod.ai"
-                async_task('utility.notification.send_sms', instance.user.mobile_number, sms_body)
+                if not settings.DEBUG:
+                    sms_body = "Dear Customer,\n" + \
+                               "Congratulations! You have received {}% discount ".format(
+                                   gift_coupon_settings.discount_percent) + \
+                               "based on your successful purchase. " + \
+                               "Use code [{}] to ".format(gift_coupon.coupon_code) + \
+                               "avail this discount on your next order.\n\n" + \
+                               "www.shod.ai"
+                    async_task('utility.notification.send_sms', instance.user.mobile_number, sms_body)
