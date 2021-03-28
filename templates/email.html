@@ -167,7 +167,27 @@
                   <td style="text-align: center;">
                       <strong>৳{{sub_total}}</strong>
                   </td>
-                </tr>
+            </tr>
+            {% if coupon_discount %}
+            <tr style="text-align: right;">
+              <td colspan={{colspan_value}} >
+                  <strong>Coupon Discount: </strong>
+              </td>
+              <td style="text-align: center;">
+                <strong>-৳{{coupon_discount}}</strong>
+              </td>
+            </tr>
+            {% endif %}
+            {% if additional_discount %}
+                 <tr style="text-align: right;">
+                     <td colspan={{colspan_value}} >
+                         <strong>Additional Discount: </strong>
+                     </td>
+                     <td style="text-align: center;">
+                         <strong>-{{additional_discount}}</strong>
+                     </td>
+                 </tr>
+            {% endif %}
             <tr style="text-align: right;">
               <td colspan={{colspan_value}} >
                   <strong>Vat:</strong>
@@ -184,16 +204,6 @@
                 <strong>৳{{delivery_charge}}</strong>
               </td>
             </tr>
-            {% if coupon_discount %}
-            <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
-                  <strong>Coupon Discount: </strong>
-              </td>
-              <td style="text-align: center;">
-                <strong>-৳{{coupon_discount}}</strong>
-              </td>
-            </tr>
-            {% endif %}
             {% if delivery_charge_discount %}
             <tr style="text-align: right;">
               <td colspan={{colspan_value}} >

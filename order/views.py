@@ -1,10 +1,7 @@
 import csv
-import datetime
 import uuid
 
-from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from django.db.models import Q
 from decouple import config
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -13,7 +10,7 @@ from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 
 from bases.views import coupon_checker
-from coupon.models import CouponCode, CouponUser, CouponUsageHistory
+from coupon.models import CouponUsageHistory
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
     OrderDetailPaymentSerializer, TimeSlotSerializer
@@ -24,7 +21,6 @@ from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
 from shodai.utils.permission import GenericAuth
 from userProfile.models import Address
-from utility.notification import send_sms
 
 
 class TimeSlotList(APIView):

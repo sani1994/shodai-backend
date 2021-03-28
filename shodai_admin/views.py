@@ -1015,6 +1015,9 @@ class InvoiceDownloadPDF(APIView):
         is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
         coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
 
+        is_additional_discount = DiscountInfo.objects.filter(discount_type='AD', invoice=invoice)
+        additional_discount = is_additional_discount[0].discount_amount if is_additional_discount else 0
+
         if invoice.payment_method == "CASH_ON_DELIVERY":
             payment_method = "Cash on Delivery"
         else:
@@ -1038,6 +1041,7 @@ class InvoiceDownloadPDF(APIView):
             'paid_status': paid_status,
             'is_offer': is_product_offer,
             'coupon_discount': coupon_discount,
+            'additional_discount': additional_discount,
             'note': order.note if order.note else None,
             'colspan_value': "4" if is_product_offer else "3",
             'downloaded_on': datetime.now().replace(microsecond=0)
@@ -1098,6 +1102,9 @@ class OrderNotification(APIView):
                 is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
                 coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
 
+                is_additional_discount = DiscountInfo.objects.filter(discount_type='AD', invoice=invoice)
+                additional_discount = is_additional_discount[0].discount_amount if is_additional_discount else 0
+
                 """
                 To send notification to customer
                 """
@@ -1116,6 +1123,7 @@ class OrderNotification(APIView):
                            'order_details': matrix,
                            'is_product_discount': is_offer,
                            'coupon_discount': coupon_discount,
+                           'additional_discount': additional_discount,
                            'delivery_charge_discount': delivery_charge_discount,
                            'saved_amount': invoice.discount_amount,
                            'note': None,
@@ -1154,6 +1162,7 @@ class OrderNotification(APIView):
                            'order_details': matrix,
                            'is_product_discount': is_offer,
                            'coupon_discount': coupon_discount,
+                           'additional_discount': additional_discount,
                            'delivery_charge_discount': delivery_charge_discount,
                            'saved_amount': invoice.discount_amount,
                            'note': order_instance.note if order_instance.note else None,
