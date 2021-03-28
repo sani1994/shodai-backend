@@ -715,7 +715,7 @@ class CreateOrder(APIView):
         else:
             is_valid = False
 
-        if not is_valid or not data['delivery_address'] or not isinstance(data['additional_discount'], float):
+        if not is_valid or not data['delivery_address'] or not isinstance(data['additional_discount'], (float, int)):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
@@ -870,6 +870,35 @@ class CreateOrder(APIView):
             additional_discount = 0
 
         order_instance.save()
+        referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
+                                                    created_by=order_instance.user).order_by('-created_on')
+        if referral_coupon:
+            referral_coupon = referral_coupon[0]
+            if referral_coupon.expiry_date < timezone.now():
+                referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
+                referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                            name="Referral Coupon",
+                                                            discount_percent=referral_discount_settings.discount_percent,
+                                                            discount_amount=referral_discount_settings.discount_amount,
+                                                            max_usage_count=referral_discount_settings.max_usage_count,
+                                                            minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                            discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                            expiry_date=timezone.now() + timedelta(
+                                                                days=referral_discount_settings.validity_period),
+                                                            discount_type=referral_discount_settings.discount_type,
+                                                            coupon_code_type='RC',
+                                                            created_by=order_instance.user,
+                                                            created_on=timezone.now())
+
+            if not settings.DEBUG and referral_coupon.max_usage_count > 0:
+                async_task('coupon.tasks.send_coupon_sms', 'RC',
+                           referral_coupon.coupon_code,
+                           referral_coupon.discount_percent,
+                           order_instance.user.mobile_number,
+                           referral_coupon.minimum_purchase_limit,
+                           referral_coupon.discount_amount_limit,
+                           referral_coupon.expiry_date,
+                           referral_coupon.max_usage_count)
 
         product_discount = total_price - total_op_price
         discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount

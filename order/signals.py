@@ -93,7 +93,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms', 'GC2',
                                gift_coupon.coupon_code,
-                               gift_coupon.discount_percen,
+                               gift_coupon.discount_percent,
                                instance.user.mobile_number,
                                gift_coupon.minimum_purchase_limit,
                                gift_coupon.discount_amount_limit,

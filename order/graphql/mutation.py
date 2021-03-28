@@ -174,9 +174,13 @@ class CreateOrder(graphene.Mutation):
 
                     if not settings.DEBUG and referral_coupon.max_usage_count > 0:
                         async_task('coupon.tasks.send_coupon_sms', 'RC',
-                                                                   referral_coupon.coupon_code,
-                                                                   referral_coupon.discount_percent,
-                                                                   order_instance.user.mobile_number)
+                                   referral_coupon.coupon_code,
+                                   referral_coupon.discount_percent,
+                                   order_instance.user.mobile_number,
+                                   referral_coupon.minimum_purchase_limit,
+                                   referral_coupon.discount_amount_limit,
+                                   referral_coupon.expiry_date,
+                                   referral_coupon.max_usage_count)
 
                 if user.first_name and user.last_name:
                     billing_person_name = user.first_name + " " + user.last_name
