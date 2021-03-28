@@ -61,9 +61,13 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                           created_on=timezone.now())
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms', 'DC',
-                                                               new_coupon.coupon_code,
-                                                               new_coupon.discount_percent,
-                                                               coupon.created_by.mobile_number)
+                               new_coupon.coupon_code,
+                               new_coupon.discount_percent,
+                               coupon.created_by.mobile_number,
+                               new_coupon.minimum_purchase_limit,
+                               new_coupon.discount_amount_limit,
+                               new_coupon.expiry_date,
+                               new_coupon.max_usage_count)
 
         if instance.platform == 'WB':
             gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
@@ -88,6 +92,10 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                           created_on=timezone.now())
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms', 'GC2',
-                                                               gift_coupon.coupon_code,
-                                                               gift_coupon.discount_percen,
-                                                               instance.user.mobile_number)
+                               gift_coupon.coupon_code,
+                               gift_coupon.discount_percen,
+                               instance.user.mobile_number,
+                               gift_coupon.minimum_purchase_limit,
+                               gift_coupon.discount_amount_limit,
+                               gift_coupon.expiry_date,
+                               gift_coupon.max_usage_count)

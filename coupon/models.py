@@ -30,12 +30,12 @@ class CouponCode(BaseModel):
 
     name = models.CharField(max_length=100, default="")
     coupon_code = models.CharField(max_length=10, unique=True, null=False, blank=False)
-    discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
-    discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Flat Discount')
-    discount_amount_limit = models.IntegerField(default=0, blank=True, null=True,
+    discount_percent = models.FloatField(default=0, blank=True, verbose_name='Discount Percent(%)')
+    discount_amount = models.FloatField(default=0, blank=True, verbose_name='Flat Discount')
+    discount_amount_limit = models.IntegerField(default=0, blank=True,
                                                 help_text="In case of Discount Type: Discount Percent(%)")
-    minimum_purchase_limit = models.IntegerField(null=True, verbose_name="Minimum Purchase Amount")
-    max_usage_count = models.IntegerField(default=0, blank=True, null=True, )
+    minimum_purchase_limit = models.IntegerField(default=0, verbose_name="Minimum Purchase Amount")
+    max_usage_count = models.IntegerField(default=0, blank=True)
     expiry_date = models.DateTimeField(null=False, blank=False)
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
     coupon_code_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=PROMOTIONAL_COUPON)
@@ -55,8 +55,8 @@ class CouponUser(BaseModel):
 
 
 class CouponUsageHistory(BaseModel):
-    discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
-    discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Amount')
+    discount_percent = models.FloatField(default=0, blank=True, verbose_name='Discount Percent(%)')
+    discount_amount = models.FloatField(default=0, blank=True, verbose_name='Discount Amount')
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_AMOUNT)
     coupon_code = models.CharField(max_length=10, null=False, blank=False)
     coupon_user = models.ForeignKey(CouponUser, models.SET_NULL, null=True, verbose_name="Reference")
@@ -79,12 +79,12 @@ class CouponSettings(BaseModel):
     ]
     coupon_type = models.CharField(max_length=30, choices=COUPON_TYPE, default=DISCOUNT_COUPON)
     discount_type = models.CharField(max_length=30, choices=DISCOUNT_TYPE, default=DISCOUNT_PERCENT)
-    discount_percent = models.FloatField(default=0, blank=True, null=True, verbose_name='Discount Percent(%)')
-    discount_amount = models.FloatField(default=0, blank=True, null=True, verbose_name='Flat Discount')
-    discount_amount_limit = models.IntegerField(default=0, blank=True, null=True)
-    minimum_purchase_limit = models.IntegerField(null=True, verbose_name="Minimum Purchase Amount")
+    discount_percent = models.FloatField(default=0, blank=True, verbose_name='Discount Percent(%)')
+    discount_amount = models.FloatField(default=0, blank=True, verbose_name='Flat Discount')
+    discount_amount_limit = models.IntegerField(default=0, blank=True)
+    minimum_purchase_limit = models.IntegerField(default=0, verbose_name="Minimum Purchase Amount")
     max_usage_count = models.IntegerField(default=1)
-    validity_period = models.IntegerField(default=0)
+    validity_period = models.IntegerField(default=0, verbose_name="Validity Period (Days)")
     is_active = models.BooleanField(default=False)
 
     def __str__(self):

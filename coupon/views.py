@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -74,7 +75,8 @@ class CouponList(APIView):
     permission_class = [GenericAuth]
 
     def get(self, request):
-        queryset = CouponCode.objects.filter(coupon_code_type='DC',
+        queryset = CouponCode.objects.filter(Q(coupon_code_type='DC') |
+                                             Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
                                              expiry_date__gte=timezone.now(),
                                              discount_code__in=CouponUser.objects.filter(
                                                  created_for=request.user))
@@ -99,14 +101,14 @@ class ReferralCoupon(APIView):
             if serializer:
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         return Response({"status": "failed", 'data': {
-                                                    "coupon_code": "",
-                                                    "expiry_date": "",
-                                                    "discount_percent": "",
-                                                    "discount_amount_limit": "",
-                                                    "status": "",
-                                                    "minimum_purchase_limit": "",
-                                                    "max_usage_count": ""
-                                                }}, status=status.HTTP_200_OK)
+            "coupon_code": "",
+            "expiry_date": "",
+            "discount_percent": "",
+            "discount_amount_limit": "",
+            "status": "",
+            "minimum_purchase_limit": "",
+            "max_usage_count": ""
+        }}, status=status.HTTP_200_OK)
 
 
 class ReferralCouponOne(APIView):
@@ -123,11 +125,11 @@ class ReferralCouponOne(APIView):
                 request.user.save()
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         return Response({"status": "failed", 'data': {
-                                                    "coupon_code": "",
-                                                    "expiry_date": "",
-                                                    "discount_percent": "",
-                                                    "discount_amount_limit": "",
-                                                    "status": "",
-                                                    "minimum_purchase_limit": "",
-                                                    "max_usage_count": ""
-                                                }}, status=status.HTTP_200_OK)
+            "coupon_code": "",
+            "expiry_date": "",
+            "discount_percent": "",
+            "discount_amount_limit": "",
+            "status": "",
+            "minimum_purchase_limit": "",
+            "max_usage_count": ""
+        }}, status=status.HTTP_200_OK)

@@ -458,6 +458,7 @@ class OrderDetail(APIView):
                         delivery_charge_discount = delivery_charge_without_offer - delivery_charge
 
             coupon_discount = prev_additional_discount = 0
+            coupon_discount_description = ""
             is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
             if is_coupon_discount:
                 coupon_discount = is_coupon_discount[0].discount_amount
@@ -565,6 +566,8 @@ class OrderDetail(APIView):
             else:
                 billing_person_name = ""
             payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
+            paid_status = False if products_updated else invoice.paid_status
+            paid_on = None if products_updated else invoice.paid_on
             new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
                                                      billing_person_name=billing_person_name,
                                                      billing_person_email=order.user.email,
@@ -576,6 +579,8 @@ class OrderDetail(APIView):
                                                      discount_amount=discount_amount,
                                                      net_payable_amount=order.order_total_price,
                                                      payment_method=payment_method,
+                                                     paid_status=paid_status,
+                                                     paid_on=paid_on,
                                                      order_number=order,
                                                      user=order.user,
                                                      created_by=request.user)
@@ -802,15 +807,23 @@ class CreateOrder(APIView):
                            "www.shod.ai"
                 async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body)
                 async_task('coupon.tasks.send_coupon_sms', 'RC',
-                                                           coupon.coupon_code,
-                                                           coupon.discount_percent,
-                                                           user_instance.mobile_number)
+                           coupon.coupon_code,
+                           coupon.discount_percent,
+                           user_instance.mobile_number,
+                           coupon.minimum_purchase_limit,
+                           coupon.discount_amount_limit,
+                           coupon.expiry_date,
+                           coupon.max_usage_count)
 
                 if gift_discount_settings.is_active:
                     async_task('coupon.tasks.send_coupon_sms', 'GC1',
-                                                               gift_coupon.coupon_code,
-                                                               gift_coupon.discount_percent,
-                                                               user_instance.mobile_number)
+                               gift_coupon.coupon_code,
+                               gift_coupon.discount_percent,
+                               user_instance.mobile_number,
+                               gift_coupon.minimum_purchase_limit,
+                               gift_coupon.discount_amount_limit,
+                               gift_coupon.expiry_date,
+                               gift_coupon.max_usage_count)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
