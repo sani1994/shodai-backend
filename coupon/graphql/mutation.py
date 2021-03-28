@@ -1,5 +1,4 @@
 import graphene
-from decouple import config
 
 from bases.views import checkAuthentication, coupon_checker
 
@@ -26,7 +25,6 @@ class ApplyCoupon(graphene.Mutation):
     @staticmethod
     def mutate(root, info, input=None):
         user = info.context.user
-        allow_offer_product = config("APPLY_DISCOUNT_ON_OFFER", cast=bool)
         if checkAuthentication(user, info):
             discount_amount, coupon, _, is_under_limit = coupon_checker(input.code, input.products, user, True)
             if not is_under_limit:
@@ -35,7 +33,7 @@ class ApplyCoupon(graphene.Mutation):
                                        msg="Code applied successfully.",
                                        discount_amount=discount_amount,
                                        coupon_code=coupon.coupon_code)
-                elif not allow_offer_product and discount_amount == 0:
+                elif discount_amount == 0:
                     msg = "Coupon Discount Is Not Applicable On Products With Offer"
                     return ApplyCoupon(status=False, msg=msg)
                 return ApplyCoupon(status=False, msg="Invalid Code!")

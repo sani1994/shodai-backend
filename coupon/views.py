@@ -52,7 +52,7 @@ class VerifyCoupon(APIView):
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        discount_amount, coupon, _, is_under_limit = coupon_checker(data['coupon_code'], products, user, True)
+        discount_amount, coupon, _, is_under_limit = coupon_checker(data['coupon_code'], products, user)
         if not is_under_limit:
             if discount_amount:
                 return Response({'status': 'success',

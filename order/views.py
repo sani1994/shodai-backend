@@ -254,7 +254,7 @@ class OrderProductList(APIView):
 
             coupon_discount = 0
             if coupon_code:
-                discount_amount, coupon, is_using, _ = coupon_checker(coupon_code, products, request.user, False)
+                discount_amount, coupon, is_using, _ = coupon_checker(coupon_code, products, request.user)
                 if discount_amount:
                     coupon_discount = discount_amount
                     is_using.remaining_usage_count -= 1
