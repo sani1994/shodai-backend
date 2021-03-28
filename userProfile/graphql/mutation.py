@@ -144,23 +144,15 @@ class UserCreateMutation(graphene.Mutation):
                                           created_on=timezone.now())
 
             if not settings.DEBUG:
-                sms_body1 = "Dear Customer,\n" + \
-                           "Congratulations for your Shodai account!\n" + \
-                           "Share this code [{}] with your friends and ".format(coupon.coupon_code) + \
-                           "family to avail them {}% discount on their next purchase and ".format(
-                               referral_discount_settings.discount_percent) + \
-                           "receive exciting discount after each successful referral.\n\n" + \
-                           "www.shod.ai"
-                async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body1)
-
+                async_task('coupon.tasks.send_coupon_sms', 'RC',
+                                                           coupon.coupon_code,
+                                                           coupon.discount_percent,
+                                                           user_instance.mobile_number)
                 if gift_discount_settings.is_active:
-                    sms_body2 = "Dear Customer,\n" + \
-                                "Congratulations on your new Shodai account!\n" + \
-                                "Use this code [{}] ".format(gift_coupon.coupon_code) + \
-                                "to avail a {}% discount on your first order.\n\n".format(
-                                    gift_discount_settings.discount_percent) + \
-                                "www.shod.ai"
-                    async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body2)
+                    async_task('coupon.tasks.send_coupon_sms', 'GC1',
+                                                               gift_coupon.coupon_code,
+                                                               gift_coupon.discount_percent,
+                                                               user_instance.mobile_number)
 
                 otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                     user_instance.verification_code))

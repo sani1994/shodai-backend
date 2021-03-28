@@ -60,14 +60,10 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                           created_by=instance.user,
                                           created_on=timezone.now())
                 if not settings.DEBUG:
-                    sms_body = "Dear Customer,\n" + \
-                               "Congratulations! You have received {}% discount ".format(
-                                   discount_settings.discount_percent) + \
-                               "based on your successful referral. " + \
-                               "Use this code [{}] to ".format(new_coupon.coupon_code) + \
-                               "avail exciting discount on your next purchase.\n\n" + \
-                               "www.shod.ai"
-                    async_task('utility.notification.send_sms', coupon.created_by.mobile_number, sms_body)
+                    async_task('coupon.tasks.send_coupon_sms', 'DC',
+                                                               new_coupon.coupon_code,
+                                                               new_coupon.discount_percent,
+                                                               coupon.created_by.mobile_number)
 
         if instance.platform == 'WB':
             gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
@@ -91,11 +87,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                           created_by=instance.user,
                                           created_on=timezone.now())
                 if not settings.DEBUG:
-                    sms_body = "Dear Customer,\n" + \
-                               "Congratulations! You have received {}% discount ".format(
-                                   gift_coupon_settings.discount_percent) + \
-                               "based on your successful purchase. " + \
-                               "Use code [{}] to ".format(gift_coupon.coupon_code) + \
-                               "avail this discount on your next order.\n\n" + \
-                               "www.shod.ai"
-                    async_task('utility.notification.send_sms', instance.user.mobile_number, sms_body)
+                    async_task('coupon.tasks.send_coupon_sms', 'GC2',
+                                                               gift_coupon.coupon_code,
+                                                               gift_coupon.discount_percen,
+                                                               instance.user.mobile_number)

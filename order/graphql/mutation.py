@@ -173,14 +173,10 @@ class CreateOrder(graphene.Mutation):
                                                                     created_on=timezone.now())
 
                     if not settings.DEBUG and referral_coupon.max_usage_count > 0:
-                        sms_body = "Dear Customer,\n" + \
-                                   "Don't forget to share this code [{}] with your ".format(
-                                       referral_coupon.coupon_code) + \
-                                   "friends and family to avail them {}% discount on their next purchase and ".format(
-                                       referral_coupon.discount_percent) + \
-                                   "receive exciting discount after each successful referral.\n\n" + \
-                                   "www.shod.ai"
-                        async_task('utility.notification.send_sms', order_instance.user.mobile_number, sms_body)
+                        async_task('coupon.tasks.send_coupon_sms', 'RC',
+                                                                   referral_coupon.coupon_code,
+                                                                   referral_coupon.discount_percent,
+                                                                   order_instance.user.mobile_number)
 
                 if user.first_name and user.last_name:
                     billing_person_name = user.first_name + " " + user.last_name
