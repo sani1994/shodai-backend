@@ -762,6 +762,7 @@ class CreateOrder(APIView):
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Code",
                                                discount_percent=referral_discount_settings.discount_percent,
+                                               discount_amount=referral_discount_settings.discount_amount,
                                                max_usage_count=referral_discount_settings.max_usage_count,
                                                minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
                                                discount_amount_limit=referral_discount_settings.discount_amount_limit,
@@ -773,23 +774,25 @@ class CreateOrder(APIView):
                                                created_on=timezone.now())
 
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
-            gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                    name="Sign Up Coupon",
-                                                    discount_percent=gift_discount_settings.discount_percent,
-                                                    max_usage_count=gift_discount_settings.max_usage_count,
-                                                    minimum_purchase_limit=gift_discount_settings.minimum_purchase_limit,
-                                                    discount_amount_limit=gift_discount_settings.discount_amount_limit,
-                                                    expiry_date=timezone.now() + timedelta(
-                                                        days=gift_discount_settings.validity_period),
-                                                    discount_type=gift_discount_settings.discount_type,
-                                                    coupon_code_type='GC1',
-                                                    created_by=user_instance,
-                                                    created_on=timezone.now())
-            CouponUser.objects.create(coupon_code=gift_coupon,
-                                      created_for=user_instance,
-                                      remaining_usage_count=1,
-                                      created_by=user_instance,
-                                      created_on=timezone.now())
+            if gift_discount_settings.is_active:
+                gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                        name="Sign Up Coupon",
+                                                        discount_percent=gift_discount_settings.discount_percent,
+                                                        discount_amount=gift_discount_settings.discount_amount,
+                                                        max_usage_count=gift_discount_settings.max_usage_count,
+                                                        minimum_purchase_limit=gift_discount_settings.minimum_purchase_limit,
+                                                        discount_amount_limit=gift_discount_settings.discount_amount_limit,
+                                                        expiry_date=timezone.now() + timedelta(
+                                                            days=gift_discount_settings.validity_period),
+                                                        discount_type=gift_discount_settings.discount_type,
+                                                        coupon_code_type='GC1',
+                                                        created_by=user_instance,
+                                                        created_on=timezone.now())
+                CouponUser.objects.create(coupon_code=gift_coupon,
+                                          created_for=user_instance,
+                                          remaining_usage_count=1,
+                                          created_by=user_instance,
+                                          created_on=timezone.now())
 
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
@@ -806,14 +809,16 @@ class CreateOrder(APIView):
                                        referral_discount_settings.discount_percent) + \
                                    "receive exciting discount after each successful referral.\n\n" + \
                                    "www.shod.ai"
-                coupon_sms_body2 = "Dear Customer,\n" + \
-                                   "Congratulations on your new Shodai account!\n" + \
-                                   "Use this code [{}] ".format(gift_coupon.coupon_code) + \
-                                   "to avail a {}% discount on your first order.\n\n".format(
-                                       gift_discount_settings.discount_percent) + \
-                                   "www.shod.ai"
                 async_task('utility.notification.send_sms', user_instance.mobile_number, coupon_sms_body1)
-                async_task('utility.notification.send_sms', user_instance.mobile_number, coupon_sms_body2)
+
+                if gift_discount_settings.is_active:
+                    coupon_sms_body2 = "Dear Customer,\n" + \
+                                       "Congratulations on your new Shodai account!\n" + \
+                                       "Use this code [{}] ".format(gift_coupon.coupon_code) + \
+                                       "to avail a {}% discount on your first order.\n\n".format(
+                                           gift_discount_settings.discount_percent) + \
+                                       "www.shod.ai"
+                    async_task('utility.notification.send_sms', user_instance.mobile_number, coupon_sms_body2)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:

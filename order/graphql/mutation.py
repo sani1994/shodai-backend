@@ -161,6 +161,7 @@ class CreateOrder(graphene.Mutation):
                         referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                                     name="Referral Coupon",
                                                                     discount_percent=referral_discount_settings.discount_percent,
+                                                                    discount_amount=referral_discount_settings.discount_amount,
                                                                     max_usage_count=referral_discount_settings.max_usage_count,
                                                                     minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
                                                                     discount_amount_limit=referral_discount_settings.discount_amount_limit,

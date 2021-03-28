@@ -111,6 +111,7 @@ class UserCreateMutation(graphene.Mutation):
             coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                name="Referral Coupon",
                                                discount_percent=referral_discount_settings.discount_percent,
+                                               discount_amount=referral_discount_settings.discount_amount,
                                                max_usage_count=referral_discount_settings.max_usage_count,
                                                minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
                                                discount_amount_limit=referral_discount_settings.discount_amount_limit,
@@ -121,9 +122,8 @@ class UserCreateMutation(graphene.Mutation):
                                                created_by=user_instance,
                                                created_on=timezone.now())
 
-            gift_discount_settings = CouponSettings.objects.filter(coupon_type='GC1', is_active=True)
-            if gift_discount_settings:
-                gift_discount_settings = gift_discount_settings[0]
+            gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
+            if gift_discount_settings.is_active:
                 gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                         name="Sign Up Coupon",
                                                         discount_percent=gift_discount_settings.discount_percent,
@@ -151,14 +151,16 @@ class UserCreateMutation(graphene.Mutation):
                                referral_discount_settings.discount_percent) + \
                            "receive exciting discount after each successful referral.\n\n" + \
                            "www.shod.ai"
-                sms_body2 = "Dear Customer,\n" + \
-                            "Congratulations on your new Shodai account!\n" + \
-                            "Use this code [{}] ".format(gift_coupon.coupon_code) + \
-                            "to avail a {}% discount on your first order.\n\n".format(
-                                gift_discount_settings.discount_percent) + \
-                            "www.shod.ai"
                 async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body1)
-                async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body2)
+
+                if gift_discount_settings.is_active:
+                    sms_body2 = "Dear Customer,\n" + \
+                                "Congratulations on your new Shodai account!\n" + \
+                                "Use this code [{}] ".format(gift_coupon.coupon_code) + \
+                                "to avail a {}% discount on your first order.\n\n".format(
+                                    gift_discount_settings.discount_percent) + \
+                                "www.shod.ai"
+                    async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body2)
 
                 otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                     user_instance.verification_code))

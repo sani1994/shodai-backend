@@ -44,6 +44,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
                 new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                        name="Discount Coupon",
                                                        discount_percent=discount_settings.discount_percent,
+                                                       discount_amount=discount_settings.discount_amount,
                                                        max_usage_count=discount_settings.max_usage_count,
                                                        minimum_purchase_limit=discount_settings.minimum_purchase_limit,
                                                        discount_amount_limit=discount_settings.discount_amount_limit,
@@ -69,9 +70,8 @@ def order_data_preprocessing(sender, instance, **kwargs):
                     async_task('utility.notification.send_sms', coupon.created_by.mobile_number, sms_body)
 
         if instance.platform == 'WB':
-            gift_coupon_settings = CouponSettings.objects.filter(coupon_type='GC2', is_active=True)
-            if gift_coupon_settings:
-                gift_coupon_settings = gift_coupon_settings[0]
+            gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
+            if gift_coupon_settings.is_active:
                 gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                         name="Purchase Coupon",
                                                         discount_percent=gift_coupon_settings.discount_percent,
