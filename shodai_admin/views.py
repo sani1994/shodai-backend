@@ -806,24 +806,14 @@ class CreateOrder(APIView):
                            "Please change your password after login.\n\n" + \
                            "www.shod.ai"
                 async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body)
-                async_task('coupon.tasks.send_coupon_sms', 'RC',
-                           coupon.coupon_code,
-                           coupon.discount_percent,
-                           user_instance.mobile_number,
-                           coupon.minimum_purchase_limit,
-                           coupon.discount_amount_limit,
-                           coupon.expiry_date,
-                           coupon.max_usage_count)
+                async_task('coupon.tasks.send_coupon_sms',
+                           coupon,
+                           user_instance.mobile_number)
 
                 if gift_discount_settings.is_active:
-                    async_task('coupon.tasks.send_coupon_sms', 'GC1',
-                               gift_coupon.coupon_code,
-                               gift_coupon.discount_percent,
-                               user_instance.mobile_number,
-                               gift_coupon.minimum_purchase_limit,
-                               gift_coupon.discount_amount_limit,
-                               gift_coupon.expiry_date,
-                               gift_coupon.max_usage_count)
+                    async_task('coupon.tasks.send_coupon_sms',
+                               gift_coupon,
+                               user_instance.mobile_number)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -870,8 +860,9 @@ class CreateOrder(APIView):
             additional_discount = 0
 
         order_instance.save()
+
         referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
-                                                    created_by=order_instance.user).order_by('-created_on')
+                                                    created_by=user_instance).order_by('-created_on')
         if referral_coupon:
             referral_coupon = referral_coupon[0]
             if referral_coupon.expiry_date < timezone.now():
@@ -887,18 +878,13 @@ class CreateOrder(APIView):
                                                                 days=referral_discount_settings.validity_period),
                                                             discount_type=referral_discount_settings.discount_type,
                                                             coupon_code_type='RC',
-                                                            created_by=order_instance.user,
+                                                            created_by=user_instance,
                                                             created_on=timezone.now())
 
             if not settings.DEBUG and referral_coupon.max_usage_count > 0:
-                async_task('coupon.tasks.send_coupon_sms', 'RC',
-                           referral_coupon.coupon_code,
-                           referral_coupon.discount_percent,
-                           order_instance.user.mobile_number,
-                           referral_coupon.minimum_purchase_limit,
-                           referral_coupon.discount_amount_limit,
-                           referral_coupon.expiry_date,
-                           referral_coupon.max_usage_count)
+                async_task('coupon.tasks.send_coupon_sms',
+                           referral_coupon,
+                           user_instance.mobile_number)
 
         product_discount = total_price - total_op_price
         discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount

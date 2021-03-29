@@ -128,23 +128,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                           created_on=timezone.now())
 
             if not settings.DEBUG:
-                async_task('coupon.tasks.send_coupon_sms', 'RC',
-                           coupon.coupon_code,
-                           coupon.discount_percent,
-                           user.mobile_number,
-                           coupon.minimum_purchase_limit,
-                           coupon.discount_amount_limit,
-                           coupon.expiry_date,
-                           coupon.max_usage_count)
+                async_task('coupon.tasks.send_coupon_sms',
+                           coupon,
+                           user.mobile_number)
                 if gift_discount_settings.is_active:
-                    async_task('coupon.tasks.send_coupon_sms', 'GC1',
-                               gift_coupon.coupon_code,
-                               gift_coupon.discount_percent,
-                               user.mobile_number,
-                               gift_coupon.minimum_purchase_limit,
-                               gift_coupon.discount_amount_limit,
-                               gift_coupon.expiry_date,
-                               gift_coupon.max_usage_count)
+                    async_task('coupon.tasks.send_coupon_sms',
+                               gift_coupon,
+                               user.mobile_number)
 
             if user.user_type == 'PD':
                 sub = "Approval Request"
