@@ -5,13 +5,14 @@ def send_coupon_sms(coupon, mobile_number):
     if coupon.coupon_code_type == 'RC':
         sms_body = f"প্রিয় গ্রাহক,\n" \
                    f"আরও আকর্ষণীয় কুপন পেতে, রেফারেল কুপন শেয়ার করুন! " \
-                   f"নিচের রেফারেল কুপন ব্যবহার করলে, সদাই-তে আপনার বন্ধু বা আত্মীয় পাবে {coupon.discount_percent}% ডিসকাউন্ট! " \
+                   f"এই রেফারেল কুপন [{coupon.coupon_code}] ব্যবহার করলে, সদাই-তে আপনার বন্ধু " \
+                   f"বা আত্মীয় পাবে {coupon.discount_percent}% ডিসকাউন্ট! " \
                    f"{coupon.minimum_purchase_limit}+ টাকার বাজারে, সর্বোচ্চ {coupon.discount_amount_limit} টাকা! " \
                    f"আর প্রতিটি সফল রেফারেলে নিজের জন্যও পাবেন নতুন আকর্ষণীয় কুপন।\n" \
-                   f"রেফারেল কুপন কোডঃ {coupon.coupon_code}\n" \
-                   f"রেফারেল কুপনের মেয়াদঃ {coupon.expiry_date.date()}\n" \
-                   f"সফল রেফারেল বাকি আছেঃ {coupon.max_usage_count}\n\n" \
+                   f"কুপনের মেয়াদঃ {coupon.expiry_date.date()}\n" \
+                   f"রেফারেল বাকি আছেঃ {coupon.max_usage_count}\n\n" \
                    f"www.shod.ai"
+        print(sms_body)
     elif coupon.coupon_code_type == 'DC':
         sms_body = f"প্রিয় গ্রাহক,\n" \
                    f"অভিনন্দন! আপনার সফল রেফারেলের জন্য, " \
