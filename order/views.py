@@ -223,7 +223,7 @@ class OrderProductList(APIView):
             products = []
             if order_instance.address:
                 if order_instance.address.road:
-                    address = order_instance.address.road
+                    address = order_instance.address.road + " " + order_instance.address.city
             else:
                 if order_instance.delivery_place:
                     address = order_instance.delivery_place

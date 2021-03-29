@@ -274,7 +274,7 @@ class SendEmail(graphene.Mutation):
 
             content = {'user_name': client_name,
                        'order_number': order_instance.order_number,
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
                        'delivery_date_time': str(
@@ -311,7 +311,7 @@ class SendEmail(graphene.Mutation):
                        'user_mobile': user.mobile_number,
                        'order_number': order_instance.order_number,
                        'platform': "Website",
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city + " " + order_instance.address.zip_code,
+                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
                        'mobile_no': order_instance.contact_number,
                        'order_date': order_instance.created_on.date(),
                        'delivery_date_time': str(
