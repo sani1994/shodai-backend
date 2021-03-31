@@ -12,7 +12,6 @@ def send_coupon_sms(coupon, mobile_number):
                    f"কুপনের মেয়াদঃ {coupon.expiry_date.date()}\n" \
                    f"রেফারেল বাকি আছেঃ {coupon.max_usage_count}\n\n" \
                    f"www.shod.ai"
-        print(sms_body)
     elif coupon.coupon_code_type == 'DC':
         sms_body = f"প্রিয় গ্রাহক,\n" \
                    f"অভিনন্দন! আপনার সফল রেফারেলের জন্য, " \
