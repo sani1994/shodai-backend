@@ -846,6 +846,7 @@ class CreateOrder(APIView):
         order_instance.save()
 
         is_referral_code_expired = False
+        referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
         if not is_new_user:
             referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
                                                         created_by=user_instance).order_by('-created_on')
@@ -857,22 +858,22 @@ class CreateOrder(APIView):
                 is_referral_code_expired = True
 
         if is_new_user or is_referral_code_expired:
-            referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
-            referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                        name="Referral Coupon",
-                                                        discount_percent=referral_discount_settings.discount_percent,
-                                                        discount_amount=referral_discount_settings.discount_amount,
-                                                        max_usage_count=referral_discount_settings.max_usage_count,
-                                                        minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
-                                                        discount_amount_limit=referral_discount_settings.discount_amount_limit,
-                                                        expiry_date=timezone.now() + timedelta(
-                                                            days=referral_discount_settings.validity_period),
-                                                        discount_type=referral_discount_settings.discount_type,
-                                                        coupon_code_type='RC',
-                                                        created_by=user_instance,
-                                                        created_on=timezone.now())
+            if referral_discount_settings.is_active:
+                referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                            name="Referral Coupon",
+                                                            discount_percent=referral_discount_settings.discount_percent,
+                                                            discount_amount=referral_discount_settings.discount_amount,
+                                                            max_usage_count=referral_discount_settings.max_usage_count,
+                                                            minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                            discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                            expiry_date=timezone.now() + timedelta(
+                                                                days=referral_discount_settings.validity_period),
+                                                            discount_type=referral_discount_settings.discount_type,
+                                                            coupon_code_type='RC',
+                                                            created_by=user_instance,
+                                                            created_on=timezone.now())
 
-        if not settings.DEBUG and referral_coupon.max_usage_count > 0:
+        if not settings.DEBUG and referral_coupon.max_usage_count > 0 and referral_discount_settings.is_active:
             async_task('coupon.tasks.send_coupon_sms',
                        referral_coupon,
                        user_instance.mobile_number)

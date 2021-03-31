@@ -92,19 +92,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             user.save()
 
             referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
-            coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                               name="Referral Coupon",
-                                               discount_percent=referral_discount_settings.discount_percent,
-                                               discount_amount=referral_discount_settings.discount_amount,
-                                               max_usage_count=referral_discount_settings.max_usage_count,
-                                               minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
-                                               discount_amount_limit=referral_discount_settings.discount_amount_limit,
-                                               expiry_date=timezone.now() + timedelta(
-                                                   days=referral_discount_settings.validity_period),
-                                               discount_type=referral_discount_settings.discount_type,
-                                               coupon_code_type='RC',
-                                               created_by=user,
-                                               created_on=timezone.now())
+            if referral_discount_settings.is_active:
+                coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                   name="Referral Coupon",
+                                                   discount_percent=referral_discount_settings.discount_percent,
+                                                   discount_amount=referral_discount_settings.discount_amount,
+                                                   max_usage_count=referral_discount_settings.max_usage_count,
+                                                   minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                   discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                   expiry_date=timezone.now() + timedelta(
+                                                       days=referral_discount_settings.validity_period),
+                                                   discount_type=referral_discount_settings.discount_type,
+                                                   coupon_code_type='RC',
+                                                   created_by=user,
+                                                   created_on=timezone.now())
 
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
             if gift_discount_settings.is_active:
@@ -128,9 +129,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                           created_on=timezone.now())
 
             if not settings.DEBUG:
-                async_task('coupon.tasks.send_coupon_sms',
-                           coupon,
-                           user.mobile_number)
+                if referral_discount_settings.is_active:
+                    async_task('coupon.tasks.send_coupon_sms',
+                               coupon,
+                               user.mobile_number)
                 if gift_discount_settings.is_active:
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,

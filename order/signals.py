@@ -41,28 +41,29 @@ def order_data_preprocessing(sender, instance, **kwargs):
             coupon = discount[0].coupon
             if coupon.coupon_code_type == 'RC':
                 discount_settings = CouponSettings.objects.get(coupon_type='DC')
-                new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                       name="Discount Coupon",
-                                                       discount_percent=discount_settings.discount_percent,
-                                                       discount_amount=discount_settings.discount_amount,
-                                                       max_usage_count=discount_settings.max_usage_count,
-                                                       minimum_purchase_limit=discount_settings.minimum_purchase_limit,
-                                                       discount_amount_limit=discount_settings.discount_amount_limit,
-                                                       expiry_date=timezone.now() + timedelta(
-                                                           days=discount_settings.validity_period),
-                                                       discount_type=discount_settings.discount_type,
-                                                       coupon_code_type='DC',
-                                                       created_by=instance.user,
-                                                       created_on=timezone.now())
-                CouponUser.objects.create(coupon_code=new_coupon,
-                                          created_for=coupon.created_by,
-                                          remaining_usage_count=1,
-                                          created_by=instance.user,
-                                          created_on=timezone.now())
-                if not settings.DEBUG:
-                    async_task('coupon.tasks.send_coupon_sms',
-                               new_coupon,
-                               coupon.created_by.mobile_number)
+                if discount_settings.is_active:
+                    new_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                           name="Discount Coupon",
+                                                           discount_percent=discount_settings.discount_percent,
+                                                           discount_amount=discount_settings.discount_amount,
+                                                           max_usage_count=discount_settings.max_usage_count,
+                                                           minimum_purchase_limit=discount_settings.minimum_purchase_limit,
+                                                           discount_amount_limit=discount_settings.discount_amount_limit,
+                                                           expiry_date=timezone.now() + timedelta(
+                                                               days=discount_settings.validity_period),
+                                                           discount_type=discount_settings.discount_type,
+                                                           coupon_code_type='DC',
+                                                           created_by=instance.user,
+                                                           created_on=timezone.now())
+                    CouponUser.objects.create(coupon_code=new_coupon,
+                                              created_for=coupon.created_by,
+                                              remaining_usage_count=1,
+                                              created_by=instance.user,
+                                              created_on=timezone.now())
+                    if not settings.DEBUG:
+                        async_task('coupon.tasks.send_coupon_sms',
+                                   new_coupon,
+                                   coupon.created_by.mobile_number)
 
         if instance.platform == 'WB':
             gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')

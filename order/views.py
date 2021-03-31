@@ -1,16 +1,19 @@
 import csv
 import uuid
+from datetime import timedelta
 
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from decouple import config
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils import timezone
+from django_q.tasks import async_task
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 
 from bases.views import coupon_checker
-from coupon.models import CouponUsageHistory
+from coupon.models import CouponUsageHistory, CouponCode, CouponSettings
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
     OrderDetailPaymentSerializer, TimeSlotSerializer
@@ -261,6 +264,32 @@ class OrderProductList(APIView):
             order_instance.total_vat = total_vat
             order_instance.order_total_price = product_total_price + total_vat + delivery_charge - coupon_discount
             order_instance.save()
+
+            referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
+                                                        created_by=order_instance.user).order_by('-created_on')
+            if referral_coupon:
+                referral_coupon = referral_coupon[0]
+                referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
+                if referral_coupon.expiry_date < timezone.now():
+                    if referral_discount_settings.is_active:
+                        referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                                    name="Referral Coupon",
+                                                                    discount_percent=referral_discount_settings.discount_percent,
+                                                                    discount_amount=referral_discount_settings.discount_amount,
+                                                                    max_usage_count=referral_discount_settings.max_usage_count,
+                                                                    minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                                    discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                                    expiry_date=timezone.now() + timedelta(
+                                                                        days=referral_discount_settings.validity_period),
+                                                                    discount_type=referral_discount_settings.discount_type,
+                                                                    coupon_code_type='RC',
+                                                                    created_by=order_instance.user,
+                                                                    created_on=timezone.now())
+
+                if not settings.DEBUG and referral_coupon.max_usage_count > 0 and referral_discount_settings.is_active:
+                    async_task('coupon.tasks.send_coupon_sms',
+                               referral_coupon,
+                               order_instance.user.mobile_number)
 
             invoice.discount_amount = (total_price_without_offer - product_total_price) + coupon_discount
             invoice.save()
