@@ -29,5 +29,9 @@ urlpatterns = [
     path('offers/delivery-charge', views.DeliveryChargeOfferList.as_view()),
 
     # coupon
-    path('coupon/verify-coupon', views.VerifyCoupon.as_view())
+    path('coupon/verify-coupon', views.VerifyCoupon.as_view()),
+
+    # user
+    path('users', views.UserList.as_view()),
+    path('users/<int:id>', views.UserDetail.as_view())
 ]

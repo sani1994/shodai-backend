@@ -225,3 +225,20 @@ class DeliveryChargeOfferSerializer(serializers.ModelSerializer):
             return cart_offer[0].updated_delivery_charge
         else:
             return None
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ["id", "name", "mobile_number", "email", "created_on", "is_approved"]
+
+    def get_name(self, obj):
+        if obj.first_name and obj.last_name:
+            customer_name = obj.first_name + " " + obj.last_name
+        elif obj.first_name:
+            customer_name = obj.first_name
+        else:
+            customer_name = ""
+        return customer_name

@@ -5,10 +5,10 @@ from random import randint
 
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
-from django.db import IntegrityError
 from django.conf import settings
 from django.core.validators import validate_email
-from django.http import JsonResponse, HttpResponse
+from django.db.models import Q
+from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.crypto import get_random_string
@@ -17,7 +17,6 @@ from num2words import num2words
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 from bases.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker, \
     keyword_based_search
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
@@ -25,10 +24,10 @@ from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
 from product.models import Product
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
-    ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer
-from shodai.utils.helper import get_user_object
-from shodai.utils.permission import AdminAuth, IsAdminUserQP
-from userProfile.models import UserProfile, BlackListedToken, Address
+    ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
+    UserProfileSerializer
+from shodai.utils.permission import IsAdminUserQP
+from userProfile.models import UserProfile, Address
 
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
@@ -45,80 +44,6 @@ all_order_status = {
     'Order Completed': 'COM',
     'Order Cancelled': 'CN'
 }
-
-
-class AdminLogin(APIView):
-
-    def post(self, request):
-        data = request.data
-        if 'mobile_number' or 'password' not in data:
-            return JsonResponse({
-                "status": "failed",
-                "message": "Invalid request!",
-                "status_code": status.HTTP_400_BAD_REQUEST,
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        if 'mobile_number' in data:
-            try:
-                user = UserProfile.objects.get(mobile_number=request.data['mobile_number'])
-            except UserProfile.DoesNotExist:
-                user = None
-
-        if user is None:
-            return JsonResponse({
-                "message": "User does not exist!",
-                "status": False,
-                "status_code": status.HTTP_203_NON_AUTHORITATIVE_INFORMATION,
-            }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        else:
-            if user.check_password(request.data['password']):
-                if user.is_staff:
-                    refresh = RefreshToken.for_user(user)
-                    return JsonResponse({
-                        "message": "success",
-                        "status": True,
-                        "user_type": user.user_type,
-                        "user_id": user.id,
-                        "username": user.username,
-                        'refresh_token': str(refresh),
-                        'access_token': str(refresh.access_token),
-                        "status_code": status.HTTP_202_ACCEPTED,
-                    }, status=status.HTTP_202_ACCEPTED)
-                else:
-                    return JsonResponse({
-                        "message": "Unauthorized access!",
-                        "status": False,
-                        "status_code": status.HTTP_203_NON_AUTHORITATIVE_INFORMATION,
-                    }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-            else:
-                return JsonResponse({
-                    "message": "Password did not match!",
-                    "status": False,
-                    "status_code": status.HTTP_203_NON_AUTHORITATIVE_INFORMATION,
-                }, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-
-
-class AdminLogout(APIView):
-    permission_classes = [AdminAuth]
-
-    def post(self, request):
-        user = get_user_object(username=request.user.username)
-        try:
-            BlackListedToken.objects.create(
-                token=request.headers['Authorization'].split(' ')[1],
-                user=user)
-        except IntegrityError:
-            return JsonResponse({
-                "status": "failed",
-                "message": "Invalid or expired token!",
-                "status_code": status.HTTP_401_UNAUTHORIZED
-            })
-        finally:
-            return JsonResponse({
-                "status": "success",
-                "message": "successfully logged out!",
-                "status_code": status.HTTP_200_OK
-            }, status=status.HTTP_200_OK)
 
 
 class AdminUserProfile(APIView):
@@ -1307,3 +1232,39 @@ class VerifyCoupon(APIView):
             msg = "Total price must be {} or more.".format(coupon.minimum_purchase_limit)
             return Response({'status': 'failed',
                              'message': msg}, status=status.HTTP_200_OK)
+
+
+class UserList(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        search = request.query_params.get('search')
+        sort_type = request.query_params.get('sort_type', 'dsc')
+        sort_by = 'created_on'
+        if sort_type != 'asc':
+            sort_by = '-' + sort_by
+
+        if search:
+            if search.startswith("01") and len(search) == 11:
+                queryset = UserProfile.objects.filter(mobile_number='+88' + search).order_by(sort_by)
+            else:
+                queryset = UserProfile.objects.filter(Q(first_name__icontains=search) |
+                                                      Q(last_name__icontains=search)).order_by(sort_by)
+        else:
+            queryset = UserProfile.objects.all().order_by(sort_by)
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = UserProfileSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
+
+class UserDetail(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get User Details
+    """
+
+    def get(self, request, id):
+        user = get_object_or_404(UserProfile, id=id)
+        serializer = UserProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
