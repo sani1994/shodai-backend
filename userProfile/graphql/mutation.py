@@ -122,6 +122,10 @@ class UserCreateMutation(graphene.Mutation):
                                                    coupon_code_type='RC',
                                                    created_by=user_instance,
                                                    created_on=timezone.now())
+                if not settings.DEBUG:
+                    async_task('coupon.tasks.send_coupon_sms',
+                               coupon,
+                               user_instance.mobile_number)
 
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
             if gift_discount_settings.is_active:
@@ -143,17 +147,12 @@ class UserCreateMutation(graphene.Mutation):
                                           remaining_usage_count=1,
                                           created_by=user_instance,
                                           created_on=timezone.now())
-
-            if not settings.DEBUG:
-                if referral_discount_settings.is_active:
-                    async_task('coupon.tasks.send_coupon_sms',
-                               coupon,
-                               user_instance.mobile_number)
-                if gift_discount_settings.is_active:
+                if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,
                                user_instance.mobile_number)
 
+            if not settings.DEBUG:
                 otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
                     user_instance.verification_code))
             else:

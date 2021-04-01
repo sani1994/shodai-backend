@@ -265,13 +265,13 @@ class OrderProductList(APIView):
             order_instance.order_total_price = product_total_price + total_vat + delivery_charge - coupon_discount
             order_instance.save()
 
-            referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
-                                                        created_by=order_instance.user).order_by('-created_on')
-            if referral_coupon:
-                referral_coupon = referral_coupon[0]
-                referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
-                if referral_coupon.expiry_date < timezone.now():
-                    if referral_discount_settings.is_active:
+            referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
+            if referral_discount_settings.is_active:
+                referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
+                                                            created_by=order_instance.user).order_by('-created_on')
+                if referral_coupon:
+                    referral_coupon = referral_coupon[0]
+                    if referral_coupon.expiry_date < timezone.now():
                         referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
                                                                     name="Referral Coupon",
                                                                     discount_percent=referral_discount_settings.discount_percent,
@@ -286,10 +286,10 @@ class OrderProductList(APIView):
                                                                     created_by=order_instance.user,
                                                                     created_on=timezone.now())
 
-                if not settings.DEBUG and referral_coupon.max_usage_count > 0 and referral_discount_settings.is_active:
-                    async_task('coupon.tasks.send_coupon_sms',
-                               referral_coupon,
-                               order_instance.user.mobile_number)
+                    if not settings.DEBUG and referral_coupon.max_usage_count > 0:
+                        async_task('coupon.tasks.send_coupon_sms',
+                                   referral_coupon,
+                                   order_instance.user.mobile_number)
 
             invoice.discount_amount = (total_price_without_offer - product_total_price) + coupon_discount
             invoice.save()
