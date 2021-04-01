@@ -18,7 +18,8 @@ from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from bases.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
+from bases.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker, \
+    keyword_based_search
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
@@ -941,7 +942,7 @@ class ProductSearch(APIView):
 
     def get(self, request):
         query = request.query_params.get('query', '')
-        product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:20]
+        product = keyword_based_search(Product, query, ['product_name'], {'is_approved': True})[:50]
         serializer = ProductSearchSerializer(product, many=True)
         if serializer:
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)

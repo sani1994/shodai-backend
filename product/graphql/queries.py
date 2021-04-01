@@ -4,6 +4,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
+from bases.views import keyword_based_search
 from offer.models import OfferProduct
 from ..models import Product, ProductCategory, ShopCategory, ProductMeta
 from utility.models import ProductUnit
@@ -79,7 +80,8 @@ class ProductConnection(relay.Connection):
 class Query(graphene.ObjectType):
     products_by_category = relay.ConnectionField(ProductConnection, category=graphene.Int())
     products_by_meta = relay.ConnectionField(ProductConnection, meta_id=graphene.Int())
-    search_product = DjangoFilterConnectionField(ProductNode)
+    search_product = relay.ConnectionField(ProductConnection, search=graphene.String())
+    # search_product = DjangoFilterConnectionField(ProductNode)
     all_products_pagination = relay.ConnectionField(ProductConnection)
     all_products = graphene.List(ProductType)
     product_by_id = relay.Node.Field(ProductNode)
@@ -135,3 +137,7 @@ class Query(graphene.ObjectType):
 
     def resolve_recently_added_product_list(self, info):
         return Product.objects.filter(is_approved=True).order_by('-created_on')[:20]
+
+    def resolve_search_product(self, info, **kwargs):
+        query = kwargs.get('search')
+        return keyword_based_search(Product, query, ['product_name'], {'is_approved': True})

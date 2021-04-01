@@ -1,4 +1,5 @@
 from decouple import config
+from django.db.models import Q
 from django.utils import timezone
 from graphql_relay.utils import unbase64
 from rest_framework.pagination import PageNumberPagination
@@ -49,6 +50,21 @@ def from_global_id(global_id):
     unbased_global_id = unbase64(global_id)
     _type, _id = unbased_global_id.split(':', 1)
     return _id
+
+
+def keyword_based_search(model, keywords, search_fields, additional_query=None):
+    keyword_query = None
+    for keyword in keywords.split(' '):
+        for field in search_fields:
+            each_query = Q(**{field+'__icontains': keyword})
+            if not keyword_query:
+                keyword_query = each_query
+            else:
+                keyword_query = keyword_query | each_query
+    if additional_query:
+        keyword_query = keyword_query & Q(**additional_query)
+    result_set = model.objects.filter(keyword_query).distinct()
+    return result_set
 
 
 def coupon_checker(coupon_code, products, user, is_graphql=False, is_used=False):
