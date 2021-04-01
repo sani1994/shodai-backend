@@ -81,7 +81,8 @@ class CouponUsageHistoryAdmin(MaterialModelAdmin):
 
 
 class CouponSettingsAdmin(MaterialModelAdmin):
-    list_display = ['coupon_type', 'discount_percent', 'discount_amount', 'validity_period']
+    list_display = ['coupon_type', 'discount_percent', 'discount_amount',
+                    'validity_period', 'is_active']
 
     fieldsets = (
         ('Coupon Detail View', {
