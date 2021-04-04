@@ -1,19 +1,16 @@
 import uuid
 from datetime import timedelta
-
-from decouple import config
-from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from django_q.tasks import async_task
 from httplib2 import Response
+from numpy.random.mtrand import randint
 
 from coupon.models import CouponCode, CouponSettings, CouponUser
 from shodai import settings
 from userProfile.models import UserProfile, Address
 from rest_framework import serializers
 
-from utility.notification import email_notification, send_sms
+from utility.notification import email_notification
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -85,7 +82,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             email=validated_data['email'],
-            username=validated_data['mobile_number']
+            username=validated_data['mobile_number'],
+            verification_code=randint(100000, 999999),
+            code_valid_till=timezone.now() + timedelta(minutes=5)
         )
         if user:
             user.set_password(validated_data['password'])

@@ -688,6 +688,7 @@ class CreateOrder(APIView):
                                                        user_type="CM",
                                                        created_on=timezone.now(),
                                                        verification_code=randint(100000, 999999),
+                                                       code_valid_till=timezone.now() + timedelta(minutes=5),
                                                        is_approved=True)
             temp_password = get_random_string(length=6)
             user_instance.set_password(temp_password)

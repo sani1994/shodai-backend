@@ -19,7 +19,18 @@ class UserProfileAdmin(MaterialModelAdmin):
     icon_name = 'face'
     list_display = ('mobile_number', 'user_type', 'first_name', 'last_name', 'is_approved')
     exclude = ['password', ]
+    readonly_fields = ['created_on', 'modified_on', 'date_joined', 'last_login']
     search_fields = ['mobile_number', 'first_name', 'last_name']
+    fieldsets = (
+        ('User Detail View', {
+            'fields': (
+                'mobile_number', 'first_name', 'last_name', 'email', 'is_superuser', 'groups',
+                'user_permissions', 'is_staff', 'is_active', 'user_NID', 'user_type',
+                'verification_code', 'code_valid_till', 'pin_verified', 'date_joined',
+                'last_login', 'created_on', 'modified_on', 'is_approved', 'is_customer'
+                )
+        }),
+    )
 
     def has_add_permission(self, request, obj=None):
         return False

@@ -48,7 +48,7 @@ class UserProfile(AbstractUser):
     is_sales = models.BooleanField(default=False)
     is_delivery = models.BooleanField(default=False)
     is_third_party = models.BooleanField(default=False)
-    verification_code = models.CharField(max_length=6, null=True)
+    verification_code = models.CharField(max_length=6, blank=True, null=True)
     code_valid_till = models.DateTimeField(blank=True, null=True)
     pin_verified = models.BooleanField(default=False)
     history = HistoricalRecords()

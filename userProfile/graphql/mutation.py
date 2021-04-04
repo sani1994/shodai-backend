@@ -99,10 +99,10 @@ class UserCreateMutation(graphene.Mutation):
                                         created_on=timezone.now(),
                                         modified_on=timezone.now(),
                                         code_valid_till=timezone.now() + timedelta(minutes=5),
-                                        verification_code=randint(100000, 999999)
-                                        )
+                                        verification_code=randint(100000, 999999),
+                                        is_approved=True,
+                                        is_customer=True)
             user_instance.set_password(input.password)
-            user_instance.is_approved = True
             user_instance.save()
             token = get_token(user_instance)
             refresh_token = create_refresh_token(user_instance)
