@@ -229,10 +229,12 @@ class DeliveryChargeOfferSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(read_only=True)
+    orders = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserProfile
-        fields = ["id", "name", "mobile_number", "email", "created_on", "is_approved"]
+        fields = ["id", "name", "mobile_number", "email", "created_on",
+                  "is_approved", "orders"]
 
     def get_name(self, obj):
         if obj.first_name and obj.last_name:
@@ -242,3 +244,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         else:
             customer_name = ""
         return customer_name
+
+    def get_orders(self, obj):
+        return Order.objects.filter(user=obj).count()

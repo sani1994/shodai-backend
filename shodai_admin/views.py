@@ -1,3 +1,4 @@
+import csv
 import math
 import uuid
 from datetime import datetime, timedelta
@@ -34,6 +35,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
+from utility.notification import send_sms
 from utility.pdf import render_to_pdf
 
 all_order_status = {
@@ -1268,3 +1270,50 @@ class UserDetail(APIView):
         user = get_object_or_404(UserProfile, id=id)
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserListDownloadCSV(APIView):
+    permission_classes = [IsAdminUserQP]
+    """
+    Get CSV of Users
+    """
+
+    def get(self, request):
+        queryset = UserProfile.objects.all().order_by('-created_on')
+
+        field_names = ["id", "first_name", "last_name", "mobile_number", "email",
+                       "created_on", "is_approved"]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=userList.csv'
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for user in queryset:
+            writer.writerow([getattr(user, field) for field in field_names])
+        return response
+
+
+class ResetPassword(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        mobile_number = request.data['mobile_number']
+        user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
+        temp_password = get_random_string(length=6)
+        if not settings.DEBUG:
+            sms_body = f"Dear Customer,\n" \
+                       "We have created a new password [{}] ".format(temp_password) + \
+                       "based on your reset password request." \
+                       "Please change your password after login.\n\n" + \
+                       "www.shod.ai"
+            sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
+            if sms_flag == 'success':
+                user_instance.set_password(temp_password)
+                user_instance.save()
+                return Response({'status': 'success',
+                                 'msg': "Message Sent Successfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response({'status': 'failed',
+                                 'msg': "An error occurred while sending the sms"},
+                                status=status.HTTP_200_OK)

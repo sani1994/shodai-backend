@@ -33,5 +33,7 @@ urlpatterns = [
 
     # user
     path('users', views.UserList.as_view()),
-    path('users/<int:id>', views.UserDetail.as_view())
+    path('users/<int:id>', views.UserDetail.as_view()),
+    path('users/download/csv', views.UserListDownloadCSV.as_view()),
+    path('users/reset-password', views.ResetPassword.as_view()),
 ]
