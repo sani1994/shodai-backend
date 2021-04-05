@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django_q.tasks import async_task
 from httplib2 import Response
-from numpy.random.mtrand import randint
+from random import randint
 
 from coupon.models import CouponCode, CouponSettings, CouponUser
 from shodai import settings

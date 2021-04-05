@@ -1286,7 +1286,7 @@ class UserListDownloadCSV(APIView):
                        "created_on", "is_approved"]
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=userList.csv'
+        response['Content-Disposition'] = 'attachment; filename=user_list.csv'
         writer = csv.writer(response)
 
         writer.writerow(field_names)
@@ -1303,18 +1303,18 @@ class ResetPassword(APIView):
         user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
         temp_password = get_random_string(length=6)
         if not settings.DEBUG:
-            sms_body = f"Dear Customer,\n" \
+            sms_body = "Dear Customer,\n" + \
                        "We have created a new password [{}] ".format(temp_password) + \
-                       "based on your reset password request." \
+                       "based on your reset password request. " + \
                        "Please change your password after login.\n\n" + \
                        "www.shod.ai"
-            sms_flag = send_sms(mobile_number=user_instance.mobile_number, sms_content=sms_body)
+            sms_flag = send_sms(user_instance.mobile_number, sms_body)
             if sms_flag == 'success':
                 user_instance.set_password(temp_password)
                 user_instance.save()
                 return Response({'status': 'success',
-                                 'msg': "Message Sent Successfully"}, status=status.HTTP_200_OK)
+                                 'message': "Password reset successful."}, status=status.HTTP_200_OK)
             else:
                 return Response({'status': 'failed',
-                                 'msg': "An error occurred while sending the sms"},
+                                 'message': "An error occurred while sending the sms."},
                                 status=status.HTTP_200_OK)
