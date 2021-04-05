@@ -103,8 +103,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                        days=referral_discount_settings.validity_period),
                                                    discount_type=referral_discount_settings.discount_type,
                                                    coupon_code_type='RC',
-                                                   created_by=user,
-                                                   created_on=timezone.now())
+                                                   created_by=user)
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms',
                                coupon,
@@ -123,13 +122,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                                             days=gift_discount_settings.validity_period),
                                                         discount_type=gift_discount_settings.discount_type,
                                                         coupon_code_type='GC1',
-                                                        created_by=user,
-                                                        created_on=timezone.now())
+                                                        created_by=user)
                 CouponUser.objects.create(coupon_code=gift_coupon,
                                           created_for=user,
                                           remaining_usage_count=1,
-                                          created_by=user,
-                                          created_on=timezone.now())
+                                          created_by=user)
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,

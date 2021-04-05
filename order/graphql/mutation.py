@@ -111,6 +111,7 @@ class CreateOrder(graphene.Mutation):
                                                       created_by=user,
                                                       platform="WB",
                                                       delivery_date_time=input.delivery_date_time,
+                                                      placing_date=timezone.now(),
                                                       delivery_place=input.delivery_place,
                                                       lat=input.lat,
                                                       long=input.long,
@@ -170,8 +171,7 @@ class CreateOrder(graphene.Mutation):
                                                                             days=referral_discount_settings.validity_period),
                                                                         discount_type=referral_discount_settings.discount_type,
                                                                         coupon_code_type='RC',
-                                                                        created_by=order_instance.user,
-                                                                        created_on=timezone.now())
+                                                                        created_by=order_instance.user)
 
                         if not settings.DEBUG and referral_coupon.max_usage_count > 0:
                             async_task('coupon.tasks.send_coupon_sms',
@@ -216,8 +216,7 @@ class CreateOrder(graphene.Mutation):
                                                       coupon_code=coupon.coupon_code,
                                                       coupon_user=is_using,
                                                       invoice_number=invoice,
-                                                      created_by=user,
-                                                      created_on=timezone.now())
+                                                      created_by=user)
 
                 return CreateOrder(order=order_instance)
             else:

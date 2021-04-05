@@ -26,6 +26,7 @@ class Order(BaseModel):
     bill_id = models.CharField(max_length=100, null=True, blank=True, unique=True, )
     currency = models.CharField(max_length=3, blank=True, default='BDT')
     delivery_date_time = models.DateTimeField()
+    placing_date = models.DateTimeField(null=True, blank=True)
     delivery_place = models.CharField(max_length=100)
     total_vat = models.FloatField(default=0)  # storing total vat on products
     order_total_price = models.FloatField(default=0)  # storing price+vat+delivery_charge

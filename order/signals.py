@@ -53,13 +53,11 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                                                days=discount_settings.validity_period),
                                                            discount_type=discount_settings.discount_type,
                                                            coupon_code_type='DC',
-                                                           created_by=instance.user,
-                                                           created_on=timezone.now())
+                                                           created_by=instance.user)
                     CouponUser.objects.create(coupon_code=new_coupon,
                                               created_for=coupon.created_by,
                                               remaining_usage_count=1,
-                                              created_by=instance.user,
-                                              created_on=timezone.now())
+                                              created_by=instance.user)
                     if not settings.DEBUG:
                         async_task('coupon.tasks.send_coupon_sms',
                                    new_coupon,
@@ -79,8 +77,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                                             days=gift_coupon_settings.validity_period),
                                                         discount_type=gift_coupon_settings.discount_type,
                                                         coupon_code_type='GC2',
-                                                        created_by=instance.user,
-                                                        created_on=timezone.now())
+                                                        created_by=instance.user)
                 CouponUser.objects.create(coupon_code=gift_coupon,
                                           created_for=instance.user,
                                           remaining_usage_count=1,

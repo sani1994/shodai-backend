@@ -120,8 +120,7 @@ class UserCreateMutation(graphene.Mutation):
                                                        days=referral_discount_settings.validity_period),
                                                    discount_type=referral_discount_settings.discount_type,
                                                    coupon_code_type='RC',
-                                                   created_by=user_instance,
-                                                   created_on=timezone.now())
+                                                   created_by=user_instance)
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms',
                                coupon,

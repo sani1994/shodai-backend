@@ -37,10 +37,11 @@ class OrderListSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
     customer_mobile_number = serializers.SerializerMethodField()
     order_status = serializers.SerializerMethodField()
+    last_updated = serializers.StringRelatedField(source='created_on')
 
     class Meta:
         model = Order
-        fields = ["id", "order_number", "created_on", "order_total_price",
+        fields = ["id", "order_number", "placing_date", "last_updated", "order_total_price",
                   "customer_name", "customer_mobile_number", "order_status"]
         read_only_fields = ["customer_name", "customer_mobile_number", "order_status"]
 

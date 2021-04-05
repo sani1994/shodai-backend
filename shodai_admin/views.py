@@ -424,6 +424,7 @@ class OrderDetail(APIView):
                 order.save()
 
                 order = Order.objects.create(user=order.user,
+                                             placing_date=order.placing_date,
                                              platform=order.platform,
                                              order_number=order_number,
                                              delivery_date_time=delivery_date_time,
@@ -707,13 +708,11 @@ class CreateOrder(APIView):
                                                             days=gift_discount_settings.validity_period),
                                                         discount_type=gift_discount_settings.discount_type,
                                                         coupon_code_type='GC1',
-                                                        created_by=user_instance,
-                                                        created_on=timezone.now())
+                                                        created_by=user_instance)
                 CouponUser.objects.create(coupon_code=gift_coupon,
                                           created_for=user_instance,
                                           remaining_usage_count=1,
-                                          created_by=user_instance,
-                                          created_on=timezone.now())
+                                          created_by=user_instance)
 
             if not settings.DEBUG:
                 sms_body = "Dear Customer,\n" + \
@@ -742,6 +741,7 @@ class CreateOrder(APIView):
         order_instance = Order.objects.create(user=user_instance,
                                               platform="AD",
                                               delivery_date_time=delivery_date_time,
+                                              placing_date=timezone.now(),
                                               delivery_place="Dhaka",
                                               lat=23.7733,
                                               long=90.3548,
@@ -799,8 +799,7 @@ class CreateOrder(APIView):
                                                                 days=referral_discount_settings.validity_period),
                                                             discount_type=referral_discount_settings.discount_type,
                                                             coupon_code_type='RC',
-                                                            created_by=user_instance,
-                                                            created_on=timezone.now())
+                                                            created_by=user_instance)
 
             if not settings.DEBUG and referral_coupon.max_usage_count > 0:
                 async_task('coupon.tasks.send_coupon_sms',
@@ -849,8 +848,7 @@ class CreateOrder(APIView):
                                               coupon_code=coupon.coupon_code,
                                               coupon_user=is_using,
                                               invoice_number=invoice,
-                                              created_by=user_instance,
-                                              created_on=timezone.now())
+                                              created_by=user_instance)
         if additional_discount:
             DiscountInfo.objects.create(discount_amount=additional_discount,
                                         discount_type='AD',

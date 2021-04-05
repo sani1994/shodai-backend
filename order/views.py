@@ -120,6 +120,7 @@ class OrderList(APIView):
                 order_instance.address = delivery_address
                 order_instance.delivery_place = "Dhaka"
                 order_instance.platform = "APP",
+                order_instance.placing_date = timezone.now()
                 order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
@@ -283,8 +284,7 @@ class OrderProductList(APIView):
                                                                         days=referral_discount_settings.validity_period),
                                                                     discount_type=referral_discount_settings.discount_type,
                                                                     coupon_code_type='RC',
-                                                                    created_by=order_instance.user,
-                                                                    created_on=timezone.now())
+                                                                    created_by=order_instance.user)
 
                     if not settings.DEBUG and referral_coupon.max_usage_count > 0:
                         async_task('coupon.tasks.send_coupon_sms',
