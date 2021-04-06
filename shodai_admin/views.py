@@ -424,7 +424,7 @@ class OrderDetail(APIView):
                 order.save()
 
                 order = Order.objects.create(user=order.user,
-                                             placing_date=order.placing_date,
+                                             placed_on=order.placed_on,
                                              platform=order.platform,
                                              order_number=order_number,
                                              delivery_date_time=delivery_date_time,
@@ -741,7 +741,7 @@ class CreateOrder(APIView):
         order_instance = Order.objects.create(user=user_instance,
                                               platform="AD",
                                               delivery_date_time=delivery_date_time,
-                                              placing_date=timezone.now(),
+                                              placed_on=timezone.now(),
                                               delivery_place="Dhaka",
                                               lat=23.7733,
                                               long=90.3548,
