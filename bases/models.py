@@ -2,8 +2,6 @@ from django.db import models
 from userProfile.models import UserProfile
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from django.core import signals
-from django.db import utils
 
 
 # Create your models here.

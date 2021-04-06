@@ -183,7 +183,7 @@ class OrderList(APIView):
         search = request.query_params.get('search')
         sort_by = request.query_params.get('sort_by', '')
         sort_type = request.query_params.get('sort_type', 'dsc')
-        date_from = request.query_params.get('date_from', Order.objects.first().created_on)
+        date_from = request.query_params.get('date_from', Order.objects.first().placed_on)
         date_to = request.query_params.get('date_to', timezone.now())
         order_status = all_order_status.get(request.query_params.get('order_status'))
         if not getattr(Order, sort_by, False):
@@ -194,7 +194,7 @@ class OrderList(APIView):
             try:
                 date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
             except Exception:
-                date_from = Order.objects.first().created_on
+                date_from = Order.objects.first().placed_on
         if isinstance(date_to, str):
             try:
                 date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
@@ -204,31 +204,31 @@ class OrderList(APIView):
             if search.startswith("01") and len(search) == 11:
                 queryset = Order.objects.filter(order_status=order_status,
                                                 user__mobile_number='+88' + search,
-                                                created_on__gte=date_from,
-                                                created_on__lt=date_to).order_by(sort_by)
+                                                placed_on__gte=date_from,
+                                                placed_on__lt=date_to).order_by(sort_by)
             else:
                 queryset = Order.objects.filter(order_status=order_status,
                                                 order_number__icontains=search,
-                                                created_on__gte=date_from,
-                                                created_on__lt=date_to).order_by(sort_by)
+                                                placed_on__gte=date_from,
+                                                placed_on__lt=date_to).order_by(sort_by)
 
         elif search and not order_status:
             if search.startswith("01") and len(search) == 11:
                 queryset = Order.objects.filter(user__mobile_number='+88' + search,
-                                                created_on__gte=date_from,
-                                                created_on__lt=date_to).order_by(sort_by)
+                                                placed_on__gte=date_from,
+                                                placed_on__lt=date_to).order_by(sort_by)
             else:
                 queryset = Order.objects.filter(order_number__icontains=search,
-                                                created_on__gte=date_from,
-                                                created_on__lt=date_to).order_by(sort_by)
+                                                placed_on__gte=date_from,
+                                                placed_on__lt=date_to).order_by(sort_by)
 
         elif not search and order_status:
             queryset = Order.objects.filter(order_status=order_status,
-                                            created_on__gte=date_from,
-                                            created_on__lt=date_to).order_by(sort_by)
+                                            placed_on__gte=date_from,
+                                            placed_on__lt=date_to).order_by(sort_by)
         else:
-            queryset = Order.objects.filter(created_on__gte=date_from,
-                                            created_on__lt=date_to).order_by(sort_by)
+            queryset = Order.objects.filter(placed_on__gte=date_from,
+                                            placed_on__lt=date_to).order_by(sort_by)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = OrderListSerializer(result_page, many=True, context={'request': request})
@@ -1289,7 +1289,7 @@ class UserListDownloadCSV(APIView):
 
         writer.writerow(field_names)
         for user in queryset:
-            writer.writerow([getattr(user, field) for field in field_names])
+            writer.writerow([getattr(user, field).date() if field == 'created_on' else getattr(user, field) for field in field_names])
         return response
 
 
@@ -1326,7 +1326,7 @@ class OrderProductListCSV(APIView):
     permission_classes = [IsAdminUserQP]
 
     def get(self, request):
-        date_from = request.query_params.get('date_from', Order.objects.first().created_on)
+        date_from = request.query_params.get('date_from', Order.objects.first().placed_on)
         date_to = request.query_params.get('date_to', timezone.now())
         delivery_date_from = request.query_params.get('date_from', Order.objects.first().delivery_date_time)
         delivery_date_to = request.query_params.get('date_to', timezone.now())
@@ -1338,7 +1338,7 @@ class OrderProductListCSV(APIView):
             try:
                 date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
             except Exception:
-                date_from = Order.objects.first().created_on
+                date_from = Order.objects.first().placed_on
         if isinstance(date_to, str):
             try:
                 date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
@@ -1360,16 +1360,16 @@ class OrderProductListCSV(APIView):
             if product_meta and order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__order_status=order_status,
-                                                       order__created_on__gte=date_from,
-                                                       order__created_on__lt=date_to,
+                                                       order__placed_on__gte=date_from,
+                                                       order__placed_on__lt=date_to,
                                                        order__delivery_date_time__gte=delivery_date_from,
                                                        order__delivery_date_time__lt=delivery_date_to
                                                        ).order_by('product_id')
 
             elif product_meta and not order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
-                                                       order__created_on__gte=date_from,
-                                                       order__created_on__lt=date_to,
+                                                       order__placed_on__gte=date_from,
+                                                       order__placed_on__lt=date_to,
                                                        order__delivery_date_time__gte=delivery_date_from,
                                                        order__delivery_date_time__lt=delivery_date_to).order_by(
                     'product_id')
@@ -1378,30 +1378,30 @@ class OrderProductListCSV(APIView):
                 queryset = OrderProduct.objects.filter(
                     product__product_meta__product_category__type_of_product=product_category,
                     order__order_status=order_status,
-                    order__created_on__gte=date_from,
-                    order__created_on__lt=date_to,
+                    order__placed_on__gte=date_from,
+                    order__placed_on__lt=date_to,
                     order__delivery_date_time__gte=delivery_date_from,
                     order__delivery_date_time__lt=delivery_date_to).order_by(
                     'product_id')
             else:
                 queryset = OrderProduct.objects.filter(
                     product__product_meta__product_category__type_of_product=product_category,
-                    order__created_on__gte=date_from,
-                    order__created_on__lt=date_to,
+                    order__placed_on__gte=date_from,
+                    order__placed_on__lt=date_to,
                     order__delivery_date_time__gte=delivery_date_from,
                     order__delivery_date_time__lt=delivery_date_to).order_by(
                     'product_id')
         else:
             if order_status:
                 queryset = OrderProduct.objects.filter(order__order_status=order_status,
-                                                       order__created_on__gte=date_from,
-                                                       order__created_on__lt=date_to,
+                                                       order__placed_on__gte=date_from,
+                                                       order__placed_on__lt=date_to,
                                                        order__delivery_date_time__gte=delivery_date_from,
                                                        order__delivery_date_time__lt=delivery_date_to).order_by(
                     'product_id')
             else:
-                queryset = OrderProduct.objects.filter(order__created_on__gte=date_from,
-                                                       order__created_on__lt=date_to,
+                queryset = OrderProduct.objects.filter(order__placed_on__gte=date_from,
+                                                       order__placed_on__lt=date_to,
                                                        order__delivery_date_time__gte=delivery_date_from,
                                                        order__delivery_date_time__lt=delivery_date_to).order_by(
                     'product_id')

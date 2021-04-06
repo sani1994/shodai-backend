@@ -1,6 +1,9 @@
 import graphene
+from django.db.models import Q
+from django.utils import timezone
 
 from bases.views import checkAuthentication, coupon_checker
+from coupon.models import CouponCode, CouponUser
 
 
 class ProductListInput(graphene.InputObjectType):
@@ -42,5 +45,30 @@ class ApplyCoupon(graphene.Mutation):
                 return ApplyCoupon(status=False, msg=msg)
 
 
+class CouponCount(graphene.Mutation):
+    status = graphene.Boolean()
+    count = graphene.Int()
+
+    @staticmethod
+    def mutate(root, info, input=None):
+        user = info.context.user
+        if checkAuthentication(user, info):
+            all_coupons = CouponCode.objects.filter(Q(coupon_code_type='DC') |
+                                                    Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
+                                                    expiry_date__gte=timezone.now(),
+                                                    max_usage_count__gt=0,
+                                                    discount_code__in=CouponUser.objects.filter(
+                                                        created_for=user))
+            count = all_coupons.count()
+            if count > 0:
+                return CouponCount(status=True,
+                                   count=count)
+            else:
+                return CouponCount(status=False,
+                                   count=0)
+
+
+
 class Mutation(graphene.ObjectType):
     apply_coupon = ApplyCoupon.Field()
+    coupon_count = CouponCount.Field()
