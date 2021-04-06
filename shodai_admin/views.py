@@ -23,10 +23,10 @@ from bases.views import CustomPageNumberPagination, field_validation, type_valid
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
-from product.models import Product
+from product.models import Product, ProductCategory, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
-    UserProfileSerializer
+    UserProfileSerializer, ProductCategorySerializer, ProductMetaSerializer
 from shodai.utils.permission import IsAdminUserQP
 from userProfile.models import UserProfile, Address
 
@@ -1316,3 +1316,136 @@ class ResetPassword(APIView):
                 return Response({'status': 'failed',
                                  'message': "An error occurred while sending the sms."},
                                 status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'failed',
+                             'message': "Currently the server is not allowed to send sms."},
+                            status=status.HTTP_200_OK)
+
+
+class OrderProductListCSV(APIView):
+    permission_classes = [IsAdminUserQP]
+
+    def get(self, request):
+        date_from = request.query_params.get('date_from', Order.objects.first().created_on)
+        date_to = request.query_params.get('date_to', timezone.now())
+        delivery_date_from = request.query_params.get('date_from', Order.objects.first().delivery_date_time)
+        delivery_date_to = request.query_params.get('date_to', timezone.now())
+        order_status = all_order_status.get(request.query_params.get('order_status'))
+        product_category = request.query_params.get('product_category')
+        product_meta = request.query_params.get('product_meta')
+
+        if isinstance(date_from, str):
+            try:
+                date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
+            except Exception:
+                date_from = Order.objects.first().created_on
+        if isinstance(date_to, str):
+            try:
+                date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
+            except Exception:
+                date_to = timezone.now()
+        if isinstance(delivery_date_from, str):
+            try:
+                delivery_date_from = timezone.make_aware(datetime.strptime(delivery_date_from, "%Y-%m-%d"))
+            except Exception:
+                delivery_date_from = Order.objects.first().delivery_date_time
+        if isinstance(delivery_date_to, str):
+            try:
+                delivery_date_to = timezone.make_aware(
+                    datetime.strptime(delivery_date_to, "%Y-%m-%d") + timedelta(days=1))
+            except Exception:
+                delivery_date_to = timezone.now()
+
+        if product_category:
+            if product_meta and order_status:
+                queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
+                                                       order__order_status=order_status,
+                                                       order__created_on__gte=date_from,
+                                                       order__created_on__lt=date_to,
+                                                       order__delivery_date_time__gte=delivery_date_from,
+                                                       order__delivery_date_time__lt=delivery_date_to
+                                                       ).order_by('product_id')
+
+            elif product_meta and not order_status:
+                queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
+                                                       order__created_on__gte=date_from,
+                                                       order__created_on__lt=date_to,
+                                                       order__delivery_date_time__gte=delivery_date_from,
+                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
+                    'product_id')
+
+            elif not product_meta and order_status:
+                queryset = OrderProduct.objects.filter(
+                    product__product_meta__product_category__type_of_product=product_category,
+                    order__order_status=order_status,
+                    order__created_on__gte=date_from,
+                    order__created_on__lt=date_to,
+                    order__delivery_date_time__gte=delivery_date_from,
+                    order__delivery_date_time__lt=delivery_date_to).order_by(
+                    'product_id')
+            else:
+                queryset = OrderProduct.objects.filter(
+                    product__product_meta__product_category__type_of_product=product_category,
+                    order__created_on__gte=date_from,
+                    order__created_on__lt=date_to,
+                    order__delivery_date_time__gte=delivery_date_from,
+                    order__delivery_date_time__lt=delivery_date_to).order_by(
+                    'product_id')
+        else:
+            if order_status:
+                queryset = OrderProduct.objects.filter(order__order_status=order_status,
+                                                       order__created_on__gte=date_from,
+                                                       order__created_on__lt=date_to,
+                                                       order__delivery_date_time__gte=delivery_date_from,
+                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
+                    'product_id')
+            else:
+                queryset = OrderProduct.objects.filter(order__created_on__gte=date_from,
+                                                       order__created_on__lt=date_to,
+                                                       order__delivery_date_time__gte=delivery_date_from,
+                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
+                    'product_id')
+
+        order_list = []
+        for obj in queryset:
+            product_data = {'Product Category': obj.product.product_meta.product_category.type_of_product,
+                            'Product Subcategory': obj.product.product_meta.name,
+                            'Product Name': obj.product.product_name,
+                            'Product Unit': obj.product.product_unit.product_unit,
+                            'Product Quantity': obj.order_product_qty,
+                            'OrderId': obj.order.id}
+            order_list.append(product_data)
+
+        field_names = ["Product Category", "Product Subcategory", "Product Name",
+                       "Product Unit", "Product Quantity", "OrderId"]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=product_list.csv'
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in order_list:
+            writer.writerow([obj[field] for field in field_names])
+        return response
+
+
+class ProductCategoryList(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get All Product Category
+    """
+
+    def get(self, request):
+        product_categories = ProductCategory.objects.filter(is_approved=True)
+        serializer = ProductCategorySerializer(product_categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProductMetaList(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        product_category = request.query_params.get('product_category')
+        product_metas = ProductMeta.objects.filter(is_approved=True, product_category__type_of_product=product_category)
+        serializer = ProductMetaSerializer(product_metas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
