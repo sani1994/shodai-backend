@@ -68,7 +68,6 @@ class CouponCount(graphene.Mutation):
                                    count=0)
 
 
-
 class Mutation(graphene.ObjectType):
     apply_coupon = ApplyCoupon.Field()
     coupon_count = CouponCount.Field()
