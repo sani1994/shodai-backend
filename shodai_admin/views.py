@@ -1424,16 +1424,6 @@ class OrderProductListCSV(APIView):
                                                        order__delivery_date_time__lt=delivery_date_to).order_by(
                     'product_id')
 
-        order_list = []
-        for obj in queryset:
-            product_data = {'Product Category': obj.product.product_meta.product_category.type_of_product,
-                            'Product Subcategory': obj.product.product_meta.name,
-                            'Product Name': obj.product.product_name,
-                            'Product Unit': obj.product.product_unit.product_unit,
-                            'Product Quantity': obj.order_product_qty,
-                            'OrderId': obj.order.id}
-            order_list.append(product_data)
-
         field_names = ["Product Category", "Product Subcategory", "Product Name",
                        "Product Unit", "Product Quantity", "OrderId"]
 
@@ -1442,8 +1432,10 @@ class OrderProductListCSV(APIView):
         writer = csv.writer(response)
 
         writer.writerow(field_names)
-        for obj in order_list:
-            writer.writerow([obj[field] for field in field_names])
+        for obj in queryset:
+            writer.writerow([obj.product.product_meta.product_category.type_of_product, obj.product.product_meta.name,
+                             obj.product.product_name, obj.product.product_unit.product_unit,
+                             obj.order_product_qty, obj.order.id])
         return response
 
 
