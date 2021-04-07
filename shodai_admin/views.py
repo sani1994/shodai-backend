@@ -1278,27 +1278,43 @@ class UserListDownloadCSV(APIView):
     """
 
     def get(self, request):
-        queryset = UserProfile.objects.all().order_by('-created_on')
-
-        field_names = ["id", "first_name", "last_name", "mobile_number", "email",
-                       "created_on", "is_approved"]
+        queryset = UserProfile.objects.filter(is_staff=False, is_active=True).order_by('-created_on')
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=user_list.csv'
         writer = csv.writer(response)
 
+        field_names = ["No.", "Name", "Mobile Number", "Email", "Registered on"]
         writer.writerow(field_names)
+        count = 0
         for user in queryset:
-            writer.writerow([getattr(user, field).date() if field == 'created_on' else getattr(user, field) for field in field_names])
+            count += 1
+            if user.first_name and user.last_name:
+                full_name = user.first_name + " " + user.last_name
+            elif user.first_name:
+                full_name = user.first_name
+            else:
+                full_name = ""
+            writer.writerow([count, full_name, user.mobile_number[3:], user.email,
+                             str(user.created_on + timedelta(hours=6))[:19]])
         return response
 
 
-class ResetPassword(APIView):
+class UserResetPassword(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
-        mobile_number = request.data['mobile_number']
-        user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
+        mobile_number = request.data.get('mobile_number')
+        if mobile_number:
+            user_instance = UserProfile.objects.filter(mobile_number=mobile_number)
+
+        if not mobile_number or not user_instance:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        user_instance = user_instance[0]
         temp_password = get_random_string(length=6)
         if not settings.DEBUG:
             sms_body = "Dear Customer,\n" + \
@@ -1314,11 +1330,11 @@ class ResetPassword(APIView):
                                  'message': "Password reset successful."}, status=status.HTTP_200_OK)
             else:
                 return Response({'status': 'failed',
-                                 'message': "An error occurred while sending the sms."},
+                                 'message': "Password reset failed."},
                                 status=status.HTTP_200_OK)
         else:
             return Response({'status': 'failed',
-                             'message': "Currently the server is not allowed to send sms."},
+                             'message': "Service not available."},
                             status=status.HTTP_200_OK)
 
 

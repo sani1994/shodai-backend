@@ -36,10 +36,10 @@ urlpatterns = [
     # user
     path('users', views.UserList.as_view()),
     path('users/<int:id>', views.UserDetail.as_view()),
-    path('users/reset-password', views.ResetPassword.as_view()),
+    path('users/reset-password', views.UserResetPassword.as_view()),
 
     # reports
-    path('users/download/csv', views.UserListDownloadCSV.as_view()),
-    path('orders/product-list/download/csv', views.OrderProductListCSV.as_view()),
+    path('reports/all-customers/download/csv', views.UserListDownloadCSV.as_view()),
+    path('reports/order-products/download/csv', views.OrderProductListCSV.as_view()),
 
 ]
