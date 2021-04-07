@@ -1248,6 +1248,8 @@ class UserList(APIView):
         if search:
             if search.startswith("01") and len(search) == 11:
                 queryset = UserProfile.objects.filter(mobile_number='+88' + search).order_by(sort_by)
+            elif '@' in search:
+                queryset = UserProfile.objects.filter(email=search).order_by(sort_by)
             else:
                 queryset = UserProfile.objects.filter(Q(first_name__icontains=search) |
                                                       Q(last_name__icontains=search)).order_by(sort_by)
