@@ -41,6 +41,5 @@ urlpatterns = [
     # reports
     path('reports/all-customers/download/csv', views.UserListDownloadCSV.as_view()),
     path('reports/order-products/download/csv', views.OrderProductListCSV.as_view()),
-    path('reports/order-products/summary/download/csv', views.OrderProductSummaryCSV.as_view()),
 
 ]
