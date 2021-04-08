@@ -111,7 +111,6 @@ class CreateOrder(graphene.Mutation):
                                                       created_by=user,
                                                       platform="WB",
                                                       delivery_date_time=input.delivery_date_time,
-                                                      placed_on=timezone.now(),
                                                       delivery_place=input.delivery_place,
                                                       lat=input.lat,
                                                       long=input.long,

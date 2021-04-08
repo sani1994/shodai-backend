@@ -741,7 +741,6 @@ class CreateOrder(APIView):
         order_instance = Order.objects.create(user=user_instance,
                                               platform="AD",
                                               delivery_date_time=delivery_date_time,
-                                              placed_on=timezone.now(),
                                               delivery_place="Dhaka",
                                               lat=23.7733,
                                               long=90.3548,
@@ -1344,209 +1343,104 @@ class OrderProductListCSV(APIView):
     permission_classes = [IsAdminUserQP]
 
     def get(self, request):
-        date_from = request.query_params.get('date_from', Order.objects.first().placed_on)
-        date_to = request.query_params.get('date_to', timezone.now())
-        delivery_date_from = request.query_params.get('date_from', Order.objects.first().delivery_date_time)
-        delivery_date_to = request.query_params.get('date_to', timezone.now())
+        date_type = request.query_params.get('date_type', 'placed_on')
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+        product_meta = request.query_params.get('product_subcategory')
         order_status = all_order_status.get(request.query_params.get('order_status'))
-        product_category = request.query_params.get('product_category')
-        product_meta = request.query_params.get('product_meta')
+        report_type = request.query_params.get('report_type', 'summary')
 
         if isinstance(date_from, str):
             try:
                 date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
             except Exception:
-                date_from = Order.objects.first().placed_on
+                if date_type == 'placed_on':
+                    date_from = Order.objects.first().placed_on
+                else:
+                    date_from = Order.objects.first().delivery_date_time
         if isinstance(date_to, str):
             try:
                 date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
             except Exception:
                 date_to = timezone.now()
-        if isinstance(delivery_date_from, str):
-            try:
-                delivery_date_from = timezone.make_aware(datetime.strptime(delivery_date_from, "%Y-%m-%d"))
-            except Exception:
-                delivery_date_from = Order.objects.first().delivery_date_time
-        if isinstance(delivery_date_to, str):
-            try:
-                delivery_date_to = timezone.make_aware(
-                    datetime.strptime(delivery_date_to, "%Y-%m-%d") + timedelta(days=1))
-            except Exception:
-                delivery_date_to = timezone.now()
 
-        if product_category:
+        if date_type == 'placed_on':
             if product_meta and order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__order_status=order_status,
                                                        order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to
-                                                       ).order_by('product_id')
+                                                       order__placed_on__lt=date_to).order_by('product_id')
 
             elif product_meta and not order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
+                                                       order__placed_on__lt=date_to).order_by('product_id')
 
             elif not product_meta and order_status:
-                queryset = OrderProduct.objects.filter(
-                    product__product_meta__product_category__type_of_product=product_category,
-                    order__order_status=order_status,
-                    order__placed_on__gte=date_from,
-                    order__placed_on__lt=date_to,
-                    order__delivery_date_time__gte=delivery_date_from,
-                    order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
-            else:
-                queryset = OrderProduct.objects.filter(
-                    product__product_meta__product_category__type_of_product=product_category,
-                    order__placed_on__gte=date_from,
-                    order__placed_on__lt=date_to,
-                    order__delivery_date_time__gte=delivery_date_from,
-                    order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
-        else:
-            if order_status:
                 queryset = OrderProduct.objects.filter(order__order_status=order_status,
                                                        order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
+                                                       order__placed_on__lt=date_to).order_by('product_id')
             else:
                 queryset = OrderProduct.objects.filter(order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
-
-        field_names = ["Product Category", "Product Subcategory", "Product Name",
-                       "Product Unit", "Product Quantity", "OrderId"]
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=product_list.csv'
-        writer = csv.writer(response)
-
-        writer.writerow(field_names)
-        for obj in queryset:
-            writer.writerow([obj.product.product_meta.product_category.type_of_product, obj.product.product_meta.name,
-                             obj.product.product_name, obj.product.product_unit.product_unit,
-                             obj.order_product_qty, obj.order.id])
-        return response
-
-
-class OrderProductSummaryCSV(APIView):
-    permission_classes = [IsAdminUserQP]
-
-    def get(self, request):
-        date_from = request.query_params.get('date_from', Order.objects.first().placed_on)
-        date_to = request.query_params.get('date_to', timezone.now())
-        delivery_date_from = request.query_params.get('date_from', Order.objects.first().delivery_date_time)
-        delivery_date_to = request.query_params.get('date_to', timezone.now())
-        order_status = all_order_status.get(request.query_params.get('order_status'))
-        product_category = request.query_params.get('product_category')
-        product_meta = request.query_params.get('product_meta')
-
-        if isinstance(date_from, str):
-            try:
-                date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
-            except Exception:
-                date_from = Order.objects.first().placed_on
-        if isinstance(date_to, str):
-            try:
-                date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
-            except Exception:
-                date_to = timezone.now()
-        if isinstance(delivery_date_from, str):
-            try:
-                delivery_date_from = timezone.make_aware(datetime.strptime(delivery_date_from, "%Y-%m-%d"))
-            except Exception:
-                delivery_date_from = Order.objects.first().delivery_date_time
-        if isinstance(delivery_date_to, str):
-            try:
-                delivery_date_to = timezone.make_aware(
-                    datetime.strptime(delivery_date_to, "%Y-%m-%d") + timedelta(days=1))
-            except Exception:
-                delivery_date_to = timezone.now()
-
-        if product_category:
+                                                       order__placed_on__lt=date_to).order_by('product_id')
+        else:
             if product_meta and order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__order_status=order_status,
-                                                       order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to
-                                                       ).order_by('product_id')
+                                                       order__delivery_date_time__gte=date_from,
+                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
 
             elif product_meta and not order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
-                                                       order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
+                                                       order__delivery_date_time__gte=date_from,
+                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
 
             elif not product_meta and order_status:
-                queryset = OrderProduct.objects.filter(
-                    product__product_meta__product_category__type_of_product=product_category,
-                    order__order_status=order_status,
-                    order__placed_on__gte=date_from,
-                    order__placed_on__lt=date_to,
-                    order__delivery_date_time__gte=delivery_date_from,
-                    order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
-            else:
-                queryset = OrderProduct.objects.filter(
-                    product__product_meta__product_category__type_of_product=product_category,
-                    order__placed_on__gte=date_from,
-                    order__placed_on__lt=date_to,
-                    order__delivery_date_time__gte=delivery_date_from,
-                    order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
-        else:
-            if order_status:
                 queryset = OrderProduct.objects.filter(order__order_status=order_status,
-                                                       order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
+                                                       order__delivery_date_time__gte=date_from,
+                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
             else:
-                queryset = OrderProduct.objects.filter(order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to,
-                                                       order__delivery_date_time__gte=delivery_date_from,
-                                                       order__delivery_date_time__lt=delivery_date_to).order_by(
-                    'product_id')
+                queryset = OrderProduct.objects.filter(order__delivery_date_time__gte=date_from,
+                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
 
-        order_list = []
-        for obj in queryset:
-            if not any(d['Product Name'] == obj.product.product_name for d in order_list):
-                product_data = {'Product Category': obj.product.product_meta.product_category.type_of_product,
-                                'Product Subcategory': obj.product.product_meta.name,
-                                'Product Name': obj.product.product_name,
-                                'Product Unit': obj.product.product_unit.product_unit,
-                                'Product Quantity': obj.order_product_qty}
-                order_list.append(product_data)
-            else:
-                for a in order_list:
-                    if a['Product Name'] == obj.product.product_name:
-                        a['Product Quantity'] = a['Product Quantity'] + obj.order_product_qty
+        if report_type == 'summary':
+            order_list = []
+            for obj in queryset:
+                if not any(d['Product Name'] == obj.product.product_name for d in order_list):
+                    product_data = {'Product Category': obj.product.product_meta.product_category.type_of_product,
+                                    'Product Subcategory': obj.product.product_meta.name,
+                                    'Product Name': obj.product.product_name,
+                                    'Product Unit': obj.product.product_unit.product_unit,
+                                    'Product Quantity': obj.order_product_qty}
+                    order_list.append(product_data)
+                else:
+                    for a in order_list:
+                        if a['Product Name'] == obj.product.product_name:
+                            a['Product Quantity'] = a['Product Quantity'] + obj.order_product_qty
 
-        field_names = ["Product Category", "Product Subcategory", "Product Name",
-                       "Product Unit", "Product Quantity"]
+            field_names = ["Product Category", "Product Subcategory", "Product Name",
+                           "Product Unit", "Product Quantity"]
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=product_summary.csv'
-        writer = csv.writer(response)
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=product_summary.csv'
+            writer = csv.writer(response)
 
-        writer.writerow(field_names)
-        for obj in order_list:
-            writer.writerow([obj[field] for field in field_names])
+            writer.writerow(field_names)
+            for obj in order_list:
+                writer.writerow([obj[field] for field in field_names])
+        else:
+            field_names = ["Product Category", "Product Subcategory", "Product Name",
+                           "Product Unit", "Product Quantity", "Order ID"]
+
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=product_list.csv'
+            writer = csv.writer(response)
+
+            writer.writerow(field_names)
+            for obj in queryset:
+                writer.writerow([obj.product.product_meta.product_category.type_of_product, obj.product.product_meta.name,
+                                 obj.product.product_name, obj.product.product_unit.product_unit,
+                                 obj.order_product_qty, obj.order.id])
         return response
 
 
