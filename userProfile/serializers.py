@@ -80,7 +80,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             user_type=validated_data['user_type'],
             mobile_number=validated_data['mobile_number'],
             first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            last_name="",
             email=validated_data['email'],
             username=validated_data['mobile_number'],
             verification_code=randint(100000, 999999),
