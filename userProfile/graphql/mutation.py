@@ -75,7 +75,6 @@ class UserCreateMutation(graphene.Mutation):
     otp_status = graphene.String()
     token = graphene.String()
     refresh_token = graphene.String()
-    code = graphene.String()
 
     class Arguments:
         input = UserInfoInput(required=True)
@@ -159,8 +158,7 @@ class UserCreateMutation(graphene.Mutation):
             return UserCreateMutation(user=user_instance,
                                       token=token,
                                       refresh_token=refresh_token,
-                                      otp_status=otp_status,
-                                      code=coupon.coupon_code)
+                                      otp_status=otp_status)
 
 
 class UserUpdateMutation(graphene.Mutation):

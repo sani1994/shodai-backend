@@ -25,7 +25,7 @@ class CouponType(DjangoObjectType):
         return "Available"
 
 
-class ReferralPageCouponType(DjangoObjectType):
+class CouponPageType(DjangoObjectType):
     class Meta:
         model = CouponCode
         fields = ['coupon_code', 'expiry_date', 'discount_percent', 'discount_amount_limit',
@@ -33,6 +33,7 @@ class ReferralPageCouponType(DjangoObjectType):
 
     discount_coupon_percent = graphene.Int()
     shared_coupon_count = graphene.Int()
+    gift_coupon = graphene.NonNull(CouponType)
 
     def resolve_discount_coupon(self, info):
         discount = CouponSettings.objects.get(coupon_type='DC').discount_percent
@@ -42,11 +43,18 @@ class ReferralPageCouponType(DjangoObjectType):
         referral_discount = CouponSettings.objects.get(coupon_type='RC').max_usage_count
         return referral_discount - self.max_usage_count
 
+    def resolve_gift_coupon(self, info):
+        user = info.context.user
+        if checkAuthentication(user, info):
+            gift_coupon = CouponCode.objects.filter(coupon_code_type='GC1',
+                                                    created_by=user)
+            return gift_coupon[0]
+
 
 class Query(graphene.ObjectType):
     coupon_list = graphene.List(CouponType)
     referral_code = graphene.Field(CouponType)
-    referral_page_coupon = graphene.Field(ReferralPageCouponType)
+    coupon_page = graphene.Field(CouponPageType)
 
     def resolve_coupon_list(self, info):
         user = info.context.user
@@ -65,7 +73,7 @@ class Query(graphene.ObjectType):
                                                       created_by=user)
             return referral_code[0] if referral_code else None
 
-    def resolve_referral_page_coupon(self, info):
+    def resolve_coupon_page(self, info):
         user = info.context.user
         if checkAuthentication(user, info):
             referral_code = CouponCode.objects.filter(coupon_code_type='RC',
