@@ -48,7 +48,7 @@ class CouponPageType(DjangoObjectType):
         if checkAuthentication(user, info):
             gift_coupon = CouponCode.objects.filter(coupon_code_type='GC1',
                                                     created_by=user)
-            return gift_coupon[0]
+            return gift_coupon[0] if gift_coupon else None
 
 
 class Query(graphene.ObjectType):
@@ -78,5 +78,6 @@ class Query(graphene.ObjectType):
         if checkAuthentication(user, info):
             referral_code = CouponCode.objects.filter(coupon_code_type='RC',
                                                       expiry_date__gte=timezone.now(),
-                                                      created_by=user)
+                                                      max_usage_count__gt=0,
+                                                      created_by=user).order_by('-created_on')
             return referral_code[0] if referral_code else None
