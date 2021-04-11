@@ -94,7 +94,7 @@ class Query(graphene.ObjectType):
         return DeliveryCharge.objects.get()
 
     def resolve_delivery_time_slots(self, info):
-        return TimeSlot.objects.all().order_by('time')
+        return TimeSlot.objects.filter(allow=True).order_by('time')
 
     def resolve_invoice_by_order(self, info, **kwargs):
         user = info.context.user

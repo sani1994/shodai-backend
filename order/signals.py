@@ -81,8 +81,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
                 CouponUser.objects.create(coupon_code=gift_coupon,
                                           created_for=instance.user,
                                           remaining_usage_count=1,
-                                          created_by=instance.user,
-                                          created_on=timezone.now())
+                                          created_by=instance.user)
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,

@@ -139,13 +139,11 @@ class UserCreateMutation(graphene.Mutation):
                                                             days=gift_discount_settings.validity_period),
                                                         discount_type=gift_discount_settings.discount_type,
                                                         coupon_code_type='GC1',
-                                                        created_by=user_instance,
-                                                        created_on=timezone.now())
+                                                        created_by=user_instance)
                 CouponUser.objects.create(coupon_code=gift_coupon,
                                           created_for=user_instance,
                                           remaining_usage_count=1,
-                                          created_by=user_instance,
-                                          created_on=timezone.now())
+                                          created_by=user_instance)
                 if not settings.DEBUG:
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,

@@ -187,7 +187,7 @@ class OrderList(APIView):
         date_to = request.query_params.get('date_to', timezone.now())
         order_status = all_order_status.get(request.query_params.get('order_status'))
         if not getattr(Order, sort_by, False):
-            sort_by = 'created_on'
+            sort_by = 'placed_on'
         if sort_type != 'asc':
             sort_by = '-' + sort_by
         if isinstance(date_from, str):
@@ -1279,10 +1279,10 @@ class UserListDownloadCSV(APIView):
     """
 
     def get(self, request):
-        queryset = UserProfile.objects.filter(is_staff=False, is_active=True).order_by('-created_on')
+        queryset = UserProfile.objects.filter(user_type='CM', is_active=True).order_by('-created_on')
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=user_list.csv'
+        response['Content-Disposition'] = 'attachment; filename=customer_list.csv'
         writer = csv.writer(response)
 
         field_names = ["No.", "Name", "Mobile Number", "Email", "Registered on"]

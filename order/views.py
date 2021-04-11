@@ -126,7 +126,7 @@ class OrderList(APIView):
             elif request.user.first_name:
                 billing_person_name = request.user.first_name
             else:
-                billing_person_name = request.user.username
+                billing_person_name = ""
             if order_instance.address:
                 if order_instance.address.road:
                     address = order_instance.address.road
@@ -314,8 +314,7 @@ class OrderProductList(APIView):
                                                   coupon_code=coupon.coupon_code,
                                                   coupon_user=is_using,
                                                   invoice_number=invoice,
-                                                  created_by=request.user,
-                                                  created_on=timezone.now())
+                                                  created_by=request.user)
 
             """
             To send notification to customer

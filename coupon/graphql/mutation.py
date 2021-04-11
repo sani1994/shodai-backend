@@ -53,14 +53,13 @@ class CouponCount(graphene.Mutation):
     def mutate(root, info, input=None):
         user = info.context.user
         if checkAuthentication(user, info):
-            all_coupons = CouponCode.objects.filter(Q(coupon_code_type='DC') |
-                                                    Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
-                                                    expiry_date__gte=timezone.now(),
-                                                    max_usage_count__gt=0,
-                                                    discount_code__in=CouponUser.objects.filter(
-                                                        created_for=user))
-            count = all_coupons.count()
-            if count > 0:
+            count = CouponCode.objects.filter(Q(coupon_code_type='DC') |
+                                              Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
+                                              expiry_date__gte=timezone.now(),
+                                              max_usage_count__gt=0,
+                                              discount_code__in=CouponUser.objects.filter(
+                                                  created_for=user)).count()
+            if count:
                 return CouponCount(status=True,
                                    count=count)
             else:

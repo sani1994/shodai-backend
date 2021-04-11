@@ -24,16 +24,15 @@ urlpatterns = [
 
     # products
     path('products/search', views.ProductSearch.as_view()),
-    path('product-categories', views.ProductCategoryList.as_view()),
-    path('product-subcategories', views.ProductMetaList.as_view()),
+    path('products/subcategories', views.ProductMetaList.as_view()),
 
     # offers
     path('offers/delivery-charge', views.DeliveryChargeOfferList.as_view()),
 
-    # coupon
-    path('coupon/verify-coupon', views.VerifyCoupon.as_view()),
+    # coupons
+    path('coupons/verify-coupon', views.VerifyCoupon.as_view()),
 
-    # user
+    # users
     path('users', views.UserList.as_view()),
     path('users/<int:id>', views.UserDetail.as_view()),
     path('users/reset-password', views.UserResetPassword.as_view()),
