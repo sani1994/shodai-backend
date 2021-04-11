@@ -70,7 +70,7 @@ class Query(graphene.ObjectType):
         if checkAuthentication(user, info):
             referral_code = CouponCode.objects.filter(coupon_code_type='RC',
                                                       expiry_date__gte=timezone.now() - timedelta(days=7),
-                                                      created_by=user)
+                                                      created_by=user).order_by('-created_on')
             return referral_code[0] if referral_code else None
 
     def resolve_coupon_page(self, info):
