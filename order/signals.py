@@ -62,6 +62,9 @@ def order_data_preprocessing(sender, instance, **kwargs):
                         async_task('coupon.tasks.send_coupon_sms',
                                    new_coupon,
                                    coupon.created_by.mobile_number)
+                    async_task('coupon.tasks.send_coupon_email',
+                               new_coupon,
+                               coupon.created_by.mobile_number)
 
         if instance.platform == 'WB':
             gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
@@ -86,3 +89,6 @@ def order_data_preprocessing(sender, instance, **kwargs):
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,
                                instance.user.mobile_number)
+                async_task('coupon.tasks.send_coupon_email',
+                           gift_coupon,
+                           instance.user.mobile_number)

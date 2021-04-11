@@ -1,3 +1,8 @@
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import get_template
+
+from coupon.models import CouponSettings
+from userProfile.models import UserProfile
 from utility.notification import send_sms
 
 
@@ -39,3 +44,30 @@ def send_coupon_sms(coupon, mobile_number):
 
     status = send_sms(mobile_number, sms_body)
     return f"{status} {mobile_number} {coupon.coupon_code_type}"
+
+
+def send_coupon_email(coupon, mobile_number):
+    user = UserProfile.objects.get(mobile_number=mobile_number)
+    if user.first_name and user.last_name:
+        billing_person_name = user.first_name + " " + user.last_name
+    elif user.first_name:
+        billing_person_name = user.first_name
+    else:
+        billing_person_name = ""
+    gift_coupon_limit = CouponSettings.objects.get(coupon_type='GC2').minimum_purchase_limit
+
+    content = {'user_name': billing_person_name,
+               'coupon_type': coupon.coupon_code_type,
+               'coupon_code': coupon.coupon_code,
+               'discount_percent': int(coupon.discount_percent),
+               'gift_coupon_limit': gift_coupon_limit
+               }
+
+    subject = 'New Coupon for you from Shod.ai'
+    from_email, to = 'noreply@shod.ai', user.email
+    html_customer = get_template('coupon_email.html')
+    html_content = html_customer.render(content)
+    msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    status = msg.send()
+    return f"{status} {mobile_number} {to} {coupon.coupon_code_type}"

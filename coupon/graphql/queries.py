@@ -35,7 +35,7 @@ class CouponPageType(DjangoObjectType):
     shared_coupon_count = graphene.Int()
     gift_coupon = graphene.NonNull(CouponType)
 
-    def resolve_discount_coupon(self, info):
+    def resolve_discount_coupon_percent(self, info):
         discount = CouponSettings.objects.get(coupon_type='DC').discount_percent
         return discount
 

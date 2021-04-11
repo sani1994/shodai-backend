@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml">
+  <head>
+    <title>Shodai Order Invoice</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
+
+    <style>
+      @font-face {
+        font-family: 'Source Sans Pro Regular';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url(https://fonts.gstatic.com/s/sourcesanspro/v13/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7lujVj9w.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'Source Sans Pro SemiBold';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: local('Source Sans Pro SemiBold'), local('SourceSansPro-SemiBold'), url(https://fonts.gstatic.com/s/sourcesanspro/v13/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwlxdu3cOWxw.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      .container{
+        max-width: 600px;
+        padding:0 50px;
+        font-family: 'Source Sans Pro Regular';
+        color: #222;
+        font-size: 14px;
+      }
+      .container strong{
+        font-weight: 600;
+        font-family: "Source Sans Pro SemiBold";
+      }
+      .container  .productsTable thead tr th{
+        padding: 10px 0;
+      }
+      .productRow td{
+        border-bottom: 1px solid #BFBFBF;padding: 7px 0;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <center>
+      <div class="container" style="max-width: 600px;padding: 0px 20px 0 20px;font-size: 16px;">
+        <table style="font-size:16px">
+            <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
+
+            <tbody>
+              <tr>
+                <td style="padding-bottom: 20px;"><strong>Dear {{user_name}},</strong></td>
+              </tr>
+              {% if coupon_type == 'RC' %}
+                 <tr>
+                   <td>
+                     Don't forget to share this code <strong>[{{coupon_code}}]</strong> with your
+                     friends and family to avail them {{discount_percent}}% discount
+                     on their next purchase and receive exciting discount
+                     after each successful referral.<br/>
+                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     So keep shopping with us to get more savings.<br/><br/>
+                   </td>
+                 </tr>
+              {% elif coupon_type == 'DC' %}
+                 <tr>
+                   <td>
+                     Congratulations! You have received {{discount_percent}}% discount
+                     based on your successful referral. Use this code <strong>[{{coupon_code}}]</strong> to
+                     avail exciting discount on your next purchase.<br/>
+                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     So keep shopping with us to get more savings.<br/><br/>
+                   </td>
+                 </tr>
+              {% elif coupon_type == 'GC1' %}
+                 <tr>
+                   <td>
+                     Congratulations on your new Shodai account! You have received a new coupon
+                     from Shodai to show our appreciation. Use this code <strong>[{{coupon_code}}]</strong>
+                     to avail a {{discount_percent}}% discount on your first order.<br/>
+                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     So keep shopping with us to get more savings.<br/><br/>
+                   </td>
+                 </tr>
+              {% else %}
+                 <tr>
+                   <td>
+                     Congratulations! You have received {{discount_percent}}% discount
+                     based on your successful purchase. Use code <strong>[{{coupon_code}}]</strong> to
+                     avail this discount on your next order.<br/>
+                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     So keep shopping with us to get more savings.<br/><br/>
+                   </td>
+                 </tr>
+              {% endif %}
+
+              <tr>
+                <td>Thanks & Regards</td>
+              </tr>
+              <tr>
+                <td><strong>Team Shodai</strong></td>
+              </tr>
+
+            </tbody>
+        </table>
+
+        <hr style="border:1px solid #E8E8E8; margin: 30px 0 15px 0"/>
+          <div style="text-align: center;">
+            <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>
+            <p style="line-height: 20px;">Helpline: <strong>09614-161271</strong><br/>
+              Feel free to contact us at (customer support): <strong>help@shod.ai</strong></p>
+          </div>
+
+          <hr style="border:1px solid #E8E8E8"></hr>
+
+          <!-- <div style="text-align: center;padding-bottom: 30px;padding-top: 10px">
+            <p style="font-size: 20px;line-height: 24px;"><strong>Download Mobile App</strong></p>
+            <a href="https://play.google.com/store/apps/details?id=com.mtl.shodaiapp" rel="noopener noreferrer"><img src="https://i.ibb.co/DD955M2/playstore.png" alt="google playstore link"/></a>
+          </div> -->
+
+          <div style="text-align: center; background-color:#E5E5E5; color:#5D7079; line-height: 24px;font-size: 16px;padding: 26px 0;">
+            &copy; 2021 Shodai  |  All rights reserved<br>
+            Monico Bhaban, 26-27, Ring Road, Adabar, Dhaka -1207
+          </div>
+      </div>
+    </center>
+  </body>
+</html>

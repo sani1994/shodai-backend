@@ -124,6 +124,9 @@ class UserCreateMutation(graphene.Mutation):
                     async_task('coupon.tasks.send_coupon_sms',
                                coupon,
                                user_instance.mobile_number)
+                async_task('coupon.tasks.send_coupon_email',
+                           coupon,
+                           user_instance.mobile_number)
 
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
             if gift_discount_settings.is_active:
@@ -147,6 +150,9 @@ class UserCreateMutation(graphene.Mutation):
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,
                                user_instance.mobile_number)
+                async_task('coupon.tasks.send_coupon_email',
+                           gift_coupon,
+                           user_instance.mobile_number)
 
             if not settings.DEBUG:
                 otp_flag = send_sms_otp(user_instance.mobile_number, otp_text.format(
