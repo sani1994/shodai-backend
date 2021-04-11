@@ -1444,23 +1444,12 @@ class OrderProductListCSV(APIView):
         return response
 
 
-class ProductCategoryList(APIView):
-    permission_classes = [IsAdminUser]
-    """
-    Get All Product Category
-    """
-
-    def get(self, request):
-        product_categories = ProductCategory.objects.filter(is_approved=True)
-        serializer = ProductCategorySerializer(product_categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class ProductMetaList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        product_category = request.query_params.get('product_category')
-        product_metas = ProductMeta.objects.filter(is_approved=True, product_category__type_of_product=product_category)
+        search = request.query_params.get('search')
+        product_metas = ProductMeta.objects.filter(is_approved=True,
+                                                   name__icontains=search)[:30]
         serializer = ProductMetaSerializer(product_metas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

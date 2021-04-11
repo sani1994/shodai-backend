@@ -6,7 +6,7 @@ from django.utils import timezone
 from graphene_django import DjangoObjectType
 
 from bases.views import checkAuthentication
-from ..models import CouponCode, CouponUser
+from ..models import CouponCode, CouponUser, CouponSettings
 
 
 class CouponType(DjangoObjectType):
@@ -25,9 +25,28 @@ class CouponType(DjangoObjectType):
         return "Available"
 
 
+class ReferralPageCouponType(DjangoObjectType):
+    class Meta:
+        model = CouponCode
+        fields = ['coupon_code', 'expiry_date', 'discount_percent', 'discount_amount_limit',
+                  'discount_amount', 'minimum_purchase_limit', 'max_usage_count']
+
+    discount_coupon_percent = graphene.Int()
+    shared_coupon_count = graphene.Int()
+
+    def resolve_discount_coupon(self, info):
+        discount = CouponSettings.objects.get(coupon_type='DC').discount_percent
+        return discount
+
+    def resolve_shared_coupon_count(self, info):
+        referral_discount = CouponSettings.objects.get(coupon_type='RC').max_usage_count
+        return referral_discount - self.max_usage_count
+
+
 class Query(graphene.ObjectType):
     coupon_list = graphene.List(CouponType)
     referral_code = graphene.Field(CouponType)
+    referral_page_coupon = graphene.Field(ReferralPageCouponType)
 
     def resolve_coupon_list(self, info):
         user = info.context.user
@@ -43,5 +62,13 @@ class Query(graphene.ObjectType):
         if checkAuthentication(user, info):
             referral_code = CouponCode.objects.filter(coupon_code_type='RC',
                                                       expiry_date__gte=timezone.now() - timedelta(days=7),
+                                                      created_by=user)
+            return referral_code[0] if referral_code else None
+
+    def resolve_referral_page_coupon(self, info):
+        user = info.context.user
+        if checkAuthentication(user, info):
+            referral_code = CouponCode.objects.filter(coupon_code_type='RC',
+                                                      expiry_date__gte=timezone.now(),
                                                       created_by=user)
             return referral_code[0] if referral_code else None
