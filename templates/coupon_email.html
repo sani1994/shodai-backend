@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="https://www.w3.org/1999/xhtml">
   <head>
-    <title>Shodai Order Invoice</title>
+    <title>Shodai Coupon</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
@@ -50,30 +50,30 @@
         <table style="font-size:16px">
             <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
             <div style="text-align: center;padding-bottom: 30px;padding-top: 10px">
-            <a rel="noopener noreferrer"><img src="http://dev.shod.ai/media/coupon.jpg" alt="google playstore link"/></a>
+            <a rel="noopener noreferrer"><img src="{{api_domain}}/media/coupon.jpg" alt="coupon-image"/></a>
             </div>
             <tbody>
               <tr>
-                <td style="padding-bottom: 20px;"><strong>Dear {{user_name}},</strong></td>
+                <td style="padding-bottom: 20px;"><strong>Dear {{customer_name}},</strong></td>
               </tr>
               {% if coupon_type == 'RC' %}
                  <tr>
                    <td>
                      Don't forget to share this code <strong>[{{coupon_code}}]</strong> with your
                      friends and family to avail them {{discount_percent}}% discount
-                     on their next purchase and receive exciting discount
+                     on their next purchase and receive exciting discount coupon
                      after each successful referral.<br/>
-                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     Remember, you can earn more coupons for every order above ৳ {{gift_coupon_purchase_limit}}.
                      So keep shopping with us to get more savings.<br/><br/>
                    </td>
                  </tr>
               {% elif coupon_type == 'DC' %}
                  <tr>
                    <td>
-                     Congratulations! You have received {{discount_percent}}% discount
+                     Congratulations! You have received {{discount_percent}}% discount coupon
                      based on your successful referral. Use this code <strong>[{{coupon_code}}]</strong> to
-                     avail exciting discount on your next purchase.<br/>
-                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     avail exciting discount on your next order.<br/>
+                     Remember, you can earn more coupons for every order above ৳ {{gift_coupon_purchase_limit}}.
                      So keep shopping with us to get more savings.<br/><br/>
                    </td>
                  </tr>
@@ -83,17 +83,17 @@
                      Congratulations on your new Shodai account! You have received a new coupon
                      from Shodai to show our appreciation. Use this code <strong>[{{coupon_code}}]</strong>
                      to avail a {{discount_percent}}% discount on your first order.<br/>
-                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     Remember, you can earn more coupons for every order above ৳ {{gift_coupon_purchase_limit}}.
                      So keep shopping with us to get more savings.<br/><br/>
                    </td>
                  </tr>
-              {% else %}
+              {% elif coupon_type == 'GC2' %}
                  <tr>
                    <td>
-                     Congratulations! You have received {{discount_percent}}% discount
-                     based on your successful purchase. Use code <strong>[{{coupon_code}}]</strong> to
+                     Congratulations! You have received {{discount_percent}}% discount coupon
+                     based on your successful order. Use code <strong>[{{coupon_code}}]</strong> to
                      avail this discount on your next order.<br/>
-                     Remember, you will earn more coupons for every order above ৳ {{gift_coupon_limit}}.
+                     Remember, you can earn more coupons for every order above ৳ {{gift_coupon_purchase_limit}}.
                      So keep shopping with us to get more savings.<br/><br/>
                    </td>
                  </tr>
@@ -110,8 +110,8 @@
         </table>
 
         <div style="text-align: center; padding:30px 200px">
-             <a href="https://www.shod.ai/myshodai"
-             style="display:inline-block;font-size:20px;background:#fff44f;text-decoration:none;color:#000000;font-weight:bold;padding:25px 55px;border-radius:4px"
+             <a href="{{api_domain}}/myshodai"
+             style="display:inline-block;font-size:20px;background:#d5dc2c;text-decoration:none;color:#000000;font-weight:bold;padding:25px 55px;border-radius:4px"
              rel="noreferrer" target="_blank" >USE COUPON</a>
         </div>
 
@@ -126,7 +126,7 @@
 
           <!-- <div style="text-align: center;padding-bottom: 30px;padding-top: 10px">
             <p style="font-size: 20px;line-height: 24px;"><strong>Download Mobile App</strong></p>
-            <a href="https://play.google.com/store/apps/details?id=com.mtl.shodaiapp" rel="noopener noreferrer"><img src="https://i.ibb.co/DD955M2/playstore.png" alt="google playstore link"/></a>
+            <a href="https://play.google.com/store/apps/details?id=com.mtl.shodaiapp" rel="noopener noreferrer"><img src="https://i.ibb.co/DD955M2/playstore.png" alt="google-playstore-image"/></a>
           </div> -->
 
           <div style="text-align: center; background-color:#E5E5E5; color:#5D7079; line-height: 24px;font-size: 16px;padding: 26px 0;">

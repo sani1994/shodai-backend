@@ -867,7 +867,7 @@ class ProductSearch(APIView):
 
     def get(self, request):
         query = request.query_params.get('query', '')
-        product = keyword_based_search(Product, query, ['product_name'], {'is_approved': True})[:50]
+        product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:20]
         serializer = ProductSearchSerializer(product, many=True)
         if serializer:
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)

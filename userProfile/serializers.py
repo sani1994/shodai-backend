@@ -110,7 +110,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                user.mobile_number)
                 async_task('coupon.tasks.send_coupon_email',
                            coupon,
-                           user.mobile_number)
+                           user)
 
             gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
             if gift_discount_settings.is_active:
@@ -136,7 +136,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                user.mobile_number)
                 async_task('coupon.tasks.send_coupon_email',
                            gift_coupon,
-                           user.mobile_number)
+                           user)
 
             if user.user_type == 'PD':
                 sub = "Approval Request"

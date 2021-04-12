@@ -287,13 +287,14 @@ class OrderProductList(APIView):
                                                                     coupon_code_type='RC',
                                                                     created_by=order_instance.user)
 
-                    if not settings.DEBUG and referral_coupon.max_usage_count > 0:
-                        async_task('coupon.tasks.send_coupon_sms',
+                    if referral_coupon.max_usage_count > 0:
+                        if not settings.DEBUG:
+                            async_task('coupon.tasks.send_coupon_sms',
+                                       referral_coupon,
+                                       order_instance.user.mobile_number)
+                        async_task('coupon.tasks.send_coupon_email',
                                    referral_coupon,
-                                   order_instance.user.mobile_number)
-                    async_task('coupon.tasks.send_coupon_email',
-                               referral_coupon,
-                               order_instance.user.mobile_number)
+                                   order_instance.user)
 
             invoice.discount_amount = (total_price_without_offer - product_total_price) + coupon_discount
             invoice.save()

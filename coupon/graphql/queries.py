@@ -33,7 +33,7 @@ class CouponPageType(DjangoObjectType):
 
     discount_coupon_percent = graphene.Int()
     shared_coupon_count = graphene.Int()
-    gift_coupon = graphene.NonNull(CouponType)
+    gift_coupon = graphene.Field(CouponType)
 
     def resolve_discount_coupon_percent(self, info):
         discount = CouponSettings.objects.get(coupon_type='DC').discount_percent
@@ -45,10 +45,9 @@ class CouponPageType(DjangoObjectType):
 
     def resolve_gift_coupon(self, info):
         user = info.context.user
-        if checkAuthentication(user, info):
-            gift_coupon = CouponCode.objects.filter(coupon_code_type='GC1',
-                                                    created_by=user)
-            return gift_coupon[0] if gift_coupon else None
+        gift_coupon = CouponCode.objects.filter(coupon_code_type='GC1',
+                                                created_by=user)
+        return gift_coupon[0] if gift_coupon else None
 
 
 class Query(graphene.ObjectType):

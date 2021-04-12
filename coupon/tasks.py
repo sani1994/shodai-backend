@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 
 from coupon.models import CouponSettings
-from userProfile.models import UserProfile
 from utility.notification import send_sms
 
 
@@ -46,28 +46,31 @@ def send_coupon_sms(coupon, mobile_number):
     return f"{status} {mobile_number} {coupon.coupon_code_type}"
 
 
-def send_coupon_email(coupon, mobile_number):
-    user = UserProfile.objects.get(mobile_number=mobile_number)
+def send_coupon_email(coupon, user):
     if user.first_name and user.last_name:
-        billing_person_name = user.first_name + " " + user.last_name
+        customer_name = user.first_name + " " + user.last_name
     elif user.first_name:
-        billing_person_name = user.first_name
+        customer_name = user.first_name
     else:
-        billing_person_name = ""
-    gift_coupon_limit = CouponSettings.objects.get(coupon_type='GC2').minimum_purchase_limit
+        customer_name = "Customer"
 
-    content = {'user_name': billing_person_name,
+    gift_coupon_purchase_limit = CouponSettings.objects.get(coupon_type='GC2').minimum_purchase_limit
+
+    content = {'customer_name': customer_name,
                'coupon_type': coupon.coupon_code_type,
                'coupon_code': coupon.coupon_code,
                'discount_percent': int(coupon.discount_percent),
-               'gift_coupon_limit': gift_coupon_limit
-               }
+               'gift_coupon_purchase_limit': gift_coupon_purchase_limit,
+               'api_domain': settings.API_DOMAIN}
 
-    subject = 'New Coupon for you from Shod.ai'
+    if coupon.coupon_code_type == 'RC':
+        subject = 'You have referral Coupon to share from shod.ai'
+    else:
+        subject = 'You got a new Coupon from shod.ai'
     from_email, to = 'noreply@shod.ai', user.email
     html_customer = get_template('coupon_email.html')
     html_content = html_customer.render(content)
     msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
     msg.attach_alternative(html_content, "text/html")
-    status = msg.send()
-    return f"{status} {mobile_number} {to} {coupon.coupon_code_type}"
+    msg.send()
+    return f"{coupon.coupon_code_type} sent to {user.email}"
