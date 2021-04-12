@@ -726,6 +726,8 @@ class CreateOrder(APIView):
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,
                                user_instance.mobile_number)
+
+            if gift_discount_settings.is_active:
                 async_task('coupon.tasks.send_coupon_email',
                            gift_coupon,
                            user_instance)
@@ -808,7 +810,7 @@ class CreateOrder(APIView):
                     async_task('coupon.tasks.send_coupon_sms',
                                referral_coupon,
                                user_instance.mobile_number)
-                async_task('coupon.tasks.send_coupon_sms',
+                async_task('coupon.tasks.send_coupon_email',
                            referral_coupon,
                            user_instance)
 
