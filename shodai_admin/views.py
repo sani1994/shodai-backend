@@ -726,6 +726,9 @@ class CreateOrder(APIView):
                     async_task('coupon.tasks.send_coupon_sms',
                                gift_coupon,
                                user_instance.mobile_number)
+                async_task('coupon.tasks.send_coupon_email',
+                           gift_coupon,
+                           user_instance)
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -800,10 +803,14 @@ class CreateOrder(APIView):
                                                             coupon_code_type='RC',
                                                             created_by=user_instance)
 
-            if not settings.DEBUG and referral_coupon.max_usage_count > 0:
+            if referral_coupon.max_usage_count > 0:
+                if not settings.DEBUG:
+                    async_task('coupon.tasks.send_coupon_sms',
+                               referral_coupon,
+                               user_instance.mobile_number)
                 async_task('coupon.tasks.send_coupon_sms',
                            referral_coupon,
-                           user_instance.mobile_number)
+                           user_instance)
 
         product_discount = total_price - total_op_price
         discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
