@@ -1,7 +1,7 @@
 from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from utility.models import Area, CityCountry, Location, ProductUnit, Remarks, Message
+from utility.models import Area, CityCountry, Location, ProductUnit, Remarks, Message, Banner
 
 
 class AreaAdmin(MaterialModelAdmin):
@@ -33,6 +33,23 @@ class ProductUnitAdmin(MaterialModelAdmin):
         return False
 
 
+class BannerAdmin(MaterialModelAdmin):
+    list_display = ('banner_heading', 'banner_show_starts_in', 'banner_show_ends_in', 'is_approved')
+    list_filter = ('banner_show_starts_in', 'banner_show_ends_in', )
+    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on", ]
+    search_fields = ['banner_heading']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        else:
+            obj.created_by = request.user
+        obj.save()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 class RemarksAdmin(MaterialModelAdmin):
     pass
 
@@ -48,3 +65,4 @@ site.register(Location, LocationAdmin)
 site.register(ProductUnit, ProductUnitAdmin)
 site.register(Remarks)
 site.register(Message, MessageAdmin)
+site.register(Banner, BannerAdmin)

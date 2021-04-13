@@ -4,7 +4,7 @@ from order.models import (
     Vat,
     DeliveryCharge,
     PaymentInfo,
-    TimeSlot
+    TimeSlot, InvoiceInfo
 )
 from rest_framework import serializers
 
@@ -14,6 +14,7 @@ from userProfile.serializers import UserProfileSerializer
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    discount = serializers.SerializerMethodField()
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
@@ -30,13 +31,20 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            "id", "created_on", "modified_on", "payment_id", "invoice_number",
+            "id", "created_on", "modified_on", "payment_id", "invoice_number", "discount",
             "bill_id", "currency", "delivery_date_time", "delivery_place", "order_total_price",
             "lat", "long", "order_geopoint", "order_status", "home_delivery", "order_type",
             "contact_number", "created_by", "modified_by", "user", "address", "note", "paid_status",
         )
 
         read_only = ('id', "paid_status")
+
+    def get_discount(self, obj):
+        invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)
+        if invoice:
+            return invoice[0].discount_amount
+        else:
+            return 0
 
 
 class OrderSerializerDetail(serializers.ModelSerializer):

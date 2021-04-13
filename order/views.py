@@ -30,7 +30,7 @@ class TimeSlotList(APIView):
     """`Get` time slot that are allowed"""
 
     def get(self, request):
-        queryset = TimeSlot.objects.filter(allow=True)
+        queryset = TimeSlot.objects.filter(allow=True).order_by('time')
         if queryset:
             serializer = TimeSlotSerializer(queryset, many=True)
             if serializer:
