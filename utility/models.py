@@ -64,3 +64,15 @@ class Message(BaseModel):
 
     def __str__(self):
         return self.message
+
+
+class Banner(BaseModel):
+    banner_heading = models.CharField(max_length=100)
+    banner_img = models.ImageField(upload_to="banner", verbose_name="Image: 1300px/300px")
+    banner_show_starts_in = models.DateTimeField()
+    banner_show_ends_in = models.DateTimeField()
+    banner_url = models.CharField(max_length=300, default="https://www.shod.ai/offers")
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.banner_heading

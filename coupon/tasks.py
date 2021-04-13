@@ -47,30 +47,31 @@ def send_coupon_sms(coupon, mobile_number):
 
 
 def send_coupon_email(coupon, user):
-    if user.first_name and user.last_name:
-        customer_name = user.first_name + " " + user.last_name
-    elif user.first_name:
-        customer_name = user.first_name
-    else:
-        customer_name = "Customer"
+    if user.email:
+        if user.first_name and user.last_name:
+            customer_name = user.first_name + " " + user.last_name
+        elif user.first_name:
+            customer_name = user.first_name
+        else:
+            customer_name = "Customer"
 
-    gift_coupon_purchase_limit = CouponSettings.objects.get(coupon_type='GC2').minimum_purchase_limit
+        gift_coupon_purchase_limit = CouponSettings.objects.get(coupon_type='GC2').minimum_purchase_limit
 
-    content = {'customer_name': customer_name,
-               'coupon_type': coupon.coupon_code_type,
-               'coupon_code': coupon.coupon_code,
-               'discount_percent': int(coupon.discount_percent),
-               'gift_coupon_purchase_limit': gift_coupon_purchase_limit,
-               'api_domain': settings.API_DOMAIN}
+        content = {'customer_name': customer_name,
+                   'coupon_type': coupon.coupon_code_type,
+                   'coupon_code': coupon.coupon_code,
+                   'discount_percent': int(coupon.discount_percent),
+                   'gift_coupon_purchase_limit': gift_coupon_purchase_limit,
+                   'api_domain': settings.API_DOMAIN}
 
-    if coupon.coupon_code_type == 'RC':
-        subject = 'You have referral Coupon to share from shod.ai'
-    else:
-        subject = 'You got a new Coupon from shod.ai'
-    from_email, to = 'noreply@shod.ai', user.email
-    html_customer = get_template('coupon_email.html')
-    html_content = html_customer.render(content)
-    msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
-    return f"{coupon.coupon_code_type} sent to {user.email}"
+        if coupon.coupon_code_type == 'RC':
+            subject = 'You have referral Coupon to share from shod.ai'
+        else:
+            subject = 'You got a new Coupon from shod.ai'
+        from_email, to = 'noreply@shod.ai', user.email
+        html_customer = get_template('coupon_email.html')
+        html_content = html_customer.render(content)
+        msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        return f"{coupon.coupon_code_type} sent to {user.email}"
