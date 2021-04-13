@@ -135,14 +135,15 @@ class OrderProduct(BaseModel):
         """Save order_product_price_with_vat field using price_with_vat from product object.
            Save order_product_price_with_vat field using price_with_vat from product object
         """
-        today = timezone.now()
-        offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
-                                                    offer__offer_ends_in__gte=today, product=self.product)
+        if not self.order_product_price:
+            today = timezone.now()
+            offer_product = OfferProduct.objects.filter(is_approved=True, offer__offer_starts_in__lte=today,
+                                                        offer__offer_ends_in__gte=today, product=self.product)
 
-        if offer_product.exists():
-            self.order_product_price = float(offer_product[0].offer_price)
-        else:
-            self.order_product_price = float(self.product.product_price)
+            if offer_product.exists():
+                self.order_product_price = float(offer_product[0].offer_price)
+            else:
+                self.order_product_price = float(self.product.product_price)
         self.vat_amount = self.product.product_meta.vat_amount
         self.order_product_price_with_vat = round(self.order_product_price +
                                                   (self.order_product_price * self.vat_amount) / 100)

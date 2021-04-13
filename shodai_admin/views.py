@@ -420,6 +420,7 @@ class OrderDetail(APIView):
                         "message": "Invalid request!"
                     }, status=status.HTTP_400_BAD_REQUEST)
 
+                existing_order = order.id
                 order.order_status = 'CN'
                 order.save()
 
@@ -439,9 +440,18 @@ class OrderDetail(APIView):
                 total_vat = total = total_price = total_op_price = total_price_regular_product = 0
                 for p in products:
                     product = Product.objects.get(id=p["product_id"])
-                    op = OrderProduct.objects.create(product=product,
-                                                     order=order,
-                                                     order_product_qty=p["product_quantity"])
+                    is_op_unchanged = OrderProduct.objects.filter(product=product,
+                                                                  order=existing_order,
+                                                                  order_product_qty=p['product_quantity'])
+                    if is_op_unchanged:
+                        op = OrderProduct.objects.create(product=product,
+                                                         order=order,
+                                                         order_product_price=is_op_unchanged.order_product_price,
+                                                         order_product_qty=p["product_quantity"])
+                    else:
+                        op = OrderProduct.objects.create(product=product,
+                                                         order=order,
+                                                         order_product_qty=p["product_quantity"])
                     total_price += float(op.product_price) * op.order_product_qty
                     total_op_price += op.order_product_price * op.order_product_qty
                     total += float(op.order_product_price_with_vat) * op.order_product_qty
