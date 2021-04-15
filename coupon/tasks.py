@@ -75,3 +75,5 @@ def send_coupon_email(coupon, user):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         return f"{coupon.coupon_code_type} sent to {user.email}"
+    else:
+        return f"email not found"

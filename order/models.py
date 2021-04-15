@@ -143,10 +143,10 @@ class OrderProduct(BaseModel):
                 self.order_product_price = float(offer_product[0].offer_price)
             else:
                 self.order_product_price = float(self.product.product_price)
+            self.product_price = self.product.product_price
         self.vat_amount = self.product.product_meta.vat_amount
         self.order_product_price_with_vat = round(self.order_product_price +
                                                   (self.order_product_price * self.vat_amount) / 100)
-        self.product_price = self.product.product_price
         super(OrderProduct, self).save(*args, **kwargs)
 
     class Meta:

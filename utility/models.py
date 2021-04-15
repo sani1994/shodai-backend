@@ -71,7 +71,7 @@ class Banner(BaseModel):
     banner_img = models.ImageField(upload_to="banner", verbose_name="Image: 1300px/300px")
     banner_show_starts_in = models.DateTimeField()
     banner_show_ends_in = models.DateTimeField()
-    banner_url = models.CharField(max_length=300, default="https://www.shod.ai/offers")
+    banner_url = models.CharField(max_length=300, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):

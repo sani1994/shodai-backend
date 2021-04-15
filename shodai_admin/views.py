@@ -444,7 +444,8 @@ class OrderDetail(APIView):
                     if is_op_unchanged and is_op_unchanged[0].order_product_qty >= p["product_quantity"]:
                         op = OrderProduct.objects.create(product=product,
                                                          order=order,
-                                                         order_product_price=is_op_unchanged.order_product_price,
+                                                         order_product_price=is_op_unchanged[0].order_product_price,
+                                                         product_price=is_op_unchanged[0].product_price,
                                                          order_product_qty=p["product_quantity"])
                     else:
                         op = OrderProduct.objects.create(product=product,
