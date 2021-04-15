@@ -18,15 +18,14 @@ from num2words import num2words
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
-from bases.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker, \
-    keyword_based_search
+from bases.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
-from product.models import Product, ProductCategory, ProductMeta
+from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
-    UserProfileSerializer, ProductCategorySerializer, ProductMetaSerializer
+    UserProfileSerializer, ProductMetaSerializer
 from shodai.utils.permission import IsAdminUserQP
 from userProfile.models import UserProfile, Address
 
@@ -472,7 +471,7 @@ class OrderDetail(APIView):
                 order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note'][:500]
             else:
-                order.order_total_price = round(order.order_total_price - invoice.delivery_charge + delivery_charge + \
+                order.order_total_price = round(order.order_total_price - invoice.delivery_charge + delivery_charge +
                                                 prev_additional_discount - additional_discount)
                 order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
@@ -1367,6 +1366,7 @@ class OrderProductListCSV(APIView):
         product_meta = request.query_params.get('product_subcategory')
         order_status = all_order_status.get(request.query_params.get('order_status'))
         report_type = request.query_params.get('report_type', 'summary')
+        sort_by = 'product_id'
 
         if isinstance(date_from, str):
             try:
@@ -1387,78 +1387,78 @@ class OrderProductListCSV(APIView):
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__order_status=order_status,
                                                        order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to).order_by('product_id')
+                                                       order__placed_on__lt=date_to).order_by(sort_by)
 
             elif product_meta and not order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to).order_by('product_id')
+                                                       order__placed_on__lt=date_to).order_by(sort_by)
 
             elif not product_meta and order_status:
                 queryset = OrderProduct.objects.filter(order__order_status=order_status,
                                                        order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to).order_by('product_id')
+                                                       order__placed_on__lt=date_to).order_by(sort_by)
             else:
                 queryset = OrderProduct.objects.filter(order__placed_on__gte=date_from,
-                                                       order__placed_on__lt=date_to).order_by('product_id')
+                                                       order__placed_on__lt=date_to).order_by(sort_by)
         else:
             if product_meta and order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__order_status=order_status,
                                                        order__delivery_date_time__gte=date_from,
-                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
+                                                       order__delivery_date_time__lt=date_to).order_by(sort_by)
 
             elif product_meta and not order_status:
                 queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
                                                        order__delivery_date_time__gte=date_from,
-                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
+                                                       order__delivery_date_time__lt=date_to).order_by(sort_by)
 
             elif not product_meta and order_status:
                 queryset = OrderProduct.objects.filter(order__order_status=order_status,
                                                        order__delivery_date_time__gte=date_from,
-                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
+                                                       order__delivery_date_time__lt=date_to).order_by(sort_by)
             else:
                 queryset = OrderProduct.objects.filter(order__delivery_date_time__gte=date_from,
-                                                       order__delivery_date_time__lt=date_to).order_by('product_id')
+                                                       order__delivery_date_time__lt=date_to).order_by(sort_by)
 
         if report_type == 'summary':
-            order_list = []
+            order_product_list = []
             for obj in queryset:
-                if not any(d['Product Name'] == obj.product.product_name for d in order_list):
+                for item in order_product_list:
+                    if item['Product Name'] == obj.product.product_name:
+                        item['Product Quantity'] += obj.order_product_qty
+                        break
+                else:
                     product_data = {'Product Category': obj.product.product_meta.product_category.type_of_product,
                                     'Product Subcategory': obj.product.product_meta.name,
                                     'Product Name': obj.product.product_name,
                                     'Product Unit': obj.product.product_unit.product_unit,
                                     'Product Quantity': obj.order_product_qty}
-                    order_list.append(product_data)
-                else:
-                    for a in order_list:
-                        if a['Product Name'] == obj.product.product_name:
-                            a['Product Quantity'] = a['Product Quantity'] + obj.order_product_qty
+                    order_product_list.append(product_data)
 
             field_names = ["Product Category", "Product Subcategory", "Product Name",
                            "Product Unit", "Product Quantity"]
 
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=product_summary.csv'
+            response['Content-Disposition'] = 'attachment; filename=order_product_list_summary.csv'
             writer = csv.writer(response)
 
             writer.writerow(field_names)
-            for obj in order_list:
+            for obj in order_product_list:
                 writer.writerow([obj[field] for field in field_names])
         else:
             field_names = ["Product Category", "Product Subcategory", "Product Name",
-                           "Product Unit", "Product Quantity", "Order ID"]
+                           "Product Unit", "Product Quantity", "Order Number"]
 
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=product_list.csv'
+            response['Content-Disposition'] = 'attachment; filename=order_product_list.csv'
             writer = csv.writer(response)
 
             writer.writerow(field_names)
             for obj in queryset:
                 writer.writerow([obj.product.product_meta.product_category.type_of_product, obj.product.product_meta.name,
                                  obj.product.product_name, obj.product.product_unit.product_unit,
-                                 obj.order_product_qty, obj.order.id])
+                                 obj.order_product_qty, obj.order.order_number])
         return response
 
 
@@ -1466,8 +1466,6 @@ class ProductMetaList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        search = request.query_params.get('search')
-        product_metas = ProductMeta.objects.filter(is_approved=True,
-                                                   name__icontains=search)[:30]
-        serializer = ProductMetaSerializer(product_metas, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        queryset = ProductMeta.objects.filter(is_approved=True)
+        serializer = ProductMetaSerializer(queryset, many=True)
+        return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)

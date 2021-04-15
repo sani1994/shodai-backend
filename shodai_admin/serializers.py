@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from offer.models import OfferProduct, Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo
-from product.models import Product, ProductCategory
+from product.models import Product, ProductMeta
 from userProfile.models import UserProfile
 
 all_order_status = {
@@ -249,17 +249,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return Order.objects.filter(user=obj).count()
 
 
-class ProductCategorySerializer(serializers.ModelSerializer):
-    product_category = serializers.StringRelatedField(source='type_of_product')
-
-    class Meta:
-        model = ProductCategory
-        fields = ('product_category',)
-
-
 class ProductMetaSerializer(serializers.ModelSerializer):
-    product_meta = serializers.StringRelatedField(source='name')
-
     class Meta:
-        model = ProductCategory
-        fields = ('product_meta',)
+        model = ProductMeta
+        fields = ['id', 'name']

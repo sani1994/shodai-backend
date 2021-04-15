@@ -291,19 +291,19 @@ class AddressUpdateMutation(graphene.Mutation):
             return AddressUpdateMutation(address=address, ok=True)
 
 
-class AddressDeleteMutation(graphene.Mutation):
-    ok = graphene.Boolean()
-
-    class Arguments:
-        id = graphene.ID()
-
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
-        user = info.context.user
-        if checkAuthentication(user, info):
-            obj = Address.objects.get(pk=kwargs["id"], user=user)
-            obj.delete()
-            return cls(ok=True)
+# class AddressDeleteMutation(graphene.Mutation):
+#     ok = graphene.Boolean()
+#
+#     class Arguments:
+#         id = graphene.ID()
+#
+#     @classmethod
+#     def mutate(cls, root, info, **kwargs):
+#         user = info.context.user
+#         if checkAuthentication(user, info):
+#             obj = Address.objects.get(pk=kwargs["id"], user=user)
+#             obj.delete()
+#             return cls(ok=True)
 
 
 class ForgotPasswordMutation(graphene.Mutation):
@@ -366,6 +366,6 @@ class Mutation(graphene.ObjectType):
     create_retailer = RetailerProducerCreateMutation.Field()
     create_address = AddressCreateMutation.Field()
     update_address = AddressUpdateMutation.Field()
-    delete_address = AddressDeleteMutation.Field()
+    # delete_address = AddressDeleteMutation.Field()
     change_password = ChangePasswordMutation.Field()
     forgot_password = ForgotPasswordMutation.Field()
