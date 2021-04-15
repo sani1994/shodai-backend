@@ -389,6 +389,7 @@ class OrderDetail(APIView):
             is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
             if is_coupon_discount:
                 coupon_discount = is_coupon_discount[0].discount_amount
+                coupon_discount_description = is_coupon_discount[0].discount_description
             elif data['coupon_code']:
                 discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, order.user)
                 if discount_amount:
