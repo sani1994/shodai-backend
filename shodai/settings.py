@@ -89,7 +89,9 @@ INSTALLED_APPS = [
     'graphene_gis',
     'corsheaders',
     'leaflet',
-    'django_q'
+    'django_q',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 Q_CLUSTER = {
@@ -209,6 +211,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
 
 DEBUG = config("DEBUG", cast=bool)
 APPEND_SLASH = False

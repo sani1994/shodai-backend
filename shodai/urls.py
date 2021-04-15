@@ -77,6 +77,7 @@ urlpatterns = [
     path('admin/', include('material.admin.urls')),
     path('', include('search.urls')),
     path('notifications/', include(notifications.urls, namespace='notifications')),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
 
     # Graphql
     url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
