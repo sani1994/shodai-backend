@@ -6,7 +6,7 @@ from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInf
 from product.models import Product, ProductMeta
 from userProfile.models import UserProfile
 
-all_order_status = {
+order_status_all = {
     'OD': 'Ordered',
     'OA': 'Order Accepted',
     'RE': 'Order Ready',
@@ -57,7 +57,7 @@ class OrderListSerializer(serializers.ModelSerializer):
         return obj.user.mobile_number
 
     def get_order_status(self, obj):
-        return all_order_status[obj.order_status]
+        return order_status_all[obj.order_status]
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -180,7 +180,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         return InvoiceSerializer(invoice).data
 
     def get_order_status(self, obj):
-        return all_order_status[obj.order_status]
+        return order_status_all[obj.order_status]
 
 
 class ProductSearchSerializer(serializers.ModelSerializer):

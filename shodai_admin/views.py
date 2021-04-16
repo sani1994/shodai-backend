@@ -25,7 +25,7 @@ from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeS
 from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
-    UserProfileSerializer, ProductMetaSerializer
+    UserProfileSerializer, ProductMetaSerializer, order_status_all
 from shodai.utils.permission import IsAdminUserQP
 from userProfile.models import UserProfile, Address
 
@@ -1368,7 +1368,7 @@ class OrderProductListCSV(APIView):
         product_meta = request.query_params.get('product_subcategory')
         order_status = all_order_status.get(request.query_params.get('order_status'))
         report_type = request.query_params.get('report_type', 'summary')
-        sort_by = 'product_id'
+        sort_by = 'created_on'
 
         if isinstance(date_from, str):
             try:
@@ -1449,18 +1449,22 @@ class OrderProductListCSV(APIView):
             for obj in order_product_list:
                 writer.writerow([obj[field] for field in field_names])
         else:
-            field_names = ["Product Category", "Product Subcategory", "Product Name",
-                           "Product Unit", "Product Quantity", "Order Number"]
+            field_names = ["Sl", "Order Number", "Order Placing Date", "Order Status", "Order Total Amount",
+                           "Product ID", "Product Name", "Product Unit Price", "Product Quantity",
+                           "Product Total Price", "Product Subcategory"]
 
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=order_product_list.csv'
             writer = csv.writer(response)
 
             writer.writerow(field_names)
+            count = 0
             for obj in queryset:
-                writer.writerow([obj.product.product_meta.product_category.type_of_product, obj.product.product_meta.name,
-                                 obj.product.product_name, obj.product.product_unit.product_unit,
-                                 obj.order_product_qty, obj.order.order_number])
+                count += 1
+                writer.writerow([count, obj.order.order_number, str(obj.order.created_on+timedelta(hours=6))[:19],
+                                order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
+                                obj.product.product_name, obj.order_product_price, obj.order_product_qty,
+                                obj.order_product_price*obj.order_product_qty, obj.product.product_meta.name])
         return response
 
 
