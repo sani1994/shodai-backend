@@ -1,6 +1,5 @@
 import graphene
 from graphene_django.types import DjangoObjectType
-from graphene_gis.converter import gis_converter
 from ..models import Message
 
 

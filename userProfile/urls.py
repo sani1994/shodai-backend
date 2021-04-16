@@ -20,8 +20,6 @@ urlpatterns = [
     path('otpverify/',views.OtpVerify.as_view()),
     path('retailerregistration/',views.RetailerRegistration.as_view()), #registration for retailer
     path('producerregistration/',views.RetailerRegistration.as_view()) ,#producer registration.. same as retailer so that used same view
-    path('', views.Home.as_view()),
-    path('dw', views.Download.as_view(), name = 'download-html'),
     path('change-password/', views.ChangePassword.as_view()),
     path('forget-password/', views.ForgetPassword.as_view()),
     path('forget-password-varification/', views.ForgetPasswordVarification.as_view()),

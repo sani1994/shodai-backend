@@ -2,8 +2,6 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404, ListAPIView
 
-import qrcode
-
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
     ProductMetaSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product

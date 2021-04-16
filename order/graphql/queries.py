@@ -1,6 +1,6 @@
 import graphene
 from graphene_django.types import DjangoObjectType
-from graphene_gis.converter import gis_converter
+from graphene_gis.converter import gis_converter  # noqa
 
 from bases.views import checkAuthentication
 from userProfile.models import BlackListedToken

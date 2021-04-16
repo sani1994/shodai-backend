@@ -1,0 +1,31 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Django = "==2.2.20"
+django-cors-headers = "*"
+django-filter = "*"
+django-graphql-jwt = "==0.3.1"
+django-import-export = "*"
+django-leaflet = "*"
+django-material-admin = "==1.5.6"
+django-notifications-hq = "*"
+django-q = "==1.3.4"
+django-simple-history = "*"
+djangorestframework = "*"
+djangorestframework-simplejwt = "*"
+geocoder = "*"
+graphene-django = "==2.14.0"
+graphene-gis = "*"
+num2words = "*"
+pandas = "*"
+psycopg2 = "*"
+python-decouple = "*"
+xhtml2pdf = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

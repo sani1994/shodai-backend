@@ -1,6 +1,5 @@
 import random
 
-import serializer
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render
@@ -272,7 +271,7 @@ class RetailerRegistration(APIView):  # Retailer regerstration class
         if serializer.is_valid():
             serializer.save()
             """
-            To send notification to admin 
+            To send notification to admin
             """
             sub = "Approval Request For Retailer Account"
             body = f"Dear Concern,\r\n User phone number :{serializer.data['mobile_number']} \r\nUser type: {serializer.data['user_type']} \r\nis requesting your approval.\r\n \r\nThanks and Regards\r\nShodai"
@@ -321,7 +320,7 @@ class ForgetPassword(APIView):
         if mobile_number:
             # user_instance = get_object_or_404(UserProfile, mobile_number=mobile_number)
             user_instance = UserProfile.objects.filter(mobile_number=mobile_number)
-            # if user_instance. 
+            # if user_instance.
             if not user_instance:
                 return Response({"status": "User not available"}, status=status.HTTP_200_OK)
 

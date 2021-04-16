@@ -2,11 +2,21 @@ body {
   font-family: "Roboto", "sans-serif";
 }
 #banner {
+  flex: 1 0 auto;
   background-image: url("../images/bg-landing-min.jpg");
   background-size: cover;
   min-height: 100vh;
   display: flex;
   align-items: center;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
 }
 
 h1,
@@ -33,6 +43,7 @@ p {
   padding-bottom: 30px;
 }
 footer {
+  flex-shrink: 0;
   text-align: center;
   padding: 30px 0;
   background-color: #2c2e31;
@@ -66,6 +77,7 @@ footer p {
   color: #333;
 }
 #app {
+  flex: 1 0 auto;
   text-align: center;
   padding: 120px 0;
 }

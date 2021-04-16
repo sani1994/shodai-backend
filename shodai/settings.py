@@ -55,14 +55,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'simple_history',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'graphene_django',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
+    'graphene_gis',
+    'simple_history',
+    'notifications',
     'import_export',
+    'django_filters',
+    'corsheaders',
+    'leaflet',
+    'django_q',
+    'ckeditor',
+    'ckeditor_uploader',
     # 'django_elasticsearch_dsl',
-    # 'material.admin',
-    # for djnago material admin site
 
     'userProfile',
     'bases',
@@ -78,20 +86,9 @@ INSTALLED_APPS = [
     'inventory',
     'delivery',
     'search',
-    'notifications',
     'customer_service',
     'shodai_admin',
     'coupon',
-
-    'graphene_django',
-    'django_filters',
-    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
-    'graphene_gis',
-    'corsheaders',
-    'leaflet',
-    'django_q',
-    'ckeditor',
-    'ckeditor_uploader',
 ]
 
 Q_CLUSTER = {
@@ -250,6 +247,7 @@ else:
 CORS_ORIGIN_ALLOW_ALL = True
 
 API_DOMAIN = config("API_DOMAIN")
+WEB_DOMAIN = config("WEB_DOMAIN")
 INTERNAL_BRICKBOX_API_URL = config("INTERNAL_BRICKBOX_API_URL")
 INTERNAL_BRICKBOX_API_TOKEN = config("INTERNAL_BRICKBOX_API_TOKEN")
 

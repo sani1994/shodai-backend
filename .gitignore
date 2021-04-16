@@ -4,6 +4,7 @@
 *.idea
 *.vscode
 *.DS_Store
+.python-version
 migrations/
 __pycache__/
 __pyc__/

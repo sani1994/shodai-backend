@@ -62,7 +62,7 @@ def send_coupon_email(coupon, user):
                    'coupon_code': coupon.coupon_code,
                    'discount_percent': int(coupon.discount_percent),
                    'gift_coupon_purchase_limit': gift_coupon_purchase_limit,
-                   'api_domain': settings.API_DOMAIN}
+                   'web_domain': settings.WEB_DOMAIN}
 
         if coupon.coupon_code_type == 'RC':
             subject = 'You have referral Coupon to share from shod.ai'

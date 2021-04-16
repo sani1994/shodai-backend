@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from httplib2 import Response
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from shodai.utils.permission import GenericAuth
 from utility.models import Area, ProductUnit, Remarks
@@ -161,6 +161,3 @@ class RemarksDetails(APIView):              #remarks unit object get, update and
             obj = self.get_remarks_obj(id)
             obj.delete()
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
-
-

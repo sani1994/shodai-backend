@@ -20,6 +20,7 @@ from django.conf import settings
 # from django.template.context_processors import static
 from django.urls import path, include
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import TemplateView
 from graphene_django.views import GraphQLView
 from rest_framework import routers
 from django.conf.urls.static import static
@@ -30,7 +31,7 @@ from .schema import schema
 
 # for django matreial admin site
 
-from django.contrib.staticfiles.templatetags.staticfiles import static as staticfiles
+from django.templatetags.static import static as staticfiles
 from django.urls import path, include
 from django.utils.translation import ugettext_lazy as _
 from material.admin.sites import site
@@ -70,14 +71,18 @@ urlpatterns = [
     path('', include('producer.urls')),
     path('', include('retailer.urls')),
     path('', include('userProfile.urls')),
-    path('admins/', include('shodai_admin.urls')),
     path('', include('offer.urls')),
     path('', include('coupon.urls')),
     path('', include('utility.urls')),
+    # path('', include('search.urls')),
+    path('admins/', include('shodai_admin.urls')),
     path('admin/', include('material.admin.urls')),
-    path('', include('search.urls')),
     path('notifications/', include(notifications.urls, namespace='notifications')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+
+    # Landing
+    url(r'^$', TemplateView.as_view(template_name='landing/index.html')),
+    url(r'^download/app', TemplateView.as_view(template_name='landing/download.html')),
 
     # Graphql
     url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
