@@ -1,4 +1,6 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+{% load static %}
+
+<!DOCTYPE html>
 <html>
     <head>
         <title>Invoice of Order#{{order_number}}</title>
@@ -6,7 +8,7 @@
         <style type="text/css">
         @font-face {
           font-family: "SolaimanLipi";
-          src: url('shodai/static/rest_framework/fonts/SolaimanLipi.ttf') format("truetype");
+          src: url('static/fonts/SolaimanLipi.ttf') format("truetype");
         }
             body {
                 font-weight: 200;
@@ -69,7 +71,7 @@
     <body>
         <div class='wrapper'>
             <div class='header'>
-                <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
+                <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="{% static 'others/shodai-logo.png' %}" alt="shodai-logo" width="100" /></caption>
             </div>
 
         <div class='details'>

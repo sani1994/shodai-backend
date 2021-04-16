@@ -202,9 +202,11 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-# STATIC_ROOT = ''
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -228,16 +230,12 @@ AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
 GRAPHENE = {
     'MIDDLEWARE': [
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
 }
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '/shodai/'),
-]
-
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 if DEBUG:
     CORS_ORIGIN_WHITELIST = config("CORS_ORIGIN_WHITELIST").replace(" ", "").split(',')
@@ -250,8 +248,3 @@ API_DOMAIN = config("API_DOMAIN")
 WEB_DOMAIN = config("WEB_DOMAIN")
 INTERNAL_BRICKBOX_API_URL = config("INTERNAL_BRICKBOX_API_URL")
 INTERNAL_BRICKBOX_API_TOKEN = config("INTERNAL_BRICKBOX_API_TOKEN")
-
-# try:
-#     from .local_settings import *
-# except ImportError:
-#     pass
