@@ -68,7 +68,7 @@ class Message(BaseModel):
 
 class Banner(BaseModel):
     banner_heading = models.CharField(max_length=100)
-    banner_img = models.ImageField(upload_to="banner", verbose_name="Image: 1300px/300px")
+    banner_img = models.ImageField(upload_to="pictures/banner", verbose_name="Image: 1300px/300px")
     banner_show_starts_in = models.DateTimeField()
     banner_show_ends_in = models.DateTimeField()
     banner_url = models.CharField(max_length=300, blank=True, null=True)

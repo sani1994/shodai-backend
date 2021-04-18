@@ -22,7 +22,7 @@ class ShopCategory(BaseModel):
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
     type_of_product_bn = models.CharField(max_length=90, null=True, blank=True, verbose_name='পন্যের ধরন')
-    img = models.ImageField(upload_to='pictures/productcategory/', blank=True, null=True)
+    img = models.ImageField(upload_to='pictures/productcategory', blank=True, null=True)
     is_approved = models.BooleanField(default=False)
     code = models.IntegerField(null=True, unique=True)
     history = HistoricalRecords()
@@ -38,7 +38,7 @@ class ProductCategory(BaseModel):
 class ProductMeta(BaseModel):  # Prodect Meta (original product name with comapny name)
     name = models.CharField(max_length=100)
     name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='নাম')
-    img = models.ImageField(upload_to="pictures/productmeta/", blank=True, null=True)
+    img = models.ImageField(upload_to="pictures/productmeta", blank=True, null=True)
     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     shop_category = models.ForeignKey(ShopCategory, on_delete=models.CASCADE, verbose_name='Product Type')
     vat_amount = models.FloatField(default=0, blank=True, null=True,
@@ -71,7 +71,7 @@ class Product(BaseModel):
     product_name = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
     product_name_bn = models.CharField(max_length=100, null=True, blank=True, verbose_name='পন্যের নাম')
-    product_image = models.ImageField(upload_to='pictures/product/', blank=False, null=False)
+    product_image = models.ImageField(upload_to='pictures/product', blank=False, null=False)
     product_description = RichTextUploadingField()
     product_description_bn = models.CharField(max_length=400, default=" ")
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, default=None)

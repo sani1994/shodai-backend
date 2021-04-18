@@ -26,7 +26,7 @@ class Offer(BaseModel):
 
     offer_name = models.CharField(max_length=100)
     offer_name_bn = models.CharField(max_length=100, blank=True, null=True)
-    offer_img = models.ImageField(upload_to="offer", blank=True, null=True, verbose_name="Image: 1300px/300px")
+    offer_img = models.ImageField(upload_to="pictures/offer", blank=True, null=True, verbose_name="Image: 1300px/300px")
     offer_details = models.CharField(max_length=500, blank=True, null=True)
     offer_details_bn = models.CharField(max_length=500, blank=True, null=True, verbose_name='Offer Detail Bangla')
     offer_starts_in = models.DateTimeField()

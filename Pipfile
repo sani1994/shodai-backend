@@ -24,6 +24,7 @@ pandas = "*"
 psycopg2 = "*"
 python-decouple = "*"
 xhtml2pdf = "*"
+django-ckeditor = "*"
 
 [dev-packages]
 
