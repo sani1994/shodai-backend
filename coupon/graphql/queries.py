@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 import graphene
@@ -80,4 +81,23 @@ class Query(graphene.ObjectType):
                                                       expiry_date__gte=timezone.now(),
                                                       max_usage_count__gt=0,
                                                       created_by=user).order_by('-created_on')
-            return referral_code[0] if referral_code else None
+            if referral_code:
+                return referral_code[0]
+            else:
+                referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
+                if referral_discount_settings.is_active:
+                    referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                                name="Referral Coupon",
+                                                                discount_percent=referral_discount_settings.discount_percent,
+                                                                discount_amount=referral_discount_settings.discount_amount,
+                                                                max_usage_count=referral_discount_settings.max_usage_count,
+                                                                minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                                discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                                expiry_date=timezone.now() + timedelta(
+                                                                    days=referral_discount_settings.validity_period),
+                                                                discount_type=referral_discount_settings.discount_type,
+                                                                coupon_code_type='RC',
+                                                                created_by=user)
+                    return referral_coupon
+                else:
+                    return None

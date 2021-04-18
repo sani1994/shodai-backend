@@ -85,15 +85,19 @@ def coupon_checker(coupon_code, products, user, is_graphql=False, is_used=False)
         if product:
             product = product[0]
             total = float(product.product_price) * product_quantity
-            sub_total += total
+            offer_product = OfferProduct.objects.filter(product=product,
+                                                        is_approved=True,
+                                                        offer__is_approved=True,
+                                                        offer__offer_starts_in__lte=today,
+                                                        offer__offer_ends_in__gte=today)
+            if offer_product:
+                total_offer = float(offer_product[0].offer_price) * product_quantity
+                sub_total += total_offer
+            else:
+                sub_total += total
             if allow_offer_product:
                 total_price = sub_total
             else:
-                offer_product = OfferProduct.objects.filter(product=product,
-                                                            is_approved=True,
-                                                            offer__is_approved=True,
-                                                            offer__offer_starts_in__lte=today,
-                                                            offer__offer_ends_in__gte=today)
                 if not offer_product:
                     total_price += total
 
