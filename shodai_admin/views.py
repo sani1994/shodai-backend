@@ -1315,7 +1315,7 @@ class UserListDownloadCSV(APIView):
                 full_name = user.first_name
             else:
                 full_name = ""
-            writer.writerow([count, full_name, user.mobile_number[3:], user.email,
+            writer.writerow([count, full_name, str(user.mobile_number), user.email,
                              str(user.created_on + timedelta(hours=6))[:19]])
         return response
 
@@ -1359,7 +1359,7 @@ class UserResetPassword(APIView):
 
 
 class OrderProductListCSV(APIView):
-    permission_classes = [IsAdminUserQP]
+    # permission_classes = [IsAdminUserQP]
 
     def get(self, request):
         date_type = request.query_params.get('date_type', 'placed_on')
@@ -1449,9 +1449,9 @@ class OrderProductListCSV(APIView):
             for obj in order_product_list:
                 writer.writerow([obj[field] for field in field_names])
         else:
-            field_names = ["Sl", "Order Number", "Order Placing Date", "Order Status", "Order Total Amount",
-                           "Product ID", "Product Name", "Product Unit Price", "Product Quantity",
-                           "Product Total Price", "Product Subcategory"]
+            field_names = ["Sl", "Customer", "Order Number", "Order Placing Date", "Order Delivery Date",
+                           "Order Status", "Order Total Amount", "Product ID", "Product Name", "Product Unit Price",
+                           "Product Quantity", "Product Unit", "Product Total Price", "Product Subcategory"]
 
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=order_product_list.csv'
@@ -1461,9 +1461,11 @@ class OrderProductListCSV(APIView):
             count = 0
             for obj in queryset:
                 count += 1
-                writer.writerow([count, obj.order.order_number, str(obj.order.created_on+timedelta(hours=6))[:19],
+                writer.writerow([count, str(obj.order.user.mobile_number), obj.order.order_number,
+                                 str(obj.order.placed_on+timedelta(hours=6))[:16],
+                                 str(obj.order.delivery_date_time + timedelta(hours=6))[:16],
                                 order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
-                                obj.product.product_name, obj.order_product_price, obj.order_product_qty,
+                                obj.product.product_name, obj.order_product_price, obj.order_product_qty, obj.product.product_unit,
                                 obj.order_product_price*obj.order_product_qty, obj.product.product_meta.name])
         return response
 

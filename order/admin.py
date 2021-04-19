@@ -73,9 +73,9 @@ class OrderAdmin(MaterialModelAdmin):
             return actions
 
     def export_as_csv(self, request, queryset):
-        field_names = ['id', 'user', 'invoice_number', 'order_total_price',
-                       'delivery_date_time', 'delivery_place', 'address',
-                       'order_product_name', 'order_product_unit', 'order_product_quantity']
+        field_names = ['ID', 'Customer', 'Invoice Number', 'Order Total Price',
+                       'Delivery DateTime', 'Delivery Place', 'Address',
+                       'Product Name', 'Product Unit', 'Product Quantity']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=order.csv'
@@ -83,7 +83,9 @@ class OrderAdmin(MaterialModelAdmin):
 
         writer.writerow(field_names)
         for obj in queryset:
-            row = writer.writerow([getattr(obj, field) for field in field_names])
+            writer.writerow([obj.id, str(obj.user.mobile_number), obj.invoice_number, obj.order_total_price,
+                            obj.delivery_date_time, obj.delivery_place, obj.address, obj.order_product_name,
+                             obj.order_product_unit, obj.order_product_quantity])
         return response
 
     export_as_csv.short_description = "Export Selected"
