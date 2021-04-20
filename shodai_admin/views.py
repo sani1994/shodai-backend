@@ -1400,7 +1400,7 @@ class UserResetPassword(APIView):
                             status=status.HTTP_200_OK)
 
 
-class OrderProductListCSV(APIView):
+class OrderProductListExcel(APIView):
     permission_classes = [IsAdminUserQP]
 
     def get(self, request):
@@ -1409,7 +1409,6 @@ class OrderProductListCSV(APIView):
         date_to = request.query_params.get('date_to')
         product_meta = request.query_params.get('product_subcategory')
         order_status = all_order_status.get(request.query_params.get('order_status'))
-        report_type = request.query_params.get('report_type', 'summary')
         sort_by = 'created_on'
 
         if isinstance(date_from, str):
@@ -1465,51 +1464,72 @@ class OrderProductListCSV(APIView):
                 queryset = OrderProduct.objects.filter(order__delivery_date_time__gte=date_from,
                                                        order__delivery_date_time__lt=date_to).order_by(sort_by)
 
-        if report_type == 'summary':
-            order_product_list = []
-            for obj in queryset:
-                for item in order_product_list:
-                    if item['Product Name'] == obj.product.product_name:
-                        item['Product Quantity'] += obj.order_product_qty
-                        break
-                else:
-                    product_data = {'Product Category': obj.product.product_meta.product_category.type_of_product,
-                                    'Product Subcategory': obj.product.product_meta.name,
-                                    'Product Name': obj.product.product_name,
-                                    'Product Unit': obj.product.product_unit.product_unit,
-                                    'Product Quantity': obj.order_product_qty}
-                    order_product_list.append(product_data)
+        order_status = order_status_all[order_status] if order_status else "All"
+        order_product_list = []
+        for obj in queryset:
+            for item in order_product_list:
+                if item['Product Name'] == obj.product.product_name:
+                    item['Product Quantity'] += obj.order_product_qty
+                    break
+            else:
+                product_data = {'Product Category': obj.product.product_meta.product_category.type_of_product,
+                                'Product Subcategory': obj.product.product_meta.name,
+                                'Product Name': obj.product.product_name,
+                                'Product Unit': obj.product.product_unit.product_unit,
+                                'Product Quantity': obj.order_product_qty}
+                order_product_list.append(product_data)
 
-            df = pd.DataFrame(order_product_list)
-            wb = Workbook()
-            ws = wb.active
+        df = pd.DataFrame(order_product_list)
+        wb = Workbook()
+        ws1 = wb.active
+        ws1.title = 'Summary'
+        ws2 = wb.create_sheet("Breakdown")
 
-            for row in dataframe_to_rows(df, index=False, header=True):
-                ws.append(row)
+        for row in dataframe_to_rows(df, index=False, header=True):
+            ws1.append(row)
 
-            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = 'attachment; filename=order_product_list.xlsx'
-            wb.save(response)
+        for column_cells in ws1.columns:
+            length = max(len(str(cell.value)) for cell in column_cells)
+            ws1.column_dimensions[column_cells[0].column_letter].width = length + 1
 
-        else:
-            field_names = ["Sl", "Customer", "Order Number", "Order Placing Date", "Order Delivery Date",
-                           "Order Status", "Order Total Amount", "Product ID", "Product Name", "Product Unit Price",
-                           "Product Quantity", "Product Unit", "Product Total Price", "Product Subcategory"]
+        field_names = ["Sl", "Customer", "Order Number", "Order Placing Date", "Order Delivery Date",
+                       "Order Status", "Order Total Amount", "Product ID", "Product Name", "Product Unit Price",
+                       "Product Quantity", "Product Unit", "Product Total Price", "Product Subcategory"]
+        ws2.append(field_names)
 
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=order_product_list.csv'
-            writer = csv.writer(response)
+        count = 0
+        for obj in queryset:
+            count += 1
+            row = [count, obj.order.user.mobile_number[3:], obj.order.order_number,
+                   str(obj.order.placed_on + timedelta(hours=6))[:16],
+                   str(obj.order.delivery_date_time + timedelta(hours=6))[:16],
+                   order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
+                   obj.product.product_name, obj.order_product_price, obj.order_product_qty,
+                   obj.product.product_unit.product_unit,
+                   obj.order_product_price * obj.order_product_qty, obj.product.product_meta.name]
+            ws2.append(row)
 
-            writer.writerow(field_names)
-            count = 0
-            for obj in queryset:
-                count += 1
-                writer.writerow([count, str(obj.order.user.mobile_number), obj.order.order_number,
-                                 str(obj.order.placed_on+timedelta(hours=6))[:16],
-                                 str(obj.order.delivery_date_time + timedelta(hours=6))[:16],
-                                order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
-                                obj.product.product_name, obj.order_product_price, obj.order_product_qty, obj.product.product_unit,
-                                obj.order_product_price*obj.order_product_qty, obj.product.product_meta.name])
+        for column_cells in ws2.columns:
+            length = max(len(str(cell.value)) for cell in column_cells)
+            ws2.column_dimensions[column_cells[0].column_letter].width = length + 1
+
+        ws1.insert_rows(idx=1, amount=3)
+        ws1["A1"] = f"Title: Order Product Summary List \n" \
+                    f"Generated Report for orders with {date_type}: " \
+                    f"from {date_from.date()} to {date_to.date()}, " \
+                    f"Order Status: {order_status}, Subcategory: {product_meta}"
+        ws1.merge_cells(start_row=1, start_column=1, end_row=2, end_column=ws1.max_column)
+
+        ws2.insert_rows(idx=1, amount=3)
+        ws2["A1"] = f"Title: Order Product List \n" \
+                    f"Generated Report for orders with {date_type}: " \
+                    f"from {date_from.date()} to {date_to.date()}, " \
+                    f"Order Status: {order_status}, Subcategory: {product_meta}"
+        ws2.merge_cells(start_row=1, start_column=1, end_row=2, end_column=ws2.max_column)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=order_product_list.xlsx'
+        wb.save(response)
         return response
 
 
