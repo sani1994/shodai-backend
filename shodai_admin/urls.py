@@ -39,6 +39,7 @@ urlpatterns = [
 
     # reports
     path('reports/all-customers/download/csv', views.UserListDownloadCSV.as_view()),
+    path('reports/all-customers/download/excel', views.UserListDownloadExcel.as_view()),
     path('reports/order-products/download/csv', views.OrderProductListCSV.as_view()),
 
 ]

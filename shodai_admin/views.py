@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django_q.tasks import async_task
 from num2words import num2words
+from openpyxl import Workbook
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
@@ -1317,6 +1318,45 @@ class UserListDownloadCSV(APIView):
                 full_name = ""
             writer.writerow([count, full_name, user.mobile_number[3:], user.email,
                              str(user.created_on + timedelta(hours=6))[:19]])
+        return response
+
+
+class UserListDownloadExcel(APIView):
+    permission_classes = [IsAdminUserQP]
+    """
+    Get Excel of Users
+    """
+
+    def get(self, request):
+        queryset = UserProfile.objects.filter(user_type='CM', is_active=True).order_by('-created_on')
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=customer_list.xlsx'
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Customer List'
+
+        columns = ["No.", "Name", "Mobile Number", "Email", "Registered on"]
+        sheet.append(columns)
+
+        for count, customer in enumerate(queryset, 1):
+            if customer.first_name and customer.last_name:
+                full_name = customer.first_name + " " + customer.last_name
+            elif customer.first_name:
+                full_name = customer.first_name
+            else:
+                full_name = ""
+
+            row = [count, full_name, str(customer.mobile_number[3:]), customer.email,
+                   str(customer.created_on + timedelta(hours=6))[:19]]
+            sheet.append(row)
+
+        for column_cells in sheet.columns:
+            length = max(len(str(cell.value)) for cell in column_cells)
+            sheet.column_dimensions[column_cells[0].column_letter].width = length + 1
+
+        workbook.save(response)
         return response
 
 
