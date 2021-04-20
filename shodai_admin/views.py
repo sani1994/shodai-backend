@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 from random import randint
 
+import pandas as pd
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
@@ -15,6 +16,8 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django_q.tasks import async_task
 from num2words import num2words
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
@@ -1359,7 +1362,7 @@ class UserResetPassword(APIView):
 
 
 class OrderProductListCSV(APIView):
-    # permission_classes = [IsAdminUserQP]
+    permission_classes = [IsAdminUserQP]
 
     def get(self, request):
         date_type = request.query_params.get('date_type', 'placed_on')
@@ -1438,16 +1441,17 @@ class OrderProductListCSV(APIView):
                                     'Product Quantity': obj.order_product_qty}
                     order_product_list.append(product_data)
 
-            field_names = ["Product Category", "Product Subcategory", "Product Name",
-                           "Product Unit", "Product Quantity"]
+            df = pd.DataFrame(order_product_list)
+            wb = Workbook()
+            ws = wb.active
 
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=order_product_list_summary.csv'
-            writer = csv.writer(response)
+            for row in dataframe_to_rows(df, index=False, header=True):
+                ws.append(row)
 
-            writer.writerow(field_names)
-            for obj in order_product_list:
-                writer.writerow([obj[field] for field in field_names])
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=order_product_list.xlsx'
+            wb.save(response)
+
         else:
             field_names = ["Sl", "Customer", "Order Number", "Order Placing Date", "Order Delivery Date",
                            "Order Status", "Order Total Amount", "Product ID", "Product Name", "Product Unit Price",
