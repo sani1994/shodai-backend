@@ -74,7 +74,7 @@ class OrderAdmin(MaterialModelAdmin):
 
     def export_as_csv(self, request, queryset):
         field_names = ['ID', 'Customer', 'Invoice Number', 'Order Total Price',
-                       'Delivery DateTime', 'Delivery Place', 'Address',
+                       'Delivery Date Time', 'Delivery Place', 'Address',
                        'Product Name', 'Product Unit', 'Product Quantity']
 
         response = HttpResponse(content_type='text/csv')
@@ -83,8 +83,8 @@ class OrderAdmin(MaterialModelAdmin):
 
         writer.writerow(field_names)
         for obj in queryset:
-            writer.writerow([obj.id, str(obj.user.mobile_number), obj.invoice_number, obj.order_total_price,
-                            obj.delivery_date_time, obj.delivery_place, obj.address, obj.order_product_name,
+            writer.writerow([obj.id, obj.user.mobile_number, obj.invoice_number, obj.order_total_price,
+                             obj.delivery_date_time, obj.delivery_place, obj.address, obj.order_product_name,
                              obj.order_product_unit, obj.order_product_quantity])
         return response
 
