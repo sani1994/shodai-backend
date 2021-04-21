@@ -1,13 +1,24 @@
-from django.shortcuts import render, get_object_or_404
+from datetime import timedelta
+from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from decouple import config
 from shodai.utils.permission import GenericAuth
+from order.models import Order, OrderProduct, InvoiceInfo
 from utility.models import Area, ProductUnit, Remarks
 from utility.serializers import AreaSerializer, ProductUnitSerializer, RemarksSerializer
-from rest_framework.response import Response
-from rest_framework import status
 
 # Create your views here.
+
+order_status_all = {
+    'OD': 'Ordered',
+    'OA': 'Order Accepted',
+    'RE': 'Order Ready',
+    'OAD': 'Order At Delivery',
+    'COM': 'Order Completed',
+    'CN': 'Order Cancelled',
+}
 
 
 class AreaList(APIView):                #get area list and create area
@@ -161,3 +172,70 @@ class RemarksDetails(APIView):              #remarks unit object get, update and
             obj = self.get_remarks_obj(id)
             obj.delete()
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+
+
+class OrderData(APIView):
+
+    def get(self, request):
+        order_number = request.query_params.get('data')
+        access_token = request.query_params.get('access_token')
+        api_acces_token = config("API_ACCESS_TOKEN", None)
+
+        if access_token and access_token == api_acces_token:
+            is_valid = True
+            if not order_number:
+                is_valid = False
+            if is_valid:
+                order = Order.objects.filter(order_number=order_number)
+                if not order:
+                    is_valid = False
+            if is_valid:
+                invoice = InvoiceInfo.objects.filter(invoice_number=order[0].invoice_number)
+                if not invoice:
+                    is_valid = False
+
+            if not is_valid:
+                return Response({
+                    "status": "failed",
+                    "message": "Invalid request!"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            order = order[0]
+            invoice = invoice[0]
+            order_data = {
+              "order_number": order.order_number,
+              "order_status": order_status_all[order.order_status],
+              "placed_on": str(order.placed_on + timedelta(hours=6))[:16],
+              "total_price": order.order_total_price,
+              "delivery_charge": invoice.delivery_charge,
+              "discount": invoice.discount_amount,
+              "payment_status": "Paid" if invoice.paid_status else "Not Paid",
+              "payment_method": "Cash On Delivery" if invoice.payment_method == 'CASH_ON_DELIVERY' else "Online Payment",
+              "customer": {
+                "name": order.user.first_name,
+                "mobile_number": order.user.mobile_number,
+                "email": order.user.email
+              },
+              "delivery_date_time": str(order.delivery_date_time + timedelta(hours=6))[:16],
+              "delivery_address": invoice.delivery_address,
+              "delivery_contact_number": order.contact_number,
+              "ordered_products": []
+            }
+            order_products = OrderProduct.objects.filter(order=order)
+            for product in order_products:
+                product_data = {
+                  "product_price": product.product_price,
+                  "product_quantity": product.order_product_qty,
+                  "product_name": product.product.product_name,
+                  "product_unit": product.product.product_unit.product_unit
+                }
+                order_data['ordered_products'].append(product_data)
+            return Response({
+                "status": "success",
+                "data": order_data,
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "status": "failed",
+                "message": "Unauthorized!"
+            }, status=status.HTTP_401_UNAUTHORIZED)

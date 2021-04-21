@@ -94,6 +94,9 @@ INSTALLED_APPS = [
 Q_CLUSTER = {
     "name": "task_q",
     "orm": "default",
+    "save_limit": 1000,
+    "max_attempts": 3,
+    "timeout": 30
 }
 
 # ELASTICSEARCH_DSL = {
@@ -228,7 +231,7 @@ APPEND_SLASH = False
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST = "smtp.yandex.com"
+EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
