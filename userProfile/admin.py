@@ -24,7 +24,7 @@ class UserProfileAdmin(MaterialModelAdmin):
     fieldsets = (
         ('User Detail View', {
             'fields': (
-                'mobile_number', 'first_name', 'last_name', 'email', 'is_superuser', 'groups',
+                'mobile_number', 'username', 'first_name', 'last_name', 'email', 'is_superuser', 'groups',
                 'user_permissions', 'is_staff', 'is_active', 'user_NID', 'user_type',
                 'verification_code', 'code_valid_till', 'pin_verified', 'date_joined',
                 'last_login', 'created_on', 'modified_on', 'is_approved', 'is_customer'

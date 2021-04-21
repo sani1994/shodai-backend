@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from bases.views import field_validation, coupon_checker, type_validation
 from coupon.models import CouponUser, CouponCode
-from coupon.serializers import CouponListSerializer
+from coupon.serializers import CouponListSerializer, CouponPageSerializer, ReferralCouponSerializer
 from product.models import Product
 from shodai.utils.permission import GenericAuth
 
@@ -119,7 +119,7 @@ class ReferralCouponOne(APIView):
                                              expiry_date__gte=timezone.now() - timedelta(days=7),
                                              created_by=request.user)
         if queryset:
-            serializer = CouponListSerializer(queryset[0])
+            serializer = ReferralCouponSerializer(queryset[0])
             if serializer and not request.user.is_customer:
                 request.user.is_customer = True
                 request.user.save()
@@ -133,3 +133,35 @@ class ReferralCouponOne(APIView):
             "minimum_purchase_limit": "",
             "max_usage_count": ""
         }}, status=status.HTTP_200_OK)
+
+
+class CouponPage(APIView):
+    permission_class = [GenericAuth]
+
+    def get(self, request):
+        queryset = CouponCode.objects.filter(coupon_code_type='RC',
+                                             expiry_date__gte=timezone.now(),
+                                             max_usage_count__gt=0,
+                                             created_by=request.user).order_by('-created_on')
+
+        serializer = CouponPageSerializer(queryset, many=True)
+        if serializer:
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CouponCount(APIView):
+    permission_class = [GenericAuth]
+
+    def get(self, request):
+        count = CouponCode.objects.filter(Q(coupon_code_type='DC') |
+                                          Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
+                                          expiry_date__gte=timezone.now(),
+                                          discount_code__in=CouponUser.objects.filter(
+                                              created_for=request.user)).count()
+
+        if count:
+            return Response({'status': 'success', 'count': count}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'failed', 'count': 0}, status=status.HTTP_200_OK)

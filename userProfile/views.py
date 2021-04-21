@@ -1,14 +1,11 @@
 import random
 
 from django.db import IntegrityError
-from django.http import JsonResponse, HttpResponse, Http404
-from django.shortcuts import render
+from django.http import JsonResponse
 from django.utils.crypto import get_random_string
 from django.views.generic import TemplateView
 from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
-
-from shodai import settings
 from shodai.utils.helper import get_user_object
 from shodai.utils.permission import GenericAuth
 from userProfile.serializers import UserProfileSerializer, AddressSerializer, UserRegistrationSerializer, \
@@ -19,7 +16,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from userProfile.models import UserProfile, Otp
-from django.core.mail import send_mail
 
 from utility.notification import email_notification, send_sms
 

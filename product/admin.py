@@ -34,7 +34,7 @@ class ProductAdmin(MaterialModelAdmin):
     list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
     readonly_fields = ["created_by", "modified_by", "created_on", "modified_on",
                        'price_with_vat', 'slug']
-    search_fields = ['product_name']
+    search_fields = ['product_name', 'product_meta__name']
     autocomplete_fields = ('product_unit', 'product_meta',)
     actions = ["save_selected", "export_as_csv", "export_all_as_csv", ]
     fieldsets = (
