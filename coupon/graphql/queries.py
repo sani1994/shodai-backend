@@ -45,10 +45,9 @@ class CouponPageType(DjangoObjectType):
         return referral_discount - self.max_usage_count
 
     def resolve_gift_coupon(self, info):
-        user = info.context.user
         gift_coupon = CouponCode.objects.filter(coupon_code_type='GC1',
                                                 expiry_date__gte=timezone.now(),
-                                                created_by=user)
+                                                created_by=self.created_by)
         return gift_coupon[0] if gift_coupon else None
 
 

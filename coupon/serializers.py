@@ -23,15 +23,17 @@ class ReferralCouponSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CouponCode
-        fields = ['coupon_code', 'expiry_date', 'discount_percent', 'discount_amount_limit',
+        fields = ['coupon_code', 'discount_percent', 'expiry_date', 'discount_amount_limit',
                   'minimum_purchase_limit', 'max_usage_count', 'gift_coupon']
 
     def get_gift_coupon(self, obj):
         gift_coupon = CouponCode.objects.filter(coupon_code_type='GC1',
                                                 expiry_date__gte=timezone.now(),
-                                                created_by=obj.created_by)
+                                                created_by=obj.created_by).values('coupon_code',
+                                                                                  'discount_percent',
+                                                                                  'expiry_date')
 
-        return CouponListSerializer(gift_coupon[0]).data if gift_coupon else None
+        return gift_coupon[0] if gift_coupon else None
 
 
 class CouponPageSerializer(serializers.ModelSerializer):

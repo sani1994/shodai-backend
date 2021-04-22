@@ -131,7 +131,13 @@ class ReferralCouponOne(APIView):
             "discount_amount_limit": "",
             "status": "",
             "minimum_purchase_limit": "",
-            "max_usage_count": ""
+            "max_usage_count": "",
+            "gift_coupon": {
+                "coupon_code": "",
+                "expiry_date": "",
+                "discount_percent": ""
+            }
+
         }}, status=status.HTTP_200_OK)
 
 
@@ -163,5 +169,3 @@ class CouponCount(APIView):
 
         if count:
             return Response({'status': 'success', 'count': count}, status=status.HTTP_200_OK)
-        else:
-            return Response({'status': 'failed', 'count': 0}, status=status.HTTP_200_OK)

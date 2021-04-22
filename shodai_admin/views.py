@@ -1292,35 +1292,6 @@ class UserDetail(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserListDownloadCSV(APIView):
-    permission_classes = [IsAdminUserQP]
-    """
-    Get CSV of Users
-    """
-
-    def get(self, request):
-        queryset = UserProfile.objects.filter(user_type='CM', is_active=True).order_by('-created_on')
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=customer_list.csv'
-        writer = csv.writer(response)
-
-        field_names = ["No.", "Name", "Mobile Number", "Email", "Registered on"]
-        writer.writerow(field_names)
-        count = 0
-        for user in queryset:
-            count += 1
-            if user.first_name and user.last_name:
-                full_name = user.first_name + " " + user.last_name
-            elif user.first_name:
-                full_name = user.first_name
-            else:
-                full_name = ""
-            writer.writerow([count, full_name, str(user.mobile_number), user.email,
-                             str(user.created_on + timedelta(hours=6))[:19]])
-        return response
-
-
 class UserListDownloadExcel(APIView):
     permission_classes = [IsAdminUserQP]
     """
@@ -1328,7 +1299,8 @@ class UserListDownloadExcel(APIView):
     """
 
     def get(self, request):
-        queryset = UserProfile.objects.filter(user_type='CM', is_active=True).order_by('-created_on')
+        queryset = UserProfile.objects.filter(user_type='CM', is_active=True,
+                                              is_approved=True).order_by('-created_on')
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename=customer_list.xlsx'
@@ -1337,7 +1309,7 @@ class UserListDownloadExcel(APIView):
         sheet = workbook.active
         sheet.title = 'Customer List'
 
-        columns = ["No.", "Name", "Mobile Number", "Email", "Registered on"]
+        columns = ["No.", "Name", "Mobile Number", "Email", "Registered on", "Orders", "Last Order"]
         sheet.append(columns)
 
         for count, customer in enumerate(queryset, 1):
@@ -1348,8 +1320,14 @@ class UserListDownloadExcel(APIView):
             else:
                 full_name = ""
 
-            row = [count, full_name, str(customer.mobile_number[3:]), customer.email,
-                   str(customer.created_on + timedelta(hours=6))[:19]]
+            email = customer.email if customer.email else ""
+            orders = Order.objects.filter(user=customer).order_by('-created_on')
+            order_count = orders.count()
+            last_order_date = orders[0].placed_on.date() if orders else ""
+
+            row = [count, full_name, str(customer.mobile_number[3:]), email,
+                   str(customer.created_on + timedelta(hours=6))[:19],
+                   order_count, last_order_date]
             sheet.append(row)
 
         for column_cells in sheet.columns:
@@ -1544,9 +1522,11 @@ class OrderProductListExcel(APIView):
             wb.save(response)
             return response
         else:
-            return Response({'status': 'failed',
-                             'message': "No entry matches your query."},
-                            status=status.HTTP_200_OK)
+            response = HttpResponse(content_type='text/html', content='<!DOCTYPE html>'
+                                                                      '<html><body>No entry matches your query.</body>'
+                                                                      '</html>')
+            # response['Content-Disposition'] = 'attachment; filename=message.html'
+            return response
 
 
 class ProductMetaList(APIView):
