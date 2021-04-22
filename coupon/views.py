@@ -79,7 +79,7 @@ class CouponList(APIView):
                                              Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
                                              expiry_date__gte=timezone.now(),
                                              discount_code__in=CouponUser.objects.filter(
-                                                 created_for=request.user))
+                                                 created_for=request.user)).order_by('-created_on')
 
         serializer = CouponListSerializer(queryset, many=True)
         if serializer:

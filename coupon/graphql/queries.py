@@ -63,7 +63,7 @@ class Query(graphene.ObjectType):
             all_coupons = CouponCode.objects.filter(Q(coupon_code_type='DC') |
                                                     Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
                                                     discount_code__in=CouponUser.objects.filter(
-                                                        created_for=user))
+                                                        created_for=user)).order_by('-created_on')
             return all_coupons
 
     def resolve_referral_code(self, info):

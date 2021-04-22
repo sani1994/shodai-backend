@@ -1463,84 +1463,90 @@ class OrderProductListExcel(APIView):
         product_meta = request.query_params.get('product_subcategory', 'All')
         order_status = request.query_params.get('order_status', 'All')
 
-        wb = Workbook()
-        ws1 = wb.active
-        ws1.title = 'Order Product List'
+        if queryset:
+            wb = Workbook()
+            ws1 = wb.active
+            ws1.title = 'Order Product List'
 
-        field_names = ["No.", "Customer Mobile Number", "Order Number", "Order Placing Date Time ",
-                       "Order Delivery Date Time", "Order Status", "Order Total Amount", "Product ID",
-                       "Product Name", "Product Unit", "Product Unit Price", "Product Quantity",
-                       "Product Total Price", "Product Subcategory"]
-        ws1.append(field_names)
+            field_names = ["No.", "Customer Mobile Number", "Order Number", "Order Placing Date Time ",
+                           "Order Delivery Date Time", "Order Status", "Order Total Amount", "Product ID",
+                           "Product Name", "Product Unit", "Product Unit Price", "Product Quantity",
+                           "Product Total Price", "Product Subcategory"]
+            ws1.append(field_names)
 
-        for count, obj in enumerate(queryset, 1):
-            row = [count, obj.order.user.mobile_number[3:], obj.order.order_number,
-                   str(obj.order.placed_on + timedelta(hours=6))[:16],
-                   str(obj.order.delivery_date_time + timedelta(hours=6))[:16],
-                   order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
-                   obj.product.product_name, obj.product.product_unit.product_unit, obj.order_product_price,
-                   obj.order_product_qty, obj.order_product_price * obj.order_product_qty, obj.product.product_meta.name]
-            ws1.append(row)
+            for count, obj in enumerate(queryset, 1):
+                row = [count, obj.order.user.mobile_number[3:], obj.order.order_number,
+                       str(obj.order.placed_on + timedelta(hours=6))[:16],
+                       str(obj.order.delivery_date_time + timedelta(hours=6))[:16],
+                       order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
+                       obj.product.product_name, obj.product.product_unit.product_unit, obj.order_product_price,
+                       obj.order_product_qty, obj.order_product_price * obj.order_product_qty,
+                       obj.product.product_meta.name]
+                ws1.append(row)
 
-        for column_cells in ws1.columns:
-            length = max(len(str(cell.value)) for cell in column_cells)
-            ws1.column_dimensions[column_cells[0].column_letter].width = length + 1
+            for column_cells in ws1.columns:
+                length = max(len(str(cell.value)) for cell in column_cells)
+                ws1.column_dimensions[column_cells[0].column_letter].width = length + 1
 
-        ws1.insert_rows(idx=1, amount=7)
-        report_info = [f"Title: Order Product List",
-                       f"Date Type: {'Placing Date' if date_type == 'placed_on' else 'Delivery Date'}",
-                       f"Date Range: {date_from.date()} to {date_to.date()}",
-                       f"Order Status: {order_status}",
-                       f"Product Subcategory: {product_meta}",
-                       f"Generated on {str(timezone.now() + timedelta(hours=6))[:19]}",
-                       f""]
-        for count, line in enumerate(report_info, 1):
-            ws1["A"+str(count)] = line
-            ws1.merge_cells(start_row=count, start_column=1, end_row=count, end_column=ws1.max_column)
+            ws1.insert_rows(idx=1, amount=7)
+            report_info = [f"Title: Order Product List",
+                           f"Date Type: {'Placing Date' if date_type == 'placed_on' else 'Delivery Date'}",
+                           f"Date Range: {date_from.date()} to {date_to.date()}",
+                           f"Order Status: {order_status}",
+                           f"Product Subcategory: {product_meta}",
+                           f"Generated on {str(timezone.now() + timedelta(hours=6))[:19]}",
+                           f""]
+            for count, line in enumerate(report_info, 1):
+                ws1["A" + str(count)] = line
+                ws1.merge_cells(start_row=count, start_column=1, end_row=count, end_column=ws1.max_column)
 
-        order_product_list = []
-        count = 0
-        for obj in queryset:
-            for item in order_product_list:
-                if item['Product Name'] == obj.product.product_name:
-                    item['Product Quantity'] += obj.order_product_qty
-                    break
-            else:
-                count += 1
-                product_data = {'No.': count,
-                                'Product ID': obj.product.id,
-                                'Product Name': obj.product.product_name,
-                                'Product Unit': obj.product.product_unit.product_unit,
-                                'Product Quantity': obj.order_product_qty,
-                                'Product Subcategory': obj.product.product_meta.name}
-                order_product_list.append(product_data)
+            order_product_list = []
+            count = 0
+            for obj in queryset:
+                for item in order_product_list:
+                    if item['Product Name'] == obj.product.product_name:
+                        item['Product Quantity'] += obj.order_product_qty
+                        break
+                else:
+                    count += 1
+                    product_data = {'No.': count,
+                                    'Product ID': obj.product.id,
+                                    'Product Name': obj.product.product_name,
+                                    'Product Unit': obj.product.product_unit.product_unit,
+                                    'Product Quantity': obj.order_product_qty,
+                                    'Product Subcategory': obj.product.product_meta.name}
+                    order_product_list.append(product_data)
 
-        ws2 = wb.create_sheet('Order Product List (Summary)')
-        ws2.append(list(order_product_list[0].keys()))
-        for count, product in enumerate(order_product_list):
-            row = list(product.values())
-            ws2.append(row)
+            ws2 = wb.create_sheet('Order Product List (Summary)')
+            ws2.append(list(order_product_list[0].keys()))
+            for count, product in enumerate(order_product_list):
+                row = list(product.values())
+                ws2.append(row)
 
-        for column_cells in ws2.columns:
-            length = max(len(str(cell.value)) for cell in column_cells)
-            ws2.column_dimensions[column_cells[0].column_letter].width = length + 1
+            for column_cells in ws2.columns:
+                length = max(len(str(cell.value)) for cell in column_cells)
+                ws2.column_dimensions[column_cells[0].column_letter].width = length + 1
 
-        ws2.insert_rows(idx=1, amount=7)
-        report_info = [f"Title: Order Product List (Summary)",
-                       f"Date Type: {'Placing Date' if date_type == 'placed_on' else 'Delivery Date'}",
-                       f"Date Range: {date_from.date()} to {date_to.date()}",
-                       f"Order Status: {order_status}",
-                       f"Product Subcategory: {product_meta}",
-                       f"Generated on {str(timezone.now() + timedelta(hours=6))[:19]}",
-                       f""]
-        for count, line in enumerate(report_info, 1):
-            ws2["A"+str(count)] = line
-            ws2.merge_cells(start_row=count, start_column=1, end_row=count, end_column=ws2.max_column)
+            ws2.insert_rows(idx=1, amount=7)
+            report_info = [f"Title: Order Product List (Summary)",
+                           f"Date Type: {'Placing Date' if date_type == 'placed_on' else 'Delivery Date'}",
+                           f"Date Range: {date_from.date()} to {date_to.date()}",
+                           f"Order Status: {order_status}",
+                           f"Product Subcategory: {product_meta}",
+                           f"Generated on {str(timezone.now() + timedelta(hours=6))[:19]}",
+                           f""]
+            for count, line in enumerate(report_info, 1):
+                ws2["A" + str(count)] = line
+                ws2.merge_cells(start_row=count, start_column=1, end_row=count, end_column=ws2.max_column)
 
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=order_product_list.xlsx'
-        wb.save(response)
-        return response
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=order_product_list.xlsx'
+            wb.save(response)
+            return response
+        else:
+            return Response({'status': 'failed',
+                             'message': "No entry matches your query."},
+                            status=status.HTTP_200_OK)
 
 
 class ProductMetaList(APIView):
