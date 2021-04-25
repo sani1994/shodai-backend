@@ -1,8 +1,6 @@
-import uuid
 from django.contrib.gis.db import models
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
-from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import ugettext_lazy as _
 
 from coupon.models import CouponCode
