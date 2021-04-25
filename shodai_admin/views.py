@@ -183,52 +183,86 @@ class OrderList(APIView):
         search = request.query_params.get('search')
         sort_by = request.query_params.get('sort_by', '')
         sort_type = request.query_params.get('sort_type', 'dsc')
-        date_from = request.query_params.get('date_from', Order.objects.first().placed_on)
-        date_to = request.query_params.get('date_to', timezone.now())
+        date_type = request.query_params.get('date_type', 'placed_on')
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
         order_status = all_order_status.get(request.query_params.get('order_status'))
         if not getattr(Order, sort_by, False):
             sort_by = 'placed_on'
         if sort_type != 'asc':
             sort_by = '-' + sort_by
-        if isinstance(date_from, str):
-            try:
-                date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
-            except Exception:
+        try:
+            date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
+        except Exception:
+            if date_type == 'placed_on':
                 date_from = Order.objects.first().placed_on
-        if isinstance(date_to, str):
-            try:
-                date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
-            except Exception:
-                date_to = timezone.now()
-        if search and order_status:
-            if search.startswith("01") and len(search) == 11:
+            else:
+                date_from = Order.objects.first().delivery_date_time
+        try:
+            date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
+        except Exception:
+            date_to = timezone.now()
+
+        if date_type == 'placed_on':
+            if search and order_status:
+                if search.startswith("01") and len(search) == 11:
+                    queryset = Order.objects.filter(order_status=order_status,
+                                                    user__mobile_number='+88' + search,
+                                                    placed_on__gte=date_from,
+                                                    placed_on__lt=date_to).order_by(sort_by)
+                else:
+                    queryset = Order.objects.filter(order_status=order_status,
+                                                    order_number__icontains=search,
+                                                    placed_on__gte=date_from,
+                                                    placed_on__lt=date_to).order_by(sort_by)
+
+            elif search and not order_status:
+                if search.startswith("01") and len(search) == 11:
+                    queryset = Order.objects.filter(user__mobile_number='+88' + search,
+                                                    placed_on__gte=date_from,
+                                                    placed_on__lt=date_to).order_by(sort_by)
+                else:
+                    queryset = Order.objects.filter(order_number__icontains=search,
+                                                    placed_on__gte=date_from,
+                                                    placed_on__lt=date_to).order_by(sort_by)
+
+            elif not search and order_status:
                 queryset = Order.objects.filter(order_status=order_status,
-                                                user__mobile_number='+88' + search,
                                                 placed_on__gte=date_from,
                                                 placed_on__lt=date_to).order_by(sort_by)
             else:
-                queryset = Order.objects.filter(order_status=order_status,
-                                                order_number__icontains=search,
-                                                placed_on__gte=date_from,
+                queryset = Order.objects.filter(placed_on__gte=date_from,
                                                 placed_on__lt=date_to).order_by(sort_by)
-
-        elif search and not order_status:
-            if search.startswith("01") and len(search) == 11:
-                queryset = Order.objects.filter(user__mobile_number='+88' + search,
-                                                placed_on__gte=date_from,
-                                                placed_on__lt=date_to).order_by(sort_by)
-            else:
-                queryset = Order.objects.filter(order_number__icontains=search,
-                                                placed_on__gte=date_from,
-                                                placed_on__lt=date_to).order_by(sort_by)
-
-        elif not search and order_status:
-            queryset = Order.objects.filter(order_status=order_status,
-                                            placed_on__gte=date_from,
-                                            placed_on__lt=date_to).order_by(sort_by)
         else:
-            queryset = Order.objects.filter(placed_on__gte=date_from,
-                                            placed_on__lt=date_to).order_by(sort_by)
+            if search and order_status:
+                if search.startswith("01") and len(search) == 11:
+                    queryset = Order.objects.filter(order_status=order_status,
+                                                    user__mobile_number='+88' + search,
+                                                    delivery_date_time__gte=date_from,
+                                                    delivery_date_time__lt=date_to).order_by(sort_by)
+                else:
+                    queryset = Order.objects.filter(order_status=order_status,
+                                                    order_number__icontains=search,
+                                                    delivery_date_time__gte=date_from,
+                                                    delivery_date_time__lt=date_to).order_by(sort_by)
+
+            elif search and not order_status:
+                if search.startswith("01") and len(search) == 11:
+                    queryset = Order.objects.filter(user__mobile_number='+88' + search,
+                                                    delivery_date_time__gte=date_from,
+                                                    delivery_date_time__lt=date_to).order_by(sort_by)
+                else:
+                    queryset = Order.objects.filter(order_number__icontains=search,
+                                                    delivery_date_time__gte=date_from,
+                                                    delivery_date_time__lt=date_to).order_by(sort_by)
+
+            elif not search and order_status:
+                queryset = Order.objects.filter(order_status=order_status,
+                                                delivery_date_time__gte=date_from,
+                                                delivery_date_time__lt=date_to).order_by(sort_by)
+            else:
+                queryset = Order.objects.filter(delivery_date_time__gte=date_from,
+                                                delivery_date_time__lt=date_to).order_by(sort_by)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = OrderListSerializer(result_page, many=True, context={'request': request})
@@ -1534,3 +1568,17 @@ class ProductMetaList(APIView):
         queryset = ProductMeta.objects.filter(is_approved=True)
         serializer = ProductMetaSerializer(queryset, many=True)
         return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+class OrderStatusBulkUpload(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        orders = request.data
+        for order in orders:
+            order_instance = Order.objects.get(id=order['id'])
+            order_instance.order_status = all_order_status[order['order_status']]
+            order_instance.save()
+        return Response({'status': 'success',
+                         'message': "Order status updated successfully"},
+                        status=status.HTTP_200_OK)
