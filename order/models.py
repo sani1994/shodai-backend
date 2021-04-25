@@ -59,6 +59,7 @@ class Order(BaseModel):
     order_type = models.CharField(max_length=20, choices=ORDER_TYPES, default=FIXED_PRICE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
     note = models.CharField(max_length=500, null=True, blank=True, default="")
+    remarks = models.CharField(max_length=500, null=True, blank=True, default="")
     WEBSITE = 'WB'
     ADMIN_PANEL = 'AD'
     MOBILE_APPLICATION = 'APP'
