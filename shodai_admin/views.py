@@ -530,7 +530,7 @@ class OrderDetail(APIView):
                 DiscountInfo.objects.create(discount_amount=coupon_discount,
                                             discount_type='CP',
                                             discount_description=coupon_discount_description,
-                                            coupon=is_coupon_discount[0].coupon,
+                                            coupon=is_coupon_discount[0].coupon if is_coupon_discount else coupon,
                                             invoice=new_invoice)
 
             if product_discount:
@@ -1302,14 +1302,11 @@ class UserListDownloadExcel(APIView):
         queryset = UserProfile.objects.filter(user_type='CM', is_active=True,
                                               is_approved=True).order_by('-created_on')
 
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=customer_list.xlsx'
-
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Customer List'
 
-        columns = ["No.", "Name", "Mobile Number", "Email", "Registered on", "Orders", "Last Order"]
+        columns = ["No.", "Name", "Mobile Number", "Email", "Registered on", "Order Count", "Last Order Placed"]
         sheet.append(columns)
 
         for count, customer in enumerate(queryset, 1):
@@ -1323,7 +1320,7 @@ class UserListDownloadExcel(APIView):
             email = customer.email if customer.email else ""
             orders = Order.objects.filter(user=customer).order_by('-created_on')
             order_count = orders.count()
-            last_order_date = orders[0].placed_on.date() if orders else ""
+            last_order_date = str(orders[0].placed_on + timedelta(hours=6))[:19] if orders else ""
 
             row = [count, full_name, str(customer.mobile_number[3:]), email,
                    str(customer.created_on + timedelta(hours=6))[:19],
@@ -1334,6 +1331,8 @@ class UserListDownloadExcel(APIView):
             length = max(len(str(cell.value)) for cell in column_cells)
             sheet.column_dimensions[column_cells[0].column_letter].width = length + 1
 
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=customer_list.xlsx'
         workbook.save(response)
         return response
 
@@ -1438,10 +1437,12 @@ class OrderProductListExcel(APIView):
                 queryset = OrderProduct.objects.filter(order__delivery_date_time__gte=date_from,
                                                        order__delivery_date_time__lt=date_to).order_by(sort_by)
 
-        product_meta = request.query_params.get('product_subcategory', 'All')
-        order_status = request.query_params.get('order_status', 'All')
-
         if queryset:
+            date_from = request.query_params.get('date_from')
+            date_to = request.query_params.get('date_to')
+            product_meta = request.query_params.get('product_subcategory', 'All')
+            order_status = request.query_params.get('order_status', 'All')
+
             wb = Workbook()
             ws1 = wb.active
             ws1.title = 'Order Product List'
@@ -1469,7 +1470,7 @@ class OrderProductListExcel(APIView):
             ws1.insert_rows(idx=1, amount=7)
             report_info = [f"Title: Order Product List",
                            f"Date Type: {'Placing Date' if date_type == 'placed_on' else 'Delivery Date'}",
-                           f"Date Range: {date_from.date()} to {date_to.date()}",
+                           f"Date Range: {date_from} to {date_to}",
                            f"Order Status: {order_status}",
                            f"Product Subcategory: {product_meta}",
                            f"Generated on {str(timezone.now() + timedelta(hours=6))[:19]}",
@@ -1508,7 +1509,7 @@ class OrderProductListExcel(APIView):
             ws2.insert_rows(idx=1, amount=7)
             report_info = [f"Title: Order Product List (Summary)",
                            f"Date Type: {'Placing Date' if date_type == 'placed_on' else 'Delivery Date'}",
-                           f"Date Range: {date_from.date()} to {date_to.date()}",
+                           f"Date Range: {date_from} to {date_to}",
                            f"Order Status: {order_status}",
                            f"Product Subcategory: {product_meta}",
                            f"Generated on {str(timezone.now() + timedelta(hours=6))[:19]}",
@@ -1522,11 +1523,8 @@ class OrderProductListExcel(APIView):
             wb.save(response)
             return response
         else:
-            response = HttpResponse(content_type='text/html', content='<!DOCTYPE html>'
-                                                                      '<html><body>No entry matches your query.</body>'
-                                                                      '</html>')
-            # response['Content-Disposition'] = 'attachment; filename=message.html'
-            return response
+            template = get_template("report_no_data.html")
+            return HttpResponse(template.render())
 
 
 class ProductMetaList(APIView):

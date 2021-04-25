@@ -23,9 +23,9 @@ class CouponUserInline(admin.TabularInline):
 
 
 class CouponCodeAdmin(MaterialModelAdmin):
-    list_display = ['id', 'name', 'discount_percent', 'discount_amount', 'expiry_date']
+    list_display = ['id', 'coupon_code', 'name', 'discount_percent', 'discount_amount', 'created_on', 'expiry_date']
     list_filter = ['created_on', 'expiry_date']
-    search_fields = ['created_by', 'coupon_code']
+    search_fields = ['coupon_code', 'created_by__mobile_number']
 
     inlines = [CouponUserInline]
     fieldsets = (

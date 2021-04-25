@@ -101,7 +101,7 @@ class OrderAdmin(MaterialModelAdmin):
                        'created_on', 'modified_on', 'delivery_date_time', 'delivery_place', 'address', 'note',
                        'total_vat', order_products, 'order_status', 'platform']
     list_display = ('id', 'order_number', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products)
-    search_fields = ['id', 'user', 'invoice_number', 'order_number']
+    search_fields = ['id', 'invoice_number', 'order_number', 'user__mobile_number']
     inlines = [OrderProductInline, InvoiceInfoInline]
     fieldsets = (
         ('Order Detail View', {
@@ -243,7 +243,7 @@ class DiscountInfoInline(admin.TabularInline):
 class InvoiceInfoAdmin(MaterialModelAdmin):
     list_display = ['id', 'invoice_number', 'order_number', 'paid_status', 'paid_on']
 
-    search_fields = ['invoice_number', 'order_number__pk', 'order_number__order_number']
+    search_fields = ['invoice_number', 'order_number__order_number']
     list_filter = ['created_on', 'delivery_date_time', 'payment_method', 'paid_status']
 
     fieldsets = (
@@ -326,8 +326,7 @@ class InvoiceInfoAdmin(MaterialModelAdmin):
 class DiscountInfoAdmin(MaterialModelAdmin):
     list_display = ['id', 'discount_amount', 'discount_type', 'invoice']
 
-    search_fields = ['id', 'invoice__invoice_number', 'invoice__order_number__id',
-                     'invoice__order_number__order_number']
+    search_fields = ['invoice__invoice_number', 'invoice__order_number__order_number']
 
     def has_delete_permission(self, request, obj=None):
         return False

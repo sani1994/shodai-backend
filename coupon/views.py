@@ -82,10 +82,7 @@ class CouponList(APIView):
                                                  created_for=request.user)).order_by('-created_on')
 
         serializer = CouponListSerializer(queryset, many=True)
-        if serializer:
-            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
 
 
 class ReferralCoupon(APIView):
@@ -94,12 +91,11 @@ class ReferralCoupon(APIView):
     def get(self, request):
         queryset = CouponCode.objects.filter(coupon_code_type='RC',
                                              expiry_date__gte=timezone.now() - timedelta(days=7),
-                                             created_by=request.user)
+                                             created_by=request.user).order_by('-created_by')
 
         if queryset:
             serializer = CouponListSerializer(queryset[0])
-            if serializer:
-                return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         return Response({"status": "failed", 'data': {
             "coupon_code": "",
             "expiry_date": "",
@@ -116,11 +112,12 @@ class ReferralCouponOne(APIView):
 
     def get(self, request):
         queryset = CouponCode.objects.filter(coupon_code_type='RC',
-                                             expiry_date__gte=timezone.now() - timedelta(days=7),
-                                             created_by=request.user)
+                                             expiry_date__gte=timezone.now(),
+                                             max_usage_count__gt=0,
+                                             created_by=request.user).order_by('-created_by')
         if queryset:
             serializer = ReferralCouponSerializer(queryset[0])
-            if serializer and not request.user.is_customer:
+            if not request.user.is_customer:
                 request.user.is_customer = True
                 request.user.save()
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
@@ -129,7 +126,6 @@ class ReferralCouponOne(APIView):
             "expiry_date": "",
             "discount_percent": "",
             "discount_amount_limit": "",
-            "status": "",
             "minimum_purchase_limit": "",
             "max_usage_count": "",
             "gift_coupon": {
@@ -150,11 +146,10 @@ class CouponPage(APIView):
                                              max_usage_count__gt=0,
                                              created_by=request.user).order_by('-created_on')
 
-        serializer = CouponPageSerializer(queryset, many=True)
-        if serializer:
+        if queryset:
+            serializer = CouponPageSerializer(queryset[0])
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': 'failed', 'message': 'No referral code found.'}, status=status.HTTP_200_OK)
 
 
 class CouponCount(APIView):
@@ -164,8 +159,8 @@ class CouponCount(APIView):
         count = CouponCode.objects.filter(Q(coupon_code_type='DC') |
                                           Q(coupon_code_type='GC1') | Q(coupon_code_type='GC2'),
                                           expiry_date__gte=timezone.now(),
+                                          max_usage_count__gt=0,
                                           discount_code__in=CouponUser.objects.filter(
                                               created_for=request.user)).count()
 
-        if count:
-            return Response({'status': 'success', 'count': count}, status=status.HTTP_200_OK)
+        return Response({'status': 'success', 'count': count}, status=status.HTTP_200_OK)

@@ -1,10 +1,8 @@
 from django.db import models
-from django.contrib.gis.db import models
-
-# Create your models here.
 from simple_history.models import HistoricalRecords
 from bases.models import BaseModel
 from userProfile.models import UserProfile
+from offer.models import Offer
 
 
 class Area(BaseModel):  # write serializer
@@ -68,10 +66,11 @@ class Message(BaseModel):
 
 class Banner(BaseModel):
     banner_heading = models.CharField(max_length=100)
-    banner_img = models.ImageField(upload_to="pictures/banner", verbose_name="Image: 1300px/300px")
+    banner_img = models.ImageField(upload_to="pictures/banner", verbose_name="Image: 1300px X 300px")
     banner_show_starts_in = models.DateTimeField()
     banner_show_ends_in = models.DateTimeField()
     banner_url = models.CharField(max_length=300, blank=True, null=True)
+    offer = models.ForeignKey(Offer, models.SET_NULL, null=True, blank=True)
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):

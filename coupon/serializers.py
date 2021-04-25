@@ -29,11 +29,14 @@ class ReferralCouponSerializer(serializers.ModelSerializer):
     def get_gift_coupon(self, obj):
         gift_coupon = CouponCode.objects.filter(coupon_code_type='GC1',
                                                 expiry_date__gte=timezone.now(),
+                                                max_usage_count__gt=0,
                                                 created_by=obj.created_by).values('coupon_code',
                                                                                   'discount_percent',
                                                                                   'expiry_date')
 
-        return gift_coupon[0] if gift_coupon else None
+        return gift_coupon[0] if gift_coupon else {"coupon_code": "",
+                                                   "expiry_date": "",
+                                                   "discount_percent": ""}
 
 
 class CouponPageSerializer(serializers.ModelSerializer):
@@ -47,9 +50,9 @@ class CouponPageSerializer(serializers.ModelSerializer):
                   'discount_coupon_percent', 'successful_share_count']
 
     def get_discount_coupon_percent(self, obj):
-        discount = CouponSettings.objects.get(coupon_type='DC').discount_percent
-        return discount
+        discount_percent = CouponSettings.objects.get(coupon_type='DC').discount_percent
+        return discount_percent
 
     def get_successful_share_count(self, obj):
-        referral_discount = CouponSettings.objects.get(coupon_type='RC').max_usage_count
-        return referral_discount - obj.max_usage_count
+        referral_max_use = CouponSettings.objects.get(coupon_type='RC').max_usage_count
+        return referral_max_use - obj.max_usage_count
