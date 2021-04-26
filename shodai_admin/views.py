@@ -1349,7 +1349,7 @@ class UserListDownloadExcel(APIView):
                 full_name = ""
 
             email = customer.email if customer.email else ""
-            orders = Order.objects.filter(user=customer).order_by('-created_on')
+            orders = Order.objects.filter(user=customer).order_by('-created_on').exclude(order_status='CN')
             order_count = orders.count()
             last_order_date = str(orders[0].placed_on + timedelta(hours=6))[:19] if orders else ""
 
@@ -1579,8 +1579,8 @@ class OrderStatusUpdate(APIView):
             for order_id in order_list:
                 order = Order.objects.filter(id=order_id)
                 if order and order[0].order_status != 'COM' and order[0].order_status != 'CN':
-                    order.order_status = order_status
-                    order.save()
+                    order[0].order_status = order_status
+                    order[0].save()
             return Response({'status': 'success',
                              'message': "Order status updated."}, status=status.HTTP_200_OK)
         else:
