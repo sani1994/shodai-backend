@@ -54,11 +54,11 @@ class ProductAdmin(MaterialModelAdmin):
         else:
             return actions
 
-    def save_selected(self, request, queryset):
-        for obj in queryset:
-            obj.save()
-
-    save_selected.short_description = "Save Selected"
+    # def save_selected(self, request, queryset):
+    #     for obj in queryset:
+    #         obj.save()
+    #
+    # save_selected.short_description = "Save Selected"
 
     def export_as_csv(self, request, queryset):
         field_names = ['id', 'product_name', 'product_name_bn', 'product_unit', 'product_price', 'product_last_price',

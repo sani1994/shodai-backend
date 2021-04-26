@@ -25,6 +25,9 @@ class TimeSlotAdmin(MaterialModelAdmin):
     list_per_page = 10
     readonly_fields = ['slot']
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct

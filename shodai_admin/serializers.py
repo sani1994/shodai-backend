@@ -173,7 +173,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         if time:
             return time[0].id
         else:
-            return TimeSlot.objects.get(id=1).id
+            return TimeSlot.objects.filter(allow=True).order_by('time')[0].id
 
     def get_invoice(self, obj):
         invoice = InvoiceInfo.objects.filter(invoice_number=obj.invoice_number)[0]

@@ -1094,11 +1094,8 @@ class OrderNotification(APIView):
                                "--", p.order_product_qty, total]
                     matrix.append(col)
 
-                time = TimeSlot.objects.get(time=timezone.localtime(order_instance.delivery_date_time).time())
-                if time:
-                    time_slot = time
-                else:
-                    time_slot = TimeSlot.objects.get(id=1)
+                time_slot = TimeSlot.objects.get(time=timezone.localtime(order_instance.delivery_date_time).time())
+
                 is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
                 coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
 
@@ -1570,15 +1567,22 @@ class ProductMetaList(APIView):
         return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
 
 
-class OrderStatusBulkUpload(APIView):
+class OrderStatusUpdate(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
-        orders = request.data
-        for order in orders:
-            order_instance = Order.objects.get(id=order['id'])
-            order_instance.order_status = all_order_status[order['order_status']]
-            order_instance.save()
-        return Response({'status': 'success',
-                         'message': "Order status updated successfully"},
-                        status=status.HTTP_200_OK)
+        data = request.data
+
+        order_list = data['order_list']
+        order_status = all_order_status.get(data['order_status'])
+        if order_status:
+            for order_id in order_list:
+                order = Order.objects.filter(id=order_id)
+                if order and order[0].order_status != 'COM' and order[0].order_status != 'CN':
+                    order.order_status = order_status
+                    order.save()
+            return Response({'status': 'success',
+                             'message': "Order status updated."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "failed",
+                             "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
