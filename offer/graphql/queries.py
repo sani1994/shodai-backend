@@ -12,7 +12,7 @@ from offer.models import Offer, OfferProduct
 class OfferType(DjangoObjectType):
     class Meta:
         model = Offer
-        fields = ['id', 'offer_name', 'offer_img']
+        fields = ['id', 'offer_name', 'offer_img', 'offer_types']
 
     total_offer_product = graphene.Int()
 
