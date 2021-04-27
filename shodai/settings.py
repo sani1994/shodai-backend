@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'django_q',
     'ckeditor',
     'ckeditor_uploader',
+    'qr_code',
     # 'django_elasticsearch_dsl',
 
     'userProfile',

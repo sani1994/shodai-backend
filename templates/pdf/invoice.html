@@ -1,4 +1,4 @@
-{% load static %}
+{% load qr_code %}
 
 <!DOCTYPE html>
 <html>
@@ -19,7 +19,7 @@
                 max-width: 600px;
                 font-size: 20px;
                 font-weight: 100;
-                text-align: center;
+                /* text-align: center; */
                 color: #007cae;
             }
             .title {
@@ -71,21 +71,21 @@
     <body>
         <div class='wrapper'>
             <div class='header'>
-                <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="{% static 'others/shodai-logo.png' %}" alt="shodai-logo" width="100" /></caption>
+                <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="static/others/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
+                {% qr_from_text order_number size=4 image_format="png" %}
             </div>
 
         <div class='details'>
-            <td style="margin: 25px 0 13px 0"><strong>SHODAI</strong></td><br/><br/>
+          <td style="margin: 25px 0 13px 0"><strong>SHODAI</strong></td><br/><br/>
+            <tr>
+              <td>
+                Monico Bhaban, 26-27, Ring Road, Adabor.<br/>
+                Mohammodpur, Dhaka, Bangladesh<br/>
+                <strong>Help Line: 09614-161271</strong><br/>
+                <strong>Web: https://www.shod.ai</strong><br/><br/>
+              </td>
             </tr>
-              <tr>
-                <td>
-                  Monico Bhaban, 26-27, Ring Road, Adabor.<br/>
-                  Mohammodpur, Dhaka, Bangladesh<br/>
-                  <strong>Help Line: 09614-161271</strong><br/>
-                  <strong>Web: https://www.shod.ai</strong><br/><br/>
 
-                </td>
-              </tr>
             Client Name: {{customer_name}}<br/>
             Client Address: {{address}} <br/>
             Mobile Number: <strong>{{user_mobile}}</strong><br/>
@@ -95,7 +95,7 @@
             Order Placed: {{created_on}} <br/>
             Delivery Date: {{delivery_date}}<br/>
             {% if note %}
-               Remarks: {{note}}<br/>
+               Note: {{note}}<br/>
             {% endif %}
 
             <table style="margin: 25px 0 13px 0; width: 100%" class="productsTable">

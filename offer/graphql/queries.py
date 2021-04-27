@@ -46,7 +46,8 @@ class Query(graphene.ObjectType):
                                                     products__in=OfferProduct.objects.filter(is_approved=True,
                                                                                              offer__is_approved=True,
                                                                                              offer__offer_starts_in__lte=today,
-                                                                                             offer__offer_ends_in__gte=today).order_by('-created_on'))
+                                                                                             offer__offer_ends_in__gte=today,
+                                                                                             offer__offer_types='SP').order_by('-created_on'))
         return all_offer_products
 
     def resolve_all_products_by_offer(root, info, **kwargs):

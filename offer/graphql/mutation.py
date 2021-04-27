@@ -1,7 +1,5 @@
 import graphene
 from django.utils import timezone
-
-from bases.views import checkAuthentication
 from offer.models import OfferProduct
 from product.models import Product
 
@@ -18,7 +16,7 @@ class OfferProductCount(graphene.Mutation):
                                                                                 offer__is_approved=True,
                                                                                 offer__offer_starts_in__lte=today,
                                                                                 offer__offer_ends_in__gte=today,
-                                                                                offer__offer_types='SP')).distinct().count()
+                                                                                offer__offer_types='SP')).count()
 
         return OfferProductCount(status=True, count=count)
 
