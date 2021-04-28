@@ -246,7 +246,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return customer_name
 
     def get_orders(self, obj):
-        return Order.objects.filter(user=obj).count()
+        return Order.objects.filter(user=obj).exclude(order_status='CN').count()
 
 
 class ProductMetaSerializer(serializers.ModelSerializer):

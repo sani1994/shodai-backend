@@ -40,7 +40,7 @@ class BulkOrderSettings(BaseModel):
     This is the model for Bulk Order for Producer's Produce created by Shodai
     this will have limited time
     """
-    product = models.ForeignKey(ProducerBulkRequest, on_delete=models.CASCADE, related_name='bulk_order_products')
+    product = models.ForeignKey(ProducerBulkRequest, on_delete=models.CASCADE, related_name='producer_products')
     expire_date = models.DateTimeField(blank=False, null=False)
     general_price = models.FloatField(blank=True, null=True)
     offer_price = models.FloatField(blank=True, null=True)
