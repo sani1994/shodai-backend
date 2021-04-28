@@ -13,39 +13,39 @@ from utility.models import ProductUnit
 from django.contrib.gis.geos import Point
 
 
-class ProducerBulkRequest(BaseModel):  # producer product
+class ProducerProductRequest(BaseModel):
     """
-    This is the model for Producer Bulk Request
+    This is the model for Producer Product Request
     """
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
-    product_name = models.CharField(max_length=200, null=False, blank=False)
+    product_name = models.CharField(max_length=200, null=True, blank=True)
     product_name_bn = models.CharField(max_length=200, null=True, blank=True,
                                        verbose_name='পন্যের নাম')
     product_image = models.ImageField(upload_to='pictures/producer/product')
     product_description = RichTextUploadingField()
+    product_price = models.FloatField(null=True, blank=True)
+    product_unit = models.CharField(max_length=10, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.FloatField(blank=True, null=True)
-    global_price = models.FloatField(null=True, blank=True)
-    global_unit = models.CharField(max_length=10, unique=True)
-    unit_price = models.FloatField(null=True, blank=True)
     is_approved = models.BooleanField(default=False)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
     def __str__(self):
         return self.product_name
 
 
-class BulkOrderSettings(BaseModel):
+class PreOrderSettings(BaseModel):
     """
-    This is the model for Bulk Order for Producer's Produce created by Shodai
-    this will have limited time
+    This is the model for Pre Order for Producer's Product
     """
-    product = models.ForeignKey(ProducerBulkRequest, on_delete=models.CASCADE, related_name='bulk_order_products')
-    expire_date = models.DateTimeField(blank=False, null=False)
-    general_price = models.FloatField(blank=True, null=True)
+    product = models.ForeignKey(ProducerProductRequest, on_delete=models.CASCADE)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    product_price = models.FloatField(blank=True, null=True)
     offer_price = models.FloatField(blank=True, null=True)
-    target_qty = models.DecimalField(decimal_places=2, blank=True, null=True, max_digits=5)
-    increase_unit = models.FloatField(blank=True, null=True)
+    target_quantity = models.FloatField(blank=True, null=True)
+    purchase_quantity = models.FloatField(blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.product.product_name
