@@ -1,6 +1,6 @@
+from decouple import config
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, BasePermission, SAFE_METHODS
-
 from shodai.utils.helper import get_user_object
 from userProfile.models import BlackListedToken, UserProfile
 
@@ -91,8 +91,19 @@ class ReadOnlyAuth(IsAuthenticated):
 
 class IsAdminUserQP(TokenAuthentication):
     def has_permission(self, request, view):
-        token = request.query_params.get('token', None)
+        token = request.query_params.get('token')
         if token:
             user, _ = self.authenticate_credentials(token)
             return user.is_staff
+        return False
+
+
+class APIAuth(BasePermission):
+
+    def has_permission(self, request, view):
+        api_key = 'API-Key ' + config("API_KEY")
+        api_key_info = request.headers.get('Authorization')
+
+        if api_key_info and api_key_info == api_key:
+            return True
         return False

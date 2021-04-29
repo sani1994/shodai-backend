@@ -4,7 +4,7 @@ from django.conf import settings
 
 headers = {"Content-Type": "application/json",
            "Accept": "application/json",
-           "Authorization": "Bearer {}".format(settings.INTERNAL_BRICKBOX_API_TOKEN)}
+           "Authorization": "Bearer {}".format(settings.INTERNAL_BRICKBOX_API_KEY)}
 
 
 def send_product_data(product):

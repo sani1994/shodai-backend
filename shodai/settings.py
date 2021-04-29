@@ -251,11 +251,11 @@ GRAPHENE = {
 if DEBUG:
     CORS_ORIGIN_WHITELIST = config("CORS_ORIGIN_WHITELIST").replace(" ", "").split(',')
 else:
-    LEAFLET_CONFIG['TILES'] = 'https://mapserver.koth.ai/v2/raster/normal/?z={z}&y={y}&x={x}&token=' + config("MAP_TOKEN")
+    LEAFLET_CONFIG['TILES'] = 'https://mapserver.koth.ai/v2/raster/normal/?z={z}&y={y}&x={x}&token=' + config("MAP_API_KEY")
 
 CORS_ORIGIN_ALLOW_ALL = True
 
 API_DOMAIN = config("API_DOMAIN")
 WEB_DOMAIN = config("WEB_DOMAIN")
 INTERNAL_BRICKBOX_API_URL = config("INTERNAL_BRICKBOX_API_URL")
-INTERNAL_BRICKBOX_API_TOKEN = config("INTERNAL_BRICKBOX_API_TOKEN")
+INTERNAL_BRICKBOX_API_KEY = config("INTERNAL_BRICKBOX_API_KEY")

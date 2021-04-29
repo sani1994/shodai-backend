@@ -15,5 +15,6 @@ urlpatterns = [
 
     # for Conveyance App
     path('order-info', views.OrderData.as_view()),
+    path('order-delivered', views.OrderStatusUpdate.as_view()),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
