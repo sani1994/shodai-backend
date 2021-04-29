@@ -5,7 +5,7 @@ from ckeditor_uploader.fields import RichTextUploadingField
 from simple_history.models import HistoricalRecords
 
 from order.models import Order
-from product.models import Product
+from product.models import Product, ProductCategory
 from userProfile.models import Address, UserProfile
 from bases.models import BaseModel
 from django.contrib.gis.db import models
@@ -23,7 +23,7 @@ class ProducerProductRequest(BaseModel):
     product_image = models.ImageField(upload_to='pictures/producer/product')
     product_description = RichTextUploadingField()
     product_price = models.FloatField(null=True, blank=True)
-    product_unit = models.CharField(max_length=10, null=True, blank=True)
+    product_unit = models.CharField(max_length=30, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.FloatField(blank=True, null=True)
     is_approved = models.BooleanField(default=False)
@@ -33,80 +33,117 @@ class ProducerProductRequest(BaseModel):
     def __str__(self):
         return self.product_name
 
+    def save(self, *args, **kwargs):
+        if not self.product_name:
+            self.product_name = self.product.product_name
+        if not self.product_unit:
+            self.product_unit = self.product.product_unit.product_unit
+        return super(ProducerProductRequest, self).save(*args, **kwargs)
+
 
 class PreOrderSettings(BaseModel):
     """
     This is the model for Pre Order for Producer's Product
     """
-    product = models.ForeignKey(ProducerProductRequest, on_delete=models.CASCADE)
+    product = models.OneToOneField(ProducerProductRequest, on_delete=models.CASCADE)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    delivery_date = models.DateTimeField()
     product_price = models.FloatField(blank=True, null=True)
     offer_price = models.FloatField(blank=True, null=True)
     target_quantity = models.FloatField(blank=True, null=True)
+    available_quantity = models.FloatField(blank=True, null=True)
     purchase_quantity = models.FloatField(blank=True, null=True)
+    notes = models.CharField(max_length=500, null=True, blank=True)
+    cancel_order = models.BooleanField(default=False)
+    daily_deal = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.product.product_name
 
 
-# class ProducerBulkRequest(BaseModel):  # producer product
-#     """
-#     This is the model for Producer Bulk Request
-#     """
-#     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
-#     product_name = models.CharField(max_length=200, null=False, blank=False)
-#     product_name_bn = models.CharField(max_length=100, null=True, blank=True,
-#                                        verbose_name='পন্যের নাম')
-#     product_image = models.ImageField(upload_to='producer/product', null=True, blank=True)
-#     product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
-#     unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
-#                              related_name='producer_unit',
-#                              null=True,
-#                              blank=True)
-#     production_time = models.DateTimeField(null=True, blank=True)
-#     unit_price = models.FloatField(null=False, blank=False)
-#     quantity = models.FloatField(blank=True, null=True)
-#     is_approved = models.BooleanField(default=False)
-#     general_price = models.FloatField(null=True, blank=True)
-#     general_qty = models.FloatField(blank=True, null=True)
-#     general_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
-#                                      related_name='general_unit',
-#                                      blank=True, null=True
-#                                      )
-#     offer_price = models.FloatField(null=True, blank=True)
-#     offer_qty = models.FloatField(blank=True, null=True)
-#     offer_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
-#                                    related_name='offer_unit',
-#                                    blank=True,
-#                                    null=True)
-#     PENDING = 'Pending'
-#     ACCEPTED = 'Accepted'
-#     REQUEST_STATUS = [
-#         (PENDING, 'Pending'),
-#         (ACCEPTED, 'Accepted'),
-#     ]
-#     status = models.CharField(choices=REQUEST_STATUS, default=PENDING, max_length=20)
-#     history = HistoricalRecords()
-#
-#     def __str__(self):
-#         return self.product_name
-#
-#     # def productlistforcustomer(self):
-#     #     bulk_order_products = self.bulkorderproducts_set.all()
-#     #     micro_bulk_order_products =bulk_order_products.microbulkorderproducts_set.all()
-#     #     return micro_bulk_order_products.customermicroBulkorderproductrequest_set.all().count()
-#     #     # return bulk_order_products
-#
-#     def save(self, *args, **kwargs):
-#         if self.is_approved:
-#             self.status = self.ACCEPTED
-#         return super(ProducerBulkRequest, self).save(*args, **kwargs)
-#
-#     class Meta:
-#         verbose_name_plural = "Producer Bulk Request"
-#         verbose_name = "producer product"
+class PreOrder(BaseModel):
+    """
+    This is the model for Pre Order placed by customer
+    """
+    WEBSITE = 'WB'
+    ADMIN_PANEL = 'AD'
+    MOBILE_APPLICATION = 'APP'
+    PLATFORM = [
+        (WEBSITE, 'Website'),
+        (ADMIN_PANEL, 'Admin Panel'),
+        (MOBILE_APPLICATION, 'Mobile Application')
+    ]
+    order_product_qty = models.FloatField(null=False, blank=False)
+    contact_number = models.CharField(max_length=20, null=True, blank=True)
+    note = models.CharField(max_length=500, null=True, blank=True)
+    platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
+    placed_on = models.DateTimeField(auto_now=True)
+    customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    pre_order = models.OneToOneField(PreOrderSettings, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{}'.format(self.id)
+
+
+class ProducerBulkRequest(BaseModel):  # producer product
+    """
+    This is the model for Producer Bulk Request
+    """
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True)
+    product_name = models.CharField(max_length=200, null=False, blank=False)
+    product_name_bn = models.CharField(max_length=100, null=True, blank=True,
+                                       verbose_name='পন্যের নাম')
+    product_image = models.ImageField(upload_to='producer/product', null=True, blank=True)
+    product_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
+                             related_name='producer_unit',
+                             null=True,
+                             blank=True)
+    production_time = models.DateTimeField(null=True, blank=True)
+    unit_price = models.FloatField(null=False, blank=False)
+    quantity = models.FloatField(blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+    general_price = models.FloatField(null=True, blank=True)
+    general_qty = models.FloatField(blank=True, null=True)
+    general_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
+                                     related_name='general_unit',
+                                     blank=True, null=True
+                                     )
+    offer_price = models.FloatField(null=True, blank=True)
+    offer_qty = models.FloatField(blank=True, null=True)
+    offer_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE,
+                                   related_name='offer_unit',
+                                   blank=True,
+                                   null=True)
+    PENDING = 'Pending'
+    ACCEPTED = 'Accepted'
+    REQUEST_STATUS = [
+        (PENDING, 'Pending'),
+        (ACCEPTED, 'Accepted'),
+    ]
+    status = models.CharField(choices=REQUEST_STATUS, default=PENDING, max_length=20)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return self.product_name
+
+    # def productlistforcustomer(self):
+    #     bulk_order_products = self.bulkorderproducts_set.all()
+    #     micro_bulk_order_products =bulk_order_products.microbulkorderproducts_set.all()
+    #     return micro_bulk_order_products.customermicroBulkorderproductrequest_set.all().count()
+    #     # return bulk_order_products
+
+    def save(self, *args, **kwargs):
+        if self.is_approved:
+            self.status = self.ACCEPTED
+        return super(ProducerBulkRequest, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = "Producer Bulk Request"
+        verbose_name = "producer product"
 
 
 class BusinessType(BaseModel):

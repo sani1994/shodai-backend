@@ -4,19 +4,33 @@ from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 
+from producer.models import ProducerProductRequest, PreOrderSettings
+
 
 # Register your models here.
 
-class ProducerBulkRequestAdmin(MaterialModelAdmin):
-    list_display = ('product_name', )
-    readonly_fields = ['created_by', 'modified_by', 'user', 'created_on']
+class ProducerProductRequestAdmin(MaterialModelAdmin):
+    list_display = ('product_name', 'product', 'quantity', 'is_approved')
+    readonly_fields = ['created_by', 'modified_by', 'created_on', 'modified_on',
+                       'product_unit', 'product_name']
 
     def save_model(self, request, obj, form, change):
         if obj.id:
             obj.modified_by = request.user
-            obj.save()
         obj.created_by = request.user
-        obj.user = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
+class PreOrderSettingsAdmin(MaterialModelAdmin):
+    list_display = ('product', 'start_date', 'end_date', 'available_quantity', 'is_approved')
+    readonly_fields = ['created_by', 'modified_by', 'created_on', 'modified_on',
+                       'available_quantity']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
         obj.save()
         return super().save_model(request, obj, form, change)
 
@@ -43,7 +57,9 @@ class BusinessTypeAdmin(MaterialModelAdmin):
 class ProducerBusinessAdmin(MaterialModelAdmin):
     pass
 
-# site.register(ProducerBulkRequest, ProducerBulkRequestAdmin)
+
+site.register(ProducerProductRequest, ProducerProductRequestAdmin)
+site.register(PreOrderSettings, PreOrderSettingsAdmin)
 # site.register(ProducerFarm, ProducerFarmAdmin)
 # site.register(BusinessType, BusinessTypeAdmin)
 # site.register(ProducerBusiness, ProducerBusinessAdmin)

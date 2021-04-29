@@ -1,22 +1,13 @@
 import csv
-import datetime
 
 from django.contrib import admin
-from django.contrib.admin import SimpleListFilter
 from django.http import HttpResponse
-from django.template.loader import get_template
-from django.template.response import TemplateResponse
-from django.urls import path
 from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from num2words import num2words
-
-from offer.models import OfferProduct
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo, DiscountInfo
 
 # Register your models here.
-from utility.pdf import render_to_pdf
 
 
 class TimeSlotAdmin(MaterialModelAdmin):
