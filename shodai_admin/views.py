@@ -42,7 +42,7 @@ all_order_status = {
     'Ordered': 'OD',
     'Order Accepted': 'OA',
     'Order Ready': 'RE',
-    'Order At Delivery': 'OAD',
+    'Order at Delivery': 'OAD',
     'Order Completed': 'COM',
     'Order Cancelled': 'CN'
 }
@@ -955,7 +955,7 @@ class OrderStatusList(APIView):
             'Ordered',
             'Order Accepted',
             'Order Ready',
-            'Order At Delivery',
+            'Order at Delivery',
             'Order Completed',
             'Order Cancelled',
         ]

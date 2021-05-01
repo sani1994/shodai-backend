@@ -3,8 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from decouple import config
-from shodai.utils.permission import GenericAuth, APIAuth
+from shodai.utils.permission import GenericAuth, ServiceAPIAuth
 from order.models import Order, OrderProduct, InvoiceInfo
 from utility.models import Area, ProductUnit, Remarks
 from utility.serializers import AreaSerializer, ProductUnitSerializer, RemarksSerializer
@@ -15,7 +14,7 @@ order_status_all = {
     'OD': 'Ordered',
     'OA': 'Order Accepted',
     'RE': 'Order Ready',
-    'OAD': 'Order At Delivery',
+    'OAD': 'Order at Delivery',
     'COM': 'Order Completed',
     'CN': 'Order Cancelled',
 }
@@ -175,7 +174,7 @@ class RemarksDetails(APIView):              #remarks unit object get, update and
 
 
 class OrderData(APIView):
-    permission_classes = [APIAuth]
+    permission_classes = [ServiceAPIAuth]
 
     def get(self, request):
         order_number = request.query_params.get('data')
@@ -208,7 +207,7 @@ class OrderData(APIView):
           "delivery_charge": invoice.delivery_charge,
           "discount": invoice.discount_amount,
           "payment_status": "Paid" if invoice.paid_status else "Not Paid",
-          "payment_method": "Cash On Delivery" if invoice.payment_method == 'CASH_ON_DELIVERY' else "Online Payment",
+          "payment_method": "Cash on Delivery" if invoice.payment_method == 'CASH_ON_DELIVERY' else "Online Payment",
           "customer": {
             "name": order.user.first_name,
             "mobile_number": order.user.mobile_number,
@@ -236,7 +235,7 @@ class OrderData(APIView):
 
 
 class OrderStatusUpdate(APIView):
-    permission_classes = [APIAuth]
+    permission_classes = [ServiceAPIAuth]
 
     def patch(self, request):
         data = request.data

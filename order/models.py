@@ -42,7 +42,7 @@ class Order(BaseModel):
         (ORDERED, 'Ordered'),
         (ORDER_ACCEPTED, 'Order Accepted'),
         (ORDER_READY, 'Order Ready'),
-        (ORDER_AT_DELIVERY, 'Order At Delivery'),
+        (ORDER_AT_DELIVERY, 'Order at Delivery'),
         (ORDER_COMPLETED, 'Order Completed'),
         (ORDER_CANCELLED, 'Order Cancelled'),
     ]
@@ -234,7 +234,7 @@ class InvoiceInfo(BaseModel):
     CASH_ON_DELIVERY = 'CASH_ON_DELIVERY'
     PAYMENT_METHOD = [
         (ONLINE_PAYMENT, 'SSLCommerz'),
-        (CASH_ON_DELIVERY, 'CashOnDelivery'),
+        (CASH_ON_DELIVERY, 'Cash on Delivery'),
     ]
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD, default=CASH_ON_DELIVERY)
     currency = models.CharField(max_length=3, blank=True, default='BDT')

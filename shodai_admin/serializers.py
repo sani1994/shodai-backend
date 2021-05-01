@@ -10,7 +10,7 @@ order_status_all = {
     'OD': 'Ordered',
     'OA': 'Order Accepted',
     'RE': 'Order Ready',
-    'OAD': 'Order At Delivery',
+    'OAD': 'Order at Delivery',
     'COM': 'Order Completed',
     'CN': 'Order Cancelled',
 }

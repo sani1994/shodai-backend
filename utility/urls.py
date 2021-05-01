@@ -14,7 +14,7 @@ urlpatterns = [
     # Third Party API Services #
 
     # for Conveyance App
-    path('order-info', views.OrderData.as_view()),
-    path('order-delivered', views.OrderStatusUpdate.as_view()),
+    path('services/order-info', views.OrderData.as_view()),
+    path('services/order-delivered', views.OrderStatusUpdate.as_view()),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

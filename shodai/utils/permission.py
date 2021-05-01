@@ -98,7 +98,7 @@ class IsAdminUserQP(TokenAuthentication):
         return False
 
 
-class APIAuth(BasePermission):
+class ServiceAPIAuth(BasePermission):
 
     def has_permission(self, request, view):
         api_key = 'API-Key ' + config("API_KEY")
