@@ -3,11 +3,11 @@ from django.db import models
 # Create your models here.
 from simple_history.models import HistoricalRecords
 
-from bases.models import BaseModel
+from base.models import BaseModel
 from producer.models import ProducerBulkRequest
 from product.models import Product
 from retailer.models import AcceptedOrder
-from userProfile.models import UserProfile
+from user.models import UserProfile
 import random
 
 

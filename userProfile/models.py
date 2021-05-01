@@ -1,9 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
-
-# from bases.models import BaseModel
-# Create your models here.
 from simple_history.models import HistoricalRecords
 
 

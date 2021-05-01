@@ -1,6 +1,6 @@
 from django.utils import timezone
 from order.models import Order
-from userProfile.models import UserProfile
+from user.models import UserProfile
 
 
 def send_summary_email():

@@ -8,14 +8,14 @@ from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
 from shodai.utils.helper import get_user_object
 from shodai.utils.permission import GenericAuth
-from userProfile.serializers import UserProfileSerializer, AddressSerializer, UserRegistrationSerializer, \
+from user.serializers import UserProfileSerializer, AddressSerializer, UserRegistrationSerializer, \
     RetailerRegistrationSreializer
-from userProfile.models import Address, BlackListedToken
+from user.models import Address, BlackListedToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from userProfile.models import UserProfile, Otp
+from user.models import UserProfile, Otp
 
 from utility.notification import email_notification, send_sms
 
@@ -360,11 +360,3 @@ class ForgetPasswordVarification(APIView):
                 return Response({"status": "Please provide the password sent by sms"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "User not available"}, status=status.HTTP_204_NO_CONTENT)
-
-
-class Home(TemplateView):
-    template_name = 'userProfile/index.html'
-
-
-class Download(TemplateView):
-    template_name = 'userProfile/download.html'

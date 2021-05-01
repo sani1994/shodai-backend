@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 from graphene_django import DjangoObjectType
 
-from bases.views import checkAuthentication
+from base.views import checkAuthentication
 from ..models import CouponCode, CouponUser, CouponSettings
 
 

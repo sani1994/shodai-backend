@@ -6,8 +6,8 @@ from simple_history.models import HistoricalRecords
 
 from order.models import Order
 from product.models import ProductCategory, Product
-from userProfile.models import Address, UserProfile
-from bases.models import BaseModel
+from user.models import Address, UserProfile
+from base.models import BaseModel
 from django.contrib.gis.db import models
 from utility.models import ProductUnit
 from django.contrib.gis.geos import Point

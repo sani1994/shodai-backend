@@ -3,9 +3,9 @@ from django.db import models
 # Create your models here.
 from simple_history.models import HistoricalRecords
 
-from bases.models import BaseModel
+from base.models import BaseModel
 from retailer.models import Shop
-from userProfile.models import UserProfile
+from user.models import UserProfile
 
 
 class UserDues(BaseModel): #write serializer

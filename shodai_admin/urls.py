@@ -1,7 +1,6 @@
 from django.urls import path
 from shodai_admin import views
 
-app_name = 'shodai_admin'
 urlpatterns = [
     path('login', views.Login.as_view()),
     path('logout', views.Logout.as_view()),

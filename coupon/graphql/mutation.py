@@ -2,7 +2,7 @@ import graphene
 from django.db.models import Q
 from django.utils import timezone
 
-from bases.views import checkAuthentication, coupon_checker
+from base.views import checkAuthentication, coupon_checker
 from coupon.models import CouponCode, CouponUser
 
 

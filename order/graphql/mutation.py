@@ -14,12 +14,12 @@ from django.utils import timezone
 from django_q.tasks import async_task
 from graphene_django import DjangoObjectType
 
-from bases.views import checkAuthentication, from_global_id, coupon_checker
+from base.views import checkAuthentication, from_global_id, coupon_checker
 from coupon.models import CouponCode, CouponUsageHistory, CouponSettings
 from .queries import OrderType
 from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
 from product.models import Product
-from userProfile.models import Address
+from user.models import Address
 
 
 class OrderStatusEnum(graphene.Enum):

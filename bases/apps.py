@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class BasesConfig(AppConfig):
-    name = 'bases'
+class BaseConfig(AppConfig):
+    name = 'base'

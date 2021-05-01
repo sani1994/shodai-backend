@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from simple_history.models import HistoricalRecords
-from bases.models import BaseModel
-from userProfile.models import UserProfile
+from base.models import BaseModel
+from user.models import UserProfile
 
 
 class Area(BaseModel):  # write serializer

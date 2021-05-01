@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from bases.models import BaseModel
+from base.models import BaseModel
 from product.models import Product
 
 from utility.models import ProductUnit, Location, Area

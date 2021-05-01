@@ -4,7 +4,7 @@ from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from simple_history.admin import SimpleHistoryAdmin
 
-from userProfile.models import UserProfile, Address, Otp
+from user.models import UserProfile, Address, Otp
 
 
 # Register your models here.

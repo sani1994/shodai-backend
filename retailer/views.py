@@ -203,7 +203,7 @@ from shodai.utils.permission import GenericAuth
 #         if request.user.is_staff:
 #             account.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
-from userProfile.models import UserProfile
+from user.models import UserProfile
 from utility.notification import email_notification
 
 

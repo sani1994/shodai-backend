@@ -19,14 +19,13 @@ from decouple import config
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-AUTH_USER_MODEL = 'userProfile.UserProfile'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS").replace(" ", "").split(',')
 
-AUTH_USER_MODEL = 'userProfile.UserProfile'
+AUTH_USER_MODEL = 'user.UserProfile'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -73,8 +72,8 @@ INSTALLED_APPS = [
     'qr_code',
     # 'django_elasticsearch_dsl',
 
-    'userProfile',
-    'bases',
+    'user',
+    'base',
     'order',
     'producer',
     'retailer',

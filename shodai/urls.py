@@ -49,7 +49,7 @@ urlpatterns = [
     path('', include('product.urls')),
     path('', include('producer.urls')),
     path('', include('retailer.urls')),
-    path('', include('userProfile.urls')),
+    path('', include('user.urls')),
     path('', include('offer.urls')),
     path('', include('coupon.urls')),
     path('', include('utility.urls')),

@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from graphene_django.types import DjangoObjectType
 
-from bases.views import checkAuthentication
+from base.views import checkAuthentication
 from utility.notification import send_sms, otp_text
 from ..models import UserProfile, Address, BlackListedToken
 from datetime import timedelta

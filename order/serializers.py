@@ -8,9 +8,9 @@ from order.models import (
 )
 from rest_framework import serializers
 
-from userProfile.models import Address
-from userProfile.serializers import AddressSerializer
-from userProfile.serializers import UserProfileSerializer
+from user.models import Address
+from user.serializers import AddressSerializer
+from user.serializers import UserProfileSerializer
 
 
 class OrderSerializer(serializers.ModelSerializer):

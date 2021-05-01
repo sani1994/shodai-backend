@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class UserprofileConfig(AppConfig):
-    name = 'userProfile'
+class UserConfig(AppConfig):
+    name = 'user'
     icon_name = 'face'

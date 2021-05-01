@@ -19,7 +19,7 @@ from openpyxl import Workbook
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
-from bases.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
+from base.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
@@ -28,7 +28,7 @@ from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerial
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
     UserProfileSerializer, ProductMetaSerializer, order_status_all
 from shodai.utils.permission import IsAdminUserQP
-from userProfile.models import UserProfile, Address
+from user.models import UserProfile, Address
 
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token

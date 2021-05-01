@@ -1,7 +1,7 @@
 import graphene
 from graphene_django.types import DjangoObjectType
 
-from bases.views import checkAuthentication
+from base.views import checkAuthentication
 from ..models import Shop, ShopProduct
 
 

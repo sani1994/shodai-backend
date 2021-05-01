@@ -3,7 +3,7 @@ from django.forms import forms
 from leaflet.admin import LeafletGeoAdminMixin
 from rest_framework.generics import get_object_or_404
 
-from userProfile.models import UserProfile
+from user.models import UserProfile
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from retailer.models import Account, Shop, ShopProduct, AcceptedOrder

@@ -5,11 +5,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from coupon.models import CouponCode
 from offer.models import OfferProduct, Offer
-from userProfile.models import UserProfile
+from user.models import UserProfile
 from product.models import ProductMeta
 from product.models import Product
-from bases.models import BaseModel
-from userProfile.models import Address
+from base.models import BaseModel
+from user.models import Address
 
 
 # Create your models here.

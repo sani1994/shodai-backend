@@ -12,7 +12,7 @@ from django_q.tasks import async_task
 from notifications.signals import notify
 from rest_framework.generics import get_object_or_404
 
-from bases.views import coupon_checker
+from base.views import coupon_checker
 from coupon.models import CouponUsageHistory, CouponCode, CouponSettings
 from order.serializers import OrderSerializer, OrderProductSerializer, VatSerializer, OrderProductReadSerializer, \
     DeliveryChargeSerializer, PaymentInfoDetailSerializer, PaymentInfoSerializer, OrderDetailSerializer, \
@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
 from shodai.utils.permission import GenericAuth
-from userProfile.models import Address
+from user.models import Address
 
 
 class TimeSlotList(APIView):

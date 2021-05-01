@@ -1,4 +1,4 @@
-from userProfile.models import BlackListedToken, UserProfile
+from user.models import BlackListedToken, UserProfile
 
 
 def get_user_object(username):

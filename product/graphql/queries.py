@@ -4,7 +4,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
-from bases.views import keyword_based_search
+from base.views import keyword_based_search
 from offer.models import OfferProduct
 from ..models import Product, ProductCategory, ShopCategory, ProductMeta
 from utility.models import ProductUnit

@@ -1,7 +1,7 @@
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.db import models
 from simple_history.models import HistoricalRecords
-from bases.models import BaseModel
+from base.models import BaseModel
 from utility.models import ProductUnit
 
 

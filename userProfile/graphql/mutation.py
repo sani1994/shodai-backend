@@ -10,7 +10,7 @@ from random import randint
 from django.utils.crypto import get_random_string
 from django_q.tasks import async_task
 
-from bases.views import checkAuthentication
+from base.views import checkAuthentication
 from coupon.models import CouponCode, CouponSettings, CouponUser
 from utility.notification import send_sms, email_notification, otp_text, send_sms_otp
 from .queries import UserType, AddressType

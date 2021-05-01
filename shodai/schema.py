@@ -2,8 +2,8 @@ import graphene
 import graphql_jwt
 from product.graphql.schema import Query as product_query
 from product.graphql.schema import Mutation as product_mutation
-from userProfile.graphql.schema import Query as user_query
-from userProfile.graphql.schema import Mutation as user_mutation
+from user.graphql.schema import Query as user_query
+from user.graphql.schema import Mutation as user_mutation
 from order.graphql.schema import Query as order_query
 from order.graphql.schema import Mutation as order_mutation
 from utility.graphql.schema import Query as utility_query

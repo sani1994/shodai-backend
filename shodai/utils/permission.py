@@ -2,10 +2,7 @@ from decouple import config
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, BasePermission, SAFE_METHODS
 from shodai.utils.helper import get_user_object
-from userProfile.models import BlackListedToken, UserProfile
-
-
-# from userProfile.views import GET
+from user.models import BlackListedToken, UserProfile
 
 
 class GenericAuth(IsAuthenticated):

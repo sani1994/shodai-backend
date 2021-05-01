@@ -4,7 +4,7 @@ from django.utils import timezone
 from graphql_relay.utils import unbase64
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from userProfile.models import BlackListedToken
+from user.models import BlackListedToken
 from offer.models import OfferProduct
 from product.models import Product
 from coupon.models import CouponCode, CouponUser

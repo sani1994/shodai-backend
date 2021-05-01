@@ -7,7 +7,7 @@ from random import randint
 
 from coupon.models import CouponCode, CouponSettings, CouponUser
 from shodai import settings
-from userProfile.models import UserProfile, Address
+from user.models import UserProfile, Address
 from rest_framework import serializers
 
 from utility.notification import email_notification

@@ -3,8 +3,8 @@ from django.db import models
 # Create your models here.
 from simple_history.models import HistoricalRecords
 
-from bases.models import BaseModel
-from userProfile.models import UserProfile
+from base.models import BaseModel
+from user.models import UserProfile
 
 DISCOUNT_PERCENT = 'DP'
 DISCOUNT_AMOUNT = 'DA'

@@ -4,7 +4,7 @@ from rest_framework import serializers
 from offer.models import OfferProduct, Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo
 from product.models import Product, ProductMeta
-from userProfile.models import UserProfile
+from user.models import UserProfile
 
 order_status_all = {
     'OD': 'Ordered',
