@@ -63,6 +63,8 @@ class CouponCodeAdmin(MaterialModelAdmin):
 class CouponUsageHistoryAdmin(MaterialModelAdmin):
     list_display = ['id', 'coupon_code', 'coupon_user', 'invoice_number']
     list_filter = ['created_on']
+    search_fields = ['coupon_code', 'coupon_user__created_for__mobile_number',
+                     'invoice_number__order_number__order_number']
 
     fieldsets = (
         ('Coupon Detail View', {

@@ -17,8 +17,7 @@ class AddressAdmin(MaterialModelAdmin):
 
 class UserProfileAdmin(MaterialModelAdmin):
     icon_name = 'face'
-    list_display = ('mobile_number', 'user_type', 'first_name', 'last_name', 'created_on',
-                    'is_approved')
+    list_display = ('mobile_number', 'user_type', 'first_name', 'last_name', 'is_approved')
     exclude = ['password', ]
     readonly_fields = ['created_on', 'modified_on', 'date_joined', 'last_login']
     search_fields = ['mobile_number', 'first_name', 'last_name']
