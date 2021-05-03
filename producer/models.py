@@ -17,28 +17,29 @@ class ProducerProductRequest(BaseModel):
     """
     This is the model for Producer Product Request
     """
-    product_name = models.CharField(max_length=200, null=True, blank=True)
-    product_name_bn = models.CharField(max_length=200, null=True, blank=True,
-                                       verbose_name='পন্যের নাম')
-    product_image = models.ImageField(upload_to='pictures/producer/product')
-    product_description = RichTextUploadingField()
-    product_price = models.FloatField(null=True, blank=True)
-    product_unit = models.CharField(max_length=30, null=True, blank=True)
+    # --- Not Required - If Pre Order product is not is_approved True ---
+    # product_name = models.CharField(max_length=200, null=True, blank=True)
+    # product_image = models.ImageField(upload_to='pictures/producer/product')
+    # product_description = RichTextUploadingField()
+    # product_unit = models.CharField(max_length=30, null=True, blank=True)
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product_price = models.FloatField(null=True, blank=True)
     quantity = models.FloatField(blank=True, null=True)
+    producer = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False)
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
     def __str__(self):
-        return self.product_name
+        # return self.product_name
+        return self.product.product_name
 
-    def save(self, *args, **kwargs):
-        if not self.product_name:
-            self.product_name = self.product.product_name
-        if not self.product_unit:
-            self.product_unit = self.product.product_unit.product_unit
-        return super(ProducerProductRequest, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.product_name:
+    #         self.product_name = self.product.product_name
+    #     if not self.product_unit:
+    #         self.product_unit = self.product.product_unit.product_unit
+    #     return super(ProducerProductRequest, self).save(*args, **kwargs)
 
 
 class PreOrderSettings(BaseModel):
@@ -49,14 +50,14 @@ class PreOrderSettings(BaseModel):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     delivery_date = models.DateTimeField()
-    product_price = models.FloatField(blank=True, null=True)
-    offer_price = models.FloatField(blank=True, null=True)
+    # product_price = models.FloatField(blank=True, null=True)  # not required
+    discounted_price = models.FloatField(blank=True, null=True)
     target_quantity = models.FloatField(blank=True, null=True)
-    available_quantity = models.FloatField(blank=True, null=True)
-    purchase_quantity = models.FloatField(blank=True, null=True)
-    notes = models.CharField(max_length=500, null=True, blank=True)
-    cancel_order = models.BooleanField(default=False)
-    daily_deal = models.BooleanField(default=False)
+    unit_quantity = models.FloatField(blank=True, null=True)
+    # available_quantity = models.FloatField(blank=True, null=True)  # may be not required
+    # note = models.CharField(max_length=500, null=True, blank=True)  # purpose is not clear
+    # cancel_order = models.BooleanField(default=False)  # not required
+    # daily_deal = models.BooleanField(default=False)  # not required
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):
@@ -69,20 +70,20 @@ class PreOrder(BaseModel):
     """
     WEBSITE = 'WB'
     ADMIN_PANEL = 'AD'
-    MOBILE_APPLICATION = 'APP'
+    MOBILE_APPLICATION = 'AP'
     PLATFORM = [
         (WEBSITE, 'Website'),
         (ADMIN_PANEL, 'Admin Panel'),
-        (MOBILE_APPLICATION, 'Mobile Application')
+        (MOBILE_APPLICATION, 'Mobile App')
     ]
-    order_product_qty = models.FloatField(null=False, blank=False)
+    pre_order = models.ForeignKey(PreOrderSettings, on_delete=models.CASCADE)
+    customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    delivery_address = models.ForeignKey(Address, on_delete=models.CASCADE)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
+    product_quantity = models.FloatField(null=False, blank=False)
     note = models.CharField(max_length=500, null=True, blank=True)
     platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
-    placed_on = models.DateTimeField(auto_now=True)
-    customer = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
-    pre_order = models.OneToOneField(PreOrderSettings, on_delete=models.CASCADE)
+    # placed_on = models.DateTimeField(auto_now=True)  # not required
 
     def __str__(self):
         return '{}'.format(self.id)
