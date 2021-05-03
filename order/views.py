@@ -407,17 +407,17 @@ class OrderProductDetail(APIView):
         else:
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self, request, id):
-        obj = self.get_orderproduct_obj(id)
-        if obj:
-            serializer = OrderProductSerializer(obj, data=request.data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save(modified_by=request.user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+    # def put(self, request, id):
+    #     obj = self.get_orderproduct_obj(id)
+    #     if obj:
+    #         serializer = OrderProductSerializer(obj, data=request.data, context={'request': request})
+    #         if serializer.is_valid():
+    #             serializer.save(modified_by=request.user)
+    #             return Response(serializer.data, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     # def delete(self, request, id):
     #     obj = self.get_orderproduct_obj(id)
