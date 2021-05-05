@@ -1,6 +1,5 @@
 from django.contrib.gis.db import models
 from django.utils import timezone
-from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 from django.utils.translation import ugettext_lazy as _
 
@@ -275,7 +274,8 @@ class PreOrderSetting(BaseModel):
     This is the model for Pre Order for Producer's Product
     """
     producer_product = models.OneToOneField(ProducerProductRequest, models.CASCADE)
-    product = models.ForeignKey(Product, models.SET_NULL, null=True)
+    product = models.ForeignKey(Product, models.CASCADE)
+    # pre_order_setting_number = models.CharField(max_length=20, null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     delivery_date = models.DateTimeField()
@@ -283,14 +283,16 @@ class PreOrderSetting(BaseModel):
     unit_quantity = models.FloatField()
     target_quantity = models.FloatField()
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
-    # note = models.CharField(max_length=500, null=True, blank=True)  # purpose is not clear
     is_approved = models.BooleanField(default=False)
+    # note = models.CharField(max_length=500, null=True, blank=True)  # purpose is not clear
+    # is_processed = models.BooleanField(default=False)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.product.product_name
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.id) + "-" + self.product.slug
+        self.slug = self.product.slug + "-" + str(self.id)
         super(PreOrderSetting, self).save(*args, **kwargs)
 
 
@@ -314,8 +316,9 @@ class PreOrder(BaseModel):
     product_quantity = models.FloatField()
     note = models.CharField(max_length=500, null=True, blank=True)
     platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
-    order = models.ForeignKey(Order, models.SET_NULL, null=True, blank=True)
-    cancel_order = models.BooleanField(default=False)
+    order = models.OneToOneField(Order, models.SET_NULL, null=True, blank=True)
+    # is_cancelled = models.BooleanField(default=False)
+    history = HistoricalRecords()
 
     def __str__(self):
         return '{}'.format(self.id)

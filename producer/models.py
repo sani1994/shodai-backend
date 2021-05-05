@@ -22,7 +22,7 @@ class ProducerProductRequest(BaseModel):
     product_unit = models.CharField(max_length=20)
     product_price = models.FloatField()
     product_quantity = models.FloatField()
-    producer = models.ForeignKey(UserProfile, models.CASCADE)
+    producer = models.ForeignKey(UserProfile, models.SET_NULL, null=True)
     is_approved = models.BooleanField(default=False)
     history = HistoricalRecords()
 
