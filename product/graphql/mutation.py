@@ -48,5 +48,46 @@ class CreateProduct(graphene.Mutation):
                 raise Exception('Unauthorized request!')
 
 
+class ProductCategories(graphene.Mutation):
+    category_list = graphene.List(graphene.String)
+
+    @staticmethod
+    def mutate(root, info, input=None):
+        all_product_categories = [
+          {
+            "id": 1,
+            "name": "Baby",
+            "childs": [
+              {
+                "id": 23,
+                "name": "Baby Food",
+                "childs": [
+                  {
+                    "id": 24,
+                    "name": "Imported"
+                  }
+                ]
+              },
+              {
+                "id": 29,
+                "name": "Diapers"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "name": "Stationary",
+            "childs": [
+              {
+                "id": 39,
+                "name": "Office Stationaries"
+              }
+            ]
+          }
+        ]
+        return ProductCategories(category_list=all_product_categories)
+
+
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
+    product_categories = ProductCategories.Field()
