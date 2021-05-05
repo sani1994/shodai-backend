@@ -4,7 +4,6 @@ import random
 from ckeditor_uploader.fields import RichTextUploadingField
 from simple_history.models import HistoricalRecords
 
-from order.models import Order
 from product.models import Product, ProductCategory
 from userProfile.models import Address, UserProfile
 from bases.models import BaseModel
@@ -29,63 +28,6 @@ class ProducerProductRequest(BaseModel):
 
     def __str__(self):
         return self.product_name
-
-    # def save(self, *args, **kwargs):
-    #     if not self.product_name:
-    #         self.product_name = self.product.product_name
-    #     if not self.product_unit:
-    #         self.product_unit = self.product.product_unit.product_unit
-    #     return super(ProducerProductRequest, self).save(*args, **kwargs)
-
-
-class PreOrderSetting(BaseModel):
-    """
-    This is the model for Pre Order for Producer's Product
-    """
-    producer_product = models.OneToOneField(ProducerProductRequest, models.CASCADE)
-    product = models.ForeignKey(Product, models.SET_NULL, null=True)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    delivery_date = models.DateTimeField()
-    discounted_price = models.FloatField()
-    unit_quantity = models.FloatField()
-    target_quantity = models.FloatField()
-    # product_price = models.FloatField(blank=True, null=True)  # not required
-    # available_quantity = models.FloatField(blank=True, null=True)  # may be not required
-    # note = models.CharField(max_length=500, null=True, blank=True)  # purpose is not clear
-    # cancel_order = models.BooleanField(default=False)  # not required
-    # daily_deal = models.BooleanField(default=False)  # not required
-    is_approved = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.product.product_name
-
-
-class PreOrder(BaseModel):
-    """
-    This is the model for Pre Order placed by customer
-    """
-    WEBSITE = 'WB'
-    ADMIN_PANEL = 'AD'
-    MOBILE_APPLICATION = 'AP'
-    PLATFORM = [
-        (WEBSITE, 'Website'),
-        (ADMIN_PANEL, 'Admin Panel'),
-        (MOBILE_APPLICATION, 'Mobile App')
-    ]
-    pre_order_setting = models.ForeignKey(PreOrderSetting, models.CASCADE)
-    pre_order_number = models.IntegerField(unique=True)
-    customer = models.ForeignKey(UserProfile, models.SET_NULL, null=True)
-    delivery_address = models.ForeignKey(Address, models.SET_NULL, null=True)
-    contact_number = models.CharField(max_length=20, null=True, blank=True)
-    product_quantity = models.FloatField()
-    note = models.CharField(max_length=500, null=True, blank=True)
-    platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
-    order = models.ForeignKey(Order, models.SET_NULL, null=True, blank=True)
-    # placed_on = models.DateTimeField(auto_now=True)  # not required
-
-    def __str__(self):
-        return '{}'.format(self.id)
 
 
 class ProducerBulkRequest(BaseModel):  # producer product
@@ -272,7 +214,7 @@ class MicroBulkOrderProducts(BaseModel):  # micro_bulk_order=mco
     bulk_order_products = models.ForeignKey(BulkOrderProducts, on_delete=models.CASCADE, null=True)
     micro_bulk_order = models.ForeignKey(MicroBulkOrder, on_delete=models.CASCADE, null=True)
     qty = models.DecimalField(decimal_places=2, default=0, max_digits=5)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
+    order = models.ForeignKey('order.Order', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         if self.bulk_order_products:
