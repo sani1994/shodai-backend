@@ -243,7 +243,8 @@ class InvoiceInfo(BaseModel):
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return 'OrderId: ' + str(self.order_number) + "  " + "InvoiceNumber: " + str(self.invoice_number)
+        return 'Order Number: {} Invoice Number: {}'.format(self.order_number.order_number,
+                                                            self.invoice_number)
 
 
 class DiscountInfo(BaseModel):
