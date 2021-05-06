@@ -22,11 +22,12 @@ from rest_framework.views import APIView
 from base.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
-from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
+from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo, PreOrderSetting
 from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
-    UserProfileSerializer, ProductMetaSerializer, order_status_all
+    UserProfileSerializer, ProductMetaSerializer, order_status_all, PreOrderSettingListSerializer, \
+    PreOrderSettingDetailSerializer
 from shodai.utils.permission import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -1586,3 +1587,26 @@ class OrderStatusUpdate(APIView):
         else:
             return Response({"status": "failed",
                              "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PreOrderSettingList(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        queryset = PreOrderSetting.objects.all().order_by('-created_on')
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = PreOrderSettingListSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
+
+class PreOrderSettingDetail(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get User Details
+    """
+
+    def get(self, request, id):
+        pre_order = get_object_or_404(PreOrderSetting, id=id)
+        serializer = PreOrderSettingDetailSerializer(pre_order)
+        return Response(serializer.data, status=status.HTTP_200_OK)

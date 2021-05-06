@@ -5,7 +5,9 @@ from django.http import HttpResponse
 from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo, DiscountInfo
+from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo, DiscountInfo, \
+    PreOrderSetting
+
 
 # Register your models here.
 
@@ -57,6 +59,7 @@ class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id',)
 
     actions = ["export_as_csv"]
+
     # change_form_template = "order_admin_changeform.html"
 
     def get_actions(self, request):
@@ -94,13 +97,16 @@ class OrderAdmin(MaterialModelAdmin):
     readonly_fields = ['user', 'invoice_number', 'order_number', 'order_total_price', 'created_by', 'modified_by',
                        'created_on', 'modified_on', 'delivery_date_time', 'delivery_place', 'address', 'note',
                        'total_vat', order_products, 'order_status', 'platform']
-    list_display = ('id', 'order_number', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products)
+    list_display = (
+    'id', 'order_number', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products)
     search_fields = ['id', 'invoice_number', 'order_number', 'user__mobile_number']
     inlines = [OrderProductInline, InvoiceInfoInline]
     fieldsets = (
         ('Order Detail View', {
-            'fields': ('user', 'platform', 'invoice_number', 'order_number', 'total_vat', 'order_total_price', 'order_status', 'delivery_date_time',
-                       'delivery_place', 'address', 'note', 'created_by', 'modified_by', 'created_on', 'modified_on')
+            'fields': (
+            'user', 'platform', 'invoice_number', 'order_number', 'total_vat', 'order_total_price', 'order_status',
+            'delivery_date_time',
+            'delivery_place', 'address', 'note', 'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )
 
@@ -126,7 +132,8 @@ class OrderProductAdmin(MaterialModelAdmin):
     list_display = ('product', 'order_id', 'order_product_price', 'order_product_qty',
                     order_date)
     list_filter = ('order', 'order__delivery_date_time',)
-    readonly_fields = ['product', 'product_price', 'order', 'order_product_price', 'order_product_price_with_vat', 'vat_amount',
+    readonly_fields = ['product', 'product_price', 'order', 'order_product_price', 'order_product_price_with_vat',
+                       'vat_amount',
                        'order_product_qty', 'created_by', 'modified_by', 'created_on']
     actions = ["export_as_csv"]
 
@@ -332,6 +339,19 @@ class DiscountInfoAdmin(MaterialModelAdmin):
         return False
 
 
+class PreOrderSettingAdmin(MaterialModelAdmin):
+    list_display = ('product', 'start_date', 'end_date', 'is_approved')
+    readonly_fields = ['created_by', 'modified_by', 'created_on', 'modified_on', 'slug']
+    autocomplete_fields = ['product']
+
+    def save_model(self, request, obj, form, change):
+        if obj.id:
+            obj.modified_by = request.user
+        obj.created_by = request.user
+        obj.save()
+        return super().save_model(request, obj, form, change)
+
+
 site.register(TimeSlot, TimeSlotAdmin)
 site.register(Order, OrderAdmin)
 site.register(OrderProduct, OrderProductAdmin)
@@ -340,3 +360,4 @@ site.register(DeliveryCharge, DeliveryChargeAdmin)
 site.register(PaymentInfo, PaymentInfoAdmin)
 site.register(InvoiceInfo, InvoiceInfoAdmin)
 site.register(DiscountInfo, DiscountInfoAdmin)
+site.register(PreOrderSetting, PreOrderSettingAdmin)

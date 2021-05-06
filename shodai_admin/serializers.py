@@ -2,7 +2,8 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from offer.models import OfferProduct, Offer, CartOffer
-from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo
+from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo, PreOrderSetting
+from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from user.models import UserProfile
 
@@ -253,3 +254,26 @@ class ProductMetaSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductMeta
         fields = ['id', 'name']
+
+
+class PreOrderSettingListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PreOrderSetting
+        fields = ['id', 'start_date', 'end_date', 'discounted_price',
+                  'target_quantity', 'is_approved']
+
+
+class ProducerProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProducerProductRequest
+        fields = ['id', 'product_name', 'product_image', 'product_description',
+                  'product_unit', 'product_price', 'product_quantity']
+
+
+class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
+    producer_product = ProducerProductSerializer(read_only=True)
+
+    class Meta:
+        model = PreOrderSetting
+        fields = ['id', 'start_date', 'end_date', 'delivery_date', 'discounted_price',
+                  'unit_quantity', 'target_quantity', 'is_approved', 'producer_product']

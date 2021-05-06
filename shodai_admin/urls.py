@@ -41,4 +41,7 @@ urlpatterns = [
     path('reports/all-customers/download/excel', views.UserListDownloadExcel.as_view()),
     path('reports/order-products/download/excel', views.OrderProductListExcel.as_view()),
 
+    # pre-order
+    path('pre-orders', views.PreOrderSettingList.as_view()),
+    path('pre-orders/<int:id>', views.PreOrderSettingDetail.as_view()),
 ]
