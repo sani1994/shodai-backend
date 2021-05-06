@@ -5,11 +5,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from coupon.models import CouponCode
 from offer.models import OfferProduct, Offer
-from user.models import UserProfile
+from producer.models import ProducerProductRequest
+from user.models import UserProfile, Address
 from product.models import ProductMeta
 from product.models import Product
 from base.models import BaseModel
-from user.models import Address
 
 
 # Create your models here.
@@ -267,3 +267,58 @@ class DiscountInfo(BaseModel):
 
     def __str__(self):
         return str(self.id) + " - " + "InvoiceNumber: " + str(self.invoice.invoice_number)
+
+
+class PreOrderSetting(BaseModel):
+    """
+    This is the model for Pre Order for Producer's Product
+    """
+    producer_product = models.OneToOneField(ProducerProductRequest, models.CASCADE)
+    product = models.ForeignKey(Product, models.CASCADE)
+    # pre_order_setting_number = models.CharField(max_length=20, null=True, blank=True)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    delivery_date = models.DateTimeField()
+    discounted_price = models.FloatField()
+    unit_quantity = models.FloatField()
+    target_quantity = models.FloatField()
+    slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
+    # note = models.CharField(max_length=500, null=True, blank=True)  # purpose is not clear
+    # is_processed = models.BooleanField(default=False)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return self.product.product_name
+
+    def save(self, *args, **kwargs):
+        self.slug = self.product.slug + "-" + str(self.id)
+        super(PreOrderSetting, self).save(*args, **kwargs)
+
+
+class PreOrder(BaseModel):
+    """
+    This is the model for Pre Order placed by customer
+    """
+    WEBSITE = 'WB'
+    ADMIN_PANEL = 'AD'
+    MOBILE_APPLICATION = 'AP'
+    PLATFORM = [
+        (WEBSITE, 'Website'),
+        (ADMIN_PANEL, 'Admin Panel'),
+        (MOBILE_APPLICATION, 'Mobile App')
+    ]
+    pre_order_setting = models.ForeignKey(PreOrderSetting, models.CASCADE)
+    pre_order_number = models.IntegerField(unique=True)
+    customer = models.ForeignKey(UserProfile, models.SET_NULL, null=True)
+    delivery_address = models.ForeignKey(Address, models.SET_NULL, null=True)
+    contact_number = models.CharField(max_length=20, null=True, blank=True)
+    product_quantity = models.FloatField()
+    note = models.CharField(max_length=500, null=True, blank=True)
+    platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
+    order = models.OneToOneField(Order, models.SET_NULL, null=True, blank=True)
+    # is_cancelled = models.BooleanField(default=False)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return '{}'.format(self.id)
