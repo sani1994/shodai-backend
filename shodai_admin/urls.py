@@ -44,4 +44,5 @@ urlpatterns = [
     # pre-order
     path('pre-orders', views.PreOrderSettingList.as_view()),
     path('pre-orders/<int:id>', views.PreOrderSettingDetail.as_view()),
+    path('producer-products/search', views.ProducerProductSearch.as_view()),
 ]

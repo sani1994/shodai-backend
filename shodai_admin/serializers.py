@@ -264,16 +264,38 @@ class PreOrderSettingListSerializer(serializers.ModelSerializer):
 
 
 class ProducerProductSerializer(serializers.ModelSerializer):
+    producer_mobile_number = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = ProducerProductRequest
         fields = ['id', 'product_name', 'product_image', 'product_description',
-                  'product_unit', 'product_price', 'product_quantity']
+                  'product_unit', 'product_price', 'product_quantity', 'producer_mobile_number']
+
+    def get_producer_mobile_number(self, obj):
+        return obj.producer.mobile_number
 
 
 class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
     producer_product = ProducerProductSerializer(read_only=True)
+    product_id = serializers.SerializerMethodField(read_only=True)
+    product_name = serializers.SerializerMethodField(read_only=True)
+    product_image = serializers.SerializerMethodField(read_only=True)
+    product_price = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrderSetting
         fields = ['id', 'start_date', 'end_date', 'delivery_date', 'discounted_price',
-                  'unit_quantity', 'target_quantity', 'is_approved', 'producer_product']
+                  'unit_quantity', 'target_quantity', 'is_approved', 'product_id',
+                  'product_name', 'product_image', 'product_price', 'producer_product']
+
+    def get_product_id(self, obj):
+        return obj.product.id
+
+    def get_product_name(self, obj):
+        return obj.product.product_name
+
+    def get_product_image(self, obj):
+        return obj.product.product_image.url
+
+    def get_product_price(self, obj):
+        return obj.product.product_price

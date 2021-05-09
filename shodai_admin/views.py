@@ -23,11 +23,12 @@ from base.views import CustomPageNumberPagination, field_validation, type_valida
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo, PreOrderSetting
+from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
     UserProfileSerializer, ProductMetaSerializer, order_status_all, PreOrderSettingListSerializer, \
-    PreOrderSettingDetailSerializer
+    PreOrderSettingDetailSerializer, ProducerProductSerializer
 from shodai.utils.permission import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -1610,3 +1611,26 @@ class PreOrderSettingDetail(APIView):
         pre_order = get_object_or_404(PreOrderSetting, id=id)
         serializer = PreOrderSettingDetailSerializer(pre_order)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProducerProductSearch(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get List of Producer Product by Producer mobile number
+    """
+
+    def get(self, request):
+        query = request.query_params.get('mobile_number', '')
+        producer = UserProfile.objects.filter(mobile_number__icontains=query,
+                                              user_type='PD')
+        if producer:
+            producer = producer[0]
+            queryset = ProducerProductRequest.objects.filter(producer=producer)
+            serializer = ProducerProductSerializer(queryset, many=True)
+            if serializer:
+                return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'status': 'failed',
+                             'message': 'matching producer not found'}, status=status.HTTP_200_OK)
