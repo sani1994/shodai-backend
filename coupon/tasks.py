@@ -69,8 +69,8 @@ def send_coupon_email(coupon, user):
         else:
             subject = 'You got a new Coupon from shod.ai'
         from_email, to = 'noreply@shod.ai', user.email
-        html_customer = get_template('coupon_email.html')
-        html_content = html_customer.render(content)
+        html_coupon = get_template('email/coupon.html')
+        html_content = html_coupon.render(content)
         msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
         msg.attach_alternative(html_content, "text/html")
         msg.send()

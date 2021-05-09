@@ -1046,7 +1046,7 @@ class InvoiceDownloadPDF(APIView):
             'colspan_value': "4" if is_product_offer else "3",
             'downloaded_on': datetime.now().replace(microsecond=0)
         }
-        pdf = render_to_pdf('pdf/invoice.html', data)
+        pdf = render_to_pdf('others/invoice.html', data)
         response = HttpResponse(pdf, content_type='application/pdf')
         filename = "invoice_of_order_%s.pdf" % order.order_number
         content = "inline; filename=%s" % filename
@@ -1127,7 +1127,7 @@ class OrderNotification(APIView):
                            'colspan_value': "4" if is_offer else "3"}
 
                 from_email, to = 'noreply@shod.ai', order_instance.user.email
-                html_customer = get_template('email.html')
+                html_customer = get_template('email/order_notification_customer.html')
                 html_content = html_customer.render(content)
                 msg = EmailMultiAlternatives(customer_subject, 'shodai', from_email, [to])
                 msg.attach_alternative(html_content, "text/html")
@@ -1167,7 +1167,7 @@ class OrderNotification(APIView):
                            }
 
                 admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
-                html_admin = get_template('admin_email.html')
+                html_admin = get_template('email/order_notification_staff.html')
                 html_content = html_admin.render(content)
                 msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
                 msg_to_admin.attach_alternative(html_content, "text/html")
@@ -1217,7 +1217,7 @@ class VerifyCoupon(APIView):
                 if is_valid and isinstance(item['product_id'], int):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
-                        product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                        product_exist = Product.objects.filter(id=item['product_id'])
                         if not product_exist or not item['product_quantity']:
                             is_valid = False
                         if is_valid:
@@ -1481,7 +1481,7 @@ class OrderProductListExcel(APIView):
             field_names = ["No.", "Customer Mobile Number", "Order Number", "Order Placing Date Time ",
                            "Order Delivery Date Time", "Order Status", "Order Total Amount", "Product ID",
                            "Product Name", "Product Unit", "Product Unit Price", "Product Quantity",
-                           "Product Total Price", "Product Subcategory"]
+                           "Product Total Price", "Product Subcategory", "Delivery Address"]
             ws1.append(field_names)
 
             for count, obj in enumerate(queryset, 1):
@@ -1491,7 +1491,7 @@ class OrderProductListExcel(APIView):
                        order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
                        obj.product.product_name, obj.product.product_unit.product_unit, obj.order_product_price,
                        obj.order_product_qty, obj.order_product_price * obj.order_product_qty,
-                       obj.product.product_meta.name]
+                       obj.product.product_meta.name, obj.order.address.road]
                 ws1.append(row)
 
             for column_cells in ws1.columns:
@@ -1554,7 +1554,7 @@ class OrderProductListExcel(APIView):
             wb.save(response)
             return response
         else:
-            template = get_template("report_no_data.html")
+            template = get_template("others/report_no_data.html")
             return HttpResponse(template.render())
 
 

@@ -222,7 +222,7 @@ class InvoiceInfo(BaseModel):
     billing_person_email = models.EmailField(blank=True, null=True)
     billing_person_mobile_number = models.CharField(max_length=20, null=True, blank=True)
     delivery_contact_number = models.CharField(max_length=20, null=True, blank=True)
-    delivery_address = models.CharField(max_length=200)
+    delivery_address = models.CharField(max_length=500)
     delivery_date_time = models.DateTimeField()
     delivery_charge = models.FloatField(default=0)
     discount_amount = models.FloatField(default=0, null=True, blank=True)

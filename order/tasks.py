@@ -1,4 +1,7 @@
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import get_template
 from django.utils import timezone
+
 from order.models import Order
 from user.models import UserProfile
 
@@ -27,7 +30,7 @@ def send_summary_email():
         if user_order > 1:
             total_repeated_customer += 1
 
-    payload = {"customer_daily": UserProfile.objects.filter(created_on__gte=today).count(),
+    content = {"customer_daily": UserProfile.objects.filter(created_on__gte=today).count(),
                "customer_monthly": UserProfile.objects.filter(created_on__gte=this_month).count(),
                "total_customer": total_user.count(),
 
@@ -49,3 +52,12 @@ def send_summary_email():
                "repeated_customer_daily": repeated_customer_daily,
                "repeated_customer_monthly": repeated_customer_monthly,
                "total_repeated_customer": total_repeated_customer}
+
+    subject = "Shodai Today's Summary"
+    from_email, to = 'noreply@shod.ai', 'reaznahid@finder-lbs.com'
+    html_summary = get_template('email/summary.html')
+    html_content = html_summary.render(content)
+    msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+    return f"mail sent"
