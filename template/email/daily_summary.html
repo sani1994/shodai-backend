@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="https://www.w3.org/1999/xhtml">
   <head>
-    <title>Shodai Summary</title>
+    <title>Shodai Daily Summary</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -51,29 +51,35 @@
             <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
             <tbody>
               <tr>
-                <p>The summary of today's is given below.</p>
-                New customer today: {{customer_daily}}<br/>
-                New customer this month: {{customer_monthly}}<br/>
-                Total customer: {{total_customer}}<br/><br/>
+                <td>
+                  <p>The summary of {{date}} is given below.</p>
 
-                Repeated customer today: {{repeated_customer_daily}}<br/>
-                Repeated customer this month: {{repeated_customer_monthly}}<br/>
-                Total repeated customer: {{total_repeated_customer}}<br/><br/>
+                  Order placed today: {{order_placed_daily}}<br/>
+                  Order placed today (web): {{order_placed_from_web_daily}}<br/>
+                  Order placed today (admin): {{order_placed_from_admin_daily}}<br/>
+                  Order delivered today: {{order_delivered_daily}}<br/>
+                  Order amount today: {{order_amount_daily}}<br/><br/>
 
-                Order placed today: {{order_placed_daily}}<br/>
-                Order placed today (web): {{order_placed_from_web_daily}}<br/>
-                Order placed today (admin): {{order_placed_from_admin_daily}}<br/>
-                Order delivered today: {{order_delivered_daily}}<br/><br/>
+                  Order placed this month: {{order_placed_monthly}}<br/>
+                  Order placed this month (web): {{order_placed_from_web_monthly}}<br/>
+                  Order placed this month (admin): {{order_placed_from_admin_monthly}}<br/>
+                  Order delivered this month: {{order_delivered_monthly}}<br/>
+                  Order amount this month: {{order_amount_monthly}}<br/><br/>
 
-                Order placed this month: {{order_placed_monthly}}<br/>
-                Order placed this month (web): {{order_placed_from_web_monthly}}<br/>
-                Order placed this month (admin): {{order_placed_from_admin_monthly}}<br/>
-                Order delivered this month: {{order_delivered_monthly}}<br/><br/>
+                  Total order placed: {{total_order_placed}}<br/>
+                  Total order placed (web): {{total_order_placed_from_web}}<br/>
+                  Total order placed (admin): {{total_order_placed_from_admin}}<br/>
+                  Total order delivered: {{total_order_delivered}}<br/>
+                  Total order amount: {{total_order_amount}}<br/><br/>
 
-                Total order placed: {{total_order_placed}}<br/>
-                Total order placed (web): {{total_order_placed_from_web}}<br/>
-                Total order placed (admin): {{total_order_placed_from_admin}}<br/>
-                Total order delivered: {{total_order_delivered}}<br/><br/>
+                  New customer today: {{new_customer_daily}}<br/>
+                  New customer this month: {{new_customer_monthly}}<br/>
+                  Total new customer: {{total_new_customer}}<br/><br/>
+
+                  Repeated customer today: {{repeated_customer_daily}}<br/>
+                  Repeated customer this month: {{repeated_customer_monthly}}<br/>
+                  Total repeated customer: {{total_repeated_customer}}<br/><br/>
+                </td>
               </tr>
               <tr>
                 <td>Thanks & Regards</td>
