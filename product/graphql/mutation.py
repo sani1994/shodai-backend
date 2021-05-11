@@ -1,7 +1,7 @@
 import graphene
 from django.utils.text import slugify
 from .queries import ProductNode
-from ..models import Product, ProductMeta
+from ..models import Product, ProductMeta, ProductCategory
 from utility.models import ProductUnit
 
 
@@ -85,6 +85,28 @@ class ProductCategories(graphene.Mutation):
             ]
           }
         ]
+        parent = ProductCategory.objects.filter(parent=None)
+        child = ProductCategory.objects.exclude(parent__isnull=True)
+        category_list = []
+
+        for p in parent:
+            data = {'id': p.id,
+                    'name': p.type_of_product,
+                    'child': []}
+            category_list.append(data)
+        for c in child:
+            for item in child:
+                if c.id == item.parent.id:
+                    data = {'id': c.id,
+                            'name': c.type_of_product,
+                            'child': []}
+                    # search for the parent id in category_list and store child info
+                else:
+                    data = {'id': c.id,
+                            'name': c.type_of_product}
+                    for cat in category_list:
+                        if cat['id'] == c.parent.id:
+                            cat['child'].append(data)
         return ProductCategories(category_list=all_product_categories)
 
 
