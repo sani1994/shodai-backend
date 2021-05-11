@@ -1600,6 +1600,70 @@ class PreOrderSettingList(APIView):
         serializer = PreOrderSettingListSerializer(result_page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
+    def post(self, request):
+        data = request.data
+        required_fields = ['producer_product',
+                           'product',
+                           'start_date',
+                           'end_date',
+                           'delivery_date',
+                           'discounted_price',
+                           'unit_quantity',
+                           'target_quantity',
+                           ]
+        is_valid = field_validation(required_fields, data)
+        if is_valid:
+            string_fields = [data['start_date'],
+                             data['end_date'],
+                             data['delivery_date']]
+            is_valid = type_validation(string_fields, str)
+        if is_valid:
+            integer_fields = [data['producer_product'],
+                              data['product'],
+                              data['discounted_price'],
+                              data['unit_quantity'],
+                              data['target_quantity']]
+            is_valid = type_validation(integer_fields, (float, int))
+
+        if is_valid and data['start_date']:
+            try:
+                start_date = timezone.make_aware(datetime.strptime(data['start_date'], "%Y-%m-%d%H:%M:%S"))
+            except Exception:
+                is_valid = False
+        if is_valid and data['end_date']:
+            try:
+                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d%H:%M:%S"))
+            except Exception:
+                is_valid = False
+        if is_valid and data['delivery_date']:
+            try:
+                delivery_date = timezone.make_aware(datetime.strptime(data['delivery_date'], "%Y-%m-%d%H:%M:%S"))
+            except Exception:
+                is_valid = False
+        if is_valid:
+            product_exist = Product.objects.filter(id=data['product'], is_approved=True)
+            producer_product_exist = ProducerProductRequest.objects.filter(id=data['producer_product'],
+                                                                           is_approved=True)
+            if not product_exist or not producer_product_exist:
+                is_valid = False
+        if not is_valid:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        pre_order_setting = PreOrderSetting.objects.create(producer_product=producer_product_exist[0],
+                                                           product=product_exist[0],
+                                                           start_date=start_date,
+                                                           end_date=end_date,
+                                                           delivery_date=delivery_date,
+                                                           discounted_price=data['discounted_price'],
+                                                           unit_quantity=data['unit_quantity'],
+                                                           target_quantity=data['target_quantity'],
+                                                           is_approved=True)
+        return Response({'status': 'success',
+                         'message': 'Pre-Order Setting created.',
+                         "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_200_OK)
+
 
 class PreOrderSettingDetail(APIView):
     permission_classes = [IsAdminUser]
@@ -1625,7 +1689,7 @@ class ProducerProductSearch(APIView):
                                               user_type='PD')
         if producer:
             producer = producer[0]
-            queryset = ProducerProductRequest.objects.filter(producer=producer)
+            queryset = ProducerProductRequest.objects.filter(producer=producer, is_approved=True)
             serializer = ProducerProductSerializer(queryset, many=True)
             if serializer:
                 return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)

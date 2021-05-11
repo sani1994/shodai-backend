@@ -268,8 +268,8 @@ class ProducerProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProducerProductRequest
-        fields = ['id', 'product_name', 'product_image', 'product_description',
-                  'product_unit', 'product_price', 'product_quantity', 'producer_mobile_number']
+        fields = ['id', 'product_name', 'product_unit', 'product_price',
+                  'product_quantity', 'producer_mobile_number']
 
     def get_producer_mobile_number(self, obj):
         return obj.producer.mobile_number
