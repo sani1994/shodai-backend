@@ -53,61 +53,31 @@ class ProductCategories(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, input=None):
-        all_product_categories = [
-          {
-            "id": 1,
-            "name": "Baby",
-            "childs": [
-              {
-                "id": 23,
-                "name": "Baby Food",
-                "childs": [
-                  {
-                    "id": 24,
-                    "name": "Imported"
-                  }
-                ]
-              },
-              {
-                "id": 29,
-                "name": "Diapers"
-              }
-            ]
-          },
-          {
-            "id": 2,
-            "name": "Stationary",
-            "childs": [
-              {
-                "id": 39,
-                "name": "Office Stationaries"
-              }
-            ]
-          }
-        ]
-        parent = ProductCategory.objects.filter(parent=None)
-        child = ProductCategory.objects.exclude(parent__isnull=True)
         category_list = []
-
+        parent = ProductCategory.objects.filter(parent=None, is_approved=True)
+        child = ProductCategory.objects.filter(parent__isnull=False, is_approved=True)
         for p in parent:
-            data = {'id': p.id,
-                    'name': p.type_of_product,
-                    'child': []}
-            category_list.append(data)
-        for c in child:
-            for item in child:
-                if c.id == item.parent.id:
-                    data = {'id': c.id,
-                            'name': c.type_of_product,
-                            'child': []}
-                    # search for the parent id in category_list and store child info
-                else:
-                    data = {'id': c.id,
-                            'name': c.type_of_product}
-                    for cat in category_list:
-                        if cat['id'] == c.parent.id:
-                            cat['child'].append(data)
-        return ProductCategories(category_list=all_product_categories)
+            parent_category = {'id': p.id,
+                               'name': p.type_of_product,
+                               'children': []}
+            for c in child:
+                for item in child:
+                    if c.id == item.parent.id:
+                        data = {'id': c.id,
+                                'name': c.type_of_product,
+                                'children': [{'id': item.id,
+                                              'name': item.type_of_product,
+                                              'children': []}]}
+                        # search for the parent id in category_list and store child info
+                    else:
+                        data = {'id': c.id,
+                                'name': c.type_of_product,
+                                'children': []}
+                        if parent_category['id'] == c.parent.id:
+                            parent_category['children'].append(data)
+
+            category_list.append(parent_category)
+        return ProductCategories(category_list=category_list)
 
 
 class Mutation(graphene.ObjectType):
