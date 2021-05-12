@@ -1,5 +1,7 @@
 import graphene
 from django.utils.text import slugify
+from graphene.types import generic
+
 from .queries import ProductNode
 from ..models import Product, ProductMeta, ProductCategory
 from utility.models import ProductUnit
@@ -49,35 +51,52 @@ class CreateProduct(graphene.Mutation):
 
 
 class ProductCategories(graphene.Mutation):
-    category_list = graphene.List(graphene.String)
+    category_list = generic.GenericScalar()
 
     @staticmethod
     def mutate(root, info, input=None):
-        category_list = []
-        parent = ProductCategory.objects.filter(parent=None, is_approved=True)
-        child = ProductCategory.objects.filter(parent__isnull=False, is_approved=True)
-        for p in parent:
-            parent_category = {'id': p.id,
-                               'name': p.type_of_product,
-                               'children': []}
-            for c in child:
-                for item in child:
-                    if c.id == item.parent.id:
-                        data = {'id': c.id,
-                                'name': c.type_of_product,
-                                'children': [{'id': item.id,
-                                              'name': item.type_of_product,
-                                              'children': []}]}
-                        # search for the parent id in category_list and store child info
-                    else:
-                        data = {'id': c.id,
-                                'name': c.type_of_product,
-                                'children': []}
-                        if parent_category['id'] == c.parent.id:
-                            parent_category['children'].append(data)
+        data = ProductCategory.objects.filter(is_approved=True)
+        categories = []
+        for p in data:
+            data = {'id': p.id,
+                    'typeOfProduct': p.type_of_product,
+                    'parent': {'id': p.parent.id} if p.parent is not None else None}
+            categories.append(data)
+        category_tree = []
+        temporary_categories = categories.copy()
+        for category in temporary_categories:
+            if categories:
+                if not category['parent']:
+                    primary_category = {'id': category['id'],
+                                        'name': category['typeOfProduct'],
+                                        'subcategories': []}
+                    categories.remove(category)
+                    temporary_category = primary_category
+                    previous_categories = [primary_category]
+                    all_children_found = False
+                    while not all_children_found:
+                        for child in temporary_categories:
+                            if child['parent'] and child['parent']['id'] == temporary_category['id']:
+                                child_category = {'id': child['id'],
+                                                  'name': child['typeOfProduct'],
+                                                  'subcategories': []}
+                                temporary_category['subcategories'].append(child_category)
+                                categories.remove(child)
+                                previous_categories.append(temporary_category)
+                                temporary_category = child_category
+                                break
+                        else:
+                            if temporary_category['id'] == previous_categories[-1]['id']:
+                                all_children_found = True
+                            temporary_category = previous_categories[-1]
+                            del previous_categories[-1]
+                            temporary_categories = categories.copy()
 
-            category_list.append(parent_category)
-        return ProductCategories(category_list=category_list)
+                    category_tree.append(primary_category)
+            else:
+                break
+
+        return ProductCategories(category_list=category_tree)
 
 
 class Mutation(graphene.ObjectType):

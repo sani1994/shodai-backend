@@ -218,8 +218,10 @@ class ShopCategoryAdmin(ImportExportModelAdmin):
 
 
 class ProductCategoryAdmin(admin.ModelAdmin):
-    readonly_fields = ["created_by", "modified_by", ]
+    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on"]
     list_display = ("type_of_product",)
+    search_fields = ['parent__type_of_product', ]
+    autocomplete_fields = ('parent',)
 
     def save_model(self, request, obj, form, change):
         if obj.id:
