@@ -55,20 +55,16 @@ class ProductCategories(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, input=None):
-        data = ProductCategory.objects.filter(is_approved=True)
-        categories = []
-        for p in data:
-            data = {'id': p.id,
-                    'typeOfProduct': p.type_of_product,
-                    'parent': {'id': p.parent.id} if p.parent is not None else None}
-            categories.append(data)
+        categories = list(ProductCategory.objects.filter(is_approved=True).values('id',
+                                                                                  'type_of_product',
+                                                                                  'parent'))
         category_tree = []
         temporary_categories = categories.copy()
         for category in temporary_categories:
             if categories:
                 if not category['parent']:
                     primary_category = {'id': category['id'],
-                                        'name': category['typeOfProduct'],
+                                        'name': category['type_of_product'],
                                         'subcategories': []}
                     categories.remove(category)
                     temporary_category = primary_category
@@ -76,9 +72,9 @@ class ProductCategories(graphene.Mutation):
                     all_children_found = False
                     while not all_children_found:
                         for child in temporary_categories:
-                            if child['parent'] and child['parent']['id'] == temporary_category['id']:
+                            if child['parent'] and child['parent'] == temporary_category['id']:
                                 child_category = {'id': child['id'],
-                                                  'name': child['typeOfProduct'],
+                                                  'name': child['type_of_product'],
                                                   'subcategories': []}
                                 temporary_category['subcategories'].append(child_category)
                                 categories.remove(child)
