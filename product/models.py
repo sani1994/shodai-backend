@@ -25,6 +25,7 @@ class ProductCategory(BaseModel):
     img = models.ImageField(upload_to='pictures/productcategory', blank=True, null=True)
     is_approved = models.BooleanField(default=False)
     code = models.IntegerField(null=True, unique=True)
+    parent = models.ForeignKey('self', models.SET_NULL, null=True, blank=True)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -78,6 +79,7 @@ class Product(BaseModel):
     product_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
     product_price_bn = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True,
                                            verbose_name='পন্যের মুল্য')
+    product_category = models.ForeignKey(ProductCategory, models.SET_NULL, null=True)
     product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)

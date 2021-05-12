@@ -1,7 +1,7 @@
 import graphene
 from django.utils.text import slugify
 from .queries import ProductNode
-from ..models import Product, ProductMeta
+from ..models import Product, ProductMeta, ProductCategory
 from utility.models import ProductUnit
 
 
@@ -48,5 +48,38 @@ class CreateProduct(graphene.Mutation):
                 raise Exception('Unauthorized request!')
 
 
+class ProductCategories(graphene.Mutation):
+    category_list = graphene.List(graphene.String)
+
+    @staticmethod
+    def mutate(root, info, input=None):
+        category_list = []
+        parent = ProductCategory.objects.filter(parent=None, is_approved=True)
+        child = ProductCategory.objects.filter(parent__isnull=False, is_approved=True)
+        for p in parent:
+            parent_category = {'id': p.id,
+                               'name': p.type_of_product,
+                               'children': []}
+            for c in child:
+                for item in child:
+                    if c.id == item.parent.id:
+                        data = {'id': c.id,
+                                'name': c.type_of_product,
+                                'children': [{'id': item.id,
+                                              'name': item.type_of_product,
+                                              'children': []}]}
+                        # search for the parent id in category_list and store child info
+                    else:
+                        data = {'id': c.id,
+                                'name': c.type_of_product,
+                                'children': []}
+                        if parent_category['id'] == c.parent.id:
+                            parent_category['children'].append(data)
+
+            category_list.append(parent_category)
+        return ProductCategories(category_list=category_list)
+
+
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
+    product_categories = ProductCategories.Field()
