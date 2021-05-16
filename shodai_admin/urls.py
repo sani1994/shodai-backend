@@ -41,8 +41,10 @@ urlpatterns = [
     path('reports/all-customers/download/excel', views.UserListDownloadExcel.as_view()),
     path('reports/order-products/download/excel', views.OrderProductListExcel.as_view()),
 
-    # pre-order
-    path('pre-orders', views.PreOrderSettingList.as_view()),
-    path('pre-orders/<int:id>', views.PreOrderSettingDetail.as_view()),
-    path('producer-products/search', views.ProducerProductSearch.as_view()),
+    # pre-orders
+    path('pre-orders/settings', views.PreOrderSettingList.as_view()),
+    path('pre-orders/settings/<int:id>', views.PreOrderSettingDetail.as_view()),
+
+    # producers
+    path('producers/products/search', views.ProducerProductSearch.as_view()),
 ]

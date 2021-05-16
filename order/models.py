@@ -284,7 +284,7 @@ class PreOrderSetting(BaseModel):
     target_quantity = models.FloatField()
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     is_approved = models.BooleanField(default=False)
-    # note = models.CharField(max_length=500, null=True, blank=True)  # purpose is not clear
+    # note = models.CharField(max_length=500, null=True, blank=True)
     # is_processed = models.BooleanField(default=False)
     history = HistoricalRecords()
 
@@ -292,8 +292,8 @@ class PreOrderSetting(BaseModel):
         return self.product.product_name
 
     def save(self, *args, **kwargs):
-        if self.end_date < timezone.now():
-            self.is_approved = False
+        # if self.end_date < timezone.now():
+        #     self.is_approved = False
         self.slug = self.product.slug + "-" + str(self.id)
         super(PreOrderSetting, self).save(*args, **kwargs)
 

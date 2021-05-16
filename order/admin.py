@@ -9,9 +9,6 @@ from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, 
     PreOrderSetting
 
 
-# Register your models here.
-
-
 class TimeSlotAdmin(MaterialModelAdmin):
     list_display = ('slot', 'start', 'end', 'time', 'allow')
     list_filter = ('allow',)
@@ -97,16 +94,15 @@ class OrderAdmin(MaterialModelAdmin):
     readonly_fields = ['user', 'invoice_number', 'order_number', 'order_total_price', 'created_by', 'modified_by',
                        'created_on', 'modified_on', 'delivery_date_time', 'delivery_place', 'address', 'note',
                        'total_vat', order_products, 'order_status', 'platform']
-    list_display = (
-    'id', 'order_number', 'user', 'order_status', 'invoice_number', 'delivery_date_time', order_products)
+    list_display = ['id', 'order_number', 'user', 'order_status', 'invoice_number',
+                    'delivery_date_time', order_products]
     search_fields = ['id', 'invoice_number', 'order_number', 'user__mobile_number']
     inlines = [OrderProductInline, InvoiceInfoInline]
     fieldsets = (
         ('Order Detail View', {
-            'fields': (
-            'user', 'platform', 'invoice_number', 'order_number', 'total_vat', 'order_total_price', 'order_status',
-            'delivery_date_time',
-            'delivery_place', 'address', 'note', 'created_by', 'modified_by', 'created_on', 'modified_on')
+            'fields': ('user', 'platform', 'invoice_number', 'order_number', 'total_vat', 'order_total_price',
+                       'order_status', 'delivery_date_time', 'delivery_place', 'address', 'note', 'created_by',
+                       'modified_by', 'created_on', 'modified_on')
         }),
     )
 
@@ -133,8 +129,7 @@ class OrderProductAdmin(MaterialModelAdmin):
                     order_date)
     list_filter = ('order', 'order__delivery_date_time',)
     readonly_fields = ['product', 'product_price', 'order', 'order_product_price', 'order_product_price_with_vat',
-                       'vat_amount',
-                       'order_product_qty', 'created_by', 'modified_by', 'created_on']
+                       'vat_amount', 'order_product_qty', 'created_by', 'modified_by', 'created_on']
     actions = ["export_as_csv"]
 
     def get_actions(self, request):
@@ -154,7 +149,7 @@ class OrderProductAdmin(MaterialModelAdmin):
 
         writer.writerow(field_names)
         for obj in queryset:
-            row = writer.writerow([getattr(obj, field) for field in field_names])
+            writer.writerow([getattr(obj, field) for field in field_names])
         return response
 
     export_as_csv.short_description = "Export Selected"
@@ -342,14 +337,16 @@ class DiscountInfoAdmin(MaterialModelAdmin):
 class PreOrderSettingAdmin(MaterialModelAdmin):
     list_display = ('product', 'start_date', 'end_date', 'is_approved')
     readonly_fields = ['created_by', 'modified_by', 'created_on', 'modified_on', 'slug']
-    autocomplete_fields = ['product']
+    autocomplete_fields = ['producer_product', 'product']
 
     def save_model(self, request, obj, form, change):
-        if obj.id:
-            obj.modified_by = request.user
-        obj.created_by = request.user
+        if not obj.id:
+            obj.created_by = request.user
+        obj.modified_by = request.user
         obj.save()
-        return super().save_model(request, obj, form, change)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 site.register(TimeSlot, TimeSlotAdmin)

@@ -1,15 +1,14 @@
-from datetime import datetime
 import random
-
+from datetime import datetime
+from django.contrib.gis.db import models
+from django.contrib.gis.geos import Point
 from ckeditor_uploader.fields import RichTextUploadingField
 from simple_history.models import HistoricalRecords
 
-from product.models import Product, ProductCategory
+from product.models import ProductCategory
 from user.models import Address, UserProfile
 from base.models import BaseModel
-from django.contrib.gis.db import models
 from utility.models import ProductUnit
-from django.contrib.gis.geos import Point
 
 
 class ProducerProductRequest(BaseModel):
