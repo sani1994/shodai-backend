@@ -22,7 +22,7 @@ class ShopCategory(BaseModel):
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
     type_of_product_bn = models.CharField(max_length=90, null=True, blank=True, verbose_name='পন্যের ধরন')
-    img = models.ImageField(upload_to='pictures/productcategory', blank=True, null=True)
+    img = models.ImageField(upload_to='pictures/productcategory', null=True)
     is_approved = models.BooleanField(default=False)
     code = models.IntegerField(null=True, blank=True, unique=True)
     parent = models.ForeignKey('self', models.SET_NULL, null=True, blank=True)
