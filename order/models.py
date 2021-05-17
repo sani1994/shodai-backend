@@ -294,7 +294,7 @@ class PreOrderSetting(BaseModel):
     def save(self, *args, **kwargs):
         # if self.end_date < timezone.now():
         #     self.is_approved = False
-        self.slug = self.product.slug + "-" + str(self.id)
+        self.slug = self.product.slug + "-" + str(self.producer_product.id)
         super(PreOrderSetting, self).save(*args, **kwargs)
 
 

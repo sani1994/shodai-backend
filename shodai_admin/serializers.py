@@ -292,8 +292,8 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
         model = PreOrderSetting
         fields = ['id', 'start_date', 'end_date', 'delivery_date', 'discounted_price',
                   'unit_quantity', 'target_quantity', 'is_approved', 'product_id',
-                  'product_name', 'product_image', 'product_price', 'producer_product',
-                  'product_unit']
+                  'product_name', 'product_image', 'product_unit', 'product_price',
+                  'producer_product']
 
     def get_product_id(self, obj):
         return obj.product.id

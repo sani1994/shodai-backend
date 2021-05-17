@@ -1646,13 +1646,20 @@ class PreOrderSettingList(APIView):
                                                                            is_approved=True)
             if not product_exist or not producer_product_exist or \
                     data['discounted_price'] > product_exist[0].product_price or \
-                    data['target_quantity'] > producer_product_exist[0].product_quantity or \
                     data['unit_quantity'] > data['target_quantity']:
                 is_valid = False
         if not is_valid:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            pre_order_exists = PreOrderSetting.objects.get(producer_product=producer_product_exist[0])
+        except PreOrderSetting.DoesNotExist:
+            pre_order_exists = None
+        if pre_order_exists:
+            return Response({
+                "status": "failed",
+                "message": "Pre-order setting already exist!"}, status=status.HTTP_200_OK)
 
         pre_order_setting = PreOrderSetting.objects.create(producer_product=producer_product_exist[0],
                                                            product=product_exist[0],
@@ -1684,8 +1691,8 @@ class ProducerProductSearch(APIView):
 
     def get(self, request):
         query = request.query_params.get('mobile_number', '')
-        producer = UserProfile.objects.filter(mobile_number='+88'+query,
-                                              user_type='PD')
+        producer = UserProfile.objects.filter(mobile_number='+88' + query,
+                                              is_producer=True)
         if producer:
             producer = producer[0]
             queryset = ProducerProductRequest.objects.filter(producer=producer, is_approved=True)
