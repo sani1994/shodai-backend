@@ -22,7 +22,7 @@ class ShopCategory(BaseModel):
 class ProductCategory(BaseModel):
     type_of_product = models.CharField(max_length=90)
     type_of_product_bn = models.CharField(max_length=90, null=True, blank=True, verbose_name='পন্যের ধরন')
-    img = models.ImageField(upload_to='pictures/productcategory', null=True)
+    img = models.ImageField(upload_to='pictures/product_category', null=True)
     is_approved = models.BooleanField(default=False)
     code = models.IntegerField(null=True, blank=True, unique=True)
     parent = models.ForeignKey('self', models.SET_NULL, null=True, blank=True)
@@ -80,7 +80,7 @@ class Product(BaseModel):
     product_price_bn = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True,
                                            verbose_name='পন্যের মুল্য')
     product_category = models.ForeignKey(ProductCategory, models.SET_NULL, null=True)
-    product_meta = models.ForeignKey(ProductMeta, on_delete=models.CASCADE)
+    product_meta = models.ForeignKey(ProductMeta, models.SET_NULL, null=True)
     product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
     is_approved = models.BooleanField(default=False)
     decimal_allowed = models.BooleanField(default=False)
