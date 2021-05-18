@@ -1652,10 +1652,8 @@ class PreOrderSettingList(APIView):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            pre_order_exists = PreOrderSetting.objects.get(producer_product=producer_product_exist[0])
-        except PreOrderSetting.DoesNotExist:
-            pre_order_exists = None
+
+        pre_order_exists = PreOrderSetting.objects.filter(producer_product=producer_product_exist[0]).exists()
         if pre_order_exists:
             return Response({
                 "status": "failed",
