@@ -1,4 +1,3 @@
-import csv
 import math
 import uuid
 from datetime import datetime, timedelta
@@ -1679,6 +1678,72 @@ class PreOrderSettingDetail(APIView):
         pre_order_setting = get_object_or_404(PreOrderSetting, id=id)
         serializer = PreOrderSettingDetailSerializer(pre_order_setting)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, id):
+        data = request.data
+        required_fields = ['product_id',
+                           'start_date',
+                           'end_date',
+                           'delivery_date',
+                           'discounted_price',
+                           'unit_quantity',
+                           'target_quantity',
+                           'is_approved']
+
+        is_valid = field_validation(required_fields, data)
+        if is_valid:
+            string_fields = [data['start_date'],
+                             data['end_date'],
+                             data['delivery_date']]
+            is_valid = type_validation(string_fields, str)
+        if is_valid:
+            number_fields = [data['product_id'],
+                             data['discounted_price'],
+                             data['unit_quantity'],
+                             data['target_quantity']]
+            is_valid = type_validation(number_fields, (float, int))
+
+        if is_valid and data['start_date']:
+            try:
+                start_date = timezone.make_aware(datetime.strptime(data['start_date'], "%Y-%m-%d"))
+            except Exception:
+                is_valid = False
+        if is_valid and data['end_date']:
+            try:
+                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d"))
+            except Exception:
+                is_valid = False
+        if is_valid and data['delivery_date']:
+            try:
+                delivery_date = timezone.make_aware(datetime.strptime(data['delivery_date'], "%Y-%m-%d"))
+            except Exception:
+                is_valid = False
+        if is_valid:
+            product_exist = Product.objects.filter(id=data['product_id'], is_approved=True)
+            if not product_exist or data['discounted_price'] > product_exist[0].product_price or \
+                    data['unit_quantity'] > data['target_quantity'] or \
+                    not isinstance(data['is_approved'], bool):
+                is_valid = False
+        if not is_valid:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        pre_order_setting = get_object_or_404(PreOrderSetting, id=id)
+        pre_order_setting.product = product_exist[0]
+        pre_order_setting.start_date = start_date
+        pre_order_setting.end_date = end_date
+        pre_order_setting.delivery_date = delivery_date
+        pre_order_setting.discounted_price = data['discounted_price']
+        pre_order_setting.unit_quantity = data['unit_quantity']
+        pre_order_setting.target_quantity = data['target_quantity']
+        pre_order_setting.is_approved = data['is_approved']
+        pre_order_setting.save()
+
+        return Response({
+            "status": "success",
+            "message": "Pre-order setting updated.",
+            "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_200_OK)
 
 
 class ProducerProductSearch(APIView):
