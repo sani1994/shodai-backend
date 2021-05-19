@@ -1,24 +1,20 @@
 from django.core.paginator import Paginator
-from django.shortcuts import render
-from rest_framework.generics import get_object_or_404, ListAPIView
+from rest_framework.generics import get_object_or_404
 
 from product.serializers import ShopCategorySerializer, ProductCategorySerializer, ProductSerializer, \
     ProductMetaSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
 from utility.models import ProductUnit
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 
 from shodai.utils.permission import GenericAuth
 
 
 class ProductList(APIView):
     """Get all product and create a product"""
-    # permission_classes = (IsAuthenticated,)
-
     permission_classes = [GenericAuth]
 
     def get(self, request, format=None):
@@ -33,14 +29,14 @@ class ProductList(APIView):
             return Response(datas, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, format=None):
-        if request.user.user_type == 'SF':
-            serializer = ProductSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(created_by=request.user)
-                return Response(serializer.data, status.HTTP_202_ACCEPTED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def post(self, request, format=None):
+    #     if request.user.user_type == 'SF':
+    #         serializer = ProductSerializer(data=request.data)
+    #         if serializer.is_valid():
+    #             serializer.save(created_by=request.user)
+    #             return Response(serializer.data, status.HTTP_202_ACCEPTED)
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ProductDetail(APIView):
@@ -87,7 +83,7 @@ class ProductMetaList(APIView):
     """Get all product meta and crete product meta"""
     permission_classes = [GenericAuth]
 
-    ## list of Prodect Meta (original product name with comapny name)
+    # list of Product Meta (original product name with company name)
 
     def get(self, request, format=None):
         product_meta = ProductMeta.objects.filter(is_approved=True)
@@ -106,8 +102,8 @@ class ProductMetaList(APIView):
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ProductMetaDetail(
-    APIView):  # this mathod dont work because couldnt update and retriev object of productMea object
+class ProductMetaDetail(APIView):
+    # this method don't work because couldn't update and retrieve object of productMea object
     """
     Retrieve, update and delete product meta
     """
@@ -129,26 +125,26 @@ class ProductMetaDetail(
             "details": "Rontent not available"
         }, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            product_meta = self.get_productMeta_object(id)
-            serializer = ProductMetaSerializer(product_meta, data=request.data)
-            if serializer.is_valid():
-                serializer.save(modified_by=request.user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
-
-    def delete(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            product_meta = self.get_productMeta_object(id)
-            product_meta.delete()
-            return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def put(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         product_meta = self.get_productMeta_object(id)
+    #         serializer = ProductMetaSerializer(product_meta, data=request.data)
+    #         if serializer.is_valid():
+    #             serializer.save(modified_by=request.user)
+    #             return Response(serializer.data, status=status.HTTP_200_OK)
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    #
+    # def delete(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         product_meta = self.get_productMeta_object(id)
+    #         product_meta.delete()
+    #         return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ProductCategoryList(APIView):
-    ## list of Prodect category
+    # list of Prodect category
 
     def get(self, request, format=None):
         product_catagory = ProductCategory.objects.filter(is_approved=True)
@@ -157,15 +153,15 @@ class ProductCategoryList(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, format=None):
-        if request.user.user_type == 'SF':
-            serializer = ProductCategorySerializer(data=request.data, context={'request': request})
-            if serializer:
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def post(self, request, format=None):
+    #     if request.user.user_type == 'SF':
+    #         serializer = ProductCategorySerializer(data=request.data, context={'request': request})
+    #         if serializer:
+    #             if serializer.is_valid():
+    #                 serializer.save()
+    #                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ProductCategoryDetail(APIView):
@@ -174,7 +170,7 @@ class ProductCategoryDetail(APIView):
     Retrieve, update and delete Orders
     """
 
-    def get_productCategory_object(self, id):  # enable another peremeter "request" when to access user
+    def get_productCategory_object(self, id):  # enable another perimeter "request" when to access user
         obj = ProductCategory.objects.get(id=id)
         return obj
 
@@ -190,30 +186,28 @@ class ProductCategoryDetail(APIView):
             "details": "Content not available"
         }, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            product_catagory = self.get_productCategory_object(id)
-            serializer = ProductCategorySerializer(product_catagory, data=request.data)
-            if serializer.is_valid():
-                serializer.save(modified_by=request.user)
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def put(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         product_catagory = self.get_productCategory_object(id)
+    #         serializer = ProductCategorySerializer(product_catagory, data=request.data)
+    #         if serializer.is_valid():
+    #             serializer.save(modified_by=request.user)
+    #             return Response(serializer.data)
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    #
+    # def delete(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         product_catagory = self.get_productCategory_object(id)
+    #         product_catagory.delete()
+    #         return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            product_catagory = self.get_productCategory_object(id)
-            product_catagory.delete()
-            return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-
-class ShopCategoryList(
-    APIView):  # shop_category must be in unique formate to make the connection with shop model of retailer
-
+class ShopCategoryList(APIView):
     permission_classes = [GenericAuth]
-
-    ## list of Shop category
+    # shop_category must be in unique format to make the connection with shop model of retailer
+    # list of Shop category
 
     def get(self, request, format=None):
         shop_catagory = ShopCategory.objects.filter(is_approved=True)
@@ -222,18 +216,17 @@ class ShopCategoryList(
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, format=None):
-        if request.user.user_type == 'SF':
-            serializer = ShopCategorySerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(created_by=request.user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def post(self, request, format=None):
+    #     if request.user.user_type == 'SF':
+    #         serializer = ShopCategorySerializer(data=request.data)
+    #         if serializer.is_valid():
+    #             serializer.save(created_by=request.user)
+    #             return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ShopCategoryDetail(APIView):  # to retrive update and delete
-
+class ShopCategoryDetail(APIView):  # to retrieve update and delete
     permission_classes = [GenericAuth]
 
     def get_shopCategory_object(self, id):
@@ -257,26 +250,26 @@ class ShopCategoryDetail(APIView):  # to retrive update and delete
                 "details": "Rontent not available"
             }, status=status.HTTP_204_NO_CONTENT)
 
-    def put(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            shop_catagory = self.get_shopCategory_object(id)
-            serializer = ShopCategorySerializer(shop_catagory, data=request.data)
-            if serializer.is_valid():
-                serializer.save(modified_by=request.user)
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    # def put(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         shop_catagory = self.get_shopCategory_object(id)
+    #         serializer = ShopCategorySerializer(shop_catagory, data=request.data)
+    #         if serializer.is_valid():
+    #             serializer.save(modified_by=request.user)
+    #             return Response(serializer.data)
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+    #
+    # def delete(self, request, id, format=None):
+    #     if request.user.user_type == 'SF':
+    #         shop_catagory = self.get_shopCategory_object(id)
+    #         shop_catagory.delete()
+    #         return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
+    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request, id, format=None):
-        if request.user.user_type == 'SF':
-            shop_catagory = self.get_shopCategory_object(id)
-            shop_catagory.delete()
-            return Response({"status": "Delete successful..!!"}, status=status.HTTP_200_OK)
-        return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
-
-class ProductCategoryDetails(
-    APIView):  # get product category id to get all the product meta list related to that product category id
+class ProductCategoryDetails(APIView):
+    # get product category id to get all the product meta list related to that product category id
 
     permission_classes = [GenericAuth]
 
@@ -295,7 +288,7 @@ class ProductCategoryDetails(
             }, status=status.HTTP_204_NO_CONTENT)
 
 
-class ProductMetaDetails(APIView):  # get product meta id to get all the product  list related to that product meta id
+class ProductMetaDetails(APIView):  # get product meta id to get all the product list related to that product meta id
 
     permission_classes = [GenericAuth]
 
