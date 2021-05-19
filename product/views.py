@@ -6,7 +6,7 @@ from product.serializers import ShopCategorySerializer, ProductCategorySerialize
     ProductMetaSerializer, ProductForCartSerializer
 from product.models import ShopCategory, ProductMeta, ProductCategory, Product
 from utility.models import ProductUnit
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -362,3 +362,10 @@ class RecentlyAddedProductListPagination(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductDescription(APIView):
+
+    def get(self, request, id):
+        product = get_object_or_404(Product, id=id, is_approved=True)
+        return HttpResponse(content_type='text/html', content=product.product_description)

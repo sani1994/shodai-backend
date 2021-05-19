@@ -20,6 +20,7 @@ urlpatterns = [
     path('recentproduct/', views.RecentlyAddedProductList.as_view()),  # return recenlty added 10 products.
     path('productforcart/<int:id>/', views.ProductForCart.as_view()),  # returns custom details to show in cart
     path('recentProductPagination/<int:id>/', views.RecentlyAddedProductListPagination.as_view()),
+    path('product-description/<int:id>/', views.ProductDescription.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
