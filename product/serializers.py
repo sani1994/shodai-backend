@@ -60,6 +60,7 @@ class ProductSerializer(serializers.ModelSerializer):
     offer_name = serializers.SerializerMethodField()
     offer_price = serializers.SerializerMethodField()
     offer_price_with_vat = serializers.SerializerMethodField()
+    product_meta = serializers.SerializerMethodField()
 
     def get_offer_name(self, obj):
         today = timezone.now()
@@ -84,9 +85,12 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_offer_price_with_vat(self, obj):
         if self.offer_product:
             return round(float(self.offer_product.offer_price) +
-                         (float(self.offer_product.offer_price) * obj.product_meta.vat_amount) / 100)
+                         (float(self.offer_product.offer_price) * 0) / 100)
         else:
             return None
+
+    def get_product_meta(self, obj):
+        return obj.product_category.type_of_product
 
     class Meta:
         model = Product
@@ -141,7 +145,7 @@ class ProductForCartSerializer(serializers.ModelSerializer):
     def get_offer_price_with_vat(self, obj):
         if self.offer_product:
             return round(float(self.offer_product.offer_price) +
-                         (float(self.offer_product.offer_price) * obj.product_meta.vat_amount) / 100)
+                         (float(self.offer_product.offer_price) * 0) / 100)
         else:
             return None
 

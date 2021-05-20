@@ -25,7 +25,7 @@ class ProductList(APIView):
 
             for data in range(len(datas)):
                 datas[data]['product_unit'] = ProductUnit.objects.get(id=int(datas[data]['product_unit'])).product_unit
-                datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
+                # datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
             return Response(datas, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -103,7 +103,7 @@ class ProductMetaList(APIView):
 
 
 class ProductMetaDetail(APIView):
-    # this method don't work because couldn't update and retrieve object of productMea object
+    # this method don't work because couldn't update and retrieve object of product meta object
     """
     Retrieve, update and delete product meta
     """
@@ -147,7 +147,7 @@ class ProductCategoryList(APIView):
     # list of Prodect category
 
     def get(self, request, format=None):
-        product_catagory = ProductCategory.objects.filter(is_approved=True)
+        product_catagory = ProductCategory.objects.filter(is_approved=True, parent=None)
         serializer = ProductCategorySerializer(product_catagory, many=True)
         if serializer:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -170,7 +170,7 @@ class ProductCategoryDetail(APIView):
     Retrieve, update and delete Orders
     """
 
-    def get_productCategory_object(self, id):  # enable another perimeter "request" when to access user
+    def get_productCategory_object(self, id):  # enable another parameter "request" when to access user
         obj = ProductCategory.objects.get(id=id)
         return obj
 
@@ -274,13 +274,33 @@ class ProductCategoryDetails(APIView):
     permission_classes = [GenericAuth]
 
     def get(self, request, id):
-        obj = ProductCategory.objects.filter(id=id).first()
+        obj = ProductCategory.objects.filter(id=id, is_approved=True).first()
         if obj:
-            productMetaList = obj.productmeta_set.filter(is_approved=True)
-            serializer = ProductMetaSerializer(productMetaList, many=True)
-            if serializer:
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            all_subcategories = []
+            subcategories = ProductCategory.objects.filter(parent=obj, is_approved=True)
+            for category in subcategories:
+                subcategory_data = {
+                    "id": category.id,
+                    "created_on": category.created_on,
+                    "modified_on": category.modified_on,
+                    "name": category.type_of_product,
+                    "name_bn": "",
+                    "img": category.img.url if category.img else "",
+                    "vat_amount": 0.0,
+                    "is_approved": True,
+                    "code": None,
+                    "created_by": 1,
+                    "modified_by": 1,
+                    "product_category": obj.id,
+                    "shop_category": 1
+                }
+                all_subcategories.append(subcategory_data)
+            return Response(all_subcategories, status=status.HTTP_200_OK)
+            # productMetaList = obj.productmeta_set.filter(is_approved=True)
+            # serializer = ProductMetaSerializer(productMetaList, many=True)
+            # if serializer:
+            #     return Response(serializer.data, status=status.HTTP_200_OK)
+            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({
                 "Status": "No content",
@@ -293,7 +313,7 @@ class ProductMetaDetails(APIView):  # get product meta id to get all the product
     permission_classes = [GenericAuth]
 
     def get(self, request, id):
-        obj = ProductMeta.objects.filter(id=id).first()
+        obj = ProductCategory.objects.filter(id=id, is_approved=True).first()
         if obj:
             productList = obj.product_set.filter(is_approved=True)
             serializer = ProductSerializer(productList, many=True)
@@ -302,7 +322,7 @@ class ProductMetaDetails(APIView):  # get product meta id to get all the product
                 for data in range(len(datas)):
                     datas[data]['product_unit'] = ProductUnit.objects.get(
                         id=int(datas[data]['product_unit'])).product_unit
-                    datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
+                    # datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
 
                 return Response(datas, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
