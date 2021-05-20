@@ -1640,11 +1640,11 @@ class PreOrderSettingList(APIView):
             except Exception:
                 is_valid = False
         if is_valid:
-            product_exist = Product.objects.filter(id=data['product_id'], is_approved=True)
-            producer_product_exist = ProducerProductRequest.objects.filter(id=data['producer_product_id'],
-                                                                           is_approved=True)
-            if not product_exist or not producer_product_exist or \
-                    data['discounted_price'] > product_exist[0].product_price or \
+            product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
+            producer_product = ProducerProductRequest.objects.filter(id=data['producer_product_id'],
+                                                                     is_approved=True).first()
+            if not product or not producer_product or \
+                    data['discounted_price'] > product.product_price or \
                     data['unit_quantity'] > data['target_quantity']:
                 is_valid = False
         if not is_valid:
@@ -1652,14 +1652,14 @@ class PreOrderSettingList(APIView):
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        pre_order_exists = PreOrderSetting.objects.filter(producer_product=producer_product_exist[0]).exists()
+        pre_order_exists = PreOrderSetting.objects.filter(producer_product=producer_product).exists()
         if pre_order_exists:
             return Response({
                 "status": "failed",
                 "message": "Pre-order setting already exist!"}, status=status.HTTP_200_OK)
 
-        pre_order_setting = PreOrderSetting.objects.create(producer_product=producer_product_exist[0],
-                                                           product=product_exist[0],
+        pre_order_setting = PreOrderSetting.objects.create(producer_product=producer_product,
+                                                           product=product,
                                                            start_date=start_date,
                                                            end_date=end_date,
                                                            delivery_date=delivery_date,
@@ -1719,8 +1719,10 @@ class PreOrderSettingDetail(APIView):
             except Exception:
                 is_valid = False
         if is_valid:
-            product_exist = Product.objects.filter(id=data['product_id'], is_approved=True)
-            if not product_exist or data['discounted_price'] > product_exist[0].product_price or \
+            pre_order_setting = PreOrderSetting.objects.filter(id=id).first()
+            product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
+            if not pre_order_setting or not product or \
+                    data['discounted_price'] > product.product_price or \
                     data['unit_quantity'] > data['target_quantity'] or \
                     not isinstance(data['is_approved'], bool):
                 is_valid = False
@@ -1729,8 +1731,7 @@ class PreOrderSettingDetail(APIView):
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        pre_order_setting = get_object_or_404(PreOrderSetting, id=id)
-        pre_order_setting.product = product_exist[0]
+        pre_order_setting.product = product
         pre_order_setting.start_date = start_date
         pre_order_setting.end_date = end_date
         pre_order_setting.delivery_date = delivery_date
