@@ -6,7 +6,7 @@ from django.utils import timezone
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
 from order.models import Order, Vat, OrderProduct, DeliveryCharge, PaymentInfo, TimeSlot, InvoiceInfo, DiscountInfo, \
-    PreOrderSetting
+    PreOrderSetting, PreOrder
 
 
 class TimeSlotAdmin(MaterialModelAdmin):
@@ -349,6 +349,23 @@ class PreOrderSettingAdmin(MaterialModelAdmin):
         return False
 
 
+class PreOrderAdmin(MaterialModelAdmin):
+    list_display = ('pre_order_number', 'customer', 'product_quantity', 'order')
+    readonly_fields = ['created_by', 'modified_by', 'created_on', 'modified_on', 'order']
+
+    def save_model(self, request, obj, form, change):
+        if not obj.id:
+            obj.created_by = request.user
+        obj.modified_by = request.user
+        obj.save()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 site.register(TimeSlot, TimeSlotAdmin)
 site.register(Order, OrderAdmin)
 site.register(OrderProduct, OrderProductAdmin)
@@ -358,3 +375,4 @@ site.register(PaymentInfo, PaymentInfoAdmin)
 site.register(InvoiceInfo, InvoiceInfoAdmin)
 site.register(DiscountInfo, DiscountInfoAdmin)
 site.register(PreOrderSetting, PreOrderSettingAdmin)
+site.register(PreOrder, PreOrderAdmin)
