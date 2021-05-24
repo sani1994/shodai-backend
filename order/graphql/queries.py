@@ -1,4 +1,5 @@
 import graphene
+from django.db.models import Sum
 from django.utils import timezone
 from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter  # noqa
@@ -62,9 +63,13 @@ class PreOrderSettingListType(DjangoObjectType):
         fields = ['id', 'producer_product', 'discounted_price', 'slug']
 
     product_price = graphene.Int()
+    product_unit = graphene.String()
 
     def resolve_product_price(self, info):
         return self.product.product_price
+
+    def resolve_product_unit(self, info):
+        return self.product.product_unit.product_unit
 
 
 class PreOrderSettingDetailType(DjangoObjectType):
@@ -73,18 +78,20 @@ class PreOrderSettingDetailType(DjangoObjectType):
         exclude = ('product', 'start_date', 'slug', 'is_approved',
                    'created_by', 'modified_by', 'created_on', 'modified_on')
 
-    remaining_quantity = graphene.Int()
     product_price = graphene.Int()
+    product_unit = graphene.String()
+    remaining_quantity = graphene.Int()
 
     def resolve_product_price(self, info):
         return self.product.product_price
 
+    def resolve_product_unit(self, info):
+        return self.product.product_unit.product_unit
+
     def resolve_remaining_quantity(self, info):
         pre_orders = PreOrder.objects.filter(pre_order_setting=self)
         if pre_orders:
-            total_purchased = 0
-            for p in pre_orders:
-                total_purchased += p.product_quantity
+            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
             return self.target_quantity - total_purchased
         else:
             return self.target_quantity
@@ -99,8 +106,8 @@ class Query(graphene.ObjectType):
     delivery_charge = graphene.Field(DeliveryChargeType)
     delivery_time_slots = graphene.List(TimeSlotType)
     invoice_by_order = graphene.Field(InvoiceInfoType, order_id=graphene.Int())
-    pre_order_setting_list = graphene.List(PreOrderSettingListType)
-    pre_order_setting_detail = graphene.List(PreOrderSettingDetailType, pre_order_setting_id=graphene.Int())
+    pre_order_product_list = graphene.List(PreOrderSettingListType)
+    pre_order_product_detail = graphene.List(PreOrderSettingDetailType, pre_order_product_id=graphene.Int())
 
     def resolve_order_list(self, info):
         return Order.objects.all()
@@ -141,16 +148,16 @@ class Query(graphene.ObjectType):
             invoice = Order.objects.get(id=order_id).invoice_number
             return InvoiceInfo.objects.get(invoice_number=invoice, user=user)
 
-    def resolve_pre_order_setting_list(self, info):
-        today = timezone.now()
+    def resolve_pre_order_product_list(self, info):
+        time_now = timezone.now()
         return PreOrderSetting.objects.filter(is_approved=True,
-                                              start_date__lte=today,
-                                              end_date__gte=today)
+                                              start_date__lte=time_now,
+                                              end_date__gte=time_now)
 
-    def resolve_pre_order_setting_detail(self, info, **kwargs):
-        today = timezone.now()
-        pre_order_setting_id = kwargs.get('pre_order_setting_id')
+    def resolve_pre_order_product_detail(self, info, **kwargs):
+        time_now = timezone.now()
+        pre_order_setting_id = kwargs.get('pre_order_product_id')
         return PreOrderSetting.objects.filter(id=pre_order_setting_id,
                                               is_approved=True,
-                                              start_date__lte=today,
-                                              end_date__gte=today)
+                                              start_date__lte=time_now,
+                                              end_date__gte=time_now)

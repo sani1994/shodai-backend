@@ -319,7 +319,7 @@ class PreOrder(BaseModel):
     note = models.CharField(max_length=500, null=True, blank=True)
     platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
     order = models.OneToOneField(Order, models.SET_NULL, null=True, blank=True)
-    is_cancelled = models.BooleanField(default=False)
+    # is_cancelled = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
