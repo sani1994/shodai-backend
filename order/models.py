@@ -311,7 +311,7 @@ class PreOrder(BaseModel):
         (MOBILE_APPLICATION, 'Mobile App')
     ]
     pre_order_setting = models.ForeignKey(PreOrderSetting, models.CASCADE)
-    pre_order_number = models.IntegerField(unique=True)
+    pre_order_number = models.CharField(max_length=10, unique=True)
     customer = models.ForeignKey(UserProfile, models.SET_NULL, null=True)
     delivery_address = models.ForeignKey(Address, models.SET_NULL, null=True)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
@@ -319,7 +319,7 @@ class PreOrder(BaseModel):
     note = models.CharField(max_length=500, null=True, blank=True)
     platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
     order = models.OneToOneField(Order, models.SET_NULL, null=True, blank=True)
-    # is_cancelled = models.BooleanField(default=False)
+    is_cancelled = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
