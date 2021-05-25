@@ -5,7 +5,7 @@ from product import views
 # import views
 
 urlpatterns = [
-    path('product/', views.ProductList.as_view()),
+    # path('product/', views.ProductList.as_view()),
     path('product/<int:id>/', views.ProductDetail.as_view(), name='product_detail'),
     path('productcatagory/', views.ProductCategoryList.as_view()),  # get post product catagory
     path('productcatagory/<int:id>/', views.ProductCategoryDetail.as_view()),  # update and delete product catagory
@@ -21,6 +21,7 @@ urlpatterns = [
     path('productforcart/<int:id>/', views.ProductForCart.as_view()),  # returns custom details to show in cart
     path('recentProductPagination/<int:id>/', views.RecentlyAddedProductListPagination.as_view()),
     path('product-description/<int:id>/', views.ProductDescription.as_view()),
+    path('search-product/', views.ProductSearch.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

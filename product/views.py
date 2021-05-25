@@ -13,30 +13,30 @@ from rest_framework import status
 from shodai.utils.permission import GenericAuth
 
 
-class ProductList(APIView):
-    """Get all product and create a product"""
-    permission_classes = [GenericAuth]
-
-    def get(self, request, format=None):
-        products = Product.objects.filter(is_approved=True)
-        serializer = ProductSerializer(products, many=True)
-        if serializer:
-            datas = serializer.data
-
-            for data in range(len(datas)):
-                datas[data]['product_unit'] = ProductUnit.objects.get(id=int(datas[data]['product_unit'])).product_unit
-                # datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
-            return Response(datas, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # def post(self, request, format=None):
-    #     if request.user.user_type == 'SF':
-    #         serializer = ProductSerializer(data=request.data)
-    #         if serializer.is_valid():
-    #             serializer.save(created_by=request.user)
-    #             return Response(serializer.data, status.HTTP_202_ACCEPTED)
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #     return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
+# class ProductList(APIView):
+#     """Get all product and create a product"""
+#     permission_classes = [GenericAuth]
+#
+#     def get(self, request, format=None):
+#         products = Product.objects.filter(is_approved=True)
+#         serializer = ProductSerializer(products, many=True)
+#         if serializer:
+#             datas = serializer.data
+#
+#             for data in range(len(datas)):
+#                 datas[data]['product_unit'] = ProductUnit.objects.get(id=int(datas[data]['product_unit'])).product_unit
+#                 datas[data]['product_meta'] = ProductMeta.objects.get(id=int(datas[data]['product_meta'])).name
+#             return Response(datas, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def post(self, request, format=None):
+#         if request.user.user_type == 'SF':
+#             serializer = ProductSerializer(data=request.data)
+#             if serializer.is_valid():
+#                 serializer.save(created_by=request.user)
+#                 return Response(serializer.data, status.HTTP_202_ACCEPTED)
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ProductDetail(APIView):
@@ -382,3 +382,16 @@ class ProductDescription(APIView):
     def get(self, request, id):
         product = get_object_or_404(Product, id=id, is_approved=True)
         return HttpResponse(content_type='text/html', content=product.product_description)
+
+
+class ProductSearch(APIView):
+    permission_classes = [GenericAuth]
+
+    def get(self, request):
+        query = request.query_params.get('search', '')
+        product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:20]
+        serializer = ProductSerializer(product, many=True)
+        if serializer:
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
