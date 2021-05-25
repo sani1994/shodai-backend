@@ -3,7 +3,6 @@ from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter  # noqa
 
 from base.views import checkAuthentication
-from user.models import BlackListedToken
 from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo
 
 

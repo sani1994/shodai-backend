@@ -2,7 +2,6 @@ import graphene
 from django.utils import timezone
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
-from graphql_jwt.decorators import login_required
 
 from base.views import keyword_based_search
 from offer.models import OfferProduct
@@ -46,6 +45,11 @@ class ProductNode(DjangoObjectType):
         return breadcrumb
 
 
+class ProductConnection(relay.Connection):
+    class Meta:
+        node = ProductNode
+
+
 class ProductType(DjangoObjectType):
     class Meta:
         model = Product
@@ -63,20 +67,10 @@ class ProductType(DjangoObjectType):
             return None
 
 
-# class ProductMetaType(DjangoObjectType):
-#     class Meta:
-#         model = ProductMeta
-
-
 class ProductCategoryType(DjangoObjectType):
     class Meta:
         model = ProductCategory
         exclude_fields = ['product_set', 'created_on', 'created_by', 'modified_on', 'modified_by']
-
-
-# class ShopCategoryType(DjangoObjectType):
-#     class Meta:
-#         model = ShopCategory
 
 
 class ProductUnitType(DjangoObjectType):
@@ -85,44 +79,39 @@ class ProductUnitType(DjangoObjectType):
         exclude_fields = ['product_set', 'created_on', 'created_by', 'modified_on', 'modified_by']
 
 
-class ProductConnection(relay.Connection):
-    class Meta:
-        node = ProductNode
+# class ProductMetaType(DjangoObjectType):
+#     class Meta:
+#         model = ProductMeta
+#
+#
+# class ShopCategoryType(DjangoObjectType):
+#     class Meta:
+#         model = ShopCategory
 
 
 class Query(graphene.ObjectType):
+    product_categories = graphene.List(ProductCategoryType)
     products_by_category = relay.ConnectionField(ProductConnection, category_id=graphene.Int())
-    # products_by_meta = relay.ConnectionField(ProductConnection, meta_id=graphene.Int())
-    # search_product = relay.ConnectionField(ProductConnection, search=graphene.String())
-    search_product = DjangoFilterConnectionField(ProductNode)
-    all_products_pagination = relay.ConnectionField(ProductConnection)
-    # all_products = graphene.List(ProductType)
     product_by_id = relay.Node.Field(ProductNode)
     product_by_slug = graphene.Field(ProductNode, slug=graphene.String())
-    product_categories = graphene.List(ProductCategoryType)
+    search_product = DjangoFilterConnectionField(ProductNode)
+
+    # search_product = relay.ConnectionField(ProductConnection, search=graphene.String())
+    # products_by_meta = relay.ConnectionField(ProductConnection, meta_id=graphene.Int())
+    # all_products_pagination = relay.ConnectionField(ProductConnection)
+    # all_products = graphene.List(ProductType)
     # shop_categories = graphene.List(ShopCategoryType)
     # product_meta_list = graphene.List(ProductMetaType)
     # product_meta_by_category = graphene.List(ProductMetaType, cat_ID=graphene.Int())
+
+    def resolve_product_categories(self, info):
+        return ProductCategory.objects.filter(is_approved=True)
 
     def resolve_products_by_category(root, info, **kwargs):
         category_id = kwargs.get('category_id')
         return Product.objects.filter(product_category__id=category_id,
                                       product_category__is_approved=True,
                                       is_approved=True).order_by('-created_on')
-
-    # def resolve_products_by_meta(root, info, **kwargs):
-    #     meta_id = kwargs.get('meta_id')
-    #     return Product.objects.filter(product_meta__pk=meta_id,
-    #                                   product_meta__is_approved=True,
-    #                                   product_meta__product_category__is_approved=True,
-    #                                   is_approved=True).order_by('-created_on')
-
-    def resolve_all_products_pagination(root, info, **kwargs):
-        return Product.objects.filter(product_category__is_approved=True,
-                                      is_approved=True).order_by('-created_on')
-
-    # def resolve_all_products(self, info, **kwargs):
-    #     return Product.objects.filter(is_approved=True)
 
     def resolve_product_by_slug(self, info, **kwargs):
         slug = kwargs.get('slug')
@@ -132,19 +121,30 @@ class Query(graphene.ObjectType):
         else:
             return None
 
-    def resolve_product_categories(self, info):
-        return ProductCategory.objects.filter(is_approved=True)
-
+    # def resolve_search_product(self, info, **kwargs):
+    #     query = kwargs.get('search')
+    #     return keyword_based_search(Product, query, ['product_name'], {'is_approved': True})
+    #
+    # def resolve_products_by_meta(root, info, **kwargs):
+    #     meta_id = kwargs.get('meta_id')
+    #     return Product.objects.filter(product_meta__pk=meta_id,
+    #                                   product_meta__is_approved=True,
+    #                                   product_meta__product_category__is_approved=True,
+    #                                   is_approved=True).order_by('-created_on')
+    #
+    # def resolve_all_products_pagination(root, info, **kwargs):
+    #     return Product.objects.filter(product_category__is_approved=True,
+    #                                   is_approved=True).order_by('-created_on')
+    #
+    # def resolve_all_products(self, info, **kwargs):
+    #     return Product.objects.filter(is_approved=True)
+    #
+    # def resolve_shop_categories(self, info):
+    #     return ShopCategory.objects.filter(is_approved=True)
+    #
     # def resolve_product_meta_list(self, info):
     #     return ProductMeta.objects.filter(is_approved=True)
     #
     # def resolve_product_meta_by_category(root, info, **kwargs):
     #     cat_id = kwargs.get('cat_ID')
     #     return ProductMeta.objects.filter(product_category__pk=cat_id, is_approved=True)
-    #
-    # def resolve_shop_categories(self, info):
-    #     return ShopCategory.objects.filter(is_approved=True)
-
-    # def resolve_search_product(self, info, **kwargs):
-    #     query = kwargs.get('search')
-    #     return keyword_based_search(Product, query, ['product_name'], {'is_approved': True})
