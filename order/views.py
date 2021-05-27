@@ -119,7 +119,7 @@ class OrderList(APIView):
                 order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.address = delivery_address
                 order_instance.delivery_place = "Dhaka"
-                order_instance.platform = "APP"
+                order_instance.platform = "AP"
                 order_instance.save()
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name

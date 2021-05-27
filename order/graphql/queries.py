@@ -5,7 +5,6 @@ from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter  # noqa
 
 from base.views import checkAuthentication
-from producer.graphql.queries import ProducerProductType
 from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo, PreOrderSetting, \
     PreOrder
 
@@ -57,7 +56,7 @@ class InvoiceInfoType(DjangoObjectType):
             return None
 
 
-class PreOrderSettingListType(DjangoObjectType):
+class PreOrderProductListType(DjangoObjectType):
     class Meta:
         model = PreOrderSetting
         fields = ['id', 'producer_product', 'discounted_price', 'slug']
@@ -72,7 +71,7 @@ class PreOrderSettingListType(DjangoObjectType):
         return self.product.product_unit.product_unit
 
 
-class PreOrderSettingDetailType(DjangoObjectType):
+class PreOrderProductDetailType(DjangoObjectType):
     class Meta:
         model = PreOrderSetting
         exclude = ('product', 'start_date', 'slug', 'is_approved',
@@ -106,8 +105,8 @@ class Query(graphene.ObjectType):
     delivery_charge = graphene.Field(DeliveryChargeType)
     delivery_time_slots = graphene.List(TimeSlotType)
     invoice_by_order = graphene.Field(InvoiceInfoType, order_id=graphene.Int())
-    pre_order_product_list = graphene.List(PreOrderSettingListType)
-    pre_order_product_detail = graphene.List(PreOrderSettingDetailType, pre_order_product_id=graphene.Int())
+    pre_order_product_list = graphene.List(PreOrderProductListType)
+    pre_order_product_detail = graphene.List(PreOrderProductDetailType, pre_order_product_id=graphene.Int())
 
     def resolve_order_list(self, info):
         return Order.objects.all()

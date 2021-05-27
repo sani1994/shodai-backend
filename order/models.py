@@ -62,7 +62,7 @@ class Order(BaseModel):
     remarks = models.CharField(max_length=500, null=True, blank=True, default="")
     WEBSITE = 'WB'
     ADMIN_PANEL = 'AD'
-    MOBILE_APPLICATION = 'APP'
+    MOBILE_APPLICATION = 'AP'
     PLATFORM = [
         (WEBSITE, 'Website'),
         (ADMIN_PANEL, 'Admin Panel'),

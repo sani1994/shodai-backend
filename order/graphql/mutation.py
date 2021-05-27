@@ -2,7 +2,7 @@ import json
 import uuid
 from datetime import timedelta
 
-import geocoder
+# import geocoder
 import graphene
 import requests
 
@@ -16,34 +16,33 @@ from graphene_django import DjangoObjectType
 
 from base.views import checkAuthentication, from_global_id, coupon_checker
 from coupon.models import CouponCode, CouponUsageHistory, CouponSettings
-from .queries import OrderType
-from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo, PreOrder, \
+from order.models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo, PreOrder, \
     PreOrderSetting
 from product.models import Product
 from user.models import Address
 
 
 class OrderStatusEnum(graphene.Enum):
-    ORDERED = "OD"  # ORDER COLLECT FROM CUSTOMER
+    ORDERED = "OD"  # ORDER PLACED BY CUSTOMER
     ORDER_ACCEPTED = "OA"  # ORDER ACCEPTED BY RETAILER OR PRODUCER
     ORDER_READY = "RE"  # ORDER IS READY FOR DELIVERY PERSON
     ORDER_AT_DELIVERY = "OAD"  # ORDER IS WITH DELIVERY PEROSN
     ORDER_COMPLETED = "COM"  # ORDER IS DELIVERED TO CUSTOMER
-    ORDER_CANCELLED = "CN"  # ORDER IS CANCEL BY CUSTOMER
+    ORDER_CANCELLED = "CN"  # ORDER IS CANCELLED BY CUSTOMER
 
 
-# class OrderTypeEnum(graphene.Enum):
-#     FIXED_PRICE = "FP"
-#     BIDDING = "BD"
-
-
-class AreaChoicesEnum(graphene.Enum):
-    Dhaka = 'Dhaka'
+# class AreaChoicesEnum(graphene.Enum):
+#     Dhaka = 'Dhaka'
 
 
 class PaymentMethodEnum(graphene.Enum):
-    ONLINE_PAYMENT = 'SSLCOMMERZ'
-    CASH_ON_DELIVERY = 'CASH_ON_DELIVERY'
+    ONLINE = 'SSLCOMMERZ'
+    COD = 'CASH_ON_DELIVERY'
+
+
+class PlatformEnum(graphene.Enum):
+    WEB = 'WB'
+    APP = 'AP'
 
 
 class PaymentStatusEnum(graphene.Enum):
@@ -59,32 +58,26 @@ class PaymentInfoType(DjangoObjectType):
 
 class OrderProductInput(graphene.InputObjectType):
     product_id = graphene.String(required=True)
-    order_product_qty = graphene.Float(required=True)
+    product_quantity = graphene.Float(required=True)
 
 
 class OrderInput(graphene.InputObjectType):
     delivery_date_time = graphene.DateTime(required=True)
-    delivery_place = graphene.NonNull(AreaChoicesEnum)
-    lat = graphene.Float(required=True)
-    long = graphene.Float(required=True)
-    address = graphene.Int(required=True)
-    contact_number = graphene.String()
-    products = graphene.List(OrderProductInput)
+    address = graphene.String(required=True)
+    products = graphene.List(OrderProductInput, required=True)
     payment_method = graphene.NonNull(PaymentMethodEnum)
+    platform = graphene.NonNull(PlatformEnum)
+    contact_number = graphene.String()
     note = graphene.String()
-    code = graphene.String(required=True)
-    is_pre_order = graphene.Boolean(required=True)
+    code = graphene.String()
+    # delivery_place = graphene.NonNull(AreaChoicesEnum)
+    # lat = graphene.Float(required=True)
+    # long = graphene.Float(required=True)
 
 
 class EmailInput(graphene.InputObjectType):
     order_id = graphene.ID(required=True)
     time_slot_id = graphene.ID(required=True)
-
-
-class OrderProductInputA(graphene.InputObjectType):
-    product_id = graphene.String(required=True)
-    order_id = graphene.ID()
-    order_product_qty = graphene.Float(required=True)
 
 
 class TransactionInput(graphene.InputObjectType):
@@ -97,27 +90,30 @@ class CreateOrder(graphene.Mutation):
     class Arguments:
         input = OrderInput(required=True)
 
-    order = graphene.Field(OrderType)
-    pre_order_id = graphene.ID()
-    msg = graphene.String()
+    success = graphene.Boolean()
+    message = graphene.String()
+    order_id = graphene.ID()
 
     @staticmethod
     def mutate(root, info, input=None):
         user = info.context.user
         if checkAuthentication(user, info):
             if user.user_type == 'CM':
-                address = Address.objects.get(id=input.address)
+                pre_order = True if len(input.products) == 1 and input.products[0].product_id.isdigit() else False
+                address = Address.objects.get(id=int(input.address))
                 contact_number = input.contact_number if input.contact_number else user.mobile_number
-                if not input.is_pre_order:
-                    order_instance = Order.objects.create(user=user,
-                                                          created_by=user,
-                                                          platform="WB",
+                note = input.note[:500] if input.note else ""
+                if not pre_order:
+                    order_instance = Order.objects.create(platform=input.platform,
                                                           delivery_date_time=input.delivery_date_time,
-                                                          delivery_place=input.delivery_place,
-                                                          lat=input.lat,
-                                                          long=input.long,
+                                                          delivery_place='Dhaka',
+                                                          lat=23.777176,
+                                                          long=90.399452,
                                                           contact_number=contact_number,
-                                                          address=address)
+                                                          address=address,
+                                                          note=note,
+                                                          user=user,
+                                                          created_by=user)
 
                     product_list = input.products
                     sub_total_without_offer = total_vat = sub_total = 0
@@ -126,9 +122,8 @@ class CreateOrder(graphene.Mutation):
                         product = Product.objects.get(id=product_id)
                         op = OrderProduct.objects.create(product=product,
                                                          order=order_instance,
-                                                         order_product_qty=p.order_product_qty)
-
-                        sub_total_without_offer += float(product.product_price) * p.order_product_qty
+                                                         order_product_qty=p.product_quantity)
+                        sub_total_without_offer += float(op.product_price) * op.order_product_qty
                         sub_total += float(op.order_product_price) * op.order_product_qty
                         total_vat += float(
                             op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
@@ -144,8 +139,6 @@ class CreateOrder(graphene.Mutation):
                             coupon.save()
 
                     delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-                    if input.note:
-                        order_instance.note = input.note[:500]
                     order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
                     order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                     order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
@@ -156,8 +149,7 @@ class CreateOrder(graphene.Mutation):
                     referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
                     if referral_discount_settings.is_active:
                         referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
-                                                                    created_by=order_instance.user).order_by(
-                            '-created_on')
+                                                                    created_by=order_instance.user).order_by('-created_on')
                         if referral_coupon:
                             referral_coupon = referral_coupon[0]
                             if referral_coupon.expiry_date < timezone.now():
@@ -223,26 +215,27 @@ class CreateOrder(graphene.Mutation):
                                                           invoice_number=invoice,
                                                           created_by=user)
 
-                    return CreateOrder(msg='Order placed successfully.',
-                                       order=order_instance)
+                    return CreateOrder(success=True,
+                                       message='Order placed successfully.',
+                                       order_id=order_instance.id)
                 else:
-                    product_id = from_global_id(input.products[0].product_id)
-                    pre_order_setting = PreOrderSetting.objects.filter(product__id=product_id)
-                    if not pre_order_setting or input.payment_method != 'CASH_ON_DELIVERY' or \
-                            len(input.products) != 1:
-                        return CreateOrder(msg='Invalid input!')
-                    else:
-                        pre_order = PreOrder.objects.create(pre_order_setting=pre_order_setting[0],
-                                                            pre_order_number="PO" + str(uuid.uuid4())[:6].upper(),
-                                                            customer=user,
-                                                            delivery_address=address,
-                                                            contact_number=contact_number,
-                                                            product_quantity=input.products[0].order_product_qty,
-                                                            note=input.note,
-                                                            platform="WB",
-                                                            created_by=user)
-                        return CreateOrder(msg='Pre-order placed successfully.',
-                                           pre_order_id=pre_order.id)
+                    pre_order_setting = PreOrderSetting.objects.filter(producer_product__id=input.products[0].product_id).first()
+                    if not pre_order_setting:
+                        return CreateOrder(success=False,
+                                           message='Invalid request!')
+
+                    pre_order = PreOrder.objects.create(platform=input.platform,
+                                                        product_quantity=input.products[0].product_quantity,
+                                                        pre_order_setting=pre_order_setting,
+                                                        pre_order_number="PO" + str(uuid.uuid4())[:6].upper(),
+                                                        delivery_address=address,
+                                                        contact_number=contact_number,
+                                                        note=note,
+                                                        customer=user,
+                                                        created_by=user)
+                    return CreateOrder(success=True,
+                                       message='Pre-order placed successfully.',
+                                       order_id=pre_order.id)
             else:
                 raise Exception('Unauthorized request!')
 
@@ -259,17 +252,17 @@ class SendEmail(graphene.Mutation):
         if checkAuthentication(user, info):
             order_instance = Order.objects.filter(pk=input.order_id)[0]
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
-            place = order_instance.address.road
-            g = geocoder.osm(place)
-            if g:
-                order_instance.lat = g.osm['y']
-                order_instance.long = g.osm['x']
-                order_instance.save()
-            else:
-                g = geocoder.osm('Adabar, Dhaka')
-                order_instance.lat = g.osm['y']
-                order_instance.long = g.osm['x']
-                order_instance.save()
+            # place = order_instance.address.road
+            # g = geocoder.osm(place)
+            # if g:
+            #     order_instance.lat = g.osm['y']
+            #     order_instance.long = g.osm['x']
+            #     order_instance.save()
+            # else:
+            #     g = geocoder.osm('Adabar, Dhaka')
+            #     order_instance.lat = g.osm['y']
+            #     order_instance.long = g.osm['x']
+            #     order_instance.save()
 
             product_list = OrderProduct.objects.filter(order__pk=input.order_id)
             matrix = []
