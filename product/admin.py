@@ -43,7 +43,7 @@ class ProductAdmin(MaterialModelAdmin):
                 'product_name', 'product_name_bn', 'product_image', 'product_description',
                 'product_description_bn', 'product_price', 'product_price_bn', 'product_unit',
                 'product_category', 'product_last_price', 'is_approved', 'decimal_allowed',
-                'price_with_vat', 'created_by', 'modified_by', 'created_on', 'modified_on')
+                'price_with_vat', 'slug', 'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )
 

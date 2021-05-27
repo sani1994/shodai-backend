@@ -5,7 +5,7 @@ from graphene_django.types import DjangoObjectType
 
 from base.views import keyword_based_search
 from offer.models import OfferProduct
-from ..models import Product, ProductCategory, ShopCategory, ProductMeta
+from product.models import Product, ProductCategory, ShopCategory, ProductMeta
 from utility.models import ProductUnit
 from graphene import relay
 
@@ -41,7 +41,7 @@ class ProductNode(DjangoObjectType):
         breadcrumb = category.type_of_product
         while category.parent:
             category = ProductCategory.objects.get(id=category.parent.id)
-            breadcrumb = f"{category.type_of_product}/{breadcrumb}"
+            breadcrumb = f"{category.type_of_product} > {breadcrumb}"
         return breadcrumb
 
 
@@ -56,6 +56,7 @@ class ProductType(DjangoObjectType):
         exclude_fields = ['orderproduct_set', 'created_on', 'created_by', 'modified_on', 'modified_by']
 
     offer_price = graphene.Float()
+    breadcrumb = graphene.String()
 
     def resolve_offer_price(self, info):
         today = timezone.now()
@@ -65,6 +66,14 @@ class ProductType(DjangoObjectType):
             return offer_product[0].offer_price
         else:
             return None
+
+    def resolve_breadcrumb(self, info):
+        category = ProductCategory.objects.get(id=self.product_category.id)
+        breadcrumb = category.type_of_product
+        while category.parent:
+            category = ProductCategory.objects.get(id=category.parent.id)
+            breadcrumb = f"{category.type_of_product} > {breadcrumb}"
+        return breadcrumb
 
 
 class ProductCategoryType(DjangoObjectType):
@@ -90,12 +99,12 @@ class ProductUnitType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
-    product_categories = graphene.List(ProductCategoryType)
     products_by_category = relay.ConnectionField(ProductConnection, category_id=graphene.Int())
-    product_by_id = relay.Node.Field(ProductNode)
     product_by_slug = graphene.Field(ProductNode, slug=graphene.String())
     search_product = DjangoFilterConnectionField(ProductNode)
 
+    # product_categories = graphene.List(ProductCategoryType)
+    # product_by_id = relay.Node.Field(ProductNode)
     # search_product = relay.ConnectionField(ProductConnection, search=graphene.String())
     # products_by_meta = relay.ConnectionField(ProductConnection, meta_id=graphene.Int())
     # all_products_pagination = relay.ConnectionField(ProductConnection)
@@ -103,9 +112,6 @@ class Query(graphene.ObjectType):
     # shop_categories = graphene.List(ShopCategoryType)
     # product_meta_list = graphene.List(ProductMetaType)
     # product_meta_by_category = graphene.List(ProductMetaType, cat_ID=graphene.Int())
-
-    def resolve_product_categories(self, info):
-        return ProductCategory.objects.filter(is_approved=True)
 
     def resolve_products_by_category(root, info, **kwargs):
         category_id = kwargs.get('category_id')
@@ -115,12 +121,11 @@ class Query(graphene.ObjectType):
 
     def resolve_product_by_slug(self, info, **kwargs):
         slug = kwargs.get('slug')
-        product = Product.objects.filter(slug=slug, is_approved=True)
-        if product:
-            return product[0]
-        else:
-            return None
+        return Product.objects.filter(slug=slug, is_approved=True).first()
 
+    # def resolve_product_categories(self, info):
+    #     return ProductCategory.objects.filter(is_approved=True)
+    #
     # def resolve_search_product(self, info, **kwargs):
     #     query = kwargs.get('search')
     #     return keyword_based_search(Product, query, ['product_name'], {'is_approved': True})
