@@ -58,7 +58,7 @@ class PaymentInfoType(DjangoObjectType):
 
 class OrderProductInput(graphene.InputObjectType):
     product_id = graphene.String(required=True)
-    product_quantity = graphene.Float(required=True)
+    product_quantity = graphene.Int(required=True)
 
 
 class OrderInput(graphene.InputObjectType):

@@ -5,6 +5,7 @@ from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter  # noqa
 
 from base.views import checkAuthentication
+from producer.graphql.queries import ProducerProductType
 from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo, PreOrderSetting, \
     PreOrder
 
@@ -96,6 +97,32 @@ class PreOrderProductDetailType(DjangoObjectType):
             return self.target_quantity
 
 
+class PreOrderListType(DjangoObjectType):
+    class Meta:
+        model = PreOrder
+        fields = ['id', 'pre_order_number']
+
+    delivery_date = graphene.String()
+
+    def resolve_delivery_date(self, info):
+        return self.pre_order_setting.delivery_date
+
+
+class PreOrderDetailType(DjangoObjectType):
+    class Meta:
+        model = PreOrder
+        fields = ['id', 'pre_order_number', 'delivery_address', 'product_quantity']
+
+    discounted_product_price = graphene.Int()
+    sub_total = graphene.Int()
+
+    def resolve_discounted_product_price(self, info):
+        return self.pre_order_setting.discounted_price
+
+    def resolve_sub_total(self, info):
+        return self.pre_order_setting.discounted_price * self.product_quantity
+
+
 class Query(graphene.ObjectType):
     order_list = graphene.List(OrderType)
     order_list_of_user = graphene.List(OrderType)
@@ -107,6 +134,8 @@ class Query(graphene.ObjectType):
     invoice_by_order = graphene.Field(InvoiceInfoType, order_id=graphene.Int())
     pre_order_product_list = graphene.List(PreOrderProductListType)
     pre_order_product_detail = graphene.List(PreOrderProductDetailType, pre_order_product_id=graphene.Int())
+    pre_order_list = graphene.List(PreOrderListType)
+    pre_order_detail = graphene.List(PreOrderDetailType, pre_order_id=graphene.Int())
 
     def resolve_order_list(self, info):
         return Order.objects.all()
@@ -160,3 +189,16 @@ class Query(graphene.ObjectType):
                                               is_approved=True,
                                               start_date__lte=time_now,
                                               end_date__gte=time_now)
+
+    def resolve_pre_order_list(self, info):
+        user = info.context.user
+        if checkAuthentication(user, info):
+            return PreOrder.objects.filter(order=None, customer=user).order_by('-created_on')
+
+    def resolve_pre_order_detail(self, info, **kwargs):
+        user = info.context.user
+        if checkAuthentication(user, info):
+            pre_order_id = kwargs.get('pre_order_id')
+            return PreOrder.objects.filter(id=pre_order_id,
+                                           order=None,
+                                           customer=user)
