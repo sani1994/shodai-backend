@@ -5,9 +5,9 @@ from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter  # noqa
 
 from base.views import checkAuthentication
-from producer.graphql.queries import ProducerProductType
-from ..models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo, PreOrderSetting, \
-    PreOrder
+from producer.graphql.queries import ProducerProductType  # noqa
+from order.models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo, \
+    PreOrderSetting, PreOrder
 
 
 class OrderType(DjangoObjectType):
@@ -100,7 +100,7 @@ class PreOrderProductDetailType(DjangoObjectType):
 class PreOrderListType(DjangoObjectType):
     class Meta:
         model = PreOrder
-        fields = ['id', 'pre_order_number']
+        fields = ['id', 'pre_order_number', 'is_cancelled']
 
     delivery_date = graphene.String()
 
@@ -111,16 +111,24 @@ class PreOrderListType(DjangoObjectType):
 class PreOrderDetailType(DjangoObjectType):
     class Meta:
         model = PreOrder
-        fields = ['id', 'pre_order_number', 'delivery_address', 'product_quantity']
+        fields = ['id', 'pre_order_number', 'is_cancelled', 'product_quantity']
 
-    discounted_product_price = graphene.Int()
-    sub_total = graphene.Int()
+    product_name = graphene.String()
+    product_image = graphene.String()
+    product_unit = graphene.String()
+    discounted_product_price = graphene.Float()
+
+    def resolve_product_name(self, info):
+        return self.pre_order_setting.producer_product.product_name
+
+    def resolve_product_image(self, info):
+        return self.pre_order_setting.producer_product.product_image
+
+    def resolve_product_unit(self, info):
+        return self.pre_order_setting.product.product_unit.product_unit
 
     def resolve_discounted_product_price(self, info):
         return self.pre_order_setting.discounted_price
-
-    def resolve_sub_total(self, info):
-        return self.pre_order_setting.discounted_price * self.product_quantity
 
 
 class Query(graphene.ObjectType):
@@ -188,7 +196,7 @@ class Query(graphene.ObjectType):
         return PreOrderSetting.objects.filter(id=pre_order_setting_id,
                                               is_approved=True,
                                               start_date__lte=time_now,
-                                              end_date__gte=time_now)
+                                              end_date__gte=time_now).first()
 
     def resolve_pre_order_list(self, info):
         user = info.context.user
@@ -201,4 +209,4 @@ class Query(graphene.ObjectType):
             pre_order_id = kwargs.get('pre_order_id')
             return PreOrder.objects.filter(id=pre_order_id,
                                            order=None,
-                                           customer=user)
+                                           customer=user).first()
