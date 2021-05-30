@@ -1846,6 +1846,8 @@ class ProcessPreOrder(APIView):
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
                                             invoice=invoice)
+                p.order = order
+                p.save()
 
             pre_order_setting.is_processed = True
             pre_order_setting.save()
