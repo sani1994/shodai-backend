@@ -114,9 +114,6 @@ class OrderList(APIView):
             # Create InvoiceInfo Instance
             order_instance = Order.objects.get(id=serializer.data['id'])
             if order_instance:
-                order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order_instance.address = delivery_address
                 order_instance.delivery_place = "Dhaka"
                 order_instance.platform = "AP"

@@ -21,7 +21,8 @@ from rest_framework.views import APIView
 from base.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
-from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo, PreOrderSetting
+from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo, PreOrderSetting, \
+    PreOrder
 from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
@@ -504,9 +505,6 @@ class OrderDetail(APIView):
 
                 order.order_total_price = round(total + delivery_charge - coupon_discount - additional_discount)
                 order.total_vat = total_vat
-                order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note'][:500]
             else:
                 order.order_total_price = round(order.order_total_price - invoice.delivery_charge + delivery_charge +
@@ -813,9 +811,6 @@ class CreateOrder(APIView):
 
         order_instance.order_total_price = round(total + delivery_charge - coupon_discount - additional_discount)
         order_instance.total_vat = total_vat
-        order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.note = data['note'][:500]
 
         if order_instance.order_total_price < 0:
@@ -1768,3 +1763,100 @@ class ProducerProductSearch(APIView):
         else:
             return Response({'status': 'failed',
                              'message': 'Producer not found.'}, status=status.HTTP_200_OK)
+
+
+class ProcessPreOrder(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        data = request.data
+        user = request.user
+        required_fields = ['pre_order_setting_id',
+                           'action']
+
+        is_valid = field_validation(required_fields, data)
+
+        if is_valid and isinstance(data['pre_order_setting_id'], int):
+            pre_order_setting = PreOrderSetting.objects.filter(id=data['pre_order_setting_id'],
+                                                               is_approved=True).first()
+
+            if not pre_order_setting or pre_order_setting.is_processed:
+                is_valid = False
+
+        if not is_valid or not isinstance(data['action'], str) or not data['action'] in ['place', 'cancel']:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+        pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting)
+        if not pre_orders:
+            return Response({
+                "status": "failed",
+                "message": "No pre-order against this setting!"}, status=status.HTTP_200_OK)
+
+        if data['action'] == 'place':
+            for p in pre_orders:
+                order = Order.objects.create(platform=p.platform,
+                                             delivery_date_time=pre_order_setting.delivery_date,
+                                             delivery_place='Dhaka',
+                                             lat=23.777176,
+                                             long=90.399452,
+                                             contact_number=p.contact_number,
+                                             address=p.delivery_address,
+                                             note=p.note,
+                                             user=p.customer,
+                                             created_by=user)
+                order_product = OrderProduct.objects.create(product=pre_order_setting.product,
+                                                            product_price=pre_order_setting.product.product_price,
+                                                            order=order,
+                                                            order_product_price=pre_order_setting.discounted_price,
+                                                            order_product_qty=p.product_quantity)
+
+                sub_total = float(order_product.order_product_price) * order_product.order_product_qty
+                sub_total_without_offer = float(order_product.product_price) * order_product.order_product_qty
+                total_vat = float(
+                    order_product.order_product_price_with_vat - order_product.order_product_price) * order_product.order_product_qty
+                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+
+                order.total_vat = total_vat
+                order.order_total_price = sub_total + total_vat + delivery_charge
+                order.save()
+
+                if p.customer.first_name and p.customer.last_name:
+                    billing_person_name = p.customer.first_name + " " + p.customer.last_name
+                elif p.customer.first_name:
+                    billing_person_name = p.customer.first_name
+                else:
+                    billing_person_name = ""
+
+                invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                                     billing_person_name=billing_person_name,
+                                                     billing_person_email=p.customer.email,
+                                                     billing_person_mobile_number=p.customer.mobile_number,
+                                                     delivery_contact_number=order.contact_number,
+                                                     delivery_address=order.address.road,
+                                                     delivery_date_time=order.delivery_date_time,
+                                                     delivery_charge=delivery_charge,
+                                                     discount_amount=sub_total_without_offer - sub_total,
+                                                     net_payable_amount=order.order_total_price,
+                                                     payment_method='CASH_ON_DELIVERY',
+                                                     order_number=order,
+                                                     user=p.customer,
+                                                     created_by=user)
+                DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
+                                            discount_type='PD',
+                                            discount_description='Product Offer Discount',
+                                            invoice=invoice)
+
+            pre_order_setting.is_processed = True
+            pre_order_setting.save()
+
+            return Response({'status': 'success',
+                             'message': 'Pre-orders created.'}, status=status.HTTP_200_OK)
+        else:
+            for p in pre_orders:
+                p.is_cancelled = True
+                p.save()
+            pre_order_setting.is_processed = True
+            pre_order_setting.save()
+            return Response({'status': 'success',
+                             'message': 'Pre-orders cancelled.'}, status=status.HTTP_200_OK)

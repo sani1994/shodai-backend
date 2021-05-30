@@ -1,8 +1,9 @@
+from django.db.models import Sum
 from django.utils import timezone
 from rest_framework import serializers
 
 from offer.models import OfferProduct, Offer, CartOffer
-from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo, PreOrderSetting
+from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo, PreOrderSetting, PreOrder
 from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from user.models import UserProfile
@@ -287,11 +288,12 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
     product_image = serializers.SerializerMethodField(read_only=True)
     product_price = serializers.SerializerMethodField(read_only=True)
     product_unit = serializers.SerializerMethodField(read_only=True)
+    remaining_quantity = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrderSetting
         fields = ['id', 'start_date', 'end_date', 'delivery_date', 'discounted_price',
-                  'unit_quantity', 'target_quantity', 'is_approved', 'product_id',
+                  'unit_quantity', 'target_quantity', 'remaining_quantity', 'is_approved', 'product_id',
                   'product_name', 'product_image', 'product_unit', 'product_price',
                   'producer_product']
 
@@ -309,3 +311,11 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
 
     def get_product_unit(self, obj):
         return obj.product.product_unit.product_unit
+
+    def get_remaining_quantity(self, obj):
+        pre_orders = PreOrder.objects.filter(pre_order_setting=obj)
+        if pre_orders:
+            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
+            return obj.target_quantity - total_purchased
+        else:
+            return obj.target_quantity

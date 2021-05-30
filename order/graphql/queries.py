@@ -141,9 +141,9 @@ class Query(graphene.ObjectType):
     delivery_time_slots = graphene.List(TimeSlotType)
     invoice_by_order = graphene.Field(InvoiceInfoType, order_id=graphene.Int())
     pre_order_product_list = graphene.List(PreOrderProductListType)
-    pre_order_product_detail = graphene.List(PreOrderProductDetailType, pre_order_product_id=graphene.Int())
+    pre_order_product_detail = graphene.Field(PreOrderProductDetailType, pre_order_product_id=graphene.Int())
     pre_order_list = graphene.List(PreOrderListType)
-    pre_order_detail = graphene.List(PreOrderDetailType, pre_order_id=graphene.Int())
+    pre_order_detail = graphene.Field(PreOrderDetailType, pre_order_id=graphene.Int())
 
     def resolve_order_list(self, info):
         return Order.objects.all()

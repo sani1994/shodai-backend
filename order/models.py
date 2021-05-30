@@ -285,7 +285,7 @@ class PreOrderSetting(BaseModel):
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     is_approved = models.BooleanField(default=False)
     # note = models.CharField(max_length=500, null=True, blank=True)
-    # is_processed = models.BooleanField(default=False)
+    is_processed = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):

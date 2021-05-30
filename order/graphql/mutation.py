@@ -139,9 +139,6 @@ class CreateOrder(graphene.Mutation):
                             coupon.save()
 
                     delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-                    order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                    order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                    order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                     order_instance.total_vat = total_vat
                     order_instance.order_total_price = sub_total + total_vat + delivery_charge - coupon_discount_amount
                     order_instance.save()

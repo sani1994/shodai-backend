@@ -335,7 +335,7 @@ class DiscountInfoAdmin(MaterialModelAdmin):
 
 
 class PreOrderSettingAdmin(MaterialModelAdmin):
-    list_display = ('product', 'start_date', 'end_date', 'is_approved')
+    list_display = ('product', 'start_date', 'end_date', 'is_approved', 'is_processed')
     readonly_fields = ['created_by', 'modified_by', 'created_on', 'modified_on', 'slug']
     autocomplete_fields = ['producer_product', 'product']
 
@@ -350,7 +350,7 @@ class PreOrderSettingAdmin(MaterialModelAdmin):
 
 
 class PreOrderAdmin(MaterialModelAdmin):
-    list_display = ('pre_order_number', 'customer', 'product_quantity', 'order')
+    list_display = ('pre_order_number', 'customer', 'product_quantity', 'pre_order_setting', 'order')
     readonly_fields = ['pre_order_number', 'platform', 'order',
                        'created_by', 'modified_by', 'created_on', 'modified_on']
 
