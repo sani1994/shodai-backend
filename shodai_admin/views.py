@@ -27,7 +27,7 @@ from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
     UserProfileSerializer, ProductMetaSerializer, order_status_all
-from shodai.utils.permission import IsAdminUserQP
+from shodai.permissions import IsAdminUserQP
 from user.models import UserProfile, Address
 
 from django.contrib.auth import authenticate

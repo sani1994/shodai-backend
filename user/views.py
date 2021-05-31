@@ -6,8 +6,7 @@ from django.utils.crypto import get_random_string
 from django.views.generic import TemplateView
 from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
-from shodai.utils.helper import get_user_object
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 from user.serializers import UserProfileSerializer, AddressSerializer, UserRegistrationSerializer, \
     RetailerRegistrationSreializer
 from user.models import Address, BlackListedToken
@@ -156,11 +155,10 @@ class Logout(APIView):  # logout
     permission_classes = [GenericAuth]
 
     def post(self, request):
-        user = get_user_object(username=request.user.username)
         try:
             BlackListedToken.objects.create(
                 token=request.headers['Authorization'].split(' ')[1],
-                user=user)
+                user=request.user)
         except IntegrityError:
             return JsonResponse({
                 "message": "Invalid or expired token!",

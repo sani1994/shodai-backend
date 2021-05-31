@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 
 
 # class ProductList(APIView):

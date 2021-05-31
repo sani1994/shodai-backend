@@ -109,7 +109,7 @@ from datetime import datetime
 #         if request.user.is_staff:
 #             retailer.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 
 
 # class AccountList(APIView):

@@ -1,13 +1,11 @@
 from decouple import config
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, BasePermission, SAFE_METHODS
-from shodai.utils.helper import get_user_object
 from user.models import BlackListedToken, UserProfile
 
 
 class GenericAuth(IsAuthenticated):
     def has_permission(self, request, view):
-        username = request.user
         try:
             token = request.headers['Authorization'].split(' ')[1]
         except KeyError:
@@ -15,7 +13,7 @@ class GenericAuth(IsAuthenticated):
 
         try:
             is_blacklisted = BlackListedToken.objects.get(
-                user=get_user_object(username=username), token=token)
+                user=request.user, token=token)
 
             if is_blacklisted:
                 return False
@@ -63,7 +61,6 @@ class ReadOnly(BasePermission):
 
 class ReadOnlyAuth(IsAuthenticated):
     def has_permission(self, request, view):
-        username = request.user
         is_read_only = request.user.groups.filter(name='read_only').exists()
         try:
             token = request.headers['Authorization'].split(' ')[1]
@@ -72,7 +69,7 @@ class ReadOnlyAuth(IsAuthenticated):
 
         try:
             is_blacklisted = BlackListedToken.objects.get(
-                user=get_user_object(username=username), token=token)
+                user=request.user, token=token)
 
             if is_blacklisted:
                 return False

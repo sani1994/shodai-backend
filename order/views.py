@@ -22,7 +22,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 from user.models import Address
 
 
