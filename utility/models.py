@@ -4,7 +4,7 @@ from base.models import BaseModel
 from user.models import UserProfile
 
 
-class Area(BaseModel):  # write serializer
+class Area(BaseModel):
     area_name = models.CharField(max_length=200)
     polygon = models.PolygonField()
     history = HistoricalRecords()
@@ -13,7 +13,14 @@ class Area(BaseModel):  # write serializer
         return self.area_name
 
 
-class CityCountry(BaseModel):  # write serializer
+class DeliveryZone(BaseModel):
+    zone = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.zone
+
+
+class CityCountry(BaseModel):
     tire_city = models.CharField(max_length=200)
     tire_country = models.CharField(max_length=200)
     history = HistoricalRecords()
