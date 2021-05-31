@@ -270,15 +270,15 @@ class PreOrderSettingListSerializer(serializers.ModelSerializer):
 
 
 class ProducerProductSerializer(serializers.ModelSerializer):
-    producer_mobile_number = serializers.SerializerMethodField(read_only=True)
+    producer = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProducerProductRequest
         fields = ['id', 'product_name', 'product_image', 'product_unit',
-                  'product_price', 'product_quantity', 'producer_mobile_number']
+                  'product_price', 'product_quantity', 'producer']
 
-    def get_producer_mobile_number(self, obj):
-        return obj.producer.mobile_number
+    def get_producer(self, obj):
+        return f"{obj.producer.first_name} [{obj.producer.mobile_number}]"
 
 
 class PreOrderSettingDetailSerializer(serializers.ModelSerializer):

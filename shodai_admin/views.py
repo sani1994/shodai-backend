@@ -919,10 +919,7 @@ class ProductSearch(APIView):
         query = request.query_params.get('query', '')
         product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:20]
         serializer = ProductSearchSerializer(product, many=True)
-        if serializer:
-            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
 
 
 class TimeSlotList(APIView):
@@ -1626,7 +1623,7 @@ class PreOrderSettingList(APIView):
                 is_valid = False
         if is_valid and data['end_date']:
             try:
-                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d"))
+                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
             except Exception:
                 is_valid = False
         if is_valid and data['delivery_date']:
@@ -1638,7 +1635,7 @@ class PreOrderSettingList(APIView):
             product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
             producer_product = ProducerProductRequest.objects.filter(id=data['producer_product_id'],
                                                                      is_approved=True).first()
-            if not product or not producer_product or \
+            if not product or not producer_product or not start_date < end_date < delivery_date or \
                     data['discounted_price'] > product.product_price or \
                     data['unit_quantity'] > data['target_quantity']:
                 is_valid = False
@@ -1661,9 +1658,9 @@ class PreOrderSettingList(APIView):
                                                            discounted_price=data['discounted_price'],
                                                            unit_quantity=data['unit_quantity'],
                                                            target_quantity=data['target_quantity'])
-        return Response({'status': 'success',
-                         'message': 'Pre-order setting created.',
-                         "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_200_OK)
+        return Response({"status": "success",
+                         "message": "Pre-order setting created.",
+                         "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_201_CREATED)
 
 
 class PreOrderSettingDetail(APIView):
@@ -1705,7 +1702,7 @@ class PreOrderSettingDetail(APIView):
                 is_valid = False
         if is_valid and data['end_date']:
             try:
-                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d"))
+                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
             except Exception:
                 is_valid = False
         if is_valid and data['delivery_date']:
@@ -1716,7 +1713,7 @@ class PreOrderSettingDetail(APIView):
         if is_valid:
             pre_order_setting = PreOrderSetting.objects.filter(id=id).first()
             product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
-            if not pre_order_setting or not product or \
+            if not pre_order_setting or not product or not start_date < end_date < delivery_date or \
                     data['discounted_price'] > product.product_price or \
                     data['unit_quantity'] > data['target_quantity'] or \
                     not isinstance(data['is_approved'], bool):
@@ -1736,10 +1733,9 @@ class PreOrderSettingDetail(APIView):
         pre_order_setting.is_approved = data['is_approved']
         pre_order_setting.save()
 
-        return Response({
-            "status": "success",
-            "message": "Pre-order setting updated.",
-            "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_200_OK)
+        return Response({"status": "success",
+                         "message": "Pre-order setting updated.",
+                         "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_200_OK)
 
 
 class ProducerProductSearch(APIView):
@@ -1751,15 +1747,11 @@ class ProducerProductSearch(APIView):
     def get(self, request):
         query = request.query_params.get('mobile_number', '')
         producer = UserProfile.objects.filter(mobile_number='+88' + query,
-                                              is_producer=True)
+                                              is_producer=True).first()
         if producer:
-            producer = producer[0]
             queryset = ProducerProductRequest.objects.filter(producer=producer, is_approved=True)
             serializer = ProducerProductSerializer(queryset, many=True)
-            if serializer:
-                return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({'status': 'failed',
                              'message': 'Producer not found.'}, status=status.HTTP_200_OK)
