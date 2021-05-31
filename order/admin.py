@@ -350,7 +350,7 @@ class PreOrderSettingAdmin(MaterialModelAdmin):
 
 
 class PreOrderAdmin(MaterialModelAdmin):
-    list_display = ('pre_order_number', 'customer', 'product_quantity', 'pre_order_setting', 'order')
+    list_display = ('pre_order_number', 'customer', 'product_quantity', 'pre_order_setting', 'pre_order_status', 'order')
     readonly_fields = ['pre_order_number', 'platform', 'order',
                        'created_by', 'modified_by', 'created_on', 'modified_on']
 

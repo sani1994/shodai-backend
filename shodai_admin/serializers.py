@@ -17,6 +17,12 @@ order_status_all = {
     'CN': 'Order Cancelled',
 }
 
+platform_all = {
+    'WB': 'WEBSITE',
+    'AD': 'ADMIN_PANEL',
+    'AP': 'MOBILE_APPLICATION'
+}
+
 
 class AdminUserProfileSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
@@ -161,6 +167,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     invoice = serializers.SerializerMethodField(read_only=True)
     products = OrderProductReadSerializer(read_only=True, many=True)
     order_status = serializers.SerializerMethodField(read_only=True)
+    platform = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Order
@@ -183,6 +190,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
     def get_order_status(self, obj):
         return order_status_all[obj.order_status]
+    
+    def get_platform(self, obj):
+        return platform_all[obj.platform]
 
 
 class ProductSearchSerializer(serializers.ModelSerializer):
@@ -313,9 +323,53 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
         return obj.product.product_unit.product_unit
 
     def get_remaining_quantity(self, obj):
-        pre_orders = PreOrder.objects.filter(pre_order_setting=obj)
+        pre_orders = PreOrder.objects.filter(pre_order_setting=obj).exclude(pre_order_status='CN')
         if pre_orders:
             total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
             return obj.target_quantity - total_purchased
         else:
             return obj.target_quantity
+
+
+class PreOrderListSerializer(serializers.ModelSerializer):
+    customer = serializers.SerializerMethodField(read_only=True)
+    pre_order_product = serializers.StringRelatedField(source='pre_order_setting')
+    order_placed = serializers.SerializerMethodField(read_only=True)
+    is_processed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = PreOrder
+        fields = ['id', 'pre_order_number', 'customer', 'pre_order_product', 'product_quantity',
+                  'pre_order_status', 'order_placed', 'is_processed']
+
+    def get_customer(self, obj):
+        return f"{obj.customer.first_name} [{obj.customer.mobile_number}]"
+
+    def get_order_placed(self, obj):
+        return 'Yes' if obj.order else 'No'
+
+    def get_is_processed(self, obj):
+        return obj.pre_order_setting.is_processed
+
+
+class PreOrderDetailSerializer(serializers.ModelSerializer):
+    pre_order_product = serializers.StringRelatedField(source='pre_order_setting')
+    customer = serializers.SerializerMethodField(read_only=True)
+    address = serializers.StringRelatedField(source='delivery_address')
+    platform = serializers.SerializerMethodField(read_only=True)
+    pre_order_status = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = PreOrder
+        fields = ['id', 'pre_order_number', 'pre_order_product', 'product_quantity', 'customer',
+                  'address', 'contact_number', 'note', 'platform', 'pre_order_status',
+                  'order']
+
+    def get_customer(self, obj):
+        return f"{obj.customer.first_name} [{obj.customer.mobile_number}]"
+
+    def get_platform(self, obj):
+        return platform_all[obj.platform]
+
+    def get_pre_order_status(self, obj):
+        return order_status_all[obj.pre_order_status]

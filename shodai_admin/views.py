@@ -28,7 +28,7 @@ from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
     UserProfileSerializer, ProductMetaSerializer, order_status_all, PreOrderSettingListSerializer, \
-    PreOrderSettingDetailSerializer, ProducerProductSerializer
+    PreOrderSettingDetailSerializer, ProducerProductSerializer, PreOrderListSerializer, PreOrderDetailSerializer
 from shodai.utils.permission import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -392,16 +392,14 @@ class OrderDetail(APIView):
                     products_updated = False
 
             if not order.address or data["delivery_address"] != order.address.road:
-                address = Address.objects.filter(road=data["delivery_address"])
-                if not address:
+                delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
+                if not delivery_address:
                     delivery_address = Address.objects.create(road=data["delivery_address"],
                                                               city="Dhaka",
                                                               district="Dhaka",
                                                               country="Bangladesh",
                                                               zip_code="",
                                                               user=order.user)
-                else:
-                    delivery_address = address[0]
             else:
                 delivery_address = order.address
 
@@ -944,7 +942,7 @@ class OrderStatusList(APIView):
     """
 
     def get(self, request):
-        all_order_status = [
+        order_status = [
             'Ordered',
             'Order Accepted',
             'Order Ready',
@@ -952,7 +950,7 @@ class OrderStatusList(APIView):
             'Order Completed',
             'Order Cancelled',
         ]
-        return Response({'status': 'success', 'data': all_order_status}, status=status.HTTP_200_OK)
+        return Response({'status': 'success', 'data': order_status}, status=status.HTTP_200_OK)
 
 
 class CustomerSearch(APIView):
@@ -1731,6 +1729,7 @@ class PreOrderSettingDetail(APIView):
         pre_order_setting.unit_quantity = data['unit_quantity']
         pre_order_setting.target_quantity = data['target_quantity']
         pre_order_setting.is_approved = data['is_approved']
+        pre_order_setting.modified_by = request.user
         pre_order_setting.save()
 
         return Response({"status": "success",
@@ -1779,7 +1778,7 @@ class ProcessPreOrder(APIView):
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
-        pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting)
+        pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
         if not pre_orders:
             return Response({
                 "status": "failed",
@@ -1839,6 +1838,7 @@ class ProcessPreOrder(APIView):
                                             discount_description='Product Offer Discount',
                                             invoice=invoice)
                 p.order = order
+                p.pre_order_status = 'OA' if p.pre_order_status == 'OD' else p.pre_order_status
                 p.save()
 
             pre_order_setting.is_processed = True
@@ -1848,9 +1848,121 @@ class ProcessPreOrder(APIView):
                              'message': 'Pre-orders created.'}, status=status.HTTP_200_OK)
         else:
             for p in pre_orders:
-                p.is_cancelled = True
+                p.pre_order_status = 'CN'
                 p.save()
             pre_order_setting.is_processed = True
             pre_order_setting.save()
             return Response({'status': 'success',
                              'message': 'Pre-orders cancelled.'}, status=status.HTTP_200_OK)
+
+
+class PreOrderSettingSearch(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        product_name = request.query_params.get('query', '')
+        queryset = PreOrderSetting.objects.filter(product__product_name__icontains=product_name,
+                                                  is_approved=True).order_by('-created_on')
+        serializer = PreOrderSettingListSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PreOrderStatusList(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get All Pre-Order Status
+    """
+
+    def get(self, request):
+        pre_order_status = [
+            'Ordered',
+            'Order Accepted',
+            'Order Cancelled',
+        ]
+        return Response({'status': 'success',
+                         'pre_order_status': pre_order_status}, status=status.HTTP_200_OK)
+
+
+class PreOrderList(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        pre_order_setting_id = request.query_params.get('pre_order_setting_id')
+        search = request.query_params.get('search')
+        if search and pre_order_setting_id:
+            queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id,
+                                               customer__mobile_number__icontains=search).order_by('-created_on')
+        elif pre_order_setting_id and not search:
+            queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id).order_by('-created_on')
+        elif not pre_order_setting_id and search:
+            queryset = PreOrder.objects.filter(customer__mobile_number__icontains=search).order_by('-created_on')
+        else:
+            queryset = PreOrder.objects.all().order_by('-created_on')
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = PreOrderListSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
+
+class PreOrderDetail(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, id):
+        pre_order = get_object_or_404(PreOrder, id=id)
+        serializer = PreOrderDetailSerializer(pre_order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, id):
+        data = request.data
+        required_fields = ['delivery_address',
+                           'contact_number',
+                           'product_quantity',
+                           'note',
+                           'pre_order_status']
+
+        is_valid = field_validation(required_fields, data)
+        if is_valid:
+            string_fields = [data['delivery_address'],
+                             data['contact_number'],
+                             data['note'],
+                             data['pre_order_status']]
+            is_valid = type_validation(string_fields, str)
+
+        if is_valid and len(data["contact_number"]) == 14 and \
+                data["contact_number"].startswith('+8801') and data["contact_number"][1:].isdigit():
+            pass
+        else:
+            is_valid = False
+
+        if is_valid:
+            pre_order = PreOrder.objects.filter(id=id, pre_order_setting__is_processed=False).first()
+            if not pre_order or not data['delivery_address'] or not data['pre_order_status'] or not data['note']:
+                is_valid = False
+        if not is_valid or not isinstance(data['product_quantity'], int):
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if data["delivery_address"] != pre_order.delivery_address.road:
+            delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
+            if not delivery_address:
+                delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                          city="Dhaka",
+                                                          district="Dhaka",
+                                                          country="Bangladesh",
+                                                          zip_code="",
+                                                          user=pre_order.customer)
+        else:
+            delivery_address = pre_order.delivery_address
+
+        pre_order.delivery_address = delivery_address
+        pre_order.contact_number = data["contact_number"]
+        pre_order.product_quantity = data['product_quantity']
+        pre_order.note = data['note'][:500]
+        pre_order.pre_order_status = all_order_status[data['pre_order_status']]
+        pre_order.modified_by = request.user
+        pre_order.save()
+
+        return Response({"status": "success",
+                         "message": "Pre-order updated.",
+                         "pre_order_id": pre_order.id}, status=status.HTTP_200_OK)

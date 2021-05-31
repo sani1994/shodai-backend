@@ -89,7 +89,7 @@ class PreOrderProductDetailType(DjangoObjectType):
         return self.product.product_unit.product_unit
 
     def resolve_remaining_quantity(self, info):
-        pre_orders = PreOrder.objects.filter(pre_order_setting=self)
+        pre_orders = PreOrder.objects.filter(pre_order_setting=self).exclude(pre_order_status='CN')
         if pre_orders:
             total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
             return self.target_quantity - total_purchased
