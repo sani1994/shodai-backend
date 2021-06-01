@@ -5,6 +5,7 @@ from offer.models import OfferProduct, Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInfo
 from product.models import Product, ProductMeta
 from user.models import UserProfile
+from utility.models import DeliveryZone
 
 order_status_all = {
     'OD': 'Ordered',
@@ -253,3 +254,9 @@ class ProductMetaSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductMeta
         fields = ['id', 'name']
+
+
+class DeliveryZoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryZone
+        fields = ('id', 'zone')

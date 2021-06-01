@@ -26,7 +26,7 @@ from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeS
 from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
-    UserProfileSerializer, ProductMetaSerializer, order_status_all
+    UserProfileSerializer, ProductMetaSerializer, order_status_all, DeliveryZoneSerializer
 from shodai.permissions import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -35,6 +35,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
+from utility.models import DeliveryZone
 from utility.notification import send_sms
 from utility.pdf import render_to_pdf
 
@@ -292,7 +293,8 @@ class OrderDetail(APIView):
                            'products',
                            'note',
                            'coupon_code',
-                           'additional_discount']
+                           'additional_discount',
+                           'delivery_zone_id']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -332,7 +334,7 @@ class OrderDetail(APIView):
                             product_exist = Product.objects.filter(id=item['product_id'])
                         else:
                             product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist or not item['product_quantity'] > 0:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
@@ -370,8 +372,13 @@ class OrderDetail(APIView):
         else:
             is_valid = False
 
+        if is_valid and isinstance(data['delivery_zone_id'], int) and data['delivery_zone_id']:
+            zone = DeliveryZone.objects.filter(id=data['delivery_zone_id'], is_approved=True).first()
+        else:
+            is_valid = False
+
         if not is_valid or not data['delivery_address'] or data['order_status'] not in all_order_status or \
-                not isinstance(data['additional_discount'], (float, int)):
+                not isinstance(data['additional_discount'], (float, int)) or not zone:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
@@ -392,7 +399,7 @@ class OrderDetail(APIView):
             if not order.address or data["delivery_address"] != order.address.road:
                 address = Address.objects.filter(road=data["delivery_address"])
                 if not address:
-                    delivery_address = Address.objects.create(road=data["delivery_address"],
+                    delivery_address = Address.objects.create(road=data["delivery_address"][:500],
                                                               city="Dhaka",
                                                               district="Dhaka",
                                                               country="Bangladesh",
@@ -465,6 +472,7 @@ class OrderDetail(APIView):
                                              order_number=order_number,
                                              delivery_date_time=delivery_date_time,
                                              delivery_place=order.delivery_place,
+                                             delivery_zone=zone,
                                              lat=order.lat,
                                              long=order.long,
                                              order_status="OA",
@@ -517,6 +525,7 @@ class OrderDetail(APIView):
                 order.address = delivery_address
                 order.note = data['note'][:500]
                 order.modified_by = request.user
+                order.delivery_zone = zone
 
                 if not is_coupon_discount and data['coupon_code']:
                     order.order_total_price -= coupon_discount
@@ -609,7 +618,8 @@ class CreateOrder(APIView):
                            'products',
                            'note',
                            'coupon_code',
-                           'additional_discount']
+                           'additional_discount',
+                           'delivery_zone_id']
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
@@ -651,7 +661,7 @@ class CreateOrder(APIView):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist or not item['product_quantity'] > 0:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
@@ -688,8 +698,14 @@ class CreateOrder(APIView):
             pass
         else:
             is_valid = False
+            
+        if is_valid and isinstance(data['delivery_zone_id'], int) and data['delivery_zone_id']:
+            zone = DeliveryZone.objects.filter(id=data['delivery_zone_id'], is_approved=True).first()
+        else:
+            is_valid = False
 
-        if not is_valid or not data['delivery_address'] or not isinstance(data['additional_discount'], (float, int)):
+        if not is_valid or not data['delivery_address'] or not isinstance(data['additional_discount'], (float, int)) \
+                or not zone:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
@@ -779,7 +795,7 @@ class CreateOrder(APIView):
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
-            delivery_address = Address.objects.create(road=data["delivery_address"],
+            delivery_address = Address.objects.create(road=data["delivery_address"][:500],
                                                       city="Dhaka",
                                                       district="Dhaka",
                                                       country="Bangladesh",
@@ -792,6 +808,7 @@ class CreateOrder(APIView):
                                               platform="AD",
                                               delivery_date_time=delivery_date_time,
                                               delivery_place="Dhaka",
+                                              delivery_zone=zone,
                                               lat=23.7733,
                                               long=90.3548,
                                               order_status="OA",
@@ -1586,3 +1603,15 @@ class OrderStatusUpdate(APIView):
         else:
             return Response({"status": "failed",
                              "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeliveryZoneList(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get List of Delivery zones
+    """
+
+    def get(self, request):
+        queryset = DeliveryZone.objects.filter(is_approved=True)
+        serializer = DeliveryZoneSerializer(queryset, many=True)
+        return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)

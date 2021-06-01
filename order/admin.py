@@ -100,7 +100,7 @@ class OrderAdmin(MaterialModelAdmin):
     fieldsets = (
         ('Order Detail View', {
             'fields': ('user', 'platform', 'invoice_number', 'order_number', 'total_vat', 'order_total_price', 'order_status', 'delivery_date_time',
-                       'delivery_place', 'address', 'note', 'created_by', 'modified_by', 'created_on', 'modified_on')
+                       'delivery_place', 'delivery_zone',  'address', 'note', 'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )
 
