@@ -92,7 +92,8 @@ class PreOrderProductDetailType(DjangoObjectType):
         pre_orders = PreOrder.objects.filter(pre_order_setting=self).exclude(pre_order_status='CN')
         if pre_orders:
             total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
-            return self.target_quantity - total_purchased
+            remaining_quantity = self.target_quantity - total_purchased
+            return remaining_quantity if remaining_quantity > 0 else 0
         else:
             return self.target_quantity
 

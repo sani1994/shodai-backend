@@ -21,6 +21,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
 
     instance.currency = 'BDT'
     instance.order_geopoint = GEOSGeometry('POINT(%f %f)' % (instance.long, instance.lat))
+
     if not instance.invoice_number:
         instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
     if not instance.payment_id:
@@ -72,28 +73,29 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                new_coupon,
                                coupon.created_by)
 
-        gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
-        if gift_coupon_settings.is_active:
-            gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                    name="Purchase Coupon",
-                                                    discount_percent=gift_coupon_settings.discount_percent,
-                                                    discount_amount=gift_coupon_settings.discount_amount,
-                                                    max_usage_count=gift_coupon_settings.max_usage_count,
-                                                    minimum_purchase_limit=gift_coupon_settings.minimum_purchase_limit,
-                                                    discount_amount_limit=gift_coupon_settings.discount_amount_limit,
-                                                    expiry_date=timezone.now() + timedelta(
-                                                        days=gift_coupon_settings.validity_period),
-                                                    discount_type=gift_coupon_settings.discount_type,
-                                                    coupon_code_type='GC2',
-                                                    created_by=instance.user)
-            CouponUser.objects.create(coupon_code=gift_coupon,
-                                      created_for=instance.user,
-                                      remaining_usage_count=1,
-                                      created_by=instance.user)
-            if not settings.DEBUG:
-                async_task('coupon.tasks.send_coupon_sms',
+        if instance.platform == 'WB' or instance.platform == 'AP':
+            gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
+            if gift_coupon_settings.is_active:
+                gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                        name="Purchase Coupon",
+                                                        discount_percent=gift_coupon_settings.discount_percent,
+                                                        discount_amount=gift_coupon_settings.discount_amount,
+                                                        max_usage_count=gift_coupon_settings.max_usage_count,
+                                                        minimum_purchase_limit=gift_coupon_settings.minimum_purchase_limit,
+                                                        discount_amount_limit=gift_coupon_settings.discount_amount_limit,
+                                                        expiry_date=timezone.now() + timedelta(
+                                                            days=gift_coupon_settings.validity_period),
+                                                        discount_type=gift_coupon_settings.discount_type,
+                                                        coupon_code_type='GC2',
+                                                        created_by=instance.user)
+                CouponUser.objects.create(coupon_code=gift_coupon,
+                                          created_for=instance.user,
+                                          remaining_usage_count=1,
+                                          created_by=instance.user)
+                if not settings.DEBUG:
+                    async_task('coupon.tasks.send_coupon_sms',
+                               gift_coupon,
+                               instance.user.mobile_number)
+                async_task('coupon.tasks.send_coupon_email',
                            gift_coupon,
-                           instance.user.mobile_number)
-            async_task('coupon.tasks.send_coupon_email',
-                       gift_coupon,
-                       instance.user)
+                           instance.user)

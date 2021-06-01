@@ -1856,15 +1856,15 @@ class ProcessPreOrder(APIView):
                              'message': 'Pre-orders cancelled.'}, status=status.HTTP_200_OK)
 
 
-class PreOrderSettingSearch(APIView):
-    permission_classes = [IsAdminUser]
-
-    def get(self, request):
-        product_name = request.query_params.get('query', '')
-        queryset = PreOrderSetting.objects.filter(product__product_name__icontains=product_name,
-                                                  is_approved=True).order_by('-created_on')
-        serializer = PreOrderSettingListSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# class PreOrderSettingSearch(APIView):
+#     permission_classes = [IsAdminUser]
+#
+#     def get(self, request):
+#         product_name = request.query_params.get('query', '')
+#         queryset = PreOrderSetting.objects.filter(product__product_name__icontains=product_name,
+#                                                   is_approved=True).order_by('-created_on')
+#         serializer = PreOrderSettingListSerializer(queryset, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class PreOrderStatusList(APIView):
@@ -1887,17 +1887,26 @@ class PreOrderList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        pre_order_setting_id = request.query_params.get('pre_order_setting_id')
         search = request.query_params.get('search')
-        if search and pre_order_setting_id:
-            queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id,
-                                               customer__mobile_number__icontains=search).order_by('-created_on')
-        elif pre_order_setting_id and not search:
-            queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id).order_by('-created_on')
-        elif not pre_order_setting_id and search:
-            queryset = PreOrder.objects.filter(customer__mobile_number__icontains=search).order_by('-created_on')
+        pre_order_status = all_order_status.get(request.query_params.get('pre_order_status'))
+
+        if search and pre_order_status:
+            if search.startswith("01") and len(search) == 11:
+                queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search,
+                                                   pre_order_status=pre_order_status).order_by('-created_on')
+            else:
+                queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id,
+                                                   pre_order_status=pre_order_status).order_by('-created_on')
+        elif search and not pre_order_status:
+            if search.startswith("01") and len(search) == 11:
+                queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search).order_by('-created_on')
+            else:
+                queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id).order_by('-created_on')
+        elif not search and not pre_order_status:
+            queryset = PreOrder.objects.filter(pre_order_status=pre_order_status).order_by('-created_on')
         else:
             queryset = PreOrder.objects.all().order_by('-created_on')
+
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PreOrderListSerializer(result_page, many=True, context={'request': request})
@@ -1935,10 +1944,11 @@ class PreOrderDetail(APIView):
             is_valid = False
 
         if is_valid:
-            pre_order = PreOrder.objects.filter(id=id, pre_order_setting__is_processed=False).first()
+            pre_order = PreOrder.objects.filter(id=id,
+                                                pre_order_setting__is_processed=False).exclude(pre_order_status='CN').first()
             if not pre_order or not data['delivery_address'] or not data['pre_order_status'] or not data['note']:
                 is_valid = False
-        if not is_valid or not isinstance(data['product_quantity'], int):
+        if not is_valid or not isinstance(data['product_quantity'], int) or data['product_quantity']:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)

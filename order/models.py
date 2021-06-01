@@ -312,7 +312,7 @@ class PreOrder(BaseModel):
     ]
     ORDERED = 'OD'  # ORDER PLACED FROM CUSTOMER
     ORDER_ACCEPTED = 'OA'  # ORDER ACCEPTED BY ADMIN
-    ORDER_CANCELLED = 'CN'  # ORDER IS CANCELED BY CUSTOMER/ ADMIN
+    ORDER_CANCELLED = 'CN'  # ORDER IS CANCELED BY CUSTOMER/ADMIN
     PRE_ORDER_STATUS = [
         (ORDERED, 'Ordered'),
         (ORDER_ACCEPTED, 'Order Accepted'),
@@ -326,9 +326,8 @@ class PreOrder(BaseModel):
     product_quantity = models.FloatField()
     note = models.CharField(max_length=500, null=True, blank=True)
     platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
-    pre_order_status = models.CharField(max_length=100, choices=PRE_ORDER_STATUS, default=ORDERED)
+    pre_order_status = models.CharField(max_length=10, choices=PRE_ORDER_STATUS, default=ORDERED)
     order = models.OneToOneField(Order, models.SET_NULL, null=True, blank=True)
-    # is_cancelled = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
