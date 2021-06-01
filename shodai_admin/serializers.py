@@ -7,15 +7,7 @@ from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInf
 from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from user.models import UserProfile
-
-order_status_all = {
-    'OD': 'Ordered',
-    'OA': 'Order Accepted',
-    'RE': 'Order Ready',
-    'OAD': 'Order at Delivery',
-    'COM': 'Order Completed',
-    'CN': 'Order Cancelled',
-}
+from utility.views import order_status_all
 
 platform_all = {
     'WB': 'Web',
@@ -337,6 +329,7 @@ class PreOrderListSerializer(serializers.ModelSerializer):
     # pre_order_product = serializers.StringRelatedField(source='pre_order_setting')
     order_placed = serializers.SerializerMethodField(read_only=True)
     is_processed = serializers.SerializerMethodField(read_only=True)
+    pre_order_status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrder
@@ -352,18 +345,25 @@ class PreOrderListSerializer(serializers.ModelSerializer):
     def get_is_processed(self, obj):
         return 'Yes' if obj.pre_order_setting.is_processed else 'No'
 
+    def get_pre_order_status(self, obj):
+        return order_status_all[obj.pre_order_status]
+
 
 class PreOrderDetailSerializer(serializers.ModelSerializer):
-    customer = CustomerSerializer(source='customer')
+    customer = serializers.SerializerMethodField(read_only=True)
     pre_order_product = serializers.StringRelatedField(source='pre_order_setting')
     product_unit = serializers.SerializerMethodField(read_only=True)
+    address = serializers.StringRelatedField(source='delivery_address')
     platform = serializers.SerializerMethodField(read_only=True)
     pre_order_status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrder
         fields = ['id', 'pre_order_number', 'pre_order_product', 'product_quantity', 'customer', 'product_unit',
-                  'delivery_address', 'contact_number', 'note', 'platform', 'pre_order_status', 'order']
+                  'address', 'contact_number', 'note', 'platform', 'pre_order_status', 'order']
+
+    def get_customer(self, obj):
+        return f"{obj.customer.first_name} [{obj.customer.mobile_number}]"
 
     def get_product_unit(self, obj):
         return obj.pre_order_setting.product.product_unit.product_unit

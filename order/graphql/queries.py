@@ -8,6 +8,7 @@ from base.views import checkAuthentication
 from producer.graphql.queries import ProducerProductType  # noqa
 from order.models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo, \
     PreOrderSetting, PreOrder
+from utility.views import order_status_all
 
 
 class OrderType(DjangoObjectType):
@@ -101,23 +102,28 @@ class PreOrderProductDetailType(DjangoObjectType):
 class PreOrderListType(DjangoObjectType):
     class Meta:
         model = PreOrder
-        fields = ['id', 'pre_order_number', 'is_cancelled']
+        fields = ['id', 'pre_order_number']
 
     delivery_date = graphene.String()
+    pre_order_status = graphene.String()
 
     def resolve_delivery_date(self, info):
         return self.pre_order_setting.delivery_date
+
+    def resolve_pre_order_status(self, info):
+        return order_status_all[self.pre_order_status]
 
 
 class PreOrderDetailType(DjangoObjectType):
     class Meta:
         model = PreOrder
-        fields = ['id', 'pre_order_number', 'is_cancelled', 'product_quantity']
+        fields = ['id', 'pre_order_number', 'product_quantity']
 
     product_name = graphene.String()
     product_image = graphene.String()
     product_unit = graphene.String()
     discounted_product_price = graphene.Float()
+    pre_order_status = graphene.String()
 
     def resolve_product_name(self, info):
         return self.pre_order_setting.producer_product.product_name
@@ -130,6 +136,9 @@ class PreOrderDetailType(DjangoObjectType):
 
     def resolve_discounted_product_price(self, info):
         return self.pre_order_setting.discounted_price
+
+    def resolve_pre_order_status(self, info):
+        return order_status_all[self.pre_order_status]
 
 
 class Query(graphene.ObjectType):

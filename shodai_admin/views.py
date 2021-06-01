@@ -1895,14 +1895,14 @@ class PreOrderList(APIView):
                 queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search,
                                                    pre_order_status=pre_order_status).order_by('-created_on')
             else:
-                queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id,
+                queryset = PreOrder.objects.filter(pre_order_setting__id=search,
                                                    pre_order_status=pre_order_status).order_by('-created_on')
         elif search and not pre_order_status:
             if search.startswith("01") and len(search) == 11:
                 queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search).order_by('-created_on')
             else:
-                queryset = PreOrder.objects.filter(pre_order_setting__id=pre_order_setting_id).order_by('-created_on')
-        elif not search and not pre_order_status:
+                queryset = PreOrder.objects.filter(pre_order_setting__id=search).order_by('-created_on')
+        elif not search and pre_order_status:
             queryset = PreOrder.objects.filter(pre_order_status=pre_order_status).order_by('-created_on')
         else:
             queryset = PreOrder.objects.all().order_by('-created_on')
@@ -1948,7 +1948,7 @@ class PreOrderDetail(APIView):
                                                 pre_order_setting__is_processed=False).exclude(pre_order_status='CN').first()
             if not pre_order or not data['delivery_address'] or not data['pre_order_status'] or not data['note']:
                 is_valid = False
-        if not is_valid or not isinstance(data['product_quantity'], int) or data['product_quantity']:
+        if not is_valid or not isinstance(data['product_quantity'], int) or not data['product_quantity'] > 0:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
