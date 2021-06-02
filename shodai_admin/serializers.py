@@ -350,20 +350,17 @@ class PreOrderListSerializer(serializers.ModelSerializer):
 
 
 class PreOrderDetailSerializer(serializers.ModelSerializer):
-    customer = serializers.SerializerMethodField(read_only=True)
     pre_order_product = serializers.StringRelatedField(source='pre_order_setting')
     product_unit = serializers.SerializerMethodField(read_only=True)
     address = serializers.StringRelatedField(source='delivery_address')
     platform = serializers.SerializerMethodField(read_only=True)
     pre_order_status = serializers.SerializerMethodField(read_only=True)
+    customer_details = CustomerSerializer(source='customer')
 
     class Meta:
         model = PreOrder
-        fields = ['id', 'pre_order_number', 'pre_order_product', 'product_quantity', 'customer', 'product_unit',
-                  'address', 'contact_number', 'note', 'platform', 'pre_order_status', 'order']
-
-    def get_customer(self, obj):
-        return f"{obj.customer.first_name} [{obj.customer.mobile_number}]"
+        fields = ['id', 'pre_order_number', 'pre_order_product', 'product_quantity', 'product_unit', 'address',
+                  'contact_number', 'note', 'platform', 'pre_order_status', 'order', 'customer_details']
 
     def get_product_unit(self, obj):
         return obj.pre_order_setting.product.product_unit.product_unit

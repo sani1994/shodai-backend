@@ -334,7 +334,7 @@ class OrderDetail(APIView):
                             product_exist = Product.objects.filter(id=item['product_id'])
                         else:
                             product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist or not item['product_quantity'] > 0:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
@@ -394,7 +394,7 @@ class OrderDetail(APIView):
             if not order.address or data["delivery_address"] != order.address.road:
                 delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
                 if not delivery_address:
-                    delivery_address = Address.objects.create(road=data["delivery_address"],
+                    delivery_address = Address.objects.create(road=data["delivery_address"][:500],
                                                               city="Dhaka",
                                                               district="Dhaka",
                                                               country="Bangladesh",
@@ -648,7 +648,7 @@ class CreateOrder(APIView):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist or not item['product_quantity'] > 0:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
@@ -776,7 +776,7 @@ class CreateOrder(APIView):
 
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
-            delivery_address = Address.objects.create(road=data["delivery_address"],
+            delivery_address = Address.objects.create(road=data["delivery_address"][:500],
                                                       city="Dhaka",
                                                       district="Dhaka",
                                                       country="Bangladesh",
@@ -1946,7 +1946,7 @@ class PreOrderDetail(APIView):
         if is_valid:
             pre_order = PreOrder.objects.filter(id=id,
                                                 pre_order_setting__is_processed=False).exclude(pre_order_status='CN').first()
-            if not pre_order or not data['delivery_address'] or not data['pre_order_status'] or not data['note']:
+            if not pre_order or not data['delivery_address'] or not data['pre_order_status']:
                 is_valid = False
         if not is_valid or not isinstance(data['product_quantity'], int) or not data['product_quantity'] > 0:
             return Response({
@@ -1956,7 +1956,7 @@ class PreOrderDetail(APIView):
         if data["delivery_address"] != pre_order.delivery_address.road:
             delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
             if not delivery_address:
-                delivery_address = Address.objects.create(road=data["delivery_address"],
+                delivery_address = Address.objects.create(road=data["delivery_address"][:500],
                                                           city="Dhaka",
                                                           district="Dhaka",
                                                           country="Bangladesh",
