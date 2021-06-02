@@ -508,7 +508,8 @@ class OrderdProducts(APIView):
                 orderProductLists = orderProductSerializer.data
                 for orderProduct in orderProductLists:
                     orderProduct['product']['product_unit'] = orderProduct['product']['product_unit']['product_unit']
-                    orderProduct['product']['product_meta'] = orderProduct['product']['product_meta']['name']
+                    orderProduct['product']['product_category'] = orderProduct['product']['product_category'][
+                        'type_of_product']
                     # orderProduct['product'].pop('created_by')
                     # orderProduct['product'].pop('modified_by')
                     product = orderProduct['product']
@@ -670,7 +671,7 @@ class OrderLatest(APIView):
                     products.append(product)
                 # serializer.data[0]["invoice_number"]
 
-                category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
+                category = [p["product"]["product_category"] for p in products]
 
                 product_name = [p["product"]["product_name"] for p in products]
 

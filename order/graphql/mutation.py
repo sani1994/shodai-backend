@@ -372,7 +372,7 @@ class PaymentMutation(graphene.Mutation):
                 order_product_list = OrderProduct.objects.filter(order=obj)
                 products = [op.product for op in order_product_list]
                 product_name = [p.product_name for p in products]
-                category = [p.product_meta.product_category.type_of_product for p in products]
+                category = [p.product_category.type_of_product for p in products]
 
                 body = {
                     "project_id": config("PAYMENT_PROJECT_ID", None),

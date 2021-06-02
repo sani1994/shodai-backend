@@ -1431,13 +1431,13 @@ class OrderProductListExcel(APIView):
 
         if date_type == 'placed_on':
             if product_meta and order_status:
-                queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
+                queryset = OrderProduct.objects.filter(product__product_category__type_of_product=product_meta,
                                                        order__order_status=order_status,
                                                        order__placed_on__gte=date_from,
                                                        order__placed_on__lt=date_to).order_by(sort_by)
 
             elif product_meta and not order_status:
-                queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
+                queryset = OrderProduct.objects.filter(product__product_category__type_of_product=product_meta,
                                                        order__placed_on__gte=date_from,
                                                        order__placed_on__lt=date_to).order_by(sort_by)
 
@@ -1450,13 +1450,13 @@ class OrderProductListExcel(APIView):
                                                        order__placed_on__lt=date_to).order_by(sort_by)
         else:
             if product_meta and order_status:
-                queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
+                queryset = OrderProduct.objects.filter(product__product_category__type_of_product=product_meta,
                                                        order__order_status=order_status,
                                                        order__delivery_date_time__gte=date_from,
                                                        order__delivery_date_time__lt=date_to).order_by(sort_by)
 
             elif product_meta and not order_status:
-                queryset = OrderProduct.objects.filter(product__product_meta__name=product_meta,
+                queryset = OrderProduct.objects.filter(product__product_category__type_of_product=product_meta,
                                                        order__delivery_date_time__gte=date_from,
                                                        order__delivery_date_time__lt=date_to).order_by(sort_by)
 
@@ -1491,7 +1491,7 @@ class OrderProductListExcel(APIView):
                        order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
                        obj.product.product_name, obj.product.product_unit.product_unit, obj.order_product_price,
                        obj.order_product_qty, obj.order_product_price * obj.order_product_qty,
-                       obj.product.product_meta.name, obj.order.address.road]
+                       obj.product.product_category.type_of_product, obj.order.address.road]
                 ws1.append(row)
 
             for column_cells in ws1.columns:
@@ -1524,7 +1524,7 @@ class OrderProductListExcel(APIView):
                                     'Product Name': obj.product.product_name,
                                     'Product Unit': obj.product.product_unit.product_unit,
                                     'Product Quantity': obj.order_product_qty,
-                                    'Product Subcategory': obj.product.product_meta.name}
+                                    'Product Subcategory': obj.product.product_category.type_of_product}
                     order_product_list.append(product_data)
 
             ws2 = wb.create_sheet('Order Product List (Summary)')
