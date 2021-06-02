@@ -1,22 +1,22 @@
 from rest_framework import serializers
 from offer.models import Offer, OfferProduct
 from product.models import Product
+from utility.models import Banner
 
 
 class OfferSerializer(serializers.ModelSerializer):
-
-    def update(self, instance, validated_data):
-        instance.offer_name = validated_data.get('offer_name', instance.offer_name)
-        instance.offer_img = validated_data.get('offer_img', instance.offer_img)
-        instance.offer_details = validated_data.get('offer_details', instance.offer_details)
-        instance.is_approved = False
-
-        instance.save()
-        return instance
+    offer_img = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Offer
         fields = '__all__'
+
+    def get_offer_img(self, obj):
+        banner = Banner.objects.filter(offer=obj, is_approved=True).first()
+        if banner:
+            return banner.banner_img.url
+        else:
+            return None
 
 
 class OfferProductSerializer(serializers.ModelSerializer):
