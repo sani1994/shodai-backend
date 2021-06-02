@@ -30,21 +30,21 @@ class SelectShopForm(forms.Form):
 
 
 class ProductAdmin(MaterialModelAdmin):
-    list_filter = ('product_meta__product_category', 'product_meta', 'product_name', 'is_approved',)
-    list_display = ('id', 'product_name', 'product_price', 'price_with_vat', 'is_approved')
+    list_filter = ('product_category', 'product_name', 'is_approved',)
+    list_display = ('id', 'product_name', 'product_price', 'product_category', 'is_approved')
     readonly_fields = ["created_by", "modified_by", "created_on", "modified_on",
                        'price_with_vat', 'slug']
-    search_fields = ['product_name', 'product_meta__name']
+    search_fields = ['product_name', 'product_category__type_of_product']
     ordering = ['product_name']
-    autocomplete_fields = ('product_unit', 'product_meta',)
+    autocomplete_fields = ('product_unit', 'product_category',)
     actions = ["save_selected", "export_as_csv", "export_all_as_csv", ]
     fieldsets = (
         ('Product Detail View', {
             'fields': (
                 'product_name', 'product_name_bn', 'product_image', 'product_description',
                 'product_description_bn', 'product_price', 'product_price_bn', 'product_unit',
-                'product_meta', 'product_last_price', 'is_approved', 'decimal_allowed', 'price_with_vat',
-                'created_by', 'modified_by', 'created_on', 'modified_on')
+                'product_category', 'product_last_price', 'is_approved', 'decimal_allowed',
+                'price_with_vat', 'slug', 'created_by', 'modified_by', 'created_on', 'modified_on')
         }),
     )
 
@@ -147,7 +147,7 @@ class ProductAdmin(MaterialModelAdmin):
                             flag = False
                             if isinstance(data["product_price"][i],
                                           (np.int64, np.float32)) and product.product_price != float(
-                                data["product_price"][i]):
+                                           data["product_price"][i]):
                                 product.product_last_price = product.product_price
                                 product.product_price = float(data["product_price"][i])
                                 flag = True
@@ -219,8 +219,16 @@ class ShopCategoryAdmin(ImportExportModelAdmin):
 
 
 class ProductCategoryAdmin(admin.ModelAdmin):
-    readonly_fields = ["created_by", "modified_by", ]
-    list_display = ("type_of_product",)
+    def last_category(self):
+        is_parent = ProductCategory.objects.filter(parent=self.id)
+        return "No" if is_parent else "Yes"
+
+    readonly_fields = ["created_by", "modified_by", "created_on", "modified_on"]
+    list_display = ["type_of_product", "parent", last_category, "is_approved"]
+    list_filter = ["parent"]
+    search_fields = ["type_of_product"]
+    ordering = ['type_of_product']
+    autocomplete_fields = ["parent"]
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -266,8 +274,8 @@ class ProductMetaAdmin(admin.ModelAdmin):
 
 
 site.register(Product, ProductAdmin)
-site.register(ShopCategory, ShopCategoryAdmin)
 site.register(ProductCategory, ProductCategoryAdmin)
 site.register(ProductMeta, ProductMetaAdmin)
+# site.register(ShopCategory, ShopCategoryAdmin)
 # site.register(Manufacturer, ManufacturerAdmin)
 # site.register(ProductUnit, ProductUnitAdmin)

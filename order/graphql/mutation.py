@@ -307,7 +307,7 @@ class SendEmail(graphene.Mutation):
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
             from_email, to = 'noreply@shod.ai', user.email
-            html_customer = get_template('email.html')
+            html_customer = get_template('email/order_notification_customer.html')
             html_content = html_customer.render(content)
             msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
             msg.attach_alternative(html_content, "text/html")
@@ -345,8 +345,8 @@ class SendEmail(graphene.Mutation):
                        'colspan_value': "4" if is_product_discount else "3"}
 
             admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
-            admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
-            html_admin = get_template('admin_email.html')
+            admin_email = config("ORDER_NOTIFICATION_STAFF_EMAILS").replace(" ", "").split(',')
+            html_admin = get_template('email/order_notification_staff.html')
             html_content = html_admin.render(content)
             msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
@@ -383,7 +383,7 @@ class PaymentMutation(graphene.Mutation):
                 order_product_list = OrderProduct.objects.filter(order=obj)
                 products = [op.product for op in order_product_list]
                 product_name = [p.product_name for p in products]
-                category = [p.product_meta.product_category.type_of_product for p in products]
+                category = [p.product_category.type_of_product for p in products]
 
                 body = {
                     "project_id": config("PAYMENT_PROJECT_ID", None),

@@ -56,8 +56,7 @@ class OrderAdmin(MaterialModelAdmin):
     list_filter = ('home_delivery', 'delivery_place', 'delivery_date_time', 'id',)
 
     actions = ["export_as_csv"]
-
-    # change_form_template = "order_admin_changeform.html"
+    # change_form_template = "order/order_admin_changeform.html"
 
     def get_actions(self, request):
         actions = super(OrderAdmin, self).get_actions(request)

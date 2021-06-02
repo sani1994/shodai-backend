@@ -12,7 +12,7 @@ from producer.models import ProducerBulkRequest, ProducerFarm, BusinessType, Pro
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 from utility.notification import email_notification
 
 

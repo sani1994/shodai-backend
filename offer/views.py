@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 # Create your views here.
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 
 
 class OfferList(APIView):

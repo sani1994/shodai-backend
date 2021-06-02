@@ -39,10 +39,10 @@
 #         q = request.GET.get('q')
 #         if q:
 #             product = ProductDocument.search().query("match", product_name = q)
-#             return render(request, 'search.html', {'product': product})
+#             return render(request, 'search/product.html', {'product': product})
 #         product = ""
 #
-#         return render(request,'search.html', {'product': product})
+#         return render(request,'search/product.html', {'product': product})
 #
 #
 # class Search(es_views.ListElasticAPIView):

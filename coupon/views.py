@@ -10,7 +10,7 @@ from base.views import field_validation, coupon_checker, type_validation
 from coupon.models import CouponUser, CouponCode
 from coupon.serializers import CouponListSerializer, CouponPageSerializer, ReferralCouponSerializer
 from product.models import Product
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 
 
 class VerifyCoupon(APIView):

@@ -10,7 +10,7 @@ otp_text = "{} - OTP for Shodai Login. Valid for next five (5) minutes."
 
 
 def email_notification(subject, body):
-    target_user = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
+    target_user = []
     return send_mail(subject, body, settings.EMAIL_HOST_USER, target_user)
 
 

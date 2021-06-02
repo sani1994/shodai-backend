@@ -22,7 +22,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from retailer.models import AcceptedOrder
-from shodai.utils.permission import GenericAuth
+from shodai.permissions import GenericAuth
 from user.models import Address
 
 
@@ -340,7 +340,7 @@ class OrderProductList(APIView):
 
             subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
             from_email, to = 'noreply@shod.ai', request.user.email
-            html_customer = get_template('email.html')
+            html_customer = get_template('email/order_notification_customer.html')
             html_content = html_customer.render(content)
             msg = EmailMultiAlternatives(subject, "shodai", from_email, [to])
             msg.attach_alternative(html_content, "text/html")
@@ -375,8 +375,8 @@ class OrderProductList(APIView):
                        'note': order_instance.note if order_instance.note else None,
                        'colspan_value': "4" if is_product_discount else "3"}
             admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
-            admin_email = config("TARGET_EMAIL_USER").replace(" ", "").split(',')
-            html_admin = get_template('admin_email.html')
+            admin_email = config("ORDER_NOTIFICATION_STAFF_EMAILS").replace(" ", "").split(',')
+            html_admin = get_template('email/order_notification_staff.html')
             html_content = html_admin.render(content)
             msg_to_admin = EmailMultiAlternatives(admin_subject, "shodai", from_email, admin_email)
             msg_to_admin.attach_alternative(html_content, "text/html")
@@ -505,7 +505,8 @@ class OrderdProducts(APIView):
                 orderProductLists = orderProductSerializer.data
                 for orderProduct in orderProductLists:
                     orderProduct['product']['product_unit'] = orderProduct['product']['product_unit']['product_unit']
-                    orderProduct['product']['product_meta'] = orderProduct['product']['product_meta']['name']
+                    orderProduct['product']['product_category'] = orderProduct['product']['product_category'][
+                        'type_of_product']
                     # orderProduct['product'].pop('created_by')
                     # orderProduct['product'].pop('modified_by')
                     product = orderProduct['product']
@@ -667,7 +668,7 @@ class OrderLatest(APIView):
                     products.append(product)
                 # serializer.data[0]["invoice_number"]
 
-                category = [c["product_category"] for c in [p["product"]["product_meta"] for p in products]]
+                category = [p["product"]["product_category"] for p in products]
 
                 product_name = [p["product"]["product_name"] for p in products]
 
