@@ -72,7 +72,7 @@ class Order(BaseModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "{}".format(self.id)
+        return self.order_number
 
     @property
     def products(self):

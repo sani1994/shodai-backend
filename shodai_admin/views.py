@@ -306,9 +306,8 @@ class OrderDetail(APIView):
                              data['coupon_code']]
             is_valid = type_validation(string_fields, str)
 
-        order = Order.objects.filter(id=id)
+        order = Order.objects.filter(id=id).first()
         if is_valid and order:
-            order = order[0]
             all_order_products = OrderProduct.objects.filter(order=order)
 
             order_products = []
@@ -334,13 +333,15 @@ class OrderDetail(APIView):
                             product_exist = Product.objects.filter(id=item['product_id'])
                         else:
                             product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity'] > 0:
+                        if not product_exist:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
-                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
                         if is_valid and decimal_allowed:
                             item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
@@ -391,10 +392,11 @@ class OrderDetail(APIView):
                 else:
                     products_updated = False
 
+            data["delivery_address"] = data["delivery_address"][:500]
             if not order.address or data["delivery_address"] != order.address.road:
                 delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
                 if not delivery_address:
-                    delivery_address = Address.objects.create(road=data["delivery_address"][:500],
+                    delivery_address = Address.objects.create(road=data["delivery_address"],
                                                               city="Dhaka",
                                                               district="Dhaka",
                                                               country="Bangladesh",
@@ -403,7 +405,7 @@ class OrderDetail(APIView):
             else:
                 delivery_address = order.address
 
-            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
+            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on').first()
             delivery_charge = invoice.delivery_charge
 
             is_delivery_discount = DiscountInfo.objects.filter(discount_type='DC', invoice=invoice)
@@ -648,13 +650,15 @@ class CreateOrder(APIView):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity'] > 0:
+                        if not product_exist:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
-                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
                         if is_valid and decimal_allowed:
                             item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
@@ -774,9 +778,10 @@ class CreateOrder(APIView):
                            gift_coupon,
                            user_instance)
 
+        data["delivery_address"] = data["delivery_address"][:500]
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
-            delivery_address = Address.objects.create(road=data["delivery_address"][:500],
+            delivery_address = Address.objects.create(road=data["delivery_address"],
                                                       city="Dhaka",
                                                       district="Dhaka",
                                                       country="Bangladesh",
@@ -1209,13 +1214,15 @@ class VerifyCoupon(APIView):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'])
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
-                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
                         if is_valid and decimal_allowed:
                             item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
@@ -1838,7 +1845,7 @@ class ProcessPreOrder(APIView):
                                             discount_description='Product Offer Discount',
                                             invoice=invoice)
                 p.order = order
-                p.pre_order_status = 'OA' if p.pre_order_status == 'OD' else p.pre_order_status
+                p.pre_order_status = 'OA'
                 p.save()
 
             pre_order_setting.is_processed = True
@@ -1944,19 +1951,21 @@ class PreOrderDetail(APIView):
             is_valid = False
 
         if is_valid:
-            pre_order = PreOrder.objects.filter(id=id,
-                                                pre_order_setting__is_processed=False).exclude(pre_order_status='CN').first()
-            if not pre_order or not data['delivery_address'] or not data['pre_order_status']:
+            pre_order = PreOrder.objects.filter(id=id, pre_order_setting__is_processed=False).first()
+            if not pre_order:
                 is_valid = False
-        if not is_valid or not isinstance(data['product_quantity'], int) or not data['product_quantity'] > 0:
+
+        if not is_valid or not isinstance(data['product_quantity'], int) or not data['product_quantity'] > 0 or \
+                not data['delivery_address'] or data['pre_order_status'] not in all_order_status:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
+        data["delivery_address"] = data["delivery_address"][:500]
         if data["delivery_address"] != pre_order.delivery_address.road:
             delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
             if not delivery_address:
-                delivery_address = Address.objects.create(road=data["delivery_address"][:500],
+                delivery_address = Address.objects.create(road=data["delivery_address"],
                                                           city="Dhaka",
                                                           district="Dhaka",
                                                           country="Bangladesh",

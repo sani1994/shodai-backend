@@ -318,29 +318,32 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
         pre_orders = PreOrder.objects.filter(pre_order_setting=obj).exclude(pre_order_status='CN')
         if pre_orders:
             total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
-            remaining_quantity = self.target_quantity - total_purchased
+            remaining_quantity = obj.target_quantity - total_purchased
             return remaining_quantity if remaining_quantity > 0 else 0
         else:
             return obj.target_quantity
 
 
 class PreOrderListSerializer(serializers.ModelSerializer):
-    customer = serializers.SerializerMethodField(read_only=True)
-    # pre_order_product = serializers.StringRelatedField(source='pre_order_setting')
-    order_placed = serializers.SerializerMethodField(read_only=True)
+    customer_name = serializers.SerializerMethodField(read_only=True)
+    customer_mobile_number = serializers.SerializerMethodField(read_only=True)
+    pre_order_product = serializers.SerializerMethodField(read_only=True)
     is_processed = serializers.SerializerMethodField(read_only=True)
     pre_order_status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrder
-        fields = ['id', 'pre_order_number', 'customer', 'pre_order_status',
-                  'order_placed', 'is_processed', 'created_on']
+        fields = ['id', 'pre_order_number', 'pre_order_status', 'created_on',
+                  'customer_name', 'customer_mobile_number', 'is_processed', 'pre_order_product']
 
-    def get_customer(self, obj):
-        return f"{obj.customer.first_name} [{obj.customer.mobile_number}]"
+    def get_customer_name(self, obj):
+        return obj.customer.first_name
 
-    def get_order_placed(self, obj):
-        return 'Yes' if obj.order else 'No'
+    def get_customer_mobile_number(self, obj):
+        return obj.customer.mobile_number
+
+    def get_pre_order_product(self, obj):
+        return obj.pre_order_setting.id
 
     def get_is_processed(self, obj):
         return 'Yes' if obj.pre_order_setting.is_processed else 'No'

@@ -13,10 +13,7 @@ class OfferSerializer(serializers.ModelSerializer):
 
     def get_offer_img(self, obj):
         banner = Banner.objects.filter(offer=obj, is_approved=True).first()
-        if banner:
-            return banner.banner_img.url
-        else:
-            return None
+        return banner.banner_img.url if banner else None
 
 
 class OfferProductSerializer(serializers.ModelSerializer):

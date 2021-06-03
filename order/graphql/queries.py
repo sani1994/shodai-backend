@@ -93,7 +93,7 @@ class PreOrderProductDetailType(DjangoObjectType):
     product_price = graphene.Int()
     product_unit = graphene.String()
     remaining_quantity = graphene.Int()
-    order_count = graphene.Int()
+    total_pre_orders = graphene.Int()
 
     def resolve_product_price(self, info):
         return self.product.product_price
@@ -110,7 +110,7 @@ class PreOrderProductDetailType(DjangoObjectType):
         else:
             return self.target_quantity
 
-    def resolve_order_count(self, info):
+    def resolve_total_pre_orders(self, info):
         pre_orders_count = PreOrder.objects.filter(pre_order_setting=self).exclude(pre_order_status='CN').count()
         return pre_orders_count
 
@@ -213,16 +213,18 @@ class Query(graphene.ObjectType):
     def resolve_pre_order_product_list(self, info):
         time_now = timezone.now()
         return PreOrderSetting.objects.filter(is_approved=True,
+                                              is_processed=False,
                                               start_date__lte=time_now,
-                                              end_date__gte=time_now).exclude(is_processed=True)
+                                              end_date__gte=time_now)
 
     def resolve_pre_order_product_detail(self, info, **kwargs):
         time_now = timezone.now()
         pre_order_setting_id = kwargs.get('pre_order_product_id')
         return PreOrderSetting.objects.filter(id=pre_order_setting_id,
                                               is_approved=True,
+                                              is_processed=False,
                                               start_date__lte=time_now,
-                                              end_date__gte=time_now).exclude(is_processed=True).first()
+                                              end_date__gte=time_now).first()
 
     def resolve_pre_order_list(self, info):
         user = info.context.user
