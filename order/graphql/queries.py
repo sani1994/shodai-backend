@@ -62,7 +62,7 @@ class PreOrderProductListType(DjangoObjectType):
     class Meta:
         model = PreOrderSetting
         fields = ['id', 'producer_product', 'end_date', 'discounted_price',
-                  'target_quantity', 'slug']
+                  'delivery_date', 'unit_quantity', 'target_quantity', 'slug']
 
     product_price = graphene.Int()
     product_unit = graphene.String()
@@ -87,8 +87,8 @@ class PreOrderProductListType(DjangoObjectType):
 class PreOrderProductDetailType(DjangoObjectType):
     class Meta:
         model = PreOrderSetting
-        exclude = ('product', 'start_date', 'slug', 'is_approved',
-                   'created_by', 'modified_by', 'created_on', 'modified_on')
+        fields = ['id', 'producer_product', 'end_date', 'discounted_price',
+                  'delivery_date', 'unit_quantity', 'target_quantity']
 
     product_price = graphene.Int()
     product_unit = graphene.String()

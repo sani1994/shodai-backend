@@ -275,7 +275,7 @@ class PreOrderSetting(BaseModel):
     """
     producer_product = models.OneToOneField(ProducerProductRequest, models.CASCADE)
     product = models.ForeignKey(Product, models.CASCADE)
-    # pre_order_setting_number = models.CharField(max_length=20, null=True, blank=True)
+    pre_order_setting_number = models.CharField(max_length=10, null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     delivery_date = models.DateTimeField()
@@ -284,7 +284,6 @@ class PreOrderSetting(BaseModel):
     target_quantity = models.FloatField()
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     is_approved = models.BooleanField(default=False)
-    # note = models.CharField(max_length=500, null=True, blank=True)
     is_processed = models.BooleanField(default=False)
     history = HistoricalRecords()
 
@@ -292,8 +291,6 @@ class PreOrderSetting(BaseModel):
         return self.product.product_name
 
     def save(self, *args, **kwargs):
-        # if self.end_date < timezone.now():
-        #     self.is_approved = False
         self.slug = self.product.slug + "-" + str(self.producer_product.id)
         super(PreOrderSetting, self).save(*args, **kwargs)
 

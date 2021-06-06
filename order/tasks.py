@@ -7,7 +7,7 @@ from order.models import DeliveryCharge, OrderProduct, InvoiceInfo, DiscountInfo
 from shodai_admin.serializers import platform_all
 
 
-def send_order_email_customer(order, is_pre_order):
+def send_order_email_customer(order, is_pre_order=False):
     user = order.user
     if user.email:
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on').first()
@@ -29,8 +29,8 @@ def send_order_email_customer(order, is_pre_order):
                        "--", int(p.order_product_qty), total]
             matrix.append(col)
 
-        is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
-        coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
+        is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice).first()
+        coupon_discount = is_coupon_discount.discount_amount if is_coupon_discount else 0
         delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
         client_name = invoice.billing_person_name
         time_slot = TimeSlot.objects.filter(time=timezone.localtime(order.delivery_date_time).time()).first()
@@ -78,6 +78,7 @@ def send_pre_order_email(pre_order):
             customer_name = user.first_name
         else:
             customer_name = "Customer"
+
         product_price = pre_order.pre_order_setting.discounted_price
         column = [pre_order.pre_order_setting.product.product_name,
                   pre_order.pre_order_setting.product.product_unit.product_unit,
@@ -109,14 +110,15 @@ def send_pre_order_email(pre_order):
 
         subject = 'Your shodai pre-order (#' + str(pre_order.pre_order_number) + ') details'
         from_email, to = 'noreply@shod.ai', user.email
-        html_coupon = get_template('email/pre_order_notification.html')
-        html_content = html_coupon.render(user_email_content)
+        html_customer = get_template('email/pre_order_notification.html')
+        html_content = html_customer.render(user_email_content)
         msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
         admin_email_content = {'user_name': customer_name,
                                'user_mobile': user.mobile_number,
+                               'is_customer': False,
                                'platform': platform_all[pre_order.platform],
                                'order_number': pre_order.pre_order_number,
                                'shipping_address': pre_order.delivery_address.road + " " + pre_order.delivery_address.city,
@@ -139,6 +141,7 @@ def send_pre_order_email(pre_order):
         msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, [admin_email])
         msg_to_admin.attach_alternative(html_content, "text/html")
         msg_to_admin.send()
+
         return f"{pre_order.pre_order_number} sent to {user.email}"
     else:
         return f"email not found"

@@ -1776,15 +1776,19 @@ class ProcessPreOrder(APIView):
 
         if is_valid and isinstance(data['pre_order_setting_id'], int):
             pre_order_setting = PreOrderSetting.objects.filter(id=data['pre_order_setting_id'],
-                                                               is_approved=True).first()
+                                                               is_approved=True,
+                                                               is_processed=False).first()
 
-            if not pre_order_setting or pre_order_setting.is_processed:
+            if not pre_order_setting:
                 is_valid = False
+        else:
+            is_valid = False
 
         if not is_valid or not isinstance(data['action'], str) or not data['action'] in ['place', 'cancel']:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
         pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
         if not pre_orders:
             return Response({
@@ -1810,7 +1814,7 @@ class ProcessPreOrder(APIView):
                                                             order_product_qty=p.product_quantity)
 
                 sub_total = float(order_product.order_product_price) * order_product.order_product_qty
-                sub_total_without_offer = float(order_product.product_price) * order_product.order_product_qty
+                sub_total_without_discount = float(order_product.product_price) * order_product.order_product_qty
                 total_vat = float(
                     order_product.order_product_price_with_vat - order_product.order_product_price) * order_product.order_product_qty
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
@@ -1834,13 +1838,13 @@ class ProcessPreOrder(APIView):
                                                      delivery_address=order.address.road,
                                                      delivery_date_time=order.delivery_date_time,
                                                      delivery_charge=delivery_charge,
-                                                     discount_amount=sub_total_without_offer - sub_total,
+                                                     discount_amount=sub_total_without_discount - sub_total,
                                                      net_payable_amount=order.order_total_price,
                                                      payment_method='CASH_ON_DELIVERY',
                                                      order_number=order,
                                                      user=p.customer,
                                                      created_by=user)
-                DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
+                DiscountInfo.objects.create(discount_amount=sub_total_without_discount - sub_total,
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
                                             invoice=invoice)
@@ -1848,11 +1852,14 @@ class ProcessPreOrder(APIView):
                 p.pre_order_status = 'OA'
                 p.save()
 
+                if not settings.DEBUG:
+                    async_task('order.tasks.send_order_email_customer',
+                               order,
+                               True)
+
             pre_order_setting.is_processed = True
+            pre_order_setting.modified_by = user
             pre_order_setting.save()
-            if not settings.DEBUG:
-                async_task('order.tasks.send_order_email_customer',
-                           order, True)
 
             return Response({'status': 'success',
                              'message': 'Orders created.'}, status=status.HTTP_200_OK)
@@ -1860,7 +1867,9 @@ class ProcessPreOrder(APIView):
             for p in pre_orders:
                 p.pre_order_status = 'CN'
                 p.save()
+
             pre_order_setting.is_processed = True
+            pre_order_setting.modified_by = user
             pre_order_setting.save()
             return Response({'status': 'success',
                              'message': 'Pre-orders cancelled.'}, status=status.HTTP_200_OK)
