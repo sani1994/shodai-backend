@@ -9,6 +9,7 @@ import requests
 from decouple import config
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import Sum
 from django.template.loader import get_template
 from django.utils import timezone
 from django_q.tasks import async_task
@@ -216,7 +217,13 @@ class CreateOrder(graphene.Mutation):
                                        order_id=order_instance.id)
                 else:
                     pre_order_setting = PreOrderSetting.objects.filter(producer_product__id=input.products[0].product_id).first()
-                    if not pre_order_setting:
+                    pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
+                    remaining_quantity = pre_order_setting.target_quantity
+                    if pre_orders:
+                        total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
+                        remaining_quantity = pre_order_setting.target_quantity - total_purchased
+                    new_remaining_quantity = remaining_quantity - input.products[0].product_quantity
+                    if not pre_order_setting or remaining_quantity == 0 or new_remaining_quantity < 0:
                         return CreateOrder(success=False,
                                            message='Invalid request!')
 

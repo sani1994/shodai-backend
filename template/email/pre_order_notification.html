@@ -95,8 +95,9 @@
           <tbody>
             <tr>
                 <td style="background:#fbfced">
+                  <strong>Shipping Address</strong><br />
                   {{shipping_address}}<br />
-                  <strong>Mobile</strong><br />
+                  <strong>Contact No.</strong><br />
                   {{mobile_no}}
                 </td>
 
@@ -203,12 +204,14 @@
           </tbody>
         </table>
 
+          {% if is_customer %}
           <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
           <div style="text-align: center;">
             <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>
             <p style="line-height: 20px;">Helpline: <strong>09614-161271</strong><br/>
               Feel free to contact us at (customer support): <strong>help@shod.ai</strong></p>
           </div>
+          {% endif %}
 
           <hr style="border:1px solid #E8E8E8"></hr>
 

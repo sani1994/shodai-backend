@@ -1642,7 +1642,8 @@ class PreOrderSettingList(APIView):
                                                                      is_approved=True).first()
             if not product or not producer_product or not start_date < end_date < delivery_date or \
                     data['discounted_price'] > product.product_price or \
-                    data['unit_quantity'] > data['target_quantity']:
+                    data['unit_quantity'] > data['target_quantity'] or \
+                    data['target_quantity'] % data['unit_quantity'] != 0:
                 is_valid = False
         if not is_valid:
             return Response({
@@ -1721,6 +1722,7 @@ class PreOrderSettingDetail(APIView):
             if not pre_order_setting or not product or not start_date < end_date < delivery_date or \
                     data['discounted_price'] > product.product_price or \
                     data['unit_quantity'] > data['target_quantity'] or \
+                    data['target_quantity'] % data['unit_quantity'] != 0 or \
                     not isinstance(data['is_approved'], bool):
                 is_valid = False
         if not is_valid:
