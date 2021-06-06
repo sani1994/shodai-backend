@@ -75,11 +75,6 @@ class OrderInput(graphene.InputObjectType):
     # long = graphene.Float(required=True)
 
 
-class EmailInput(graphene.InputObjectType):
-    order_id = graphene.ID(required=True)
-    time_slot_id = graphene.ID(required=True)
-
-
 class TransactionInput(graphene.InputObjectType):
     transaction_id = graphene.String()
     invoice_number = graphene.String()
@@ -211,6 +206,10 @@ class CreateOrder(graphene.Mutation):
                                                           coupon_user=is_using,
                                                           invoice_number=invoice,
                                                           created_by=user)
+                    if not settings.DEBUG:
+                        async_task('order.tasks.send_order_email',
+                                   order_instance,
+                                   False)
 
                     return CreateOrder(success=True,
                                        message='Order placed successfully.',
@@ -238,132 +237,6 @@ class CreateOrder(graphene.Mutation):
                                        order_id=pre_order.id)
             else:
                 raise Exception('Unauthorized request!')
-
-
-class SendEmail(graphene.Mutation):
-    class Arguments:
-        input = EmailInput(required=True)
-
-    msg = graphene.String()
-
-    @staticmethod
-    def mutate(root, info, input=None):
-        user = info.context.user
-        if checkAuthentication(user, info):
-            order_instance = Order.objects.filter(pk=input.order_id)[0]
-            invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
-            # place = order_instance.address.road
-            # g = geocoder.osm(place)
-            # if g:
-            #     order_instance.lat = g.osm['y']
-            #     order_instance.long = g.osm['x']
-            #     order_instance.save()
-            # else:
-            #     g = geocoder.osm('Adabar, Dhaka')
-            #     order_instance.lat = g.osm['y']
-            #     order_instance.long = g.osm['x']
-            #     order_instance.save()
-
-            product_list = OrderProduct.objects.filter(order__pk=input.order_id)
-            matrix = []
-            is_product_discount = False
-            product_total_price = 0
-            for p in product_list:
-                if p.order_product_price != p.product_price:
-                    is_product_discount = True
-                    total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    product_total_price += total_by_offer
-                    col = [p.product.product_name, p.product.product_unit, p.product_price,
-                           p.order_product_price, int(p.order_product_qty), total_by_offer]
-                else:
-                    total = float(p.product_price) * p.order_product_qty
-                    product_total_price += total
-                    col = [p.product.product_name, p.product.product_unit, p.product_price,
-                           "--", int(p.order_product_qty), total]
-                matrix.append(col)
-
-            is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
-            coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
-
-            time_slot = TimeSlot.objects.get(id=input.time_slot_id)
-            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-            client_name = invoice.billing_person_name
-
-            content = {'user_name': client_name,
-                       'order_number': order_instance.order_number,
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(
-                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'sub_total': product_total_price,
-                       'vat': order_instance.total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_product_discount': is_product_discount,
-                       'coupon_discount': coupon_discount,
-                       'delivery_charge_discount': 0,
-                       'saved_amount': invoice.discount_amount,
-                       'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_product_discount else "3"}
-
-            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
-            from_email, to = 'noreply@shod.ai', user.email
-            html_customer = get_template('email/order_notification_customer.html')
-            html_content = html_customer.render(content)
-            msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
-
-            """
-            To send notification to admin
-            """
-
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                payment_method = "Cash on Delivery"
-            else:
-                payment_method = "Online Payment"
-            content = {'user_name': client_name,
-                       'user_mobile': user.mobile_number,
-                       'order_number': order_instance.order_number,
-                       'platform': "Website",
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(
-                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'invoice_number': invoice.invoice_number,
-                       'payment_method': payment_method,
-                       'sub_total': product_total_price,
-                       'vat': order_instance.total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_product_discount': is_product_discount,
-                       'coupon_discount': coupon_discount,
-                       'delivery_charge_discount': 0,
-                       'saved_amount': invoice.discount_amount,
-                       'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_product_discount else "3"}
-
-            admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
-            admin_email = config("ORDER_NOTIFICATION_STAFF_EMAILS").replace(" ", "").split(',')
-            html_admin = get_template('email/order_notification_staff.html')
-            html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
-            msg_to_admin.attach_alternative(html_content, "text/html")
-            msg_to_admin.send()
-
-            # sms_body = f"Dear " + client_name + \
-            #            ",\r\n\nYour order #" + str(order_instance.pk) + \
-            #            " has been placed. Your total payable amount is " + \
-            #            str(order_instance.order_total_price) + " and preferred delivery slot is " \
-            #            + str(order_instance.delivery_date_time.date()) + " (" + time_slot.slot + ")" + \
-            #            ". \n\nThank you for shopping with shodai "
-            # sms_flag = send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
-
-            return SendEmail(msg="email sent successfully")
 
 
 class PaymentMutation(graphene.Mutation):
@@ -493,6 +366,5 @@ class TransactionMutation(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     create_order = CreateOrder.Field()
-    send_email = SendEmail.Field()
     payment = PaymentMutation.Field()
     store_transaction_info = TransactionMutation.Field()

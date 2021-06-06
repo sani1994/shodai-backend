@@ -7,7 +7,7 @@ from order.models import DeliveryCharge, OrderProduct, InvoiceInfo, DiscountInfo
 from shodai_admin.serializers import platform_all
 
 
-def send_order_email_customer(order, is_pre_order=False):
+def send_order_email(order, is_pre_order=False):
     user = order.user
     if user.email:
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on').first()
@@ -35,10 +35,14 @@ def send_order_email_customer(order, is_pre_order=False):
         client_name = invoice.billing_person_name
         time_slot = TimeSlot.objects.filter(time=timezone.localtime(order.delivery_date_time).time()).first()
         time = " ( " + time_slot.slot + " )" if time_slot else ""
+        if order.address and order.address.road:
+            address = order.address.road + " " + order.address.city
+        else:
+            address = invoice.delivery_address
 
         content = {'user_name': client_name,
                    'order_number': order.order_number,
-                   'shipping_address': order.address.road + " " + order.address.city,
+                   'shipping_address': address,
                    'mobile_no': order.contact_number,
                    'order_date': order.created_on.date(),
                    'delivery_date_time': str(
@@ -63,6 +67,38 @@ def send_order_email_customer(order, is_pre_order=False):
         msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
+
+        if not is_pre_order:
+            content = {'user_name': client_name,
+                       'user_mobile': user.mobile_number,
+                       'order_number': order.order_number,
+                       'platform': platform_all[order.platform],
+                       'shipping_address': address,
+                       'mobile_no': order.contact_number,
+                       'order_date': order.created_on.date(),
+                       'delivery_date_time': str(
+                           order.delivery_date_time.date()) + time,
+                       'invoice_number': invoice.invoice_number,
+                       'payment_method': "Cash on Delivery" if invoice.payment_method == "CASH_ON_DELIVERY" else "Online Payment",
+                       'sub_total': product_total_price,
+                       'vat': order.total_vat,
+                       'delivery_charge': delivery_charge,
+                       'total': order.order_total_price,
+                       'order_details': matrix,
+                       'is_product_discount': is_product_discount,
+                       'coupon_discount': coupon_discount,
+                       'delivery_charge_discount': 0,
+                       'saved_amount': invoice.discount_amount,
+                       'note': order.note if order.note else None,
+                       'colspan_value': "4" if is_product_discount else "3"}
+
+            admin_subject = 'Order (#' + str(order.order_number) + ') has been placed'
+            admin_email = config("ORDER_NOTIFICATION_STAFF_EMAILS").replace(" ", "").split(',')
+            html_admin = get_template('email/order_notification_staff.html')
+            html_content = html_admin.render(content)
+            msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
+            msg_to_admin.attach_alternative(html_content, "text/html")
+            msg_to_admin.send()
 
         return f"{order.order_number} sent to {user.email}"
     else:

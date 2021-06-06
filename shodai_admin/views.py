@@ -1728,16 +1728,21 @@ class PreOrderSettingDetail(APIView):
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        pre_order_setting.product = product
-        pre_order_setting.start_date = start_date
-        pre_order_setting.end_date = end_date
-        pre_order_setting.delivery_date = delivery_date
-        pre_order_setting.discounted_price = data['discounted_price']
-        pre_order_setting.unit_quantity = data['unit_quantity']
-        pre_order_setting.target_quantity = data['target_quantity']
-        pre_order_setting.is_approved = data['is_approved']
-        pre_order_setting.modified_by = request.user
-        pre_order_setting.save()
+        if pre_order_setting.end_date < timezone.now():
+            pre_order_setting.delivery_date = delivery_date
+            pre_order_setting.discounted_price = data['discounted_price']
+            pre_order_setting.save()
+        else:
+            pre_order_setting.product = product
+            pre_order_setting.start_date = start_date
+            pre_order_setting.end_date = end_date
+            pre_order_setting.delivery_date = delivery_date
+            pre_order_setting.discounted_price = data['discounted_price']
+            pre_order_setting.unit_quantity = data['unit_quantity']
+            pre_order_setting.target_quantity = data['target_quantity']
+            pre_order_setting.is_approved = data['is_approved']
+            pre_order_setting.modified_by = request.user
+            pre_order_setting.save()
 
         return Response({"status": "success",
                          "message": "Pre-order setting updated.",
@@ -1853,7 +1858,7 @@ class ProcessPreOrder(APIView):
                 p.save()
 
                 if not settings.DEBUG:
-                    async_task('order.tasks.send_order_email_customer',
+                    async_task('order.tasks.send_order_email',
                                order,
                                True)
 

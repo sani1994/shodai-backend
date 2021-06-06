@@ -65,12 +65,9 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self, request, *args, **kwargs):
-        delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-
         datetime = request.data['delivery_date_time'].split('||')
         slot = datetime[0]
         date = datetime[1]
-
         year = date.split('-')[2]
         month = date.split('-')[1]
         day = date.split('-')[0]
@@ -88,6 +85,7 @@ class OrderList(APIView):
             request.POST._mutable = False
 
         total = float(request.data['order_total_price'])
+        delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
 
         if total > 0.0 and delivery_charge > 0:
             request.POST._mutable = True
@@ -165,17 +163,17 @@ class OrderDetail(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, id):
-        obj = self.get_order_object(id)
-        if obj:
-            serializer = OrderSerializer(obj, data=request.data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
+    # def put(self, request, id):
+    #     obj = self.get_order_object(id)
+    #     if obj:
+    #         serializer = OrderSerializer(obj, data=request.data, context={'request': request})
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             return Response(serializer.data, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     # def delete(self, request, id):
     #     obj = self.get_order_object(id)
@@ -207,8 +205,6 @@ class OrderProductList(APIView):
 
             for data in request.data:
                 coupon_code = data.get('coupon_code', None)
-                time = data['time_slot'].split('||')
-                slot = time[0]
                 serializer = OrderProductSerializer(data=data, context={'request': request.data})
                 if serializer.is_valid():
                     serializer.save()
@@ -222,15 +218,8 @@ class OrderProductList(APIView):
             invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
             delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
             product_list = OrderProduct.objects.filter(order__pk=serializer.data['order'])
-            products = []
-            if order_instance.address:
-                if order_instance.address.road:
-                    address = order_instance.address.road + " " + order_instance.address.city
-            else:
-                if order_instance.delivery_place:
-                    address = order_instance.delivery_place
+            products = matrix = []
 
-            matrix = []
             total_price_without_offer = total_vat = product_total_price = 0
             for p in product_list:
                 product_data = {'product_id': p.product.id,
@@ -296,9 +285,7 @@ class OrderProductList(APIView):
             invoice.discount_amount = (total_price_without_offer - product_total_price) + coupon_discount
             invoice.save()
 
-            is_product_discount = False
             if total_price_without_offer != product_total_price:
-                is_product_discount = True
                 DiscountInfo.objects.create(discount_amount=total_price_without_offer - product_total_price,
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
@@ -317,70 +304,10 @@ class OrderProductList(APIView):
                                                   invoice_number=invoice,
                                                   created_by=request.user)
 
-            """
-            To send notification to customer
-            """
-            content = {'user_name': invoice.billing_person_name,
-                       'order_number': order_instance.order_number,
-                       'shipping_address': address,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
-                       'sub_total': product_total_price,
-                       'vat': total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_product_discount': is_product_discount,
-                       'coupon_discount': 0,
-                       'delivery_charge_discount': 0,
-                       'saved_amount': invoice.discount_amount,
-                       'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_product_discount else "3"}
-
-            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
-            from_email, to = 'noreply@shod.ai', request.user.email
-            html_customer = get_template('email/order_notification_customer.html')
-            html_content = html_customer.render(content)
-            msg = EmailMultiAlternatives(subject, "shodai", from_email, [to])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
-
-            """
-            To send notification to admin
-            """
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                payment_method = "Cash on Delivery"
-            else:
-                payment_method = "Online Payment"
-            content = {'user_name': invoice.billing_person_name,
-                       'user_mobile': invoice.billing_person_mobile_number,
-                       'order_number': order_instance.order_number,
-                       'platform': "App",
-                       'shipping_address': address,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(order_instance.delivery_date_time.date()) + " ( " + str(slot) + " )",
-                       'invoice_number': invoice.invoice_number,
-                       'payment_method': payment_method,
-                       'sub_total': product_total_price,
-                       'vat': total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_product_discount': is_product_discount,
-                       'coupon_discount': 0,
-                       'delivery_charge_discount': 0,
-                       'saved_amount': invoice.discount_amount,
-                       'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_product_discount else "3"}
-            admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
-            admin_email = config("ORDER_NOTIFICATION_STAFF_EMAILS").replace(" ", "").split(',')
-            html_admin = get_template('email/order_notification_staff.html')
-            html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, "shodai", from_email, admin_email)
-            msg_to_admin.attach_alternative(html_content, "text/html")
-            msg_to_admin.send()
+            if not settings.DEBUG:
+                async_task('order.tasks.send_order_email',
+                           order_instance,
+                           False)
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
