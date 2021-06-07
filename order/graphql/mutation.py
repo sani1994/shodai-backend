@@ -235,6 +235,9 @@ class CreateOrder(graphene.Mutation):
                                                         customer=user,
                                                         created_by=user)
 
+                    pre_order.pre_order_number = "PO" + str(10000 + pre_order.id)
+                    pre_order.save()
+
                     async_task('order.tasks.send_pre_order_email', pre_order)
                     return CreateOrder(success=True,
                                        message='Pre-order placed successfully.',

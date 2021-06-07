@@ -1901,7 +1901,7 @@ class PreOrderStatusList(APIView):
             'Order Cancelled',
         ]
         return Response({'status': 'success',
-                         'pre_order_status': pre_order_status}, status=status.HTTP_200_OK)
+                         'data': pre_order_status}, status=status.HTTP_200_OK)
 
 
 class PreOrderList(APIView):
