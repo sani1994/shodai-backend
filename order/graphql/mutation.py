@@ -2,13 +2,14 @@ import json
 import uuid
 from datetime import timedelta
 
-import geocoder
+# import geocoder
 import graphene
 import requests
 
 from decouple import config
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import Sum
 from django.template.loader import get_template
 from django.utils import timezone
 from django_q.tasks import async_task
@@ -16,33 +17,33 @@ from graphene_django import DjangoObjectType
 
 from base.views import checkAuthentication, from_global_id, coupon_checker
 from coupon.models import CouponCode, CouponUsageHistory, CouponSettings
-from .queries import OrderType
-from ..models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo
+from order.models import Order, OrderProduct, PaymentInfo, DeliveryCharge, InvoiceInfo, TimeSlot, DiscountInfo, PreOrder, \
+    PreOrderSetting
 from product.models import Product
 from user.models import Address
 
 
 class OrderStatusEnum(graphene.Enum):
-    ORDERED = "OD"  # ORDER COLLECT FROM CUSTOMER
+    ORDERED = "OD"  # ORDER PLACED BY CUSTOMER
     ORDER_ACCEPTED = "OA"  # ORDER ACCEPTED BY RETAILER OR PRODUCER
     ORDER_READY = "RE"  # ORDER IS READY FOR DELIVERY PERSON
     ORDER_AT_DELIVERY = "OAD"  # ORDER IS WITH DELIVERY PEROSN
     ORDER_COMPLETED = "COM"  # ORDER IS DELIVERED TO CUSTOMER
-    ORDER_CANCELLED = "CN"  # ORDER IS CANCEL BY CUSTOMER
+    ORDER_CANCELLED = "CN"  # ORDER IS CANCELLED BY CUSTOMER
 
 
-class OrderTypeEnum(graphene.Enum):
-    FIXED_PRICE = "FP"
-    BIDDING = "BD"
-
-
-class AreaChoicesEnum(graphene.Enum):
-    Dhaka = 'Dhaka'
+# class AreaChoicesEnum(graphene.Enum):
+#     Dhaka = 'Dhaka'
 
 
 class PaymentMethodEnum(graphene.Enum):
-    ONLINE_PAYMENT = 'SSLCOMMERZ'
-    CASH_ON_DELIVERY = 'CASH_ON_DELIVERY'
+    ONLINE = 'SSLCOMMERZ'
+    COD = 'CASH_ON_DELIVERY'
+
+
+class PlatformEnum(graphene.Enum):
+    WEB = 'WB'
+    APP = 'AP'
 
 
 class PaymentStatusEnum(graphene.Enum):
@@ -58,36 +59,21 @@ class PaymentInfoType(DjangoObjectType):
 
 class OrderProductInput(graphene.InputObjectType):
     product_id = graphene.String(required=True)
-    order_product_qty = graphene.Float(required=True)
+    product_quantity = graphene.Int(required=True)
 
 
 class OrderInput(graphene.InputObjectType):
     delivery_date_time = graphene.DateTime(required=True)
-    delivery_place = graphene.NonNull(AreaChoicesEnum)
-    net_pay_able_amount = graphene.String(required=True)
-    total_vat = graphene.String(required=True)
-    order_total_price = graphene.String(required=True)
-    lat = graphene.Float(required=True)
-    long = graphene.Float(required=True)
-    home_delivery = graphene.Boolean(required=True)
-    address = graphene.Int(required=True)
-    order_type = graphene.NonNull(OrderTypeEnum)
-    contact_number = graphene.String()
-    products = graphene.List(OrderProductInput)
+    address = graphene.String(required=True)
+    products = graphene.List(OrderProductInput, required=True)
     payment_method = graphene.NonNull(PaymentMethodEnum)
+    platform = graphene.NonNull(PlatformEnum)
+    contact_number = graphene.String()
     note = graphene.String()
-    code = graphene.String(required=True)
-
-
-class EmailInput(graphene.InputObjectType):
-    order_id = graphene.ID(required=True)
-    time_slot_id = graphene.ID(required=True)
-
-
-class OrderProductInputA(graphene.InputObjectType):
-    product_id = graphene.String(required=True)
-    order_id = graphene.ID()
-    order_product_qty = graphene.Float(required=True)
+    code = graphene.String()
+    # delivery_place = graphene.NonNull(AreaChoicesEnum)
+    # lat = graphene.Float(required=True)
+    # long = graphene.Float(required=True)
 
 
 class TransactionInput(graphene.InputObjectType):
@@ -100,256 +86,161 @@ class CreateOrder(graphene.Mutation):
     class Arguments:
         input = OrderInput(required=True)
 
-    order = graphene.Field(OrderType)
+    success = graphene.Boolean()
+    message = graphene.String()
+    order_id = graphene.ID()
 
     @staticmethod
     def mutate(root, info, input=None):
         user = info.context.user
         if checkAuthentication(user, info):
             if user.user_type == 'CM':
-                order_instance = Order.objects.create(user=user,
-                                                      created_by=user,
-                                                      platform="WB",
-                                                      delivery_date_time=input.delivery_date_time,
-                                                      delivery_place=input.delivery_place,
-                                                      lat=input.lat,
-                                                      long=input.long,
-                                                      order_status="OD",
-                                                      order_type=input.order_type,
-                                                      contact_number=input.contact_number if input.contact_number else user.mobile_number)
+                pre_order = True if len(input.products) == 1 and input.products[0].product_id.isdigit() else False
+                address = Address.objects.get(id=int(input.address))
+                contact_number = input.contact_number if input.contact_number else user.mobile_number
+                note = input.note[:500] if input.note else ""
+                if not pre_order:
+                    order_instance = Order.objects.create(platform=input.platform,
+                                                          delivery_date_time=input.delivery_date_time,
+                                                          delivery_place='Dhaka',
+                                                          lat=23.777176,
+                                                          long=90.399452,
+                                                          contact_number=contact_number,
+                                                          address=address,
+                                                          note=note,
+                                                          user=user,
+                                                          created_by=user)
 
-                product_list = input.products
-                sub_total_without_offer = total_vat = sub_total = 0
-                for p in product_list:
-                    product_id = from_global_id(p.product_id)
-                    product = Product.objects.get(id=product_id)
-                    op = OrderProduct.objects.create(product=product,
-                                                     order=order_instance,
-                                                     order_product_qty=p.order_product_qty)
+                    product_list = input.products
+                    sub_total_without_offer = total_vat = sub_total = 0
+                    for p in product_list:
+                        product_id = from_global_id(p.product_id)
+                        product = Product.objects.get(id=product_id)
+                        op = OrderProduct.objects.create(product=product,
+                                                         order=order_instance,
+                                                         order_product_qty=p.product_quantity)
+                        sub_total_without_offer += float(op.product_price) * op.order_product_qty
+                        sub_total += float(op.order_product_price) * op.order_product_qty
+                        total_vat += float(
+                            op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
-                    sub_total_without_offer += float(product.product_price) * p.order_product_qty
-                    sub_total += float(op.order_product_price) * op.order_product_qty
-                    total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
+                    coupon_discount_amount = 0
+                    if input.code:
+                        discount_amount, coupon, is_using, _ = coupon_checker(input.code, product_list, user, True)
+                        if discount_amount:
+                            coupon_discount_amount = discount_amount
+                            is_using.remaining_usage_count -= 1
+                            is_using.save()
+                            coupon.max_usage_count -= 1
+                            coupon.save()
 
-                coupon_discount_amount = 0
-                if input.code:
-                    discount_amount, coupon, is_using, _ = coupon_checker(input.code, product_list, user, True)
-                    if discount_amount:
-                        coupon_discount_amount = discount_amount
-                        is_using.remaining_usage_count -= 1
-                        is_using.save()
-                        coupon.max_usage_count -= 1
-                        coupon.save()
+                    delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+                    order_instance.total_vat = total_vat
+                    order_instance.order_total_price = sub_total + total_vat + delivery_charge - coupon_discount_amount
+                    order_instance.save()
 
-                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-                if input.note:
-                    order_instance.note = input.note[:500]
-                order_instance.address = Address.objects.get(id=input.address)
-                order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order_instance.total_vat = total_vat
-                order_instance.order_total_price = sub_total + total_vat + delivery_charge - coupon_discount_amount
-                order_instance.save()
+                    referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
+                    if referral_discount_settings.is_active:
+                        referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
+                                                                    created_by=order_instance.user).order_by('-created_on')
+                        if referral_coupon:
+                            referral_coupon = referral_coupon[0]
+                            if referral_coupon.expiry_date < timezone.now():
+                                referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                                            name="Referral Coupon",
+                                                                            discount_percent=referral_discount_settings.discount_percent,
+                                                                            discount_amount=referral_discount_settings.discount_amount,
+                                                                            max_usage_count=referral_discount_settings.max_usage_count,
+                                                                            minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                                            discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                                            expiry_date=timezone.now() + timedelta(
+                                                                                days=referral_discount_settings.validity_period),
+                                                                            discount_type=referral_discount_settings.discount_type,
+                                                                            coupon_code_type='RC',
+                                                                            created_by=order_instance.user)
 
-                referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
-                if referral_discount_settings.is_active:
-                    referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
-                                                                created_by=order_instance.user).order_by('-created_on')
-                    if referral_coupon:
-                        referral_coupon = referral_coupon[0]
-                        if referral_coupon.expiry_date < timezone.now():
-                            referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
-                                                                        name="Referral Coupon",
-                                                                        discount_percent=referral_discount_settings.discount_percent,
-                                                                        discount_amount=referral_discount_settings.discount_amount,
-                                                                        max_usage_count=referral_discount_settings.max_usage_count,
-                                                                        minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
-                                                                        discount_amount_limit=referral_discount_settings.discount_amount_limit,
-                                                                        expiry_date=timezone.now() + timedelta(
-                                                                            days=referral_discount_settings.validity_period),
-                                                                        discount_type=referral_discount_settings.discount_type,
-                                                                        coupon_code_type='RC',
-                                                                        created_by=order_instance.user)
-
-                        if referral_coupon.max_usage_count > 0:
-                            if not settings.DEBUG:
-                                async_task('coupon.tasks.send_coupon_sms',
+                            if referral_coupon.max_usage_count > 0:
+                                if not settings.DEBUG:
+                                    async_task('coupon.tasks.send_coupon_sms',
+                                               referral_coupon,
+                                               order_instance.user.mobile_number)
+                                async_task('coupon.tasks.send_coupon_email',
                                            referral_coupon,
-                                           order_instance.user.mobile_number)
-                            async_task('coupon.tasks.send_coupon_email',
-                                       referral_coupon,
-                                       order_instance.user)
+                                           order_instance.user)
 
-                if user.first_name and user.last_name:
-                    billing_person_name = user.first_name + " " + user.last_name
-                elif user.first_name:
-                    billing_person_name = user.first_name
+                    if user.first_name and user.last_name:
+                        billing_person_name = user.first_name + " " + user.last_name
+                    elif user.first_name:
+                        billing_person_name = user.first_name
+                    else:
+                        billing_person_name = ""
+                    invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
+                                                         billing_person_name=billing_person_name,
+                                                         billing_person_email=user.email,
+                                                         billing_person_mobile_number=user.mobile_number,
+                                                         delivery_contact_number=order_instance.contact_number,
+                                                         delivery_address=order_instance.address.road,
+                                                         delivery_date_time=order_instance.delivery_date_time,
+                                                         delivery_charge=delivery_charge,
+                                                         discount_amount=sub_total_without_offer - sub_total + coupon_discount_amount,
+                                                         net_payable_amount=order_instance.order_total_price,
+                                                         payment_method=input.payment_method,
+                                                         order_number=order_instance,
+                                                         user=user,
+                                                         created_by=user)
+
+                    if sub_total_without_offer != sub_total:
+                        DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
+                                                    discount_type='PD',
+                                                    discount_description='Product Offer Discount',
+                                                    invoice=invoice)
+                    if coupon_discount_amount:
+                        DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
+                                                    discount_type='CP',
+                                                    discount_description='Coupon Code: {}'.format(input.code),
+                                                    coupon=coupon,
+                                                    invoice=invoice)
+                        CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
+                                                          discount_percent=coupon.discount_percent,
+                                                          discount_amount=coupon_discount_amount,
+                                                          coupon_code=coupon.coupon_code,
+                                                          coupon_user=is_using,
+                                                          invoice_number=invoice,
+                                                          created_by=user)
+
+                    async_task('order.tasks.send_order_email', order_instance)
+                    return CreateOrder(success=True,
+                                       message='Order placed successfully.',
+                                       order_id=order_instance.id)
                 else:
-                    billing_person_name = ""
-                invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
-                                                     billing_person_name=billing_person_name,
-                                                     billing_person_email=user.email,
-                                                     billing_person_mobile_number=user.mobile_number,
-                                                     delivery_contact_number=order_instance.contact_number,
-                                                     delivery_address=order_instance.address.road,
-                                                     delivery_date_time=order_instance.delivery_date_time,
-                                                     delivery_charge=delivery_charge,
-                                                     discount_amount=sub_total_without_offer - sub_total + coupon_discount_amount,
-                                                     net_payable_amount=order_instance.order_total_price,
-                                                     payment_method=input.payment_method,
-                                                     order_number=order_instance,
-                                                     user=user,
-                                                     created_by=user)
+                    pre_order_setting = PreOrderSetting.objects.filter(producer_product__id=input.products[0].product_id).first()
+                    if pre_order_setting:
+                        pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
+                        remaining_quantity = pre_order_setting.target_quantity
+                        if pre_orders:
+                            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
+                            remaining_quantity = pre_order_setting.target_quantity - total_purchased
+                        quantity_difference = remaining_quantity - input.products[0].product_quantity
+                    if not pre_order_setting or quantity_difference < 0 or \
+                            input.products[0].product_quantity % pre_order_setting.unit_quantity:
+                        return CreateOrder(success=False,
+                                           message='Invalid request!')
 
-                if sub_total_without_offer != sub_total:
-                    DiscountInfo.objects.create(discount_amount=sub_total_without_offer - sub_total,
-                                                discount_type='PD',
-                                                discount_description='Product Offer Discount',
-                                                invoice=invoice)
-                if coupon_discount_amount:
-                    DiscountInfo.objects.create(discount_amount=coupon_discount_amount,
-                                                discount_type='CP',
-                                                discount_description='Coupon Code: {}'.format(input.code),
-                                                coupon=coupon,
-                                                invoice=invoice)
-                    CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
-                                                      discount_percent=coupon.discount_percent,
-                                                      discount_amount=coupon_discount_amount,
-                                                      coupon_code=coupon.coupon_code,
-                                                      coupon_user=is_using,
-                                                      invoice_number=invoice,
-                                                      created_by=user)
+                    pre_order = PreOrder.objects.create(platform=input.platform,
+                                                        product_quantity=input.products[0].product_quantity,
+                                                        pre_order_setting=pre_order_setting,
+                                                        delivery_address=address,
+                                                        contact_number=contact_number,
+                                                        note=note,
+                                                        customer=user,
+                                                        created_by=user)
 
-                return CreateOrder(order=order_instance)
+                    async_task('order.tasks.send_pre_order_email', pre_order)
+                    return CreateOrder(success=True,
+                                       message='Pre-order placed successfully.',
+                                       order_id=pre_order.id)
             else:
                 raise Exception('Unauthorized request!')
-
-
-class SendEmail(graphene.Mutation):
-    class Arguments:
-        input = EmailInput(required=True)
-
-    msg = graphene.String()
-
-    @staticmethod
-    def mutate(root, info, input=None):
-        user = info.context.user
-        if checkAuthentication(user, info):
-            order_instance = Order.objects.filter(pk=input.order_id)[0]
-            invoice = InvoiceInfo.objects.filter(invoice_number=order_instance.invoice_number)[0]
-            place = order_instance.address.road
-            g = geocoder.osm(place)
-            if g:
-                order_instance.lat = g.osm['y']
-                order_instance.long = g.osm['x']
-                order_instance.save()
-            else:
-                g = geocoder.osm('Adabar, Dhaka')
-                order_instance.lat = g.osm['y']
-                order_instance.long = g.osm['x']
-                order_instance.save()
-
-            product_list = OrderProduct.objects.filter(order__pk=input.order_id)
-            matrix = []
-            is_product_discount = False
-            product_total_price = 0
-            for p in product_list:
-                if p.order_product_price != p.product_price:
-                    is_product_discount = True
-                    total_by_offer = float(p.order_product_price) * p.order_product_qty
-                    product_total_price += total_by_offer
-                    col = [p.product.product_name, p.product.product_unit, p.product_price,
-                           p.order_product_price, int(p.order_product_qty), total_by_offer]
-                else:
-                    total = float(p.product_price) * p.order_product_qty
-                    product_total_price += total
-                    col = [p.product.product_name, p.product.product_unit, p.product_price,
-                           "--", int(p.order_product_qty), total]
-                matrix.append(col)
-
-            is_coupon_discount = DiscountInfo.objects.filter(discount_type='CP', invoice=invoice)
-            coupon_discount = is_coupon_discount[0].discount_amount if is_coupon_discount else 0
-
-            time_slot = TimeSlot.objects.get(id=input.time_slot_id)
-            delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-            client_name = invoice.billing_person_name
-
-            content = {'user_name': client_name,
-                       'order_number': order_instance.order_number,
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(
-                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'sub_total': product_total_price,
-                       'vat': order_instance.total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_product_discount': is_product_discount,
-                       'coupon_discount': coupon_discount,
-                       'delivery_charge_discount': 0,
-                       'saved_amount': invoice.discount_amount,
-                       'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_product_discount else "3"}
-
-            subject = 'Your shodai order (#' + str(order_instance.order_number) + ') summary'
-            from_email, to = 'noreply@shod.ai', user.email
-            html_customer = get_template('email/order_notification_customer.html')
-            html_content = html_customer.render(content)
-            msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
-
-            """
-            To send notification to admin
-            """
-
-            if invoice.payment_method == "CASH_ON_DELIVERY":
-                payment_method = "Cash on Delivery"
-            else:
-                payment_method = "Online Payment"
-            content = {'user_name': client_name,
-                       'user_mobile': user.mobile_number,
-                       'order_number': order_instance.order_number,
-                       'platform': "Website",
-                       'shipping_address': order_instance.address.road + " " + order_instance.address.city,
-                       'mobile_no': order_instance.contact_number,
-                       'order_date': order_instance.created_on.date(),
-                       'delivery_date_time': str(
-                           order_instance.delivery_date_time.date()) + " ( " + time_slot.slot + " )",
-                       'invoice_number': invoice.invoice_number,
-                       'payment_method': payment_method,
-                       'sub_total': product_total_price,
-                       'vat': order_instance.total_vat,
-                       'delivery_charge': delivery_charge,
-                       'total': order_instance.order_total_price,
-                       'order_details': matrix,
-                       'is_product_discount': is_product_discount,
-                       'coupon_discount': coupon_discount,
-                       'delivery_charge_discount': 0,
-                       'saved_amount': invoice.discount_amount,
-                       'note': order_instance.note if order_instance.note else None,
-                       'colspan_value': "4" if is_product_discount else "3"}
-
-            admin_subject = 'Order (#' + str(order_instance.order_number) + ') has been placed'
-            admin_email = config("ORDER_NOTIFICATION_STAFF_EMAILS").replace(" ", "").split(',')
-            html_admin = get_template('email/order_notification_staff.html')
-            html_content = html_admin.render(content)
-            msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
-            msg_to_admin.attach_alternative(html_content, "text/html")
-            msg_to_admin.send()
-
-            # sms_body = f"Dear " + client_name + \
-            #            ",\r\n\nYour order #" + str(order_instance.pk) + \
-            #            " has been placed. Your total payable amount is " + \
-            #            str(order_instance.order_total_price) + " and preferred delivery slot is " \
-            #            + str(order_instance.delivery_date_time.date()) + " (" + time_slot.slot + ")" + \
-            #            ". \n\nThank you for shopping with shodai "
-            # sms_flag = send_sms(mobile_number=user.mobile_number, sms_content=sms_body)
-
-            return SendEmail(msg="email sent successfully")
 
 
 class PaymentMutation(graphene.Mutation):
@@ -479,6 +370,5 @@ class TransactionMutation(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     create_order = CreateOrder.Field()
-    send_email = SendEmail.Field()
     payment = PaymentMutation.Field()
     store_transaction_info = TransactionMutation.Field()

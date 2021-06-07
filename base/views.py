@@ -77,7 +77,7 @@ def coupon_checker(coupon_code, products, user, is_graphql=False, is_used=False)
     for p in products:
         if is_graphql:
             product_id = from_global_id(p.product_id)
-            product_quantity = p.order_product_qty
+            product_quantity = p.product_quantity
         else:
             product_id = p['product_id']
             product_quantity = p['product_quantity']

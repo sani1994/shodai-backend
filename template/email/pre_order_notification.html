@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="https://www.w3.org/1999/xhtml">
   <head>
-    <title>Shodai Order Notification - Customer</title>
+    <title>Shodai Pre-Order Notification</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
@@ -48,32 +48,19 @@
         <table style="font-size:16px">
             <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
             <tbody>
+            {% if is_customer %}
               <tr>
                 <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
               </tr>
               <tr>
-                {% if is_pre_order %}
-                <td>
-                  Congratulations.<br/><br/>
-                  Your pre-order has been completed.
-                  The Shodai team has already started working to pack your product and deliver it at your doorstep.
-                  Take a look below for the details of your order.<br/><br/>
-                  You have just saved your time and got fresh produce by ordering from Shodai.<br/><br/>
-                  Please share your experience with others about shopping in Shodai, and help them to find fresh and
-                  organic products and grow a healthy community.<br/><br/>
-                </td>
-                {% else %}
                 <td>
                   Thank you for ordering in Shodai.<br/><br/>
-                  We know you are excited to get your grocery just on your doorstep.
-                  The Shodai team has already started working hard to pick and pack your product and deliver it within 24 hours.
-                  Now take a look below for the summary details of your order.<br/><br/>
-                  You have just saved your time and energy by ordering from Shodai.
-                  Hope these valuable times will be beneficial for your other activities.<br/><br/>
-                  Please share your experience with others about shopping in Shodai, and help them to find fresh and
-                  organic products and grow a healthy community.<br/><br/>
+                  The Shodai team is working hard to pick and pack your products directly from
+                  the producer and deliver it on your doorstep.
+                  Take a look below for the details of your pre-order.<br/><br/>
+                  Please share your experience with others about shopping in Shodai, and help them to
+                  find fresh and organic products in a lower price and grow a healthy community.<br/><br/>
                 </td>
-                {% endif %}
               </tr>
               <tr>
                 <td>Thanks & Regards</td>
@@ -81,6 +68,18 @@
               <tr>
                 <td><strong>Team Shodai</strong></td>
               </tr>
+            {% else %}
+              <tr>
+                <td><strong>Dear Concern,</strong></td>
+              </tr>
+              <tr>
+                <td>
+                  <p>The details of Pre-order #{{order_number}} are given below.</p>
+                  Customer Name: {{user_name}}<br/>
+                  Customer Mobile: {{user_mobile}}<br/>
+                </td>
+              </tr>
+            {% endif %}
             </tbody>
         </table>
 
@@ -96,22 +95,29 @@
           <tbody>
             <tr>
                 <td style="background:#fbfced">
+                  <strong>Shipping Address</strong><br />
                   {{shipping_address}}<br />
-                  <strong>Mobile</strong><br />
+                  <strong>Contact No.</strong><br />
                   {{mobile_no}}
                 </td>
 
                 <td style="background:#fbfced">
                   <p>
-                    <strong>Order Number</strong><br />
+                    <strong>Pre-Order Number</strong><br />
                     #{{order_number}}
                   </p>
+                  {% if not is_customer %}
+                  <p>
+                    <strong>Platform:</strong>
+                    {{platform}}
+                  </p>
+                  {% endif %}
                   <p>
                     <strong>Date Ordered:</strong><br />
                     {{order_date}}
                   </p>
                   <p>
-                    <strong>Preferred Delivery Slot:</strong></br>
+                    <strong>Possible Delivery Time:</strong></br>
                     {{delivery_date_time}}
                   </p>
                   {% if note %}
@@ -131,69 +137,38 @@
             <tr>
               <th style="padding: 10px 0 10px 0;">Name</th>
               <th style="padding: 10px 0 10px 0;">Price</th>
-              {% if is_product_discount %}
               <th style="padding: 10px 0 10px 0;">Discounted Price</th>
-              {% endif %}
               <th style="padding: 10px 0 10px 0;">Quantity</th>
               <th style="padding: 10px 0 10px 0;">Total</th>
             </tr>
           </thead>
           <tbody>
-            {% for o in order_details %}
             <tr class="productRow">
-              <td style="border-bottom: 1px solid #BFBFBF;padding: 7px 0;">{{o.0}} - {{o.1}}</td>
+              <td style="border-bottom: 1px solid #BFBFBF;padding: 7px 0;">{{details.0}} - {{details.1}}</td>
               <td style="text-align: center; border-bottom: 1px solid #BFBFBF">
-                  <strong>৳{{o.2}}</strong>
-              </td>
-              {% if is_product_discount %}
-                 {% if o.3 == "--" %}
-                     <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                         <strong>--</strong>
-                     </td>
-                 {% else %}
-                     <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                         <strong>৳{{o.3}}</strong>
-                     </td>
-                 {% endif %}
-              {% endif %}
-              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>{{o.4}}</strong>
+                  <strong>৳{{details.2}}</strong>
               </td>
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                  <strong>৳{{o.5}}</strong>
+                  <strong>৳{{details.3}}</strong>
+              </td>
+              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                  <strong>{{details.4}}</strong>
+              </td>
+              <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
+                  <strong>৳{{details.5}}</strong>
               </td>
             </tr>
-            {% endfor %}
             <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
+              <td colspan=4 >
                   <strong>Sub-Total: </strong>
               </td>
               <td style="text-align: center;">
                   <strong>৳{{sub_total}}</strong>
               </td>
             </tr>
-            {% if coupon_discount %}
+
             <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
-                  <strong>Coupon Discount: </strong>
-              </td>
-              <td style="text-align: center;">
-                <strong>-৳{{coupon_discount}}</strong>
-              </td>
-            </tr>
-            {% endif %}
-            {% if additional_discount %}
-            <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
-                  <strong>Additional Discount: </strong>
-              </td>
-              <td style="text-align: center;">
-                  <strong>-৳{{additional_discount}}</strong>
-              </td>
-            </tr>
-            {% endif %}
-            <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
+              <td colspan=4 >
                   <strong>Vat: </strong>
               </td>
               <td style="text-align: center;">
@@ -201,50 +176,40 @@
               </td>
             </tr>
             <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
+              <td colspan=4 >
                   <strong>Shipping: </strong>
               </td>
               <td style="text-align: center;">
                 <strong>৳{{delivery_charge}}</strong>
               </td>
             </tr>
-            {% if delivery_charge_discount %}
             <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
-                  <strong>Shipping Discount: </strong>
-              </td>
-              <td style="text-align: center;">
-                <strong>-৳{{delivery_charge_discount}}</strong>
-              </td>
-            </tr>
-            {% endif %}
-            <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
+              <td colspan=4 >
                 <strong>Total: </strong>
               </td>
               <td style="text-align: center;">
                 <strong>৳{{total}}</strong>
               </td>
             </tr>
-            {% if saved_amount %}
             <tr style="text-align: right;">
-              <td colspan={{colspan_value}} >
+              <td colspan=4 >
                   <strong>Your Total Save: </strong>
               </td>
               <td style="text-align: center;">
                   <strong><span style="color:green;font-weight:bold">৳{{saved_amount}}</span></strong>
               </td>
             </tr>
-            {% endif %}
           </tbody>
         </table>
 
+          {% if is_customer %}
           <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
           <div style="text-align: center;">
             <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>
             <p style="line-height: 20px;">Helpline: <strong>09614-161271</strong><br/>
               Feel free to contact us at (customer support): <strong>help@shod.ai</strong></p>
           </div>
+          {% endif %}
 
           <hr style="border:1px solid #E8E8E8"></hr>
 

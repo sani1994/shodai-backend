@@ -62,7 +62,7 @@ class Order(BaseModel):
     remarks = models.CharField(max_length=500, null=True, blank=True, default="")
     WEBSITE = 'WB'
     ADMIN_PANEL = 'AD'
-    MOBILE_APPLICATION = 'APP'
+    MOBILE_APPLICATION = 'AP'
     PLATFORM = [
         (WEBSITE, 'Website'),
         (ADMIN_PANEL, 'Admin Panel'),
@@ -72,7 +72,7 @@ class Order(BaseModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "{}".format(self.id)
+        return self.order_number
 
     @property
     def products(self):
@@ -275,7 +275,7 @@ class PreOrderSetting(BaseModel):
     """
     producer_product = models.OneToOneField(ProducerProductRequest, models.CASCADE)
     product = models.ForeignKey(Product, models.CASCADE)
-    # pre_order_setting_number = models.CharField(max_length=20, null=True, blank=True)
+    pre_order_setting_number = models.CharField(max_length=10, null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     delivery_date = models.DateTimeField()
@@ -284,15 +284,14 @@ class PreOrderSetting(BaseModel):
     target_quantity = models.FloatField()
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     is_approved = models.BooleanField(default=False)
-    # note = models.CharField(max_length=500, null=True, blank=True)  # purpose is not clear
-    # is_processed = models.BooleanField(default=False)
+    is_processed = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
         return self.product.product_name
 
     def save(self, *args, **kwargs):
-        self.slug = self.product.slug + "-" + str(self.id)
+        self.slug = self.product.slug + "-" + str(self.producer_product.id)
         super(PreOrderSetting, self).save(*args, **kwargs)
 
 
@@ -308,17 +307,29 @@ class PreOrder(BaseModel):
         (ADMIN_PANEL, 'Admin Panel'),
         (MOBILE_APPLICATION, 'Mobile App')
     ]
+    ORDERED = 'OD'  # ORDER PLACED FROM CUSTOMER
+    ORDER_ACCEPTED = 'OA'  # ORDER ACCEPTED BY ADMIN
+    ORDER_CANCELLED = 'CN'  # ORDER IS CANCELED BY CUSTOMER/ADMIN
+    PRE_ORDER_STATUS = [
+        (ORDERED, 'Ordered'),
+        (ORDER_ACCEPTED, 'Order Accepted'),
+        (ORDER_CANCELLED, 'Order Cancelled'),
+    ]
     pre_order_setting = models.ForeignKey(PreOrderSetting, models.CASCADE)
-    pre_order_number = models.IntegerField(unique=True)
+    pre_order_number = models.CharField(max_length=10, unique=True)
     customer = models.ForeignKey(UserProfile, models.SET_NULL, null=True)
     delivery_address = models.ForeignKey(Address, models.SET_NULL, null=True)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
     product_quantity = models.FloatField()
     note = models.CharField(max_length=500, null=True, blank=True)
     platform = models.CharField(max_length=20, choices=PLATFORM, default=WEBSITE)
+    pre_order_status = models.CharField(max_length=10, choices=PRE_ORDER_STATUS, default=ORDERED)
     order = models.OneToOneField(Order, models.SET_NULL, null=True, blank=True)
-    # is_cancelled = models.BooleanField(default=False)
     history = HistoricalRecords()
 
+    def save(self, *args, **kwargs):
+        self.pre_order_number = "PO" + str(10000+self.id)
+        super(PreOrder, self).save(*args, **kwargs)
+
     def __str__(self):
-        return '{}'.format(self.id)
+        return self.pre_order_number

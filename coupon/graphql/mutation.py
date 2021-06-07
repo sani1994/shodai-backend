@@ -8,7 +8,7 @@ from coupon.models import CouponCode, CouponUser
 
 class ProductListInput(graphene.InputObjectType):
     product_id = graphene.String(required=True)
-    order_product_qty = graphene.Float(required=True)
+    product_quantity = graphene.Float(required=True)
 
 
 class CouponInput(graphene.InputObjectType):

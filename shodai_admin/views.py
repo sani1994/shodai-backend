@@ -1,4 +1,3 @@
-import csv
 import math
 import uuid
 from datetime import datetime, timedelta
@@ -22,11 +21,14 @@ from rest_framework.views import APIView
 from base.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
-from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo
+from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo, PreOrderSetting, \
+    PreOrder
+from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
-    UserProfileSerializer, ProductMetaSerializer, order_status_all
+    UserProfileSerializer, ProductMetaSerializer, order_status_all, PreOrderSettingListSerializer, \
+    PreOrderSettingDetailSerializer, ProducerProductSerializer, PreOrderListSerializer, PreOrderDetailSerializer
 from shodai.permissions import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -304,9 +306,8 @@ class OrderDetail(APIView):
                              data['coupon_code']]
             is_valid = type_validation(string_fields, str)
 
-        order = Order.objects.filter(id=id)
+        order = Order.objects.filter(id=id).first()
         if is_valid and order:
-            order = order[0]
             all_order_products = OrderProduct.objects.filter(order=order)
 
             order_products = []
@@ -332,13 +333,15 @@ class OrderDetail(APIView):
                             product_exist = Product.objects.filter(id=item['product_id'])
                         else:
                             product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
-                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
                         if is_valid and decimal_allowed:
                             item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
@@ -389,21 +392,20 @@ class OrderDetail(APIView):
                 else:
                     products_updated = False
 
+            data["delivery_address"] = data["delivery_address"][:500]
             if not order.address or data["delivery_address"] != order.address.road:
-                address = Address.objects.filter(road=data["delivery_address"])
-                if not address:
+                delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
+                if not delivery_address:
                     delivery_address = Address.objects.create(road=data["delivery_address"],
                                                               city="Dhaka",
                                                               district="Dhaka",
                                                               country="Bangladesh",
                                                               zip_code="",
                                                               user=order.user)
-                else:
-                    delivery_address = address[0]
             else:
                 delivery_address = order.address
 
-            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on')[0]
+            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on').first()
             delivery_charge = invoice.delivery_charge
 
             is_delivery_discount = DiscountInfo.objects.filter(discount_type='DC', invoice=invoice)
@@ -503,9 +505,6 @@ class OrderDetail(APIView):
 
                 order.order_total_price = round(total + delivery_charge - coupon_discount - additional_discount)
                 order.total_vat = total_vat
-                order.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-                order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                order.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.note = data['note'][:500]
             else:
                 order.order_total_price = round(order.order_total_price - invoice.delivery_charge + delivery_charge +
@@ -651,13 +650,15 @@ class CreateOrder(APIView):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
-                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
                         if is_valid and decimal_allowed:
                             item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
@@ -777,6 +778,7 @@ class CreateOrder(APIView):
                            gift_coupon,
                            user_instance)
 
+        data["delivery_address"] = data["delivery_address"][:500]
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
             delivery_address = Address.objects.create(road=data["delivery_address"],
@@ -812,9 +814,6 @@ class CreateOrder(APIView):
 
         order_instance.order_total_price = round(total + delivery_charge - coupon_discount - additional_discount)
         order_instance.total_vat = total_vat
-        order_instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-        order_instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
         order_instance.note = data['note'][:500]
 
         if order_instance.order_total_price < 0:
@@ -923,10 +922,7 @@ class ProductSearch(APIView):
         query = request.query_params.get('query', '')
         product = Product.objects.filter(product_name__icontains=query, is_approved=True)[:20]
         serializer = ProductSearchSerializer(product, many=True)
-        if serializer:
-            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
 
 
 class TimeSlotList(APIView):
@@ -951,7 +947,7 @@ class OrderStatusList(APIView):
     """
 
     def get(self, request):
-        all_order_status = [
+        order_status = [
             'Ordered',
             'Order Accepted',
             'Order Ready',
@@ -959,7 +955,7 @@ class OrderStatusList(APIView):
             'Order Completed',
             'Order Cancelled',
         ]
-        return Response({'status': 'success', 'data': all_order_status}, status=status.HTTP_200_OK)
+        return Response({'status': 'success', 'data': order_status}, status=status.HTTP_200_OK)
 
 
 class CustomerSearch(APIView):
@@ -1218,13 +1214,15 @@ class VerifyCoupon(APIView):
                     if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
                         product_exist = Product.objects.filter(id=item['product_id'])
-                        if not product_exist or not item['product_quantity']:
+                        if not product_exist:
                             is_valid = False
                         if is_valid:
                             decimal_allowed = product_exist[0].decimal_allowed
-                            if not decimal_allowed and not isinstance(item['product_quantity'], int):
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)):
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                    not item['product_quantity'] > 0:
                                 is_valid = False
                         if is_valid and decimal_allowed:
                             item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
@@ -1586,3 +1584,418 @@ class OrderStatusUpdate(APIView):
         else:
             return Response({"status": "failed",
                              "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PreOrderSettingList(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        queryset = PreOrderSetting.objects.all().order_by('-created_on')
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = PreOrderSettingListSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request):
+        data = request.data
+        required_fields = ['producer_product_id',
+                           'product_id',
+                           'start_date',
+                           'end_date',
+                           'delivery_date',
+                           'discounted_price',
+                           'unit_quantity',
+                           'target_quantity']
+
+        is_valid = field_validation(required_fields, data)
+        if is_valid:
+            string_fields = [data['start_date'],
+                             data['end_date'],
+                             data['delivery_date']]
+            is_valid = type_validation(string_fields, str)
+        if is_valid:
+            number_fields = [data['producer_product_id'],
+                             data['product_id'],
+                             data['discounted_price'],
+                             data['unit_quantity'],
+                             data['target_quantity']]
+            is_valid = type_validation(number_fields, (float, int))
+
+        if is_valid and data['start_date']:
+            try:
+                start_date = timezone.make_aware(datetime.strptime(data['start_date'], "%Y-%m-%d"))
+            except Exception:
+                is_valid = False
+        if is_valid and data['end_date']:
+            try:
+                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
+            except Exception:
+                is_valid = False
+        if is_valid and data['delivery_date']:
+            try:
+                delivery_date = timezone.make_aware(datetime.strptime(data['delivery_date'], "%Y-%m-%d"))
+            except Exception:
+                is_valid = False
+        if is_valid:
+            product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
+            producer_product = ProducerProductRequest.objects.filter(id=data['producer_product_id'],
+                                                                     is_approved=True).first()
+            if not product or not producer_product or not start_date < end_date < delivery_date or \
+                    data['discounted_price'] > product.product_price or \
+                    data['unit_quantity'] > data['target_quantity'] or \
+                    data['target_quantity'] % data['unit_quantity']:
+                is_valid = False
+        if not is_valid:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        pre_order_exists = PreOrderSetting.objects.filter(producer_product=producer_product).exists()
+        if pre_order_exists:
+            return Response({
+                "status": "failed",
+                "message": "Pre-order setting already exist!"}, status=status.HTTP_200_OK)
+
+        pre_order_setting = PreOrderSetting.objects.create(pre_order_setting_number=str(uuid.uuid4())[:4].upper(),
+                                                           producer_product=producer_product,
+                                                           product=product,
+                                                           start_date=start_date,
+                                                           end_date=end_date,
+                                                           delivery_date=delivery_date,
+                                                           discounted_price=data['discounted_price'],
+                                                           unit_quantity=data['unit_quantity'],
+                                                           target_quantity=data['target_quantity'])
+        return Response({"status": "success",
+                         "message": "Pre-order setting created.",
+                         "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_201_CREATED)
+
+
+class PreOrderSettingDetail(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, id):
+        pre_order_setting = get_object_or_404(PreOrderSetting, id=id)
+        serializer = PreOrderSettingDetailSerializer(pre_order_setting)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, id):
+        data = request.data
+        required_fields = ['product_id',
+                           'start_date',
+                           'end_date',
+                           'delivery_date',
+                           'discounted_price',
+                           'unit_quantity',
+                           'target_quantity',
+                           'is_approved']
+
+        is_valid = field_validation(required_fields, data)
+        if is_valid:
+            string_fields = [data['start_date'],
+                             data['end_date'],
+                             data['delivery_date']]
+            is_valid = type_validation(string_fields, str)
+        if is_valid:
+            number_fields = [data['product_id'],
+                             data['discounted_price'],
+                             data['unit_quantity'],
+                             data['target_quantity']]
+            is_valid = type_validation(number_fields, (float, int))
+
+        if is_valid and data['start_date']:
+            try:
+                start_date = timezone.make_aware(datetime.strptime(data['start_date'], "%Y-%m-%d"))
+            except Exception:
+                is_valid = False
+        if is_valid and data['end_date']:
+            try:
+                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
+            except Exception:
+                is_valid = False
+        if is_valid and data['delivery_date']:
+            try:
+                delivery_date = timezone.make_aware(datetime.strptime(data['delivery_date'], "%Y-%m-%d"))
+            except Exception:
+                is_valid = False
+        if is_valid:
+            pre_order_setting = PreOrderSetting.objects.filter(id=id).first()
+            product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
+            if not pre_order_setting or not product or not start_date < end_date < delivery_date or \
+                    data['discounted_price'] > product.product_price or \
+                    data['unit_quantity'] > data['target_quantity'] or \
+                    data['target_quantity'] % data['unit_quantity'] or \
+                    not isinstance(data['is_approved'], bool):
+                is_valid = False
+        if not is_valid:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if pre_order_setting.end_date > timezone.now():
+            pre_order_setting.product = product
+            pre_order_setting.start_date = start_date
+            pre_order_setting.end_date = end_date
+            pre_order_setting.unit_quantity = data['unit_quantity']
+            pre_order_setting.target_quantity = data['target_quantity']
+            pre_order_setting.is_approved = data['is_approved']
+        pre_order_setting.delivery_date = delivery_date
+        pre_order_setting.discounted_price = data['discounted_price']
+        pre_order_setting.modified_by = request.user
+        pre_order_setting.save()
+
+        return Response({"status": "success",
+                         "message": "Pre-order setting updated.",
+                         "pre_order_setting_id": pre_order_setting.id}, status=status.HTTP_200_OK)
+
+
+class ProducerProductSearch(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get List of Producer Product by Producer mobile number
+    """
+
+    def get(self, request):
+        query = request.query_params.get('mobile_number', '')
+        producer = UserProfile.objects.filter(mobile_number='+88' + query,
+                                              is_producer=True).first()
+        if producer:
+            queryset = ProducerProductRequest.objects.filter(producer=producer, is_approved=True)
+            serializer = ProducerProductSerializer(queryset, many=True)
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'failed',
+                             'message': 'Producer not found.'}, status=status.HTTP_200_OK)
+
+
+class ProcessPreOrder(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        data = request.data
+        user = request.user
+        required_fields = ['pre_order_setting_id',
+                           'action']
+
+        is_valid = field_validation(required_fields, data)
+
+        if is_valid and isinstance(data['pre_order_setting_id'], int):
+            pre_order_setting = PreOrderSetting.objects.filter(id=data['pre_order_setting_id'],
+                                                               is_approved=True,
+                                                               is_processed=False).first()
+
+            if not pre_order_setting:
+                is_valid = False
+        else:
+            is_valid = False
+
+        if not is_valid or not isinstance(data['action'], str) or not data['action'] in ['place', 'cancel']:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
+        if not pre_orders:
+            return Response({
+                "status": "failed",
+                "message": "No pre-order against this setting!"}, status=status.HTTP_200_OK)
+
+        if data['action'] == 'place':
+            for p in pre_orders:
+                order = Order.objects.create(platform=p.platform,
+                                             delivery_date_time=pre_order_setting.delivery_date,
+                                             delivery_place='Dhaka',
+                                             lat=23.777176,
+                                             long=90.399452,
+                                             contact_number=p.contact_number,
+                                             address=p.delivery_address,
+                                             note=p.note,
+                                             user=p.customer,
+                                             created_by=user)
+                order_product = OrderProduct.objects.create(product=pre_order_setting.product,
+                                                            product_price=pre_order_setting.product.product_price,
+                                                            order=order,
+                                                            order_product_price=pre_order_setting.discounted_price,
+                                                            order_product_qty=p.product_quantity)
+
+                sub_total = float(order_product.order_product_price) * order_product.order_product_qty
+                sub_total_without_discount = float(order_product.product_price) * order_product.order_product_qty
+                total_vat = float(
+                    order_product.order_product_price_with_vat - order_product.order_product_price) * order_product.order_product_qty
+                delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+
+                order.total_vat = total_vat
+                order.order_total_price = sub_total + total_vat + delivery_charge
+                order.save()
+
+                if p.customer.first_name and p.customer.last_name:
+                    billing_person_name = p.customer.first_name + " " + p.customer.last_name
+                elif p.customer.first_name:
+                    billing_person_name = p.customer.first_name
+                else:
+                    billing_person_name = ""
+
+                invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                                     billing_person_name=billing_person_name,
+                                                     billing_person_email=p.customer.email,
+                                                     billing_person_mobile_number=p.customer.mobile_number,
+                                                     delivery_contact_number=order.contact_number,
+                                                     delivery_address=order.address.road,
+                                                     delivery_date_time=order.delivery_date_time,
+                                                     delivery_charge=delivery_charge,
+                                                     discount_amount=sub_total_without_discount - sub_total,
+                                                     net_payable_amount=order.order_total_price,
+                                                     payment_method='CASH_ON_DELIVERY',
+                                                     order_number=order,
+                                                     user=p.customer,
+                                                     created_by=user)
+                DiscountInfo.objects.create(discount_amount=sub_total_without_discount - sub_total,
+                                            discount_type='PD',
+                                            discount_description='Product Offer Discount',
+                                            invoice=invoice)
+                p.order = order
+                p.pre_order_status = 'OA'
+                p.save()
+
+                if not settings.DEBUG:
+                    async_task('order.tasks.send_order_email', order, True)
+
+            pre_order_setting.is_processed = True
+            pre_order_setting.modified_by = user
+            pre_order_setting.save()
+
+            return Response({'status': 'success',
+                             'message': 'Orders created.'}, status=status.HTTP_200_OK)
+        else:
+            for p in pre_orders:
+                p.pre_order_status = 'CN'
+                p.save()
+
+            pre_order_setting.is_processed = True
+            pre_order_setting.modified_by = user
+            pre_order_setting.save()
+            return Response({'status': 'success',
+                             'message': 'Pre-orders cancelled.'}, status=status.HTTP_200_OK)
+
+
+# class PreOrderSettingSearch(APIView):
+#     permission_classes = [IsAdminUser]
+#
+#     def get(self, request):
+#         product_name = request.query_params.get('query', '')
+#         queryset = PreOrderSetting.objects.filter(product__product_name__icontains=product_name,
+#                                                   is_approved=True).order_by('-created_on')
+#         serializer = PreOrderSettingListSerializer(queryset, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PreOrderStatusList(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get All Pre-Order Status
+    """
+
+    def get(self, request):
+        pre_order_status = [
+            'Ordered',
+            'Order Accepted',
+            'Order Cancelled',
+        ]
+        return Response({'status': 'success',
+                         'pre_order_status': pre_order_status}, status=status.HTTP_200_OK)
+
+
+class PreOrderList(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        search = request.query_params.get('search')
+        pre_order_status = all_order_status.get(request.query_params.get('pre_order_status'))
+
+        if search and pre_order_status:
+            if search.startswith("01") and len(search) == 11:
+                queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search,
+                                                   pre_order_status=pre_order_status).order_by('-created_on')
+            else:
+                queryset = PreOrder.objects.filter(pre_order_setting__id=search,
+                                                   pre_order_status=pre_order_status).order_by('-created_on')
+        elif search and not pre_order_status:
+            if search.startswith("01") and len(search) == 11:
+                queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search).order_by('-created_on')
+            else:
+                queryset = PreOrder.objects.filter(pre_order_setting__id=search).order_by('-created_on')
+        elif not search and pre_order_status:
+            queryset = PreOrder.objects.filter(pre_order_status=pre_order_status).order_by('-created_on')
+        else:
+            queryset = PreOrder.objects.all().order_by('-created_on')
+
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = PreOrderListSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
+
+class PreOrderDetail(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, id):
+        pre_order = get_object_or_404(PreOrder, id=id)
+        serializer = PreOrderDetailSerializer(pre_order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, id):
+        data = request.data
+        required_fields = ['delivery_address',
+                           'contact_number',
+                           'product_quantity',
+                           'note',
+                           'pre_order_status']
+
+        is_valid = field_validation(required_fields, data)
+        if is_valid:
+            string_fields = [data['delivery_address'],
+                             data['contact_number'],
+                             data['note'],
+                             data['pre_order_status']]
+            is_valid = type_validation(string_fields, str)
+
+        if is_valid and len(data["contact_number"]) == 14 and \
+                data["contact_number"].startswith('+8801') and data["contact_number"][1:].isdigit():
+            pass
+        else:
+            is_valid = False
+
+        if is_valid:
+            pre_order = PreOrder.objects.filter(id=id, pre_order_setting__is_processed=False).first()
+            if not pre_order:
+                is_valid = False
+
+        if not is_valid or not isinstance(data['product_quantity'], int) or not data['product_quantity'] > 0 or \
+                not data['delivery_address'] or data['pre_order_status'] not in all_order_status:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        data["delivery_address"] = data["delivery_address"][:500]
+        if data["delivery_address"] != pre_order.delivery_address.road:
+            delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
+            if not delivery_address:
+                delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                          city="Dhaka",
+                                                          district="Dhaka",
+                                                          country="Bangladesh",
+                                                          zip_code="",
+                                                          user=pre_order.customer)
+        else:
+            delivery_address = pre_order.delivery_address
+
+        pre_order.delivery_address = delivery_address
+        pre_order.contact_number = data["contact_number"]
+        pre_order.product_quantity = data['product_quantity']
+        pre_order.note = data['note'][:500]
+        pre_order.pre_order_status = all_order_status[data['pre_order_status']]
+        pre_order.modified_by = request.user
+        pre_order.save()
+
+        return Response({"status": "success",
+                         "message": "Pre-order updated.",
+                         "pre_order_id": pre_order.id}, status=status.HTTP_200_OK)

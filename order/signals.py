@@ -22,6 +22,13 @@ def order_data_preprocessing(sender, instance, **kwargs):
     instance.currency = 'BDT'
     instance.order_geopoint = GEOSGeometry('POINT(%f %f)' % (instance.long, instance.lat))
 
+    if not instance.invoice_number:
+        instance.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+    if not instance.payment_id:
+        instance.payment_id = "SHD" + str(uuid.uuid4())[:8].upper()
+    if not instance.bill_id:
+        instance.bill_id = "SHD" + str(uuid.uuid4())[:8].upper()
+
     if instance.order_status == "COM":
         invoice = InvoiceInfo.objects.get(invoice_number=instance.invoice_number)
         if invoice.payment_method == "CASH_ON_DELIVERY":
@@ -66,7 +73,7 @@ def order_data_preprocessing(sender, instance, **kwargs):
                                new_coupon,
                                coupon.created_by)
 
-        if instance.platform == 'WB':
+        if instance.platform == 'WB' or instance.platform == 'AP':
             gift_coupon_settings = CouponSettings.objects.get(coupon_type='GC2')
             if gift_coupon_settings.is_active:
                 gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
