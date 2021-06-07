@@ -304,10 +304,7 @@ class OrderProductList(APIView):
                                                   invoice_number=invoice,
                                                   created_by=request.user)
 
-            if not settings.DEBUG:
-                async_task('order.tasks.send_order_email',
-                           order_instance,
-                           False)
+            async_task('order.tasks.send_order_email', order_instance)
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 

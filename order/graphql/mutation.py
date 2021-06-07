@@ -207,38 +207,35 @@ class CreateOrder(graphene.Mutation):
                                                           coupon_user=is_using,
                                                           invoice_number=invoice,
                                                           created_by=user)
-                    if not settings.DEBUG:
-                        async_task('order.tasks.send_order_email',
-                                   order_instance,
-                                   False)
 
+                    async_task('order.tasks.send_order_email', order_instance)
                     return CreateOrder(success=True,
                                        message='Order placed successfully.',
                                        order_id=order_instance.id)
                 else:
                     pre_order_setting = PreOrderSetting.objects.filter(producer_product__id=input.products[0].product_id).first()
-                    pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
-                    remaining_quantity = pre_order_setting.target_quantity
-                    if pre_orders:
-                        total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
-                        remaining_quantity = pre_order_setting.target_quantity - total_purchased
-                    new_remaining_quantity = remaining_quantity - input.products[0].product_quantity
-                    if not pre_order_setting or remaining_quantity == 0 or new_remaining_quantity < 0:
+                    if pre_order_setting:
+                        pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
+                        remaining_quantity = pre_order_setting.target_quantity
+                        if pre_orders:
+                            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
+                            remaining_quantity = pre_order_setting.target_quantity - total_purchased
+                        quantity_difference = remaining_quantity - input.products[0].product_quantity
+                    if not pre_order_setting or quantity_difference < 0 or \
+                            input.products[0].product_quantity % pre_order_setting.unit_quantity:
                         return CreateOrder(success=False,
                                            message='Invalid request!')
 
                     pre_order = PreOrder.objects.create(platform=input.platform,
                                                         product_quantity=input.products[0].product_quantity,
                                                         pre_order_setting=pre_order_setting,
-                                                        pre_order_number="PO" + str(uuid.uuid4())[:6].upper(),
                                                         delivery_address=address,
                                                         contact_number=contact_number,
                                                         note=note,
                                                         customer=user,
                                                         created_by=user)
-                    if not settings.DEBUG:
-                        async_task('order.tasks.send_pre_order_email',
-                                   pre_order)
+
+                    async_task('order.tasks.send_pre_order_email', pre_order)
                     return CreateOrder(success=True,
                                        message='Pre-order placed successfully.',
                                        order_id=pre_order.id)

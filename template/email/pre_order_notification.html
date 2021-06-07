@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="https://www.w3.org/1999/xhtml">
   <head>
-    <title>Shodai Order Notification - Customer</title>
+    <title>Shodai Pre-Order Notification</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
@@ -149,7 +149,7 @@
                   <strong>৳{{details.2}}</strong>
               </td>
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
-                         <strong>৳{{details.3}}</strong>
+                  <strong>৳{{details.3}}</strong>
               </td>
               <td style="text-align: center;border-bottom: 1px solid #BFBFBF;padding: 7px 0;">
                   <strong>{{details.4}}</strong>
@@ -191,7 +191,6 @@
                 <strong>৳{{total}}</strong>
               </td>
             </tr>
-            {% if saved_amount %}
             <tr style="text-align: right;">
               <td colspan=4 >
                   <strong>Your Total Save: </strong>
@@ -200,7 +199,6 @@
                   <strong><span style="color:green;font-weight:bold">৳{{saved_amount}}</span></strong>
               </td>
             </tr>
-            {% endif %}
           </tbody>
         </table>
 

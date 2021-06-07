@@ -1643,7 +1643,7 @@ class PreOrderSettingList(APIView):
             if not product or not producer_product or not start_date < end_date < delivery_date or \
                     data['discounted_price'] > product.product_price or \
                     data['unit_quantity'] > data['target_quantity'] or \
-                    data['target_quantity'] % data['unit_quantity'] != 0:
+                    data['target_quantity'] % data['unit_quantity']:
                 is_valid = False
         if not is_valid:
             return Response({
@@ -1656,7 +1656,8 @@ class PreOrderSettingList(APIView):
                 "status": "failed",
                 "message": "Pre-order setting already exist!"}, status=status.HTTP_200_OK)
 
-        pre_order_setting = PreOrderSetting.objects.create(producer_product=producer_product,
+        pre_order_setting = PreOrderSetting.objects.create(pre_order_setting_number=str(uuid.uuid4())[:4].upper(),
+                                                           producer_product=producer_product,
                                                            product=product,
                                                            start_date=start_date,
                                                            end_date=end_date,
@@ -1722,7 +1723,7 @@ class PreOrderSettingDetail(APIView):
             if not pre_order_setting or not product or not start_date < end_date < delivery_date or \
                     data['discounted_price'] > product.product_price or \
                     data['unit_quantity'] > data['target_quantity'] or \
-                    data['target_quantity'] % data['unit_quantity'] != 0 or \
+                    data['target_quantity'] % data['unit_quantity'] or \
                     not isinstance(data['is_approved'], bool):
                 is_valid = False
         if not is_valid:
@@ -1730,21 +1731,17 @@ class PreOrderSettingDetail(APIView):
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if pre_order_setting.end_date < timezone.now():
-            pre_order_setting.delivery_date = delivery_date
-            pre_order_setting.discounted_price = data['discounted_price']
-            pre_order_setting.save()
-        else:
+        if pre_order_setting.end_date > timezone.now():
             pre_order_setting.product = product
             pre_order_setting.start_date = start_date
             pre_order_setting.end_date = end_date
-            pre_order_setting.delivery_date = delivery_date
-            pre_order_setting.discounted_price = data['discounted_price']
             pre_order_setting.unit_quantity = data['unit_quantity']
             pre_order_setting.target_quantity = data['target_quantity']
             pre_order_setting.is_approved = data['is_approved']
-            pre_order_setting.modified_by = request.user
-            pre_order_setting.save()
+        pre_order_setting.delivery_date = delivery_date
+        pre_order_setting.discounted_price = data['discounted_price']
+        pre_order_setting.modified_by = request.user
+        pre_order_setting.save()
 
         return Response({"status": "success",
                          "message": "Pre-order setting updated.",
@@ -1860,9 +1857,7 @@ class ProcessPreOrder(APIView):
                 p.save()
 
                 if not settings.DEBUG:
-                    async_task('order.tasks.send_order_email',
-                               order,
-                               True)
+                    async_task('order.tasks.send_order_email', order, True)
 
             pre_order_setting.is_processed = True
             pre_order_setting.modified_by = user

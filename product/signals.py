@@ -21,8 +21,11 @@ def product_data_preprocessing(sender, instance, **kwargs):
         instance.price_with_vat = instance.product_price
 
     if not instance.product_meta:
-        ProductMeta.objects.create(name=instance.product_category.type_of_product,
-                                   product_category=instance.product_category)
+        product_meta = ProductMeta.objects.filter(name=instance.product_category.type_of_product).first()
+        if not product_meta:
+            product_meta = ProductMeta.objects.create(name=instance.product_category.type_of_product,
+                                                      product_category=instance.product_category)
+        instance.product_meta = product_meta
 
     instance.slug = slugify(instance.product_name) + "-" + slugify(instance.product_unit.product_unit)
     # instance.product_sku = "{}-{}-{}-{}".format(instance.product_meta.product_category.code,

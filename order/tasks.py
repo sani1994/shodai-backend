@@ -125,57 +125,53 @@ def send_pre_order_email(pre_order):
                                                         pre_order.pre_order_setting.product.product_meta.vat_amount) / 100)
         total_vat = float(product_price_with_vat - product_price) * pre_order.product_quantity
         delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-        sub_total = (product_price * pre_order.product_quantity) + total_vat + delivery_charge
+        sub_total = product_price * pre_order.product_quantity
         sub_total_without_offer = float(pre_order.pre_order_setting.product.product_price) * pre_order.product_quantity
+        html_pre_order = get_template('email/pre_order_notification.html')
 
-        user_email_content = {'user_name': customer_name,
-                              'is_customer': True,
+        user_email_content = {'is_customer': True,
+                              'user_name': customer_name,
                               'order_number': pre_order.pre_order_number,
                               'shipping_address': pre_order.delivery_address.road + " " + pre_order.delivery_address.city,
                               'mobile_no': pre_order.contact_number,
                               'order_date': pre_order.created_on.date(),
-                              'delivery_date_time': str(
-                                  pre_order.pre_order_setting.delivery_date.date()),
+                              'delivery_date_time': pre_order.pre_order_setting.delivery_date.date(),
                               'sub_total': sub_total,
                               'vat': total_vat,
                               'delivery_charge': delivery_charge,
-                              'total': product_price * pre_order.product_quantity,
+                              'total': sub_total + total_vat + delivery_charge,
                               'details': column,
                               'saved_amount': sub_total_without_offer - sub_total,
                               'note': pre_order.note if pre_order.note else None}
 
         subject = 'Your shodai pre-order (#' + str(pre_order.pre_order_number) + ') details'
         from_email, to = 'noreply@shod.ai', user.email
-        html_customer = get_template('email/pre_order_notification.html')
-        html_content = html_customer.render(user_email_content)
+        html_customer_content = html_pre_order.render(user_email_content)
         msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
-        msg.attach_alternative(html_content, "text/html")
+        msg.attach_alternative(html_customer_content, "text/html")
         msg.send()
 
         admin_email_content = {'user_name': customer_name,
                                'user_mobile': user.mobile_number,
-                               'is_customer': False,
                                'platform': platform_all[pre_order.platform],
                                'order_number': pre_order.pre_order_number,
                                'shipping_address': pre_order.delivery_address.road + " " + pre_order.delivery_address.city,
                                'mobile_no': pre_order.contact_number,
                                'order_date': pre_order.created_on.date(),
-                               'delivery_date_time': str(
-                                   pre_order.pre_order_setting.delivery_date.date()),
+                               'delivery_date_time': pre_order.pre_order_setting.delivery_date.date(),
                                'sub_total': sub_total,
                                'vat': total_vat,
                                'delivery_charge': delivery_charge,
-                               'total': product_price * pre_order.product_quantity,
+                               'total': sub_total + total_vat + delivery_charge,
                                'details': column,
                                'saved_amount': sub_total_without_offer - sub_total,
                                'note': pre_order.note if pre_order.note else None}
 
         admin_subject = 'Pre-order (#' + str(pre_order.pre_order_number) + ') has been placed'
         admin_email = config("ORDER_NOTIFICATION_STAFF_EMAILS").replace(" ", "").split(',')
-        html_admin = get_template('email/pre_order_notification.html')
-        html_content = html_admin.render(admin_email_content)
-        msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, [admin_email])
-        msg_to_admin.attach_alternative(html_content, "text/html")
+        html_admin_content = html_pre_order.render(admin_email_content)
+        msg_to_admin = EmailMultiAlternatives(admin_subject, 'shodai', from_email, admin_email)
+        msg_to_admin.attach_alternative(html_admin_content, "text/html")
         msg_to_admin.send()
 
         return f"{pre_order.pre_order_number} sent to {user.email}"

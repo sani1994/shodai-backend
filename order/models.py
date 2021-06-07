@@ -327,5 +327,9 @@ class PreOrder(BaseModel):
     order = models.OneToOneField(Order, models.SET_NULL, null=True, blank=True)
     history = HistoricalRecords()
 
+    def save(self, *args, **kwargs):
+        self.pre_order_number = "PO" + str(10000+self.id)
+        super(PreOrder, self).save(*args, **kwargs)
+
     def __str__(self):
-        return '{}'.format(self.id)
+        return self.pre_order_number
