@@ -65,7 +65,8 @@ class OrderList(APIView):
             return Response({"status": "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def post(self, request, *args, **kwargs):
-        datetime = request.data['delivery_date_time'].split('||')
+        data = request.data
+        datetime = data['delivery_date_time'].split('||')
         slot = datetime[0]
         date = datetime[1]
         year = date.split('-')[2]
@@ -98,47 +99,42 @@ class OrderList(APIView):
             serializer.save(user=request.user, created_by=request.user)
 
             # Create Address:
-            delivery_address = Address.objects.filter(road=request.data["delivery_place"])
+            delivery_address = Address.objects.filter(road=data["delivery_place"]).first()
             if not delivery_address:
-                delivery_address = Address.objects.create(road=request.data["delivery_place"],
+                delivery_address = Address.objects.create(road=data["delivery_place"],
                                                           city="Dhaka",
                                                           district="Dhaka",
                                                           country="Bangladesh",
                                                           zip_code="",
                                                           user=request.user)
-            else:
-                delivery_address = delivery_address[0]
 
             # Create InvoiceInfo Instance
             order_instance = Order.objects.get(id=serializer.data['id'])
+            payment_method = 'CASH_ON_DELIVERY'
             if order_instance:
                 order_instance.address = delivery_address
                 order_instance.delivery_place = "Dhaka"
                 order_instance.platform = "AP"
                 order_instance.save()
+
             if request.user.first_name and request.user.last_name:
                 billing_person_name = request.user.first_name + " " + request.user.last_name
             elif request.user.first_name:
                 billing_person_name = request.user.first_name
             else:
                 billing_person_name = ""
-            if order_instance.address:
-                if order_instance.address.road:
-                    address = order_instance.address.road
-            else:
-                if order_instance.delivery_place:
-                    address = order_instance.delivery_place
+            if data['payment_method'] == 'Online':
+                payment_method = 'SSLCOMMERZ'
 
             InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
                                        billing_person_name=billing_person_name,
                                        billing_person_email=request.user.email,
                                        billing_person_mobile_number=request.user.mobile_number,
                                        delivery_contact_number=order_instance.contact_number,
-                                       delivery_address=address,
+                                       delivery_address=delivery_address,
                                        delivery_date_time=order_instance.delivery_date_time,
                                        delivery_charge=delivery_charge,
-                                       net_payable_amount=order_instance.order_total_price,
-                                       payment_method='SSLCOMMERZ',
+                                       payment_method=payment_method,
                                        order_number=order_instance,
                                        user=request.user,
                                        created_by=request.user)
@@ -283,6 +279,7 @@ class OrderProductList(APIView):
                                    order_instance.user)
 
             invoice.discount_amount = (total_price_without_offer - product_total_price) + coupon_discount
+            invoice.net_payable_amount = order_instance.order_total_price
             invoice.save()
 
             if total_price_without_offer != product_total_price:
@@ -575,68 +572,69 @@ class OrderLatest(APIView):
     permission_classes = [GenericAuth]
 
     def get(self, request):
-        user_id = request.user.id
-
         order = Order.objects.filter(user=request.user, order_status='OD').order_by('-id')[:1]
 
         if order:
-            serializer = OrderDetailSerializer(order, many=True, context={'request': request})
+            invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on').first()
+            if invoice.payment_method == 'SSLCOMMERZ':
+                serializer = OrderDetailSerializer(order, many=True, context={'request': request})
 
-            if serializer and serializer.data[0]["id"]:
-                # d = json.dumps(serializer.data)
-                # d = json.loads(d)
-                d = serializer.data
+                if serializer and serializer.data[0]["id"]:
+                    # d = json.dumps(serializer.data)
+                    # d = json.loads(d)
+                    d = serializer.data
 
-                products = []
-                for product in d[0]['products']:
-                    products.append(product)
-                # serializer.data[0]["invoice_number"]
+                    products = []
+                    for product in d[0]['products']:
+                        products.append(product)
+                    # serializer.data[0]["invoice_number"]
 
-                category = [p["product"]["product_category"] for p in products]
+                    category = [p["product"]["product_category"] for p in products]
+                    product_name = [p["product"]["product_name"] for p in products]
 
-                product_name = [p["product"]["product_name"] for p in products]
+                    body = {
+                        "project_id": config("PAYMENT_PROJECT_ID", None),
+                        "project_secret": config("PAYMENT_PROJECT_SECRET", None),
+                        "invoice_number": d[0]["invoice_number"],
+                        "product_name": ' '.join(product_name) if product_name else "None",
+                        "product_category": str(category[0]) if category else "None",
+                        "product_profile": "general",
+                        "customer_name": d[0]["user"]['username'] if d[0]["user"]['username'] else 'None',
+                        "customer_email": d[0]["user"]['email'] if d[0]["user"]['email'] else 'None',
+                        "customer_mobile": d[0]["user"]["mobile_number"],
+                        "customer_address": d[0]["delivery_place"],
+                        "customer_city": d[0]['address']["city"] if d[0]['address'] else 'Dhaka',
+                        "customer_country": d[0]['address']["country"] if d[0]['address'] else 'BD'
+                    }
 
-                body = {
-                    "project_id": config("PAYMENT_PROJECT_ID", None),
-                    "project_secret": config("PAYMENT_PROJECT_SECRET", None),
-                    "invoice_number": d[0]["invoice_number"],
-                    "product_name": ' '.join(product_name) if product_name else "None",
-                    "product_category": str(category[0]) if category else "None",
-                    "product_profile": "general",
-                    "customer_name": d[0]["user"]['username'] if d[0]["user"]['username'] else 'None',
-                    "customer_email": d[0]["user"]['email'] if d[0]["user"]['email'] else 'None',
-                    "customer_mobile": d[0]["user"]["mobile_number"],
-                    "customer_address": d[0]["delivery_place"],
-                    "customer_city": d[0]['address']["city"] if d[0]['address'] else 'Dhaka',
-                    "customer_country": d[0]['address']["country"] if d[0]['address'] else 'BD'
-                }
+                    data = json.dumps(body)
+                    response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
+                    content = response.json()
 
-                data = json.dumps(body)
+                    if response.status_code == 200:
+                        if content["status"] == "success":
+                            payment_id = content["payment_id"]
 
-                response = requests.post(config("PAYMENT_PROJECT_URL", None), data=data)
-                content = response.json()
+                            order_id = int(serializer.data[0]["id"])
+                            order = Order.objects.get(id=order_id)
+                            bill_id = serializer.data[0]["bill_id"]
+                            invoice_number = serializer.data[0]["invoice_number"]
+                            payment = PaymentInfo(
+                                payment_id=payment_id,
+                                order_id=order,
+                                bill_id=bill_id,
+                                invoice_number=invoice_number,
+                                payment_status="INITIATED"
+                            )
+                            payment.save()
 
-                if response.status_code == 200:
-                    if content["status"] == "success":
-                        payment_id = content["payment_id"]
+                    return Response(content, status=status.HTTP_200_OK)
 
-                        order_id = int(serializer.data[0]["id"])
-                        order = Order.objects.get(id=order_id)
-                        bill_id = serializer.data[0]["bill_id"]
-                        invoice_number = serializer.data[0]["invoice_number"]
-                        payment = PaymentInfo(
-                            payment_id=payment_id,
-                            order_id=order,
-                            bill_id=bill_id,
-                            invoice_number=invoice_number,
-                            payment_status="INITIATED"
-                        )
-                        payment.save()
-
-                return Response(content, status=status.HTTP_200_OK)
+                else:
+                    return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
 
             else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
+                return Response({"status": "Not online payment"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "No content"}, status=status.HTTP_200_OK)
 
