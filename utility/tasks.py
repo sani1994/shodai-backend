@@ -49,13 +49,13 @@ def send_daily_summary_email():
                "order_placed_daily": order_placed_daily.count(),
                "order_placed_from_web_daily": Order.objects.filter(placed_on__gte=today, platform='WB').exclude(order_status='CN').count(),
                "order_placed_from_admin_daily": Order.objects.filter(placed_on__gte=today, platform='AD').exclude(order_status='CN').count(),
-               "order_delivered_daily": Order.objects.filter(placed_on__gte=today, order_status='COM').count(),
+               "order_delivered_daily": Order.objects.filter(modified_on__gte=today, order_status='COM').count(),
                "order_amount_daily": int(order_amount_daily) if order_amount_daily else 0,
 
                "order_placed_monthly": order_placed_monthly.count(),
                "order_placed_from_web_monthly": Order.objects.filter(placed_on__gte=this_month, platform='WB').exclude(order_status='CN').count(),
                "order_placed_from_admin_monthly": Order.objects.filter(placed_on__gte=this_month, platform='AD').exclude(order_status='CN').count(),
-               "order_delivered_monthly": Order.objects.filter(placed_on__gte=this_month, order_status='COM').count(),
+               "order_delivered_monthly": Order.objects.filter(modified_on__gte=this_month, order_status='COM').count(),
                "order_amount_monthly": int(order_amount_monthly) if order_amount_monthly else 0,
 
                "total_order_placed": total_order_placed.count(),

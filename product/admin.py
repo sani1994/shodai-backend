@@ -33,9 +33,8 @@ class ProductAdmin(MaterialModelAdmin):
     list_filter = ('product_category', 'product_name', 'is_approved',)
     list_display = ('id', 'product_name', 'product_price', 'product_category', 'is_approved')
     readonly_fields = ["created_by", "modified_by", "created_on", "modified_on",
-                       'price_with_vat', 'slug']
+                       'price_with_vat', 'slug', 'product_meta']
     search_fields = ['product_name', 'product_category__type_of_product']
-    ordering = ['product_name']
     autocomplete_fields = ('product_unit', 'product_category',)
     actions = ["save_selected", "export_as_csv", "export_all_as_csv", ]
     fieldsets = (
@@ -44,7 +43,7 @@ class ProductAdmin(MaterialModelAdmin):
                 'product_name', 'product_name_bn', 'product_image', 'product_description',
                 'product_description_bn', 'product_price', 'product_price_bn', 'product_unit',
                 'product_category', 'product_last_price', 'is_approved', 'decimal_allowed',
-                'price_with_vat', 'slug', 'created_by', 'modified_by', 'created_on', 'modified_on')
+                'price_with_vat', 'created_by', 'modified_by', 'created_on', 'modified_on', 'product_meta')
         }),
     )
 
