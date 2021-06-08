@@ -1,7 +1,6 @@
-from django.contrib import admin
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from utility.models import Area, CityCountry, Location, ProductUnit, Remarks, Message, Banner
+from utility.models import Area, CityCountry, Location, ProductUnit, Remarks, Message, Banner, DeliveryZone
 
 
 class AreaAdmin(MaterialModelAdmin):
@@ -14,6 +13,21 @@ class CityCountryAdmin(MaterialModelAdmin):
 
 class LocationAdmin(MaterialModelAdmin):
     pass
+
+
+class DeliveryZoneAdmin(MaterialModelAdmin):
+    list_display = ["id", "zone"]
+    readonly_fields = ["modified_by", "modified_on", "created_by", "created_on"]
+    search_fields = ["zone"]
+
+    def save_model(self, request, obj, form, change):
+        if not obj.id:
+            obj.created_by = request.user
+        obj.modified_by = request.user
+        obj.save()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class ProductUnitAdmin(MaterialModelAdmin):
@@ -66,3 +80,4 @@ site.register(ProductUnit, ProductUnitAdmin)
 site.register(Remarks)
 site.register(Message, MessageAdmin)
 site.register(Banner, BannerAdmin)
+site.register(DeliveryZone, DeliveryZoneAdmin)

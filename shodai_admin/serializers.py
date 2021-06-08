@@ -8,6 +8,7 @@ from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from user.models import UserProfile
 from utility.views import order_status_all
+from utility.models import DeliveryZone
 
 platform_all = {
     'WB': 'Web',
@@ -373,3 +374,8 @@ class PreOrderDetailSerializer(serializers.ModelSerializer):
 
     def get_pre_order_status(self, obj):
         return order_status_all[obj.pre_order_status]
+
+class DeliveryZoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryZone
+        fields = ('id', 'zone')

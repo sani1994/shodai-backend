@@ -10,6 +10,7 @@ from user.models import UserProfile, Address
 from product.models import ProductMeta
 from product.models import Product
 from base.models import BaseModel
+from utility.models import DeliveryZone
 
 
 # Create your models here.
@@ -26,6 +27,7 @@ class Order(BaseModel):
     delivery_date_time = models.DateTimeField()
     placed_on = models.DateTimeField(default=timezone.now)
     delivery_place = models.CharField(max_length=100)
+    delivery_zone = models.ForeignKey(DeliveryZone, models.SET_NULL, blank=True, null=True)
     total_vat = models.FloatField(default=0)  # storing total vat on products
     order_total_price = models.FloatField(default=0)  # storing price+vat+delivery_charge
     lat = models.FloatField()
