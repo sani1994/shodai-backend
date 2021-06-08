@@ -156,18 +156,19 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
 class OrderDetailSerializer(serializers.ModelSerializer):
     delivery_time_slot = serializers.SerializerMethodField(read_only=True)
     delivery_address = serializers.StringRelatedField(source='address')
+    order_status = serializers.SerializerMethodField(read_only=True)
+    platform = serializers.SerializerMethodField(read_only=True)
+    zone = serializers.StringRelatedField(source='delivery_zone')
     customer = CustomerSerializer(source='user')
     invoice = serializers.SerializerMethodField(read_only=True)
     products = OrderProductReadSerializer(read_only=True, many=True)
-    order_status = serializers.SerializerMethodField(read_only=True)
-    platform = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Order
         fields = (
             "id", "order_number", "placed_on", "modified_on", "platform", "delivery_date_time",
             "delivery_time_slot", "order_total_price", "order_status", "total_vat", "remarks",
-            "contact_number", "delivery_address", "note", "customer", "invoice", "products",
+            "contact_number", "delivery_address", "note", "zone", "customer", "invoice", "products",
         )
 
     def get_delivery_time_slot(self, obj):
