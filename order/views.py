@@ -110,7 +110,6 @@ class OrderList(APIView):
 
             # Create InvoiceInfo Instance
             order_instance = Order.objects.get(id=serializer.data['id'])
-            payment_method = 'CASH_ON_DELIVERY'
             if order_instance:
                 order_instance.address = delivery_address
                 order_instance.delivery_place = "Dhaka"
@@ -123,8 +122,11 @@ class OrderList(APIView):
                 billing_person_name = request.user.first_name
             else:
                 billing_person_name = ""
+
             if data['payment_method'] == 'Online':
                 payment_method = 'SSLCOMMERZ'
+            else:
+                payment_method = 'CASH_ON_DELIVERY'
 
             InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
                                        billing_person_name=billing_person_name,
@@ -249,6 +251,31 @@ class OrderProductList(APIView):
             order_instance.order_total_price = product_total_price + total_vat + delivery_charge - coupon_discount
             order_instance.save()
 
+            invoice.discount_amount = total_price_without_offer - product_total_price + coupon_discount
+            invoice.net_payable_amount = order_instance.order_total_price
+            invoice.save()
+
+            if total_price_without_offer != product_total_price:
+                DiscountInfo.objects.create(discount_amount=total_price_without_offer - product_total_price,
+                                            discount_type='PD',
+                                            discount_description='Product Offer Discount',
+                                            invoice=invoice)
+            if coupon_discount:
+                DiscountInfo.objects.create(discount_amount=coupon_discount,
+                                            discount_type='CP',
+                                            discount_description='Coupon Code: {}'.format(coupon_code),
+                                            coupon=coupon,
+                                            invoice=invoice)
+                CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
+                                                  discount_percent=coupon.discount_percent,
+                                                  discount_amount=coupon_discount,
+                                                  coupon_code=coupon.coupon_code,
+                                                  coupon_user=is_using,
+                                                  invoice_number=invoice,
+                                                  created_by=request.user)
+
+            async_task('order.tasks.send_order_email', order_instance)
+
             referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
             if referral_discount_settings.is_active:
                 referral_coupon = CouponCode.objects.filter(coupon_code_type='RC',
@@ -278,30 +305,6 @@ class OrderProductList(APIView):
                                    referral_coupon,
                                    order_instance.user)
 
-            invoice.discount_amount = (total_price_without_offer - product_total_price) + coupon_discount
-            invoice.net_payable_amount = order_instance.order_total_price
-            invoice.save()
-
-            if total_price_without_offer != product_total_price:
-                DiscountInfo.objects.create(discount_amount=total_price_without_offer - product_total_price,
-                                            discount_type='PD',
-                                            discount_description='Product Offer Discount',
-                                            invoice=invoice)
-            if coupon_discount:
-                DiscountInfo.objects.create(discount_amount=coupon_discount,
-                                            discount_type='CP',
-                                            discount_description='Coupon Code: {}'.format(coupon_code),
-                                            coupon=coupon,
-                                            invoice=invoice)
-                CouponUsageHistory.objects.create(discount_type=coupon.discount_type,
-                                                  discount_percent=coupon.discount_percent,
-                                                  discount_amount=coupon_discount,
-                                                  coupon_code=coupon.coupon_code,
-                                                  coupon_user=is_using,
-                                                  invoice_number=invoice,
-                                                  created_by=request.user)
-
-            async_task('order.tasks.send_order_email', order_instance)
             return Response(responses)
         return Response({"status": "Unauthorized request"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -532,11 +535,15 @@ class PaymentInfoListCreate(APIView):
                 }
                 return Response(data, status=status.HTTP_200_OK)
             else:
-                return Response({"status": "Not serializble data"}, status=status.HTTP_200_OK)
+                data = {
+                    "status": "failed",
+                    "message": "Not serializble data"
+                }
+                return Response(data, status=status.HTTP_200_OK)
         else:
             data = {
                 "status": "failed",
-                "message": "invalid invoice number"
+                "message": "Invalid invoice number"
             }
             return Response(data, status=status.HTTP_200_OK)
 
@@ -552,7 +559,7 @@ class OrderLatest(APIView):
 
         if order:
             invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on').first()
-            if invoice.payment_method == 'SSLCOMMERZ':
+            if invoice and invoice.payment_method == 'SSLCOMMERZ':
                 serializer = OrderDetailSerializer(order, many=True, context={'request': request})
 
                 if serializer and serializer.data[0]["id"]:

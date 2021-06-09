@@ -699,7 +699,7 @@ class CreateOrder(APIView):
             pass
         else:
             is_valid = False
-            
+
         if is_valid and isinstance(data['delivery_zone_id'], int) and data['delivery_zone_id']:
             zone = DeliveryZone.objects.filter(id=data['delivery_zone_id'], is_approved=True).first()
         else:
@@ -878,7 +878,7 @@ class CreateOrder(APIView):
         product_discount = total_price - total_op_price
         discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
 
-        billing_person_name = user_instance.first_name + " " + user_instance.last_name
+        billing_person_name = user_instance.first_name
         invoice = InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
                                              billing_person_name=billing_person_name,
                                              billing_person_email=user_instance.email,
