@@ -7,7 +7,7 @@ from decouple import config
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.core.validators import validate_email
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils import timezone
@@ -28,7 +28,8 @@ from product.models import Product, ProductMeta
 from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerializer, OrderDetailSerializer, \
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
     UserProfileSerializer, ProductMetaSerializer, order_status_all, PreOrderSettingListSerializer, \
-    PreOrderSettingDetailSerializer, ProducerProductSerializer, PreOrderListSerializer, PreOrderDetailSerializer, DeliveryZoneSerializer
+    PreOrderSettingDetailSerializer, ProducerProductSerializer, PreOrderListSerializer, PreOrderDetailSerializer, \
+    DeliveryZoneSerializer
 from shodai.permissions import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -190,6 +191,11 @@ class OrderList(APIView):
         date_from = request.query_params.get('date_from')
         date_to = request.query_params.get('date_to')
         order_status = all_order_status.get(request.query_params.get('order_status'))
+        platform_input = request.query_params.get('platform')
+        if platform_input:
+            platform = Q(platform=platform_input)
+        else:
+            platform = Q(platform='WB') | Q(platform='AD') | Q(platform='AP')
         if not getattr(Order, sort_by, False):
             sort_by = 'placed_on'
         if sort_type != 'asc':
@@ -718,30 +724,6 @@ class CreateOrder(APIView):
             is_new_user = True
             user_instance = None
 
-        delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
-        delivery_charge_discount = 0
-        if offer_id and isinstance(offer_id, int):
-            today = timezone.now()
-            offer = Offer.objects.filter(id=offer_id, offer_types="DD", is_approved=True,
-                                         offer_starts_in__lte=today, offer_ends_in__gte=today)
-            if offer:
-                cart_offer = CartOffer.objects.get(offer=offer[0])
-                if cart_offer:
-                    delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
-                    delivery_charge = cart_offer.updated_delivery_charge
-
-        coupon_discount = 0
-        if data['coupon_code'] and user_instance:
-            discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, user_instance)
-            if discount_amount:
-                coupon_discount = discount_amount
-                is_using.remaining_usage_count -= 1
-                is_using.save()
-                coupon.max_usage_count -= 1
-                coupon.save()
-
-        additional_discount = data['additional_discount']
-
         if not user_instance:
             user_instance = UserProfile.objects.create(username=customer["mobile_number"],
                                                        first_name=customer["name"],
@@ -794,6 +776,29 @@ class CreateOrder(APIView):
                            gift_coupon,
                            user_instance)
 
+        delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
+        delivery_charge_discount = 0
+        if offer_id and isinstance(offer_id, int):
+            today = timezone.now()
+            offer = Offer.objects.filter(id=offer_id, offer_types="DD", is_approved=True,
+                                         offer_starts_in__lte=today, offer_ends_in__gte=today)
+            if offer:
+                cart_offer = CartOffer.objects.get(offer=offer[0])
+                if cart_offer:
+                    delivery_charge_discount = delivery_charge - cart_offer.updated_delivery_charge
+                    delivery_charge = cart_offer.updated_delivery_charge
+
+        coupon_discount = 0
+        if data['coupon_code'] and user_instance:
+            discount_amount, coupon, is_using, _ = coupon_checker(data['coupon_code'], products, user_instance)
+            if discount_amount:
+                coupon_discount = discount_amount
+                is_using.remaining_usage_count -= 1
+                is_using.save()
+                coupon.max_usage_count -= 1
+                coupon.save()
+
+        additional_discount = data['additional_discount']
         data["delivery_address"] = data["delivery_address"][:500]
         address = Address.objects.filter(road=data["delivery_address"])
         if not address:
@@ -1645,7 +1650,8 @@ class PreOrderSettingList(APIView):
                 is_valid = False
         if is_valid and data['end_date']:
             try:
-                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
+                end_date = timezone.make_aware(
+                    datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
             except Exception:
                 is_valid = False
         if is_valid and data['delivery_date']:
@@ -1726,7 +1732,8 @@ class PreOrderSettingDetail(APIView):
                 is_valid = False
         if is_valid and data['end_date']:
             try:
-                end_date = timezone.make_aware(datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
+                end_date = timezone.make_aware(
+                    datetime.strptime(data['end_date'], "%Y-%m-%d").replace(hour=23, minute=59, second=59))
             except Exception:
                 is_valid = False
         if is_valid and data['delivery_date']:
@@ -1930,14 +1937,14 @@ class PreOrderList(APIView):
 
         if search and pre_order_status:
             if search.startswith("01") and len(search) == 11:
-                queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search,
+                queryset = PreOrder.objects.filter(customer__mobile_number='+88' + search,
                                                    pre_order_status=pre_order_status).order_by('-created_on')
             else:
                 queryset = PreOrder.objects.filter(pre_order_setting__id=search,
                                                    pre_order_status=pre_order_status).order_by('-created_on')
         elif search and not pre_order_status:
             if search.startswith("01") and len(search) == 11:
-                queryset = PreOrder.objects.filter(customer__mobile_number='+88'+search).order_by('-created_on')
+                queryset = PreOrder.objects.filter(customer__mobile_number='+88' + search).order_by('-created_on')
             else:
                 queryset = PreOrder.objects.filter(pre_order_setting__id=search).order_by('-created_on')
         elif not search and pre_order_status:
@@ -1949,6 +1956,173 @@ class PreOrderList(APIView):
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PreOrderListSerializer(result_page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request):
+        data = request.data
+        required_fields = ['pre_order_setting_id',
+                           'customer',
+                           'delivery_address',
+                           'contact_number',
+                           'product_quantity',
+                           'note']
+
+        is_valid = field_validation(required_fields, data)
+
+        if is_valid:
+            customer = data['customer']
+            string_fields = [data['delivery_address'],
+                             data['contact_number'],
+                             data['note']]
+            is_valid = type_validation(string_fields, str)
+
+        if is_valid:
+            required_fields = ['name', 'mobile_number', 'email']
+            is_valid = field_validation(required_fields, customer)
+            if is_valid:
+                string_fields = [customer["name"],
+                                 customer["mobile_number"],
+                                 customer["email"]]
+                is_valid = type_validation(string_fields, str)
+            if is_valid and len(customer["mobile_number"]) == 14 and \
+                    customer["mobile_number"].startswith('+8801') and customer["mobile_number"][1:].isdigit():
+                pass
+            else:
+                is_valid = False
+            if is_valid and customer["email"]:
+                try:
+                    validate_email(customer["email"])
+                except Exception:
+                    is_valid = False
+
+        if is_valid and len(data["contact_number"]) == 14 and \
+                data["contact_number"].startswith('+8801') and data["contact_number"][1:].isdigit():
+            pass
+        else:
+            is_valid = False
+
+        if is_valid and isinstance(data['pre_order_setting_id'], int):
+            pre_order_setting = PreOrderSetting.objects.filter(id=data['pre_order_setting_id'],
+                                                               is_approved=True,
+                                                               is_processed=False).first()
+            if pre_order_setting:
+                pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
+                remaining_quantity = pre_order_setting.target_quantity
+                if pre_orders:
+                    total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
+                    remaining_quantity = pre_order_setting.target_quantity - total_purchased
+                quantity_difference = remaining_quantity - data['product_quantity']
+
+            if not pre_order_setting or quantity_difference < 0 or \
+                    data['product_quantity'] % pre_order_setting.unit_quantity:
+                is_valid = False
+        else:
+            is_valid = False
+
+        if not is_valid or not isinstance(data['product_quantity'], int) or not data['product_quantity'] > 0 or \
+                not data['delivery_address']:
+            return Response({
+                "status": "failed",
+                "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_instance = UserProfile.objects.filter(mobile_number=customer["mobile_number"]).first()
+
+        if not user_instance:
+            user_instance = UserProfile.objects.create(username=customer["mobile_number"],
+                                                       first_name=customer["name"],
+                                                       last_name="",
+                                                       email=customer["email"],
+                                                       mobile_number=customer["mobile_number"],
+                                                       user_type="CM",
+                                                       created_on=timezone.now(),
+                                                       verification_code=randint(100000, 999999),
+                                                       code_valid_till=timezone.now() + timedelta(minutes=5),
+                                                       is_approved=True)
+            temp_password = get_random_string(length=6)
+            user_instance.set_password(temp_password)
+            user_instance.save()
+
+            gift_discount_settings = CouponSettings.objects.get(coupon_type='GC1')
+            if gift_discount_settings.is_active:
+                gift_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                        name="Sign Up Coupon",
+                                                        discount_percent=gift_discount_settings.discount_percent,
+                                                        discount_amount=gift_discount_settings.discount_amount,
+                                                        max_usage_count=gift_discount_settings.max_usage_count,
+                                                        minimum_purchase_limit=gift_discount_settings.minimum_purchase_limit,
+                                                        discount_amount_limit=gift_discount_settings.discount_amount_limit,
+                                                        expiry_date=timezone.now() + timedelta(
+                                                            days=gift_discount_settings.validity_period),
+                                                        discount_type=gift_discount_settings.discount_type,
+                                                        coupon_code_type='GC1',
+                                                        created_by=user_instance)
+                CouponUser.objects.create(coupon_code=gift_coupon,
+                                          created_for=user_instance,
+                                          remaining_usage_count=1,
+                                          created_by=user_instance)
+                async_task('coupon.tasks.send_coupon_email',
+                           gift_coupon,
+                           user_instance)
+
+            referral_discount_settings = CouponSettings.objects.get(coupon_type='RC')
+            if referral_discount_settings.is_active:
+                referral_coupon = CouponCode.objects.create(coupon_code=str(uuid.uuid4())[:6].upper(),
+                                                            name="Referral Coupon",
+                                                            discount_percent=referral_discount_settings.discount_percent,
+                                                            discount_amount=referral_discount_settings.discount_amount,
+                                                            max_usage_count=referral_discount_settings.max_usage_count,
+                                                            minimum_purchase_limit=referral_discount_settings.minimum_purchase_limit,
+                                                            discount_amount_limit=referral_discount_settings.discount_amount_limit,
+                                                            expiry_date=timezone.now() + timedelta(
+                                                                days=referral_discount_settings.validity_period),
+                                                            discount_type=referral_discount_settings.discount_type,
+                                                            coupon_code_type='RC',
+                                                            created_by=user_instance)
+                async_task('coupon.tasks.send_coupon_email',
+                           referral_coupon,
+                           user_instance)
+
+            if not settings.DEBUG:
+                sms_body = "Dear Customer,\n" + \
+                           "We have created an account with temporary password " + \
+                           "[{}] based on your pre-order request. ".format(temp_password) + \
+                           "Please change your password after login.\n\n" + \
+                           "www.shod.ai"
+                async_task('utility.notification.send_sms', user_instance.mobile_number, sms_body)
+
+                if gift_discount_settings.is_active:
+                    async_task('coupon.tasks.send_coupon_sms',
+                               gift_coupon,
+                               user_instance.mobile_number)
+                if referral_discount_settings.is_active:
+                    async_task('coupon.tasks.send_coupon_sms',
+                               referral_coupon,
+                               user_instance.mobile_number)
+
+        data["delivery_address"] = data["delivery_address"][:500]
+        delivery_address = Address.objects.filter(road=data["delivery_address"]).first()
+        if not delivery_address:
+            delivery_address = Address.objects.create(road=data["delivery_address"],
+                                                      city="Dhaka",
+                                                      district="Dhaka",
+                                                      country="Bangladesh",
+                                                      zip_code="",
+                                                      user=customer)
+
+        pre_order = PreOrder.objects.create(pre_order_setting=pre_order_setting,
+                                            customer=user_instance,
+                                            delivery_address=delivery_address,
+                                            contact_number=data["contact_number"],
+                                            product_quantity=data['product_quantity'],
+                                            note=data['note'][:500],
+                                            platform='AD',
+                                            pre_order_status='OA',
+                                            created_by=request.user)
+        pre_order.pre_order_number = "PO" + str(10000 + pre_order.id)
+        pre_order.save()
+
+        return Response({"status": "success",
+                         "message": "Pre-order created.",
+                         "pre_order_id": pre_order.id}, status=status.HTTP_200_OK)
 
 
 class PreOrderDetail(APIView):

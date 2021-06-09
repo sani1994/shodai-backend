@@ -38,11 +38,12 @@ class OrderListSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
     customer_mobile_number = serializers.SerializerMethodField()
     order_status = serializers.SerializerMethodField()
+    platform = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Order
         fields = ["id", "order_number", "placed_on", "modified_on", "order_total_price",
-                  "customer_name", "customer_mobile_number", "order_status"]
+                  "customer_name", "customer_mobile_number", "order_status", "platform"]
         read_only_fields = ["customer_name", "customer_mobile_number", "order_status"]
 
     def get_customer_name(self, obj):
@@ -59,6 +60,9 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     def get_order_status(self, obj):
         return order_status_all[obj.order_status]
+
+    def get_platform(self, obj):
+        return platform_all[obj.platform]
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -296,10 +300,9 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PreOrderSetting
-        fields = ['id', 'start_date', 'end_date', 'delivery_date', 'discounted_price',
-                  'unit_quantity', 'target_quantity', 'remaining_quantity', 'is_approved', 'product_id',
-                  'product_name', 'product_image', 'product_unit', 'product_price',
-                  'producer_product']
+        fields = ['id', 'start_date', 'end_date', 'delivery_date', 'discounted_price', 'unit_quantity',
+                  'target_quantity', 'remaining_quantity', 'is_approved', 'is_processed', 'product_id',
+                  'product_name', 'product_image', 'product_unit', 'product_price', 'producer_product']
 
     def get_product_id(self, obj):
         return obj.product.id
@@ -332,11 +335,12 @@ class PreOrderListSerializer(serializers.ModelSerializer):
     pre_order_product = serializers.SerializerMethodField(read_only=True)
     is_processed = serializers.SerializerMethodField(read_only=True)
     pre_order_status = serializers.SerializerMethodField(read_only=True)
+    platform = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrder
-        fields = ['id', 'pre_order_number', 'pre_order_status', 'created_on',
-                  'customer_name', 'customer_mobile_number', 'is_processed', 'pre_order_product']
+        fields = ['id', 'pre_order_number', 'pre_order_status', 'created_on', 'customer_name',
+                  'customer_mobile_number', 'is_processed', 'pre_order_product', 'platform']
 
     def get_customer_name(self, obj):
         return obj.customer.first_name
@@ -352,6 +356,9 @@ class PreOrderListSerializer(serializers.ModelSerializer):
 
     def get_pre_order_status(self, obj):
         return order_status_all[obj.pre_order_status]
+
+    def get_platform(self, obj):
+        return platform_all[obj.platform]
 
 
 class PreOrderDetailSerializer(serializers.ModelSerializer):
@@ -375,6 +382,7 @@ class PreOrderDetailSerializer(serializers.ModelSerializer):
 
     def get_pre_order_status(self, obj):
         return order_status_all[obj.pre_order_status]
+
 
 class DeliveryZoneSerializer(serializers.ModelSerializer):
     class Meta:
