@@ -29,7 +29,7 @@ from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerial
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
     UserProfileSerializer, ProductMetaSerializer, order_status_all, PreOrderSettingListSerializer, \
     PreOrderSettingDetailSerializer, ProducerProductSerializer, PreOrderListSerializer, PreOrderDetailSerializer, \
-    DeliveryZoneSerializer, PreOrderSettingDropDownSerializer
+    DeliveryZoneSerializer, PreOrderSettingActiveListSerializer
 from shodai.permissions import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -1923,7 +1923,7 @@ class ProcessPreOrder(APIView):
                              'message': 'Pre-orders cancelled.'}, status=status.HTTP_200_OK)
 
 
-class PreOrderSettingDropDown(APIView):
+class PreOrderSettingActiveList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
@@ -1932,8 +1932,8 @@ class PreOrderSettingDropDown(APIView):
                                                   is_processed=False,
                                                   start_date__lte=time_now,
                                                   end_date__gte=time_now).order_by('-created_on')
-        serializer = PreOrderSettingDropDownSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = PreOrderSettingActiveListSerializer(queryset, many=True)
+        return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
 
 
 class PreOrderStatusList(APIView):

@@ -50,7 +50,7 @@ urlpatterns = [
     path('pre-orders/settings/<int:id>', views.PreOrderSettingDetail.as_view()),
     path('pre-orders/process', views.ProcessPreOrder.as_view()),
     path('pre-orders/status', views.PreOrderStatusList.as_view()),
-    path('pre-orders/settings/dropdown', views.PreOrderSettingDropDown.as_view()),
+    path('pre-orders/settings/active', views.PreOrderSettingActiveList.as_view()),
 
     # producers
     path('producers/products/search', views.ProducerProductSearch.as_view()),

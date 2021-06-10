@@ -390,7 +390,7 @@ class DeliveryZoneSerializer(serializers.ModelSerializer):
         fields = ('id', 'zone')
 
 
-class PreOrderSettingDropDownSerializer(serializers.ModelSerializer):
+class PreOrderSettingActiveListSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField(read_only=True)
     product_image = serializers.SerializerMethodField(read_only=True)
     product_price = serializers.SerializerMethodField(read_only=True)
@@ -399,15 +399,15 @@ class PreOrderSettingDropDownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PreOrderSetting
-        fields = ['id', 'end_date', 'delivery_date', 'unit_quantity', 'target_quantity',
-                  'remaining_quantity', 'product_name', 'product_image', 'product_unit',
-                  'product_price', 'discounted_price']
+        fields = ['id', 'start_date', 'end_date', 'delivery_date', 'unit_quantity',
+                  'target_quantity', 'remaining_quantity', 'product_name', 'product_image',
+                  'product_unit', 'product_price', 'discounted_price']
 
     def get_product_name(self, obj):
-        return obj.product.product_name
+        return obj.producer_product.product_name
 
     def get_product_image(self, obj):
-        return obj.product.product_image.url
+        return obj.producer_product.product_image.url
 
     def get_product_price(self, obj):
         return obj.product.product_price
