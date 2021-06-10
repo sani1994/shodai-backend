@@ -29,7 +29,7 @@ from shodai_admin.serializers import AdminUserProfileSerializer, OrderListSerial
     ProductSearchSerializer, TimeSlotSerializer, CustomerSerializer, DeliveryChargeOfferSerializer, \
     UserProfileSerializer, ProductMetaSerializer, order_status_all, PreOrderSettingListSerializer, \
     PreOrderSettingDetailSerializer, ProducerProductSerializer, PreOrderListSerializer, PreOrderDetailSerializer, \
-    DeliveryZoneSerializer
+    DeliveryZoneSerializer, PreOrderSettingDropDownSerializer
 from shodai.permissions import IsAdminUserQP
 from user.models import UserProfile, Address
 
@@ -49,6 +49,13 @@ all_order_status = {
     'Order at Delivery': 'OAD',
     'Order Completed': 'COM',
     'Order Cancelled': 'CN'
+}
+
+
+all_platform = {
+    'Website': 'WB',
+    'Admin Panel': 'AD',
+    'Mobile Application': 'AP'
 }
 
 
@@ -191,17 +198,17 @@ class OrderList(APIView):
         date_from = request.query_params.get('date_from')
         date_to = request.query_params.get('date_to')
         order_status = all_order_status.get(request.query_params.get('order_status'))
-        # platform = request.query_params.get('platform')
+        platform = all_platform.get(request.query_params.get('platform'))
 
         if not getattr(Order, sort_by, False):
             sort_by = 'placed_on'
         if sort_type != 'asc':
             sort_by = '-' + sort_by
 
-        # if platform:
-        #     platform = Q(platform=platform)
-        # else:
-        #     platform = Q(platform='WB') | Q(platform='AD') | Q(platform='AP')
+        if platform:
+            platform = Q(platform=platform)
+        else:
+            platform = Q(platform='WB') | Q(platform='AD') | Q(platform='AP')
 
         try:
             date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
@@ -218,62 +225,74 @@ class OrderList(APIView):
         if date_type == 'placed_on':
             if search and order_status:
                 if search.startswith("01") and len(search) == 11:
-                    queryset = Order.objects.filter(order_status=order_status,
+                    queryset = Order.objects.filter(platform,
+                                                    order_status=order_status,
                                                     user__mobile_number='+88' + search,
                                                     placed_on__gte=date_from,
                                                     placed_on__lt=date_to).order_by(sort_by)
                 else:
-                    queryset = Order.objects.filter(order_status=order_status,
+                    queryset = Order.objects.filter(platform,
+                                                    order_status=order_status,
                                                     order_number__icontains=search,
                                                     placed_on__gte=date_from,
                                                     placed_on__lt=date_to).order_by(sort_by)
 
             elif search and not order_status:
                 if search.startswith("01") and len(search) == 11:
-                    queryset = Order.objects.filter(user__mobile_number='+88' + search,
+                    queryset = Order.objects.filter(platform,
+                                                    user__mobile_number='+88' + search,
                                                     placed_on__gte=date_from,
                                                     placed_on__lt=date_to).order_by(sort_by)
                 else:
-                    queryset = Order.objects.filter(order_number__icontains=search,
+                    queryset = Order.objects.filter(platform,
+                                                    order_number__icontains=search,
                                                     placed_on__gte=date_from,
                                                     placed_on__lt=date_to).order_by(sort_by)
 
             elif not search and order_status:
-                queryset = Order.objects.filter(order_status=order_status,
+                queryset = Order.objects.filter(platform,
+                                                order_status=order_status,
                                                 placed_on__gte=date_from,
                                                 placed_on__lt=date_to).order_by(sort_by)
             else:
-                queryset = Order.objects.filter(placed_on__gte=date_from,
+                queryset = Order.objects.filter(platform,
+                                                placed_on__gte=date_from,
                                                 placed_on__lt=date_to).order_by(sort_by)
         else:
             if search and order_status:
                 if search.startswith("01") and len(search) == 11:
-                    queryset = Order.objects.filter(order_status=order_status,
+                    queryset = Order.objects.filter(platform,
+                                                    order_status=order_status,
                                                     user__mobile_number='+88' + search,
                                                     delivery_date_time__gte=date_from,
                                                     delivery_date_time__lt=date_to).order_by(sort_by)
                 else:
-                    queryset = Order.objects.filter(order_status=order_status,
+                    queryset = Order.objects.filter(platform,
+                                                    order_status=order_status,
                                                     order_number__icontains=search,
                                                     delivery_date_time__gte=date_from,
                                                     delivery_date_time__lt=date_to).order_by(sort_by)
 
             elif search and not order_status:
                 if search.startswith("01") and len(search) == 11:
-                    queryset = Order.objects.filter(user__mobile_number='+88' + search,
+                    queryset = Order.objects.filter(platform,
+                                                    user__mobile_number='+88' + search,
                                                     delivery_date_time__gte=date_from,
                                                     delivery_date_time__lt=date_to).order_by(sort_by)
                 else:
-                    queryset = Order.objects.filter(order_number__icontains=search,
+                    queryset = Order.objects.filter(platform,
+                                                    order_number__icontains=search,
                                                     delivery_date_time__gte=date_from,
                                                     delivery_date_time__lt=date_to).order_by(sort_by)
 
             elif not search and order_status:
-                queryset = Order.objects.filter(order_status=order_status,
+                queryset = Order.objects.filter(platform,
+                                                order_status=order_status,
                                                 delivery_date_time__gte=date_from,
                                                 delivery_date_time__lt=date_to).order_by(sort_by)
             else:
-                queryset = Order.objects.filter(delivery_date_time__gte=date_from,
+                queryset = Order.objects.filter(platform,
+                                                delivery_date_time__gte=date_from,
                                                 delivery_date_time__lt=date_to).order_by(sort_by)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
@@ -1904,15 +1923,17 @@ class ProcessPreOrder(APIView):
                              'message': 'Pre-orders cancelled.'}, status=status.HTTP_200_OK)
 
 
-# class PreOrderSettingSearch(APIView):
-#     permission_classes = [IsAdminUser]
-#
-#     def get(self, request):
-#         product_name = request.query_params.get('query', '')
-#         queryset = PreOrderSetting.objects.filter(product__product_name__icontains=product_name,
-#                                                   is_approved=True).order_by('-created_on')
-#         serializer = PreOrderSettingListSerializer(queryset, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
+class PreOrderSettingDropDown(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        time_now = timezone.now()
+        queryset = PreOrderSetting.objects.filter(is_approved=True,
+                                                  is_processed=False,
+                                                  start_date__lte=time_now,
+                                                  end_date__gte=time_now).order_by('-created_on')
+        serializer = PreOrderSettingDropDownSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class PreOrderStatusList(APIView):
@@ -1937,23 +1958,34 @@ class PreOrderList(APIView):
     def get(self, request):
         search = request.query_params.get('search')
         pre_order_status = all_order_status.get(request.query_params.get('pre_order_status'))
+        platform = all_platform.get(request.query_params.get('platform'))
+
+        if platform:
+            platform = Q(platform=platform)
+        else:
+            platform = Q(platform='WB') | Q(platform='AD') | Q(platform='AP')
 
         if search and pre_order_status:
             if search.startswith("01") and len(search) == 11:
-                queryset = PreOrder.objects.filter(customer__mobile_number='+88' + search,
+                queryset = PreOrder.objects.filter(platform,
+                                                   customer__mobile_number='+88' + search,
                                                    pre_order_status=pre_order_status).order_by('-created_on')
             else:
-                queryset = PreOrder.objects.filter(pre_order_setting__id=search,
+                queryset = PreOrder.objects.filter(platform,
+                                                   pre_order_setting__id=search,
                                                    pre_order_status=pre_order_status).order_by('-created_on')
         elif search and not pre_order_status:
             if search.startswith("01") and len(search) == 11:
-                queryset = PreOrder.objects.filter(customer__mobile_number='+88' + search).order_by('-created_on')
+                queryset = PreOrder.objects.filter(platform,
+                                                   customer__mobile_number='+88' + search).order_by('-created_on')
             else:
-                queryset = PreOrder.objects.filter(pre_order_setting__id=search).order_by('-created_on')
+                queryset = PreOrder.objects.filter(platform,
+                                                   pre_order_setting__id=search).order_by('-created_on')
         elif not search and pre_order_status:
-            queryset = PreOrder.objects.filter(pre_order_status=pre_order_status).order_by('-created_on')
+            queryset = PreOrder.objects.filter(platform,
+                                               pre_order_status=pre_order_status).order_by('-created_on')
         else:
-            queryset = PreOrder.objects.all().order_by('-created_on')
+            queryset = PreOrder.objects.filter(platform).order_by('-created_on')
 
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
@@ -2205,3 +2237,18 @@ class DeliveryZoneList(APIView):
         queryset = DeliveryZone.objects.filter(is_approved=True)
         serializer = DeliveryZoneSerializer(queryset, many=True)
         return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+class PlatformList(APIView):
+    permission_classes = [IsAdminUser]
+    """
+    Get All platform types
+    """
+
+    def get(self, request):
+        platform = [
+            'Website',
+            'Admin Panel',
+            'Mobile Application'
+        ]
+        return Response({'status': 'success', 'data': platform}, status=status.HTTP_200_OK)

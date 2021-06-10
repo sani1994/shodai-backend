@@ -388,3 +388,38 @@ class DeliveryZoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryZone
         fields = ('id', 'zone')
+
+
+class PreOrderSettingDropDownSerializer(serializers.ModelSerializer):
+    product_name = serializers.SerializerMethodField(read_only=True)
+    product_image = serializers.SerializerMethodField(read_only=True)
+    product_price = serializers.SerializerMethodField(read_only=True)
+    product_unit = serializers.SerializerMethodField(read_only=True)
+    remaining_quantity = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = PreOrderSetting
+        fields = ['id', 'end_date', 'delivery_date', 'unit_quantity', 'target_quantity',
+                  'remaining_quantity', 'product_name', 'product_image', 'product_unit',
+                  'product_price', 'discounted_price']
+
+    def get_product_name(self, obj):
+        return obj.product.product_name
+
+    def get_product_image(self, obj):
+        return obj.product.product_image.url
+
+    def get_product_price(self, obj):
+        return obj.product.product_price
+
+    def get_product_unit(self, obj):
+        return obj.product.product_unit.product_unit
+
+    def get_remaining_quantity(self, obj):
+        pre_orders = PreOrder.objects.filter(pre_order_setting=obj).exclude(pre_order_status='CN')
+        if pre_orders:
+            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
+            remaining_quantity = obj.target_quantity - total_purchased
+            return remaining_quantity if remaining_quantity > 0 else 0
+        else:
+            return obj.target_quantity

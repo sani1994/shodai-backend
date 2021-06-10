@@ -16,6 +16,7 @@ urlpatterns = [
     path('orders/send-notification', views.OrderNotification.as_view()),
     path('orders/status-update', views.OrderStatusUpdate.as_view()),
     path('orders/delivery-zones', views.DeliveryZoneList.as_view()),
+    path('orders/platform', views.PlatformList.as_view()),
 
     # invoices
     path('invoices/download/pdf/<int:id>', views.InvoiceDownloadPDF.as_view()),
@@ -49,6 +50,7 @@ urlpatterns = [
     path('pre-orders/settings/<int:id>', views.PreOrderSettingDetail.as_view()),
     path('pre-orders/process', views.ProcessPreOrder.as_view()),
     path('pre-orders/status', views.PreOrderStatusList.as_view()),
+    path('pre-orders/settings/dropdown', views.PreOrderSettingDropDown.as_view()),
 
     # producers
     path('producers/products/search', views.ProducerProductSearch.as_view()),
