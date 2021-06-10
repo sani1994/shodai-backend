@@ -26,6 +26,7 @@ class ProductCategory(BaseModel):
     is_approved = models.BooleanField(default=False)
     code = models.IntegerField(null=True, blank=True, unique=True)
     parent = models.ForeignKey('self', models.SET_NULL, null=True, blank=True)
+    rank = models.IntegerField(null=True, blank=True)
     history = HistoricalRecords()
 
     def __str__(self):

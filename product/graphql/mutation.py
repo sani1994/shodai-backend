@@ -8,7 +8,7 @@ class ProductCategories(graphene.Mutation):
     @staticmethod
     def mutate(root, info, input=None):
         category_list = []
-        primary_categories = ProductCategory.objects.filter(parent=None, is_approved=True)
+        primary_categories = ProductCategory.objects.filter(parent=None, is_approved=True).order_by('rank')
         for category in primary_categories:
             primary_category = {'id': category.id,
                                 'name': category.type_of_product,
@@ -18,7 +18,7 @@ class ProductCategories(graphene.Mutation):
             previous_categories = [primary_category]
             all_children_found = False
             while not all_children_found:
-                child_categories = ProductCategory.objects.filter(parent=temporary_category['id'], is_approved=True)
+                child_categories = ProductCategory.objects.filter(parent=temporary_category['id'], is_approved=True).order_by('rank')
                 if child_categories:
                     for child in child_categories:
                         child_category = {'id': child.id,

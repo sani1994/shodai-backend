@@ -224,7 +224,8 @@ class ProductCategoryAdmin(admin.ModelAdmin):
         return "No" if is_parent else "Yes"
 
     readonly_fields = ["created_by", "modified_by", "created_on", "modified_on"]
-    list_display = ["type_of_product", "parent", last_category, "is_approved"]
+    list_display = ["type_of_product", "rank", "parent", last_category, "is_approved"]
+    list_editable = ('rank',)
     list_filter = ["parent"]
     search_fields = ["type_of_product"]
     ordering = ['type_of_product']
