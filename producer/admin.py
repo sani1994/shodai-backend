@@ -9,6 +9,7 @@ class ProducerProductRequestAdmin(MaterialModelAdmin):
     readonly_fields = ['created_by', 'modified_by', 'created_on', 'modified_on']
     search_fields = ['product_name']
     ordering = ['product_name']
+    autocomplete_fields = ['producer']
 
     def save_model(self, request, obj, form, change):
         if not obj.id:

@@ -191,15 +191,18 @@ class OrderList(APIView):
         date_from = request.query_params.get('date_from')
         date_to = request.query_params.get('date_to')
         order_status = all_order_status.get(request.query_params.get('order_status'))
-        platform_input = request.query_params.get('platform')
-        if platform_input:
-            platform = Q(platform=platform_input)
-        else:
-            platform = Q(platform='WB') | Q(platform='AD') | Q(platform='AP')
+        # platform = request.query_params.get('platform')
+
         if not getattr(Order, sort_by, False):
             sort_by = 'placed_on'
         if sort_type != 'asc':
             sort_by = '-' + sort_by
+
+        # if platform:
+        #     platform = Q(platform=platform)
+        # else:
+        #     platform = Q(platform='WB') | Q(platform='AD') | Q(platform='AP')
+
         try:
             date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
         except Exception:
@@ -381,7 +384,7 @@ class OrderDetail(APIView):
         else:
             is_valid = False
 
-        if is_valid and isinstance(data['delivery_zone_id'], int) and data['delivery_zone_id']:
+        if is_valid and isinstance(data['delivery_zone_id'], int):
             zone = DeliveryZone.objects.filter(id=data['delivery_zone_id'], is_approved=True).first()
         else:
             is_valid = False
@@ -706,7 +709,7 @@ class CreateOrder(APIView):
         else:
             is_valid = False
 
-        if is_valid and isinstance(data['delivery_zone_id'], int) and data['delivery_zone_id']:
+        if is_valid and isinstance(data['delivery_zone_id'], int):
             zone = DeliveryZone.objects.filter(id=data['delivery_zone_id'], is_approved=True).first()
         else:
             is_valid = False
@@ -1969,13 +1972,13 @@ class PreOrderList(APIView):
         is_valid = field_validation(required_fields, data)
 
         if is_valid:
-            customer = data['customer']
             string_fields = [data['delivery_address'],
                              data['contact_number'],
                              data['note']]
             is_valid = type_validation(string_fields, str)
 
         if is_valid:
+            customer = data['customer']
             required_fields = ['name', 'mobile_number', 'email']
             is_valid = field_validation(required_fields, customer)
             if is_valid:
