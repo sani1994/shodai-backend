@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django_q.tasks import async_task
 
-from product.models import Product, ProductMeta
+from product.models import Product, ProductCategory, ProductMeta
 
 
 @receiver(pre_save, sender=Product)
@@ -34,6 +34,11 @@ def product_data_preprocessing(sender, instance, **kwargs):
     #                                             instance.code)
 
 
-# @receiver(post_save, sender=Product)
-# def product_created_or_updated(sender, instance, created, **kwargs):
-#     async_task('product.tasks.send_product_data', instance)
+@receiver(post_save, sender=Product)
+def product_created_or_updated(sender, instance, created, **kwargs):
+    async_task('product.tasks.send_product_data', instance)
+
+
+@receiver(post_save, sender=ProductCategory)
+def product_category_created_or_updated(sender, instance, created, **kwargs):
+    async_task('product.tasks.send_product_category_data', instance)

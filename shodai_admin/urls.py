@@ -16,7 +16,7 @@ urlpatterns = [
     path('orders/send-notification', views.OrderNotification.as_view()),
     path('orders/status-update', views.OrderStatusUpdate.as_view()),
     path('orders/delivery-zones', views.DeliveryZoneList.as_view()),
-    path('orders/platform', views.PlatformList.as_view()),
+    path('orders/platforms', views.PlatformList.as_view()),
 
     # invoices
     path('invoices/download/pdf/<int:id>', views.InvoiceDownloadPDF.as_view()),

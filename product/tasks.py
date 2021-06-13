@@ -7,6 +7,22 @@ headers = {"Content-Type": "application/json",
            "Authorization": "Bearer {}".format(settings.INTERNAL_BRICKBOX_API_KEY)}
 
 
+def send_product_category_data(product_category):
+    payload = {"product_category_id": product_category.id,
+               "product_category_code": None,
+               "product_category_name": product_category.type_of_product,
+               "product_category_name_bn": product_category.type_of_product_bn,
+               "product_category_image_url": settings.WEB_DOMAIN + product_category.img.url if product_category.img else None,
+               "parent_product_category_id": product_category.parent.id if product_category.parent else None}
+
+    if not settings.DEBUG:
+        url = settings.INTERNAL_BRICKBOX_API_URL + '/product/category'
+        response = requests.post(url, headers=headers, json=payload).json()
+        return response
+    else:
+        return 'in debug mode'
+
+
 def send_product_data(product):
     payload = {"product_id": product.id,
                "product_code": None,
@@ -24,15 +40,6 @@ def send_product_data(product):
                "slug": product.slug,
                "is_approved": product.is_approved,
                "product_category_id": product.product_category.id,
-               "product_category_code": None,
-               "product_category_name": product.product_category.type_of_product,
-               "product_category_name_bn": product.product_category.type_of_product_bn,
-               "product_category_image_url": settings.WEB_DOMAIN + product.product_category.img.url if product.product_category.img else None,
-               "product_subcategory_id": product.product_meta.id,
-               "product_subcategory_code": None,
-               "product_subcategory_name": product.product_meta.name,
-               "product_subcategory_name_bn": product.product_meta.name_bn,
-               "product_subcategory_image_url": settings.WEB_DOMAIN + product.product_meta.img.url if product.product_meta.img else None,
                "product_manufacturer_id": None,
                "product_manufacturer_code": None,
                "product_manufacturer_name": "",
@@ -42,7 +49,7 @@ def send_product_data(product):
                "product_manufacturer_email": ""}
 
     if not settings.DEBUG:
-        url = settings.INTERNAL_BRICKBOX_API_URL + '/shodai/product'
+        url = settings.INTERNAL_BRICKBOX_API_URL + '/product'
         response = requests.post(url, headers=headers, json=payload).json()
         return response
     else:

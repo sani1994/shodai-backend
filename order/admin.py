@@ -344,6 +344,12 @@ class PreOrderSettingAdmin(MaterialModelAdmin):
         obj.modified_by = request.user
         obj.save()
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -355,7 +361,6 @@ class PreOrderAdmin(MaterialModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not obj.id:
-            obj.platform = "AD"
             obj.created_by = request.user
         obj.modified_by = request.user
         obj.save()

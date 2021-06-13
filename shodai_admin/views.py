@@ -55,7 +55,7 @@ all_order_status = {
 all_platform = {
     'Website': 'WB',
     'Admin Panel': 'AD',
-    'Mobile Application': 'AP'
+    'Mobile App': 'AP'
 }
 
 
@@ -1062,6 +1062,9 @@ class InvoiceDownloadPDF(APIView):
             payment_method = "Cash on Delivery"
         else:
             payment_method = "Online Payment"
+
+        delivery_time_slot = TimeSlot.objects.filter(time=timezone.localtime(order.delivery_date_time).time()).first()
+
         data = {
             'customer_name': customer_name,
             'address': order.address,
@@ -1071,6 +1074,7 @@ class InvoiceDownloadPDF(APIView):
             'invoice_number': order.invoice_number,
             'created_on': order.created_on,
             'delivery_date': order.delivery_date_time.date(),
+            'delivery_time_slot': delivery_time_slot.slot if delivery_time_slot else "",
             'order_details': matrix,
             'delivery': invoice.delivery_charge,
             'vat': order.total_vat,
@@ -2249,6 +2253,6 @@ class PlatformList(APIView):
         platform = [
             'Website',
             'Admin Panel',
-            'Mobile Application'
+            'Mobile App'
         ]
         return Response({'status': 'success', 'data': platform}, status=status.HTTP_200_OK)
