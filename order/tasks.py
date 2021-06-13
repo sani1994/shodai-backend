@@ -177,3 +177,27 @@ def send_pre_order_email(pre_order):
         return f"{pre_order.pre_order_number} sent to {user.email}"
     else:
         return f"email not found"
+
+
+def send_pre_order_cancel_email(pre_order):
+    user = pre_order.customer
+    if user.email:
+        if user.first_name and user.last_name:
+            customer_name = user.first_name + " " + user.last_name
+        elif user.first_name:
+            customer_name = user.first_name
+        else:
+            customer_name = "Customer"
+
+        user_email_content = {'user_name': customer_name}
+        subject = 'Your shodai pre-order (#' + str(pre_order.pre_order_number) + ') has been cancelled.'
+        from_email, to = 'noreply@shod.ai', user.email
+        html_pre_order = get_template('email/pre_order_cancel_notification.html')
+        html_customer_content = html_pre_order.render(user_email_content)
+        msg = EmailMultiAlternatives(subject, 'shodai', from_email, [to])
+        msg.attach_alternative(html_customer_content, "text/html")
+        msg.send()
+
+        return f"{pre_order.pre_order_number} sent to {user.email}"
+    else:
+        return f"email not found"

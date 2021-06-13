@@ -270,8 +270,8 @@ class PreOrderSettingListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PreOrderSetting
-        fields = ['id', 'product_name', 'start_date', 'end_date',
-                  'discounted_price', 'target_quantity', 'is_approved']
+        fields = ['id', 'product_name', 'start_date', 'end_date', 'discounted_price',
+                  'target_quantity', 'is_approved', 'is_processed']
 
     def get_product_name(self, obj):
         return obj.producer_product.product_name
@@ -290,6 +290,7 @@ class ProducerProductSerializer(serializers.ModelSerializer):
 
 
 class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
+    pre_orders = None
     producer_product = ProducerProductSerializer(read_only=True)
     product_id = serializers.SerializerMethodField(read_only=True)
     product_name = serializers.SerializerMethodField(read_only=True)
@@ -297,12 +298,15 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
     product_price = serializers.SerializerMethodField(read_only=True)
     product_unit = serializers.SerializerMethodField(read_only=True)
     remaining_quantity = serializers.SerializerMethodField(read_only=True)
+    total_pre_orders = serializers.SerializerMethodField(read_only=True)
+    total_pre_order_amount = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrderSetting
         fields = ['id', 'start_date', 'end_date', 'delivery_date', 'discounted_price', 'unit_quantity',
-                  'target_quantity', 'remaining_quantity', 'is_approved', 'is_processed', 'product_id',
-                  'product_name', 'product_image', 'product_unit', 'product_price', 'producer_product']
+                  'target_quantity', 'remaining_quantity', 'is_approved', 'is_processed',
+                  'product_id', 'product_name', 'product_image', 'product_unit', 'product_price',
+                  'total_pre_orders', 'total_pre_order_amount', 'producer_product']
 
     def get_product_id(self, obj):
         return obj.product.id
@@ -321,6 +325,7 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
 
     def get_remaining_quantity(self, obj):
         pre_orders = PreOrder.objects.filter(pre_order_setting=obj).exclude(pre_order_status='CN')
+        self.pre_orders = pre_orders
         if pre_orders:
             total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
             remaining_quantity = obj.target_quantity - total_purchased
@@ -328,7 +333,16 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
         else:
             return obj.target_quantity
 
+    def get_total_pre_orders(self, obj):
+        return self.pre_orders.count()
 
+    def get_total_pre_order_amount(self, obj):
+        total_amount = 0
+        for p in self.pre_orders:
+            total_amount += p.pre_order_setting.discounted_price * p.product_quantity
+        return total_amount
+
+        
 class PreOrderListSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField(read_only=True)
     customer_mobile_number = serializers.SerializerMethodField(read_only=True)

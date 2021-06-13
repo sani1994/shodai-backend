@@ -1920,6 +1920,9 @@ class ProcessPreOrder(APIView):
                 p.pre_order_status = 'CN'
                 p.save()
 
+                if not settings.DEBUG:
+                    async_task('order.tasks.send_pre_order_cancel_email', p)
+
             pre_order_setting.is_processed = True
             pre_order_setting.modified_by = user
             pre_order_setting.save()
