@@ -382,11 +382,16 @@ class PreOrderDetailSerializer(serializers.ModelSerializer):
     platform = serializers.SerializerMethodField(read_only=True)
     pre_order_status = serializers.SerializerMethodField(read_only=True)
     customer_details = CustomerSerializer(source='customer')
+    unit_quantity = serializers.SerializerMethodField(read_only=True)
+    remaining_quantity = serializers.SerializerMethodField(read_only=True)
+    is_approved = serializers.SerializerMethodField(read_only=True)
+    is_processed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = PreOrder
         fields = ['id', 'pre_order_number', 'pre_order_product', 'product_quantity', 'product_unit', 'address',
-                  'contact_number', 'note', 'platform', 'pre_order_status', 'order', 'customer_details']
+                  'contact_number', 'note', 'platform', 'pre_order_status', 'order', 'customer_details',
+                  'unit_quantity', 'remaining_quantity', 'is_approved', 'is_processed']
 
     def get_product_unit(self, obj):
         return obj.pre_order_setting.product.product_unit.product_unit
@@ -396,6 +401,24 @@ class PreOrderDetailSerializer(serializers.ModelSerializer):
 
     def get_pre_order_status(self, obj):
         return order_status_all[obj.pre_order_status]
+
+    def get_unit_quantity(self, obj):
+        return obj.pre_order_setting.unit_quantity
+
+    def get_remaining_quantity(self, obj):
+        pre_orders = PreOrder.objects.filter(pre_order_setting=obj.pre_order_setting).exclude(pre_order_status='CN')
+        if pre_orders:
+            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum')
+            remaining_quantity = obj.pre_order_setting.target_quantity - total_purchased
+            return remaining_quantity if remaining_quantity > 0 else 0
+        else:
+            return obj.pre_order_setting.target_quantity
+
+    def get_is_approved(self, obj):
+        return obj.pre_order_setting.is_approved
+
+    def get_is_processed(self, obj):
+        return obj.pre_order_setting.is_processed
 
 
 class DeliveryZoneSerializer(serializers.ModelSerializer):

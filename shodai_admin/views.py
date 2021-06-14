@@ -1690,8 +1690,8 @@ class PreOrderSettingList(APIView):
             producer_product = ProducerProductRequest.objects.filter(id=data['producer_product_id'],
                                                                      is_approved=True).first()
             if not product or not producer_product or not start_date < end_date < delivery_date or \
-                    data['discounted_price'] > product.product_price or \
-                    data['unit_quantity'] > data['target_quantity'] or \
+                    not 0 < data['discounted_price'] < product.product_price or \
+                    not 0 < data['unit_quantity'] <= data['target_quantity'] or \
                     data['target_quantity'] % data['unit_quantity']:
                 is_valid = False
         if not is_valid:
@@ -1768,28 +1768,33 @@ class PreOrderSettingDetail(APIView):
             except Exception:
                 is_valid = False
         if is_valid:
-            pre_order_setting = PreOrderSetting.objects.filter(id=id).first()
+            pre_order_setting = PreOrderSetting.objects.filter(id=id, is_processed=False).first()
             product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
             if not pre_order_setting or not product or not start_date < end_date < delivery_date or \
-                    data['discounted_price'] > product.product_price or \
-                    data['unit_quantity'] > data['target_quantity'] or \
-                    data['target_quantity'] % data['unit_quantity'] or \
+                    not 0 < data['discounted_price'] < product.product_price or \
+                    not 0 < data['unit_quantity'] <= data['target_quantity'] or \
                     not isinstance(data['is_approved'], bool):
+                is_valid = False
+        if is_valid:
+            pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
+            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum') if pre_orders else 0
+            remaining_quantity = data['target_quantity'] - total_purchased
+            if data['target_quantity'] < total_purchased or remaining_quantity % data['unit_quantity']:
                 is_valid = False
         if not is_valid:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if pre_order_setting.end_date > timezone.now():
+        if not pre_orders:
             pre_order_setting.product = product
             pre_order_setting.start_date = start_date
-            pre_order_setting.end_date = end_date
-            pre_order_setting.unit_quantity = data['unit_quantity']
-            pre_order_setting.target_quantity = data['target_quantity']
-            pre_order_setting.is_approved = data['is_approved']
+        pre_order_setting.end_date = end_date
+        pre_order_setting.unit_quantity = data['unit_quantity']
+        pre_order_setting.target_quantity = data['target_quantity']
         pre_order_setting.delivery_date = delivery_date
         pre_order_setting.discounted_price = data['discounted_price']
+        pre_order_setting.is_approved = data['is_approved']
         pre_order_setting.modified_by = request.user
         pre_order_setting.save()
 
@@ -1829,7 +1834,9 @@ class ProcessPreOrder(APIView):
         is_valid = field_validation(required_fields, data)
 
         if is_valid and isinstance(data['pre_order_setting_id'], int):
+            time_now = timezone.now()
             pre_order_setting = PreOrderSetting.objects.filter(id=data['pre_order_setting_id'],
+                                                               delivery_date_time__gte=time_now,
                                                                is_approved=True,
                                                                is_processed=False).first()
 
@@ -2148,7 +2155,7 @@ class PreOrderList(APIView):
                                                       district="Dhaka",
                                                       country="Bangladesh",
                                                       zip_code="",
-                                                      user=customer)
+                                                      user=user_instance)
 
         pre_order = PreOrder.objects.create(pre_order_setting=pre_order_setting,
                                             customer=user_instance,
