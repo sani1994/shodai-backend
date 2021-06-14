@@ -1916,12 +1916,12 @@ class ProcessPreOrder(APIView):
             return Response({'status': 'success',
                              'message': 'Orders created.'}, status=status.HTTP_200_OK)
         else:
-            for p in pre_orders:
-                p.pre_order_status = 'CN'
-                p.save()
+            for pre_order in pre_orders:
+                pre_order.pre_order_status = 'CN'
+                pre_order.save()
 
                 if not settings.DEBUG:
-                    async_task('order.tasks.send_pre_order_cancel_email', p)
+                    async_task('order.tasks.send_pre_order_cancel_email', pre_order)
 
             pre_order_setting.is_processed = True
             pre_order_setting.modified_by = user

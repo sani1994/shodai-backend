@@ -338,11 +338,11 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
 
     def get_total_pre_order_amount(self, obj):
         total_amount = 0
-        for p in self.pre_orders:
-            total_amount += p.pre_order_setting.discounted_price * p.product_quantity
+        for pre_order in self.pre_orders:
+            total_amount += pre_order.pre_order_setting.discounted_price * pre_order.product_quantity
         return total_amount
 
-        
+
 class PreOrderListSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField(read_only=True)
     customer_mobile_number = serializers.SerializerMethodField(read_only=True)

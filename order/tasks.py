@@ -190,7 +190,7 @@ def send_pre_order_cancel_email(pre_order):
             customer_name = "Customer"
 
         user_email_content = {'user_name': customer_name}
-        subject = 'Your shodai pre-order (#' + str(pre_order.pre_order_number) + ') has been cancelled.'
+        subject = 'Your shodai pre-order (#' + str(pre_order.pre_order_number) + ') has been cancelled'
         from_email, to = 'noreply@shod.ai', user.email
         html_pre_order = get_template('email/pre_order_cancel_notification.html')
         html_customer_content = html_pre_order.render(user_email_content)
