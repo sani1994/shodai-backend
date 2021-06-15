@@ -82,3 +82,15 @@ class Banner(BaseModel):
 
     def __str__(self):
         return self.banner_heading
+
+
+class QurbaniProductCriteria(BaseModel):
+    category = models.CharField(max_length=50, blank=True, null=True)
+    subcategory = models.CharField(max_length=50, blank=True, null=True)
+    breed = models.CharField(max_length=50, blank=True, null=True)
+    color = models.CharField(max_length=50, blank=True, null=True)
+    teeth = models.IntegerField(blank=True, null=True)
+    pre_order_setting = models.ForeignKey('order.PreOrderSetting', models.CASCADE, related_name='qurbani_products')
+
+    def __str__(self):
+        return self.pre_order_setting.producer_product.product_name

@@ -1,5 +1,5 @@
 import graphene
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.utils import timezone
 from graphene_django.types import DjangoObjectType
 from graphene_gis.converter import gis_converter  # noqa
@@ -8,6 +8,7 @@ from base.views import checkAuthentication
 from producer.graphql.queries import ProducerProductType  # noqa
 from order.models import Order, OrderProduct, Vat, DeliveryCharge, TimeSlot, InvoiceInfo, DiscountInfo, \
     PreOrderSetting, PreOrder
+from utility.models import QurbaniProductCriteria
 from utility.views import order_status_all
 
 
@@ -167,6 +168,7 @@ class Query(graphene.ObjectType):
     delivery_time_slots = graphene.List(TimeSlotType)
     invoice_by_order = graphene.Field(InvoiceInfoType, order_id=graphene.Int())
     pre_order_product_list = graphene.List(PreOrderProductListType)
+    pre_order_qurbani_product_list = graphene.List(PreOrderProductListType)
     pre_order_product_detail = graphene.Field(PreOrderProductDetailType, pre_order_product_id=graphene.Int())
     pre_order_list = graphene.List(PreOrderListType)
     pre_order_detail = graphene.Field(PreOrderDetailType, pre_order_id=graphene.Int())
@@ -216,6 +218,19 @@ class Query(graphene.ObjectType):
                                               is_processed=False,
                                               start_date__lte=time_now,
                                               end_date__gte=time_now)
+
+    # for temporary use
+    def resolve_pre_order_qurbani_product_list(self, info, **kwargs):
+        query = Q()
+        for field, value in kwargs.items():
+            query = Q(**{field: value})
+        time_now = timezone.now()
+        return PreOrderSetting.objects.filter(is_approved=True,
+                                              is_processed=False,
+                                              start_date__lte=time_now,
+                                              end_date__gte=time_now,
+                                              producer_product__producer__mobile_number='+8801553252575',
+                                              qurbani_products__in=QurbaniProductCriteria.objects.filter(query))
 
     def resolve_pre_order_product_detail(self, info, **kwargs):
         time_now = timezone.now()

@@ -270,8 +270,8 @@ class PreOrderSettingListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PreOrderSetting
-        fields = ['id', 'product_name', 'start_date', 'end_date', 'discounted_price',
-                  'target_quantity', 'is_approved', 'is_processed']
+        fields = ['id', 'product_name', 'start_date', 'end_date',
+                  'discounted_price', 'is_approved', 'is_processed']
 
     def get_product_name(self, obj):
         return obj.producer_product.product_name
