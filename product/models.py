@@ -76,18 +76,18 @@ class Product(BaseModel):
     product_description = RichTextUploadingField()
     product_description_bn = models.CharField(max_length=400, default=" ")
     product_unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, default=None)
-    product_price = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
-    product_price_bn = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True,
+    product_price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    product_price_bn = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True,
                                            verbose_name='পন্যের মুল্য')
     product_category = models.ForeignKey(ProductCategory, models.SET_NULL, null=True)
     product_meta = models.ForeignKey(ProductMeta, models.SET_NULL, null=True)
-    product_last_price = models.DecimalField(decimal_places=2, max_digits=7, default=0.00)
+    product_last_price = models.DecimalField(decimal_places=2, max_digits=10, default=0.00)
     is_approved = models.BooleanField(default=False)
     decimal_allowed = models.BooleanField(default=False)
     product_manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE, null=True, blank=True)
     code = models.IntegerField(null=True, blank=True, unique=True)
     product_sku = models.CharField(max_length=20, null=True, blank=True, unique=True)
-    price_with_vat = models.DecimalField(decimal_places=2, max_digits=7, default=0.00, blank=True, null=True,
+    price_with_vat = models.DecimalField(decimal_places=2, max_digits=10, default=0.00, blank=True, null=True,
                                          verbose_name='Product Price With Vat')  # Product Price with vat
     history = HistoricalRecords()
 

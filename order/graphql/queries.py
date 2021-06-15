@@ -228,7 +228,7 @@ class Query(graphene.ObjectType):
     def resolve_pre_order_qurbani_product_list(self, info, **kwargs):
         query = Q()
         for field, value in kwargs.items():
-            query = Q(**{field: value})
+            query = query & Q(**{field: value})
         time_now = timezone.now()
         return PreOrderSetting.objects.filter(is_approved=True,
                                               is_processed=False,
