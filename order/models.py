@@ -290,7 +290,7 @@ class PreOrderSetting(BaseModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return self.product.product_name
+        return self.producer_product.product_name
 
     def save(self, *args, **kwargs):
         self.slug = self.product.slug + "-" + str(self.producer_product.id)
