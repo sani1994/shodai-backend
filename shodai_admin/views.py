@@ -1524,14 +1524,15 @@ class OrderProductListExcel(APIView):
             ws1 = wb.active
             ws1.title = 'Order Product List'
 
-            field_names = ["No.", "Customer Mobile Number", "Order Number", "Order Placing Date Time ",
-                           "Order Delivery Date Time", "Order Status", "Order Total Amount", "Product ID",
-                           "Product Name", "Product Unit", "Product Unit Price", "Product Quantity",
-                           "Product Total Price", "Product Subcategory", "Delivery Address"]
+            field_names = ["No.", "Customer Mobile Number", "Order Number", "Delivery Zone",
+                           "Order Placing Date Time ", "Order Delivery Date Time", "Order Status",
+                           "Order Total Amount", "Product ID", "Product Name", "Product Unit",
+                           "Product Unit Price", "Product Quantity", "Product Total Price",
+                           "Product Subcategory", "Delivery Address"]
             ws1.append(field_names)
 
             for count, obj in enumerate(queryset, 1):
-                row = [count, obj.order.user.mobile_number[3:], obj.order.order_number,
+                row = [count, obj.order.user.mobile_number[3:], obj.order.order_number, str(obj.order.delivery_zone),
                        str(obj.order.placed_on + timedelta(hours=6))[:16],
                        str(obj.order.delivery_date_time + timedelta(hours=6))[:16],
                        order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,

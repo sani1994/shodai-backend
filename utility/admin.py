@@ -17,7 +17,7 @@ class LocationAdmin(MaterialModelAdmin):
 
 
 class DeliveryZoneAdmin(MaterialModelAdmin):
-    list_display = ["id", "zone"]
+    list_display = ["id", "zone", "is_approved"]
     readonly_fields = ["modified_by", "modified_on", "created_by", "created_on"]
     search_fields = ["zone"]
 
