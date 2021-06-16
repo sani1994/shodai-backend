@@ -2168,6 +2168,7 @@ class PreOrderList(APIView):
                                             created_by=request.user)
         pre_order.pre_order_number = "PO" + str(10000 + pre_order.id)
         pre_order.save()
+        async_task('order.tasks.send_pre_order_email', pre_order)
 
         return Response({"status": "success",
                          "message": "Pre-order created.",
