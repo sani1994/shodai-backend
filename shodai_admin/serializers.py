@@ -162,7 +162,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     delivery_address = serializers.StringRelatedField(source='address')
     order_status = serializers.SerializerMethodField(read_only=True)
     platform = serializers.SerializerMethodField(read_only=True)
-    zone = serializers.StringRelatedField(source='delivery_zone')
+    zone = serializers.SerializerMethodField(read_only=True)
     customer = CustomerSerializer(source='user')
     invoice = serializers.SerializerMethodField(read_only=True)
     products = OrderProductReadSerializer(read_only=True, many=True)
@@ -191,6 +191,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
     def get_platform(self, obj):
         return platform_all[obj.platform]
+
+    def get_zone(self, obj):
+        return obj.delivery_zone.id if obj.delivery_zone else None
 
 
 class ProductSearchSerializer(serializers.ModelSerializer):
