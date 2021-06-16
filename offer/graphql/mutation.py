@@ -3,6 +3,7 @@ from django.utils import timezone
 from offer.models import OfferProduct, Offer
 from order.models import PreOrderSetting
 from product.models import Product
+from utility.models import QurbaniProductCriteria
 
 
 class Count(graphene.Mutation):
@@ -31,7 +32,8 @@ class Count(graphene.Mutation):
                                                                          is_processed=False,
                                                                          start_date__lte=time_now,
                                                                          end_date__gte=time_now,
-                                                                         producer_product__producer__mobile_number='+8801553252575').count()
+                                                                         producer_product__producer__mobile_number='+8801553252575',
+                                                                         qurbani_products__in=QurbaniProductCriteria.objects.all()).count()
 
         return Count(offer_product_count=offer_product_count,
                      pre_order_product_count=pre_order_product_count,

@@ -48,7 +48,26 @@
         <table style="font-size:16px">
             <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
             <tbody>
-            {% if is_customer %}
+            {% if is_cancel %}
+              <tr>
+                <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
+              </tr>
+              <tr>
+                <td>
+                  Thank you for ordering in Shodai.<br/><br/>
+                  We are very sorry to inform you that the target was not reached to confirm your pre-order.
+                  In these circumstances, we are obliged to cancel your order.<br/><br/>
+                  Please try again next time.<br/><br/>
+                </td>
+              </tr>
+              <tr>
+                <td>Thanks & Regards</td>
+              </tr>
+              <tr>
+                <td><strong>Team Shodai</strong></td>
+              </tr>
+            {% else %}
+              {% if is_customer %}
               <tr>
                 <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
               </tr>
@@ -68,7 +87,7 @@
               <tr>
                 <td><strong>Team Shodai</strong></td>
               </tr>
-            {% else %}
+              {% else %}
               <tr>
                 <td><strong>Dear Concern,</strong></td>
               </tr>
@@ -79,12 +98,14 @@
                   Customer Mobile: {{user_mobile}}<br/>
                 </td>
               </tr>
+              {% endif %}
             {% endif %}
             </tbody>
         </table>
 
         <hr style="border:1px solid #E8E8E8; margin: 30px 0 15px 0"/>
 
+        {% if not is_cancel %}
         <table style="text-align: center;width: 100%;" class="">
           <thead>
             <tr style="color:#545454;">
@@ -130,6 +151,7 @@
             </tr>
           </tbody>
         </table>
+        {% endif %}
 
         <table style="width: 100%" class="productsTable">
           <caption style="text-align: center;"><h2 style="margin: 25px 0 13px 0">Your order</h2></caption>
@@ -191,6 +213,7 @@
                 <strong>৳{{total}}</strong>
               </td>
             </tr>
+            {% if not is_cancel %}
             <tr style="text-align: right;">
               <td colspan=4 >
                   <strong>Your Total Save: </strong>
@@ -199,11 +222,14 @@
                   <strong><span style="color:green;font-weight:bold">৳{{saved_amount}}</span></strong>
               </td>
             </tr>
+            {% endif %}
           </tbody>
         </table>
 
           {% if is_customer %}
-          <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
+            {% if not is_cancel %}
+            <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
+            {% endif %}
           <div style="text-align: center;">
             <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>
             <p style="line-height: 20px;">Helpline: <strong>09614-161271</strong><br/>

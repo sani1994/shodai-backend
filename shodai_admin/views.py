@@ -1836,7 +1836,7 @@ class ProcessPreOrder(APIView):
         if is_valid and isinstance(data['pre_order_setting_id'], int):
             time_now = timezone.now()
             pre_order_setting = PreOrderSetting.objects.filter(id=data['pre_order_setting_id'],
-                                                               delivery_date_time__gte=time_now,
+                                                               delivery_date__gte=time_now,
                                                                is_approved=True,
                                                                is_processed=False).first()
 
@@ -1928,7 +1928,7 @@ class ProcessPreOrder(APIView):
                 pre_order.save()
 
                 if not settings.DEBUG:
-                    async_task('order.tasks.send_pre_order_cancel_email', pre_order)
+                    async_task('order.tasks.send_pre_order_email', pre_order, True)
 
             pre_order_setting.is_processed = True
             pre_order_setting.modified_by = user
