@@ -86,7 +86,7 @@ class Banner(BaseModel):
 
 class QurbaniProductCriteria(BaseModel):
     category = models.CharField(max_length=50, blank=True, null=True)
-    subcategory = models.CharField(max_length=50, blank=True, null=True)
+    # subcategory = models.CharField(max_length=50, blank=True, null=True)
     breed = models.CharField(max_length=50, blank=True, null=True)
     color = models.CharField(max_length=50, blank=True, null=True)
     teeth = models.IntegerField(blank=True, null=True)

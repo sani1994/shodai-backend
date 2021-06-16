@@ -75,7 +75,7 @@ class MessageAdmin(MaterialModelAdmin):
 
 
 class QurbaniProductCriteriaAdmin(MaterialModelAdmin):
-    list_display = ["id", "pre_order_setting"]
+    list_display = ["id", "pre_order_setting", "category", "breed", "color", "teeth"]
     readonly_fields = ["modified_by", "modified_on", "created_by", "created_on"]
     search_fields = ["pre_order_setting__producer_product__product_name"]
     autocomplete_fields = ["pre_order_setting"]
