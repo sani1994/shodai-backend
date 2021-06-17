@@ -7,9 +7,16 @@ from order.models import Order, InvoiceInfo, OrderProduct, TimeSlot, DiscountInf
 from producer.models import ProducerProductRequest
 from product.models import Product, ProductMeta
 from user.models import UserProfile
-from utility.views import order_status_all
 from utility.models import DeliveryZone
 
+order_status_all = {
+    'OD': 'Ordered',
+    'OA': 'Order Accepted',
+    'RE': 'Order Ready',
+    'OAD': 'Order at Delivery',
+    'COM': 'Order Completed',
+    'CN': 'Order Cancelled',
+}
 platform_all = {
     'WB': 'Web',
     'AD': 'Admin',
