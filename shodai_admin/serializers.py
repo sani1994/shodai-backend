@@ -281,7 +281,7 @@ class PreOrderSettingListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PreOrderSetting
-        fields = ['id', 'product_name', 'start_date', 'end_date',
+        fields = ['id', 'product_name', 'start_date', 'end_date', 'delivery_date',
                   'discounted_price', 'is_approved', 'is_processed']
 
     def get_product_name(self, obj):
@@ -365,7 +365,8 @@ class PreOrderListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PreOrder
         fields = ['id', 'pre_order_number', 'pre_order_status', 'created_on', 'customer_name',
-                  'customer_mobile_number', 'is_processed', 'pre_order_product', 'platform']
+                  'customer_mobile_number', 'is_processed', 'pre_order_product',
+                  'product_quantity', 'platform']
 
     def get_customer_name(self, obj):
         return obj.customer.first_name
@@ -374,7 +375,7 @@ class PreOrderListSerializer(serializers.ModelSerializer):
         return obj.customer.mobile_number
 
     def get_pre_order_product(self, obj):
-        return obj.pre_order_setting.id
+        return obj.pre_order_setting.producer_product.product_name
 
     def get_is_processed(self, obj):
         return 'Yes' if obj.pre_order_setting.is_processed else 'No'

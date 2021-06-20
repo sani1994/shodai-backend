@@ -51,7 +51,6 @@ all_order_status = {
     'Order Cancelled': 'CN'
 }
 
-
 all_platform = {
     'Website': 'WB',
     'Admin Panel': 'AD',
@@ -1532,7 +1531,8 @@ class OrderProductListExcel(APIView):
                        order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
                        obj.product.product_name, obj.product.product_unit.product_unit, obj.order_product_price,
                        obj.order_product_qty, obj.order_product_price * obj.order_product_qty,
-                       obj.product.product_category.type_of_product, str(obj.order.delivery_zone), obj.order.address.road]
+                       obj.product.product_category.type_of_product, str(obj.order.delivery_zone),
+                       obj.order.address.road]
                 ws1.append(row)
 
             for column_cells in ws1.columns:
@@ -1633,7 +1633,17 @@ class PreOrderSettingList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        queryset = PreOrderSetting.objects.all().order_by('-created_on')
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+        if date_from and date_to:
+            date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
+            date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
+
+            queryset = PreOrderSetting.objects.filter(delivery_date__gte=date_from,
+                                                      delivery_date__lt=date_to).order_by('-created_on')
+        else:
+            queryset = PreOrderSetting.objects.all().order_by('-created_on')
+
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PreOrderSettingListSerializer(result_page, many=True, context={'request': request})
@@ -1772,7 +1782,8 @@ class PreOrderSettingDetail(APIView):
                 is_valid = False
         if is_valid:
             pre_orders = PreOrder.objects.filter(pre_order_setting=pre_order_setting).exclude(pre_order_status='CN')
-            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get('product_quantity__sum') if pre_orders else 0
+            total_purchased = pre_orders.aggregate(Sum('product_quantity')).get(
+                'product_quantity__sum') if pre_orders else 0
             remaining_quantity = data['target_quantity'] - total_purchased
             if data['target_quantity'] < total_purchased or remaining_quantity % data['unit_quantity']:
                 is_valid = False
