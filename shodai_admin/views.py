@@ -1524,21 +1524,20 @@ class OrderProductListExcel(APIView):
             ws1 = wb.active
             ws1.title = 'Order Product List'
 
-            field_names = ["No.", "Customer Mobile Number", "Order Number", "Delivery Zone",
-                           "Order Placing Date Time ", "Order Delivery Date Time", "Order Status",
-                           "Order Total Amount", "Product ID", "Product Name", "Product Unit",
-                           "Product Unit Price", "Product Quantity", "Product Total Price",
-                           "Product Subcategory", "Delivery Address"]
+            field_names = ["No.", "Customer Mobile Number", "Order Number", "Order Placing Date Time ",
+                           "Order Delivery Date Time", "Order Status", "Order Total Amount", "Product ID",
+                           "Product Name", "Product Unit", "Product Unit Price", "Product Quantity",
+                           "Product Total Price", "Product Subcategory", "Delivery Zone", "Delivery Address"]
             ws1.append(field_names)
 
             for count, obj in enumerate(queryset, 1):
-                row = [count, obj.order.user.mobile_number[3:], obj.order.order_number, str(obj.order.delivery_zone),
+                row = [count, obj.order.user.mobile_number[3:], obj.order.order_number,
                        str(obj.order.placed_on + timedelta(hours=6))[:16],
                        str(obj.order.delivery_date_time + timedelta(hours=6))[:16],
                        order_status_all[obj.order.order_status], obj.order.order_total_price, obj.product.id,
                        obj.product.product_name, obj.product.product_unit.product_unit, obj.order_product_price,
                        obj.order_product_qty, obj.order_product_price * obj.order_product_qty,
-                       obj.product.product_category.type_of_product, obj.order.address.road]
+                       obj.product.product_category.type_of_product, str(obj.order.delivery_zone), obj.order.address.road]
                 ws1.append(row)
 
             for column_cells in ws1.columns:
@@ -1687,7 +1686,7 @@ class PreOrderSettingList(APIView):
             except Exception:
                 is_valid = False
         if is_valid:
-            product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
+            product = Product.objects.filter(id=data['product_id']).first()
             producer_product = ProducerProductRequest.objects.filter(id=data['producer_product_id'],
                                                                      is_approved=True).first()
             if not product or not producer_product or not start_date < end_date < delivery_date or \
@@ -1770,7 +1769,7 @@ class PreOrderSettingDetail(APIView):
                 is_valid = False
         if is_valid:
             pre_order_setting = PreOrderSetting.objects.filter(id=id, is_processed=False).first()
-            product = Product.objects.filter(id=data['product_id'], is_approved=True).first()
+            product = Product.objects.filter(id=data['product_id']).first()
             if not pre_order_setting or not product or not start_date < end_date < delivery_date or \
                     not 0 < data['discounted_price'] < product.product_price or \
                     not 0 < data['unit_quantity'] <= data['target_quantity'] or \

@@ -1,8 +1,6 @@
-import math
 from datetime import timedelta
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,7 +8,6 @@ from base.views import field_validation, coupon_checker
 from product.models import Product
 from shodai.permissions import GenericAuth, ServiceAPIAuth
 from order.models import Order, OrderProduct, InvoiceInfo, DiscountInfo
-from shodai_admin.views import all_order_status
 from utility.models import Area, ProductUnit, Remarks
 from utility.serializers import AreaSerializer, ProductUnitSerializer, RemarksSerializer
 
@@ -274,14 +271,11 @@ class OrderUpdate(APIView):
 
     def patch(self, request):
         data = request.data
-        order_number = request.query_params.get('order_number')
-        required_fields = ['order_status',
-                           'products']
-        is_valid = field_validation(required_fields, data)
-        if order_number:
-            products = data['products']
-            order = Order.objects.filter(order_number=order_number).first()
-            if is_valid and order:
+        is_valid = True
+
+        if data.get('order_number') and isinstance(data.get('order_number'), str):
+            order = Order.objects.filter(order_number=data['order_number']).first()
+            if order:
                 all_order_products = OrderProduct.objects.filter(order=order)
                 order_products = []
                 order_product_list = []
@@ -292,56 +286,44 @@ class OrderUpdate(APIView):
                     order_products.append(product_data)
             else:
                 is_valid = False
+        else:
+            is_valid = False
 
-            if is_valid and isinstance(products, list) and products:
+        if is_valid and data.get('products'):
+            products = data['products']
+            if isinstance(products, list):
                 required_fields = ['product_id', 'product_quantity']
-
                 product_list = []
                 for item in products:
-                    is_valid = field_validation(required_fields, item)
-                    if is_valid and isinstance(item['product_id'], int):
-                        if item['product_id'] not in product_list:
-                            product_list.append(item['product_id'])
-                            if item['product_id'] in order_product_list:
-                                product_exist = Product.objects.filter(id=item['product_id'])
-                            else:
-                                product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
-                            if not product_exist:
-                                is_valid = False
-                            if is_valid:
-                                decimal_allowed = product_exist[0].decimal_allowed
-                                if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
-                                        not item['product_quantity'] > 0:
-                                    is_valid = False
-                                elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
-                                        not item['product_quantity'] > 0:
-                                    is_valid = False
-                            if is_valid and decimal_allowed:
-                                item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
-                        else:
-                            is_valid = False
+                    if field_validation(required_fields, item) and \
+                       isinstance(item['product_id'], int) and isinstance(item['product_quantity'], int) and \
+                       item['product_id'] in order_product_list and item['product_id'] not in product_list and \
+                       0 < item['product_quantity']:
+                        product_list.append(item['product_id'])
                     else:
                         is_valid = False
                     if not is_valid:
                         break
             else:
                 is_valid = False
-        else:
-            is_valid = False
 
-        if not is_valid or not isinstance(data['order_status'], str) or \
-                order.order_status == 'COM' or order.order_status == 'CN' or \
-                data['order_status'] not in ['Order Accepted', 'Order Completed', 'Order Cancelled']:
+        if is_valid and data.get('order_status'):
+            if not isinstance(data['order_status'], str) or \
+                    order.order_status == 'COM' or order.order_status == 'CN' or \
+                    data['order_status'] not in ['Order Completed', 'Order Cancelled']:
+                is_valid = False
+
+        if not is_valid:
             return Response({
                 "status": "failed",
                 "message": "Invalid request!"
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
             products_updated = True
-            if data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
+            if data['order_status']:
                 products_updated = False
 
-            if products_updated and len(order_products) == len(products):
+            if products_updated:
                 for i in products:
                     if i not in order_products:
                         break
@@ -466,14 +448,11 @@ class OrderUpdate(APIView):
                                                 discount_description='Additional Discount',
                                                 invoice=new_invoice)
             else:
-                if data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
-                    order.order_status = all_order_status[data['order_status']]
-                    order.save()
-                else:
-                    return Response({
-                        "status": "failed",
-                        "message": "Invalid request!"
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                if data['order_status'] == 'Order Completed':
+                    order.order_status = 'COM'
+                elif data['order_status'] == 'Order Cancelled':
+                    order.order_status = 'CN'
+                order.save()
 
             return Response({
                 "status": "success",

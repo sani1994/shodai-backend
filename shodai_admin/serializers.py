@@ -17,6 +17,7 @@ order_status_all = {
     'COM': 'Order Completed',
     'CN': 'Order Cancelled',
 }
+
 platform_all = {
     'WB': 'Web',
     'AD': 'Admin',

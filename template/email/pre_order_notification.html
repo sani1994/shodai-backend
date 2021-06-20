@@ -48,14 +48,14 @@
         <table style="font-size:16px">
             <caption style="border-bottom: 2px solid #E8E8E8; padding-bottom: 20px;margin-bottom: 45px;"><img src="https://i.ibb.co/f4qd4wq/shodai-logo.png" alt="shodai-logo" width="100" /></caption>
             <tbody>
-            {% if is_cancel %}
+            {% if is_cancelled %}
               <tr>
                 <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
               </tr>
               <tr>
                 <td>
                   Thank you for ordering in Shodai.<br/><br/>
-                  We are very sorry to inform you that the target was not reached to confirm your pre-order.
+                  We are very sorry to inform you that the target was not reached to confirm your pre-order ({{order_number}}).
                   In these circumstances, we are obliged to cancel your order.<br/><br/>
                   Please try again next time.<br/><br/>
                 </td>
@@ -66,8 +66,7 @@
               <tr>
                 <td><strong>Team Shodai</strong></td>
               </tr>
-            {% else %}
-              {% if is_customer %}
+            {% elif is_customer %}
               <tr>
                 <td style="padding-bottom: 20px;"><strong>Hi, {{user_name}}</strong></td>
               </tr>
@@ -87,7 +86,7 @@
               <tr>
                 <td><strong>Team Shodai</strong></td>
               </tr>
-              {% else %}
+            {% else %}
               <tr>
                 <td><strong>Dear Concern,</strong></td>
               </tr>
@@ -98,59 +97,58 @@
                   Customer Mobile: {{user_mobile}}<br/>
                 </td>
               </tr>
-              {% endif %}
             {% endif %}
             </tbody>
         </table>
 
         <hr style="border:1px solid #E8E8E8; margin: 30px 0 15px 0"/>
 
-        {% if not is_cancel %}
-        <table style="text-align: center;width: 100%;" class="">
-          <thead>
-            <tr style="color:#545454;">
-              <th style="padding-bottom: 15px;"><strong>SHIPPING DETAILS</strong></th>
-              <th style="padding-bottom: 15px"><strong>ORDER DETAILS</strong></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-                <td style="background:#fbfced">
-                  <strong>Shipping Address</strong><br />
-                  {{shipping_address}}<br />
-                  <strong>Contact No.</strong><br />
-                  {{mobile_no}}
-                </td>
+        {% if not is_cancelled %}
+          <table style="text-align: center;width: 100%;" class="">
+            <thead>
+              <tr style="color:#545454;">
+                <th style="padding-bottom: 15px;"><strong>SHIPPING DETAILS</strong></th>
+                <th style="padding-bottom: 15px"><strong>ORDER DETAILS</strong></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                  <td style="background:#fbfced">
+                    <strong>Shipping Address</strong><br />
+                    {{shipping_address}}<br />
+                    <strong>Contact No.</strong><br />
+                    {{mobile_no}}
+                  </td>
 
-                <td style="background:#fbfced">
-                  <p>
-                    <strong>Pre-Order Number</strong><br />
-                    #{{order_number}}
-                  </p>
-                  {% if not is_customer %}
-                  <p>
-                    <strong>Platform:</strong>
-                    {{platform}}
-                  </p>
-                  {% endif %}
-                  <p>
-                    <strong>Date Ordered:</strong><br />
-                    {{order_date}}
-                  </p>
-                  <p>
-                    <strong>Possible Delivery Time:</strong></br>
-                    {{delivery_date_time}}
-                  </p>
-                  {% if note %}
-                  <p>
-                    <strong>Remarks:</strong></br>
-                    {{note}}
-                  </p>
-                  {% endif %}
-                </td>
-            </tr>
-          </tbody>
-        </table>
+                  <td style="background:#fbfced">
+                    <p>
+                      <strong>Pre-Order Number</strong><br />
+                      #{{order_number}}
+                    </p>
+                    {% if not is_customer %}
+                    <p>
+                      <strong>Platform:</strong>
+                      {{platform}}
+                    </p>
+                    {% endif %}
+                    <p>
+                      <strong>Date Ordered:</strong><br />
+                      {{order_date}}
+                    </p>
+                    <p>
+                      <strong>Possible Delivery Time:</strong></br>
+                      {{delivery_date_time}}
+                    </p>
+                    {% if note %}
+                    <p>
+                      <strong>Remarks:</strong></br>
+                      {{note}}
+                    </p>
+                    {% endif %}
+                  </td>
+              </tr>
+            </tbody>
+          </table>
         {% endif %}
 
         <table style="width: 100%" class="productsTable">
@@ -213,22 +211,22 @@
                 <strong>৳{{total}}</strong>
               </td>
             </tr>
-            {% if not is_cancel %}
-            <tr style="text-align: right;">
-              <td colspan=4 >
-                  <strong>Your Total Save: </strong>
-              </td>
-              <td style="text-align: center;">
-                  <strong><span style="color:green;font-weight:bold">৳{{saved_amount}}</span></strong>
-              </td>
-            </tr>
+            {% if not is_cancelled %}
+              <tr style="text-align: right;">
+                <td colspan=4 >
+                    <strong>Your Total Save: </strong>
+                </td>
+                <td style="text-align: center;">
+                    <strong><span style="color:green;font-weight:bold">৳{{saved_amount}}</span></strong>
+                </td>
+              </tr>
             {% endif %}
           </tbody>
         </table>
 
           {% if is_customer %}
-            {% if not is_cancel %}
-            <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
+            {% if not is_cancelled %}
+              <p style="text-align: center;color:#545454">If we, under any circumstances, fail to delivery this order we will notify you within 24 hours.</p>
             {% endif %}
           <div style="text-align: center;">
             <h3 style="font-size:22px; margin: 22px 0 14px 0">Need help?</h3>

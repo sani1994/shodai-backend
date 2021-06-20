@@ -105,7 +105,7 @@ def send_order_email(order, is_pre_order=False):
         return f"email not found"
 
 
-def send_pre_order_email(pre_order, is_cancel=False):
+def send_pre_order_email(pre_order, is_cancelled=False):
     user = pre_order.customer
     if user.email:
         if user.first_name and user.last_name:
@@ -129,7 +129,7 @@ def send_pre_order_email(pre_order, is_cancel=False):
         sub_total_without_offer = float(pre_order.pre_order_setting.product.product_price) * pre_order.product_quantity
         html_pre_order = get_template('email/pre_order_notification.html')
 
-        if not is_cancel:
+        if not is_cancelled:
             user_email_content = {'is_customer': True,
                                   'user_name': customer_name,
                                   'order_number': pre_order.pre_order_number,
@@ -176,12 +176,13 @@ def send_pre_order_email(pre_order, is_cancel=False):
             msg_to_admin.send()
         else:
             user_email_content = {'user_name': customer_name,
+                                  'order_number': pre_order.pre_order_number,
                                   'sub_total': sub_total,
                                   'vat': total_vat,
                                   'delivery_charge': delivery_charge,
                                   'total': sub_total + total_vat + delivery_charge,
                                   'details': column,
-                                  'is_cancel': True,
+                                  'is_cancelled': True,
                                   'is_customer': True}
             subject = 'Your shodai pre-order (#' + str(pre_order.pre_order_number) + ') has been cancelled'
             from_email, to = 'noreply@shod.ai', user.email
