@@ -353,16 +353,11 @@ class OrderDetail(APIView):
         if is_valid and isinstance(products, list) and products:
             required_fields = ['product_id', 'product_quantity']
 
-            product_list = []
             for item in products:
                 is_valid = field_validation(required_fields, item)
                 if is_valid and isinstance(item['product_id'], int):
-                    if item['product_id'] not in product_list:
-                        product_list.append(item['product_id'])
-                        if item['product_id'] in order_product_list:
-                            product_exist = Product.objects.filter(id=item['product_id'])
-                        else:
-                            product_exist = Product.objects.filter(id=item['product_id'], is_approved=True)
+                    if item['product_id'] in order_product_list:
+                        product_exist = Product.objects.filter(id=item['product_id'])
                         if not product_exist:
                             is_valid = False
                         if is_valid:
@@ -1973,33 +1968,56 @@ class PreOrderList(APIView):
         search = request.query_params.get('search')
         pre_order_status = all_order_status.get(request.query_params.get('pre_order_status'))
         platform = all_platform.get(request.query_params.get('platform'))
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
 
         if platform:
             platform = Q(platform=platform)
         else:
             platform = Q(platform='WB') | Q(platform='AD') | Q(platform='AP')
 
+        try:
+            date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
+        except Exception:
+            date_from = PreOrder.objects.first().created_on
+        try:
+            date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
+        except Exception:
+            date_to = timezone.now()
+
         if search and pre_order_status:
             if search.startswith("01") and len(search) == 11:
                 queryset = PreOrder.objects.filter(platform,
                                                    customer__mobile_number='+88' + search,
-                                                   pre_order_status=pre_order_status).order_by('-created_on')
+                                                   pre_order_status=pre_order_status,
+                                                   created_on__gte=date_from,
+                                                   created_on__lt=date_to).order_by('-created_on')
             else:
                 queryset = PreOrder.objects.filter(platform,
                                                    pre_order_setting__id=search,
-                                                   pre_order_status=pre_order_status).order_by('-created_on')
+                                                   pre_order_status=pre_order_status,
+                                                   created_on__gte=date_from,
+                                                   created_on__lt=date_to).order_by('-created_on')
         elif search and not pre_order_status:
             if search.startswith("01") and len(search) == 11:
                 queryset = PreOrder.objects.filter(platform,
-                                                   customer__mobile_number='+88' + search).order_by('-created_on')
+                                                   customer__mobile_number='+88' + search,
+                                                   created_on__gte=date_from,
+                                                   created_on__lt=date_to).order_by('-created_on')
             else:
                 queryset = PreOrder.objects.filter(platform,
-                                                   pre_order_setting__id=search).order_by('-created_on')
+                                                   pre_order_setting__id=search,
+                                                   created_on__gte=date_from,
+                                                   created_on__lt=date_to).order_by('-created_on')
         elif not search and pre_order_status:
             queryset = PreOrder.objects.filter(platform,
-                                               pre_order_status=pre_order_status).order_by('-created_on')
+                                               pre_order_status=pre_order_status,
+                                               created_on__gte=date_from,
+                                               created_on__lt=date_to).order_by('-created_on')
         else:
-            queryset = PreOrder.objects.filter(platform).order_by('-created_on')
+            queryset = PreOrder.objects.filter(platform,
+                                               created_on__gte=date_from,
+                                               created_on__lt=date_to).order_by('-created_on')
 
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
