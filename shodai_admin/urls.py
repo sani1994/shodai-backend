@@ -4,6 +4,7 @@ from shodai_admin import views
 urlpatterns = [
     path('login', views.Login.as_view()),
     path('logout', views.Logout.as_view()),
+    path('dashboard', views.Dashboard.as_view()),
     path('user/registration', views.AdminUserRegistration.as_view()),
     path('user/profile', views.AdminUserProfile.as_view()),
 

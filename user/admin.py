@@ -1,18 +1,22 @@
-from django.contrib import admin
-from django.contrib.admin import register
 from material.admin.options import MaterialModelAdmin
 from material.admin.sites import site
-from simple_history.admin import SimpleHistoryAdmin
+from user.models import UserProfile, Address
 
-from user.models import UserProfile, Address, Otp
-
-
-# Register your models here.
 
 class AddressAdmin(MaterialModelAdmin):
     list_display = ('road', 'city', 'district', 'country')
-    history_list_display = ["road"]
-    # icon_name = 'address'
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        if not obj.id:
+            obj.created_by = request.user
+        obj.modified_by = request.user
+        obj.save()
 
 
 class UserProfileAdmin(MaterialModelAdmin):
@@ -39,18 +43,15 @@ class UserProfileAdmin(MaterialModelAdmin):
         return False
 
     def save_model(self, request, obj, form, change):
-        if obj.id:
-            obj.modified_by = request.user
-        else:
+        if not obj.id:
             obj.created_by = request.user
-        # obj.user = request.user
+        obj.modified_by = request.user
         obj.save()
-        return super().save_model(request, obj, form, change)
 
 
-class OtpAdmin(MaterialModelAdmin):
-    pass
-    # icon_name = 'otp'
+# class OtpAdmin(MaterialModelAdmin):
+#     pass
+#     # icon_name = 'otp'
 
 
 # class AddressInline(admin.StackedInline):
@@ -65,7 +66,6 @@ class OtpAdmin(MaterialModelAdmin):
 # class UserInfoAdmin(admin.ModelAdmin):
 #     # list_display = ('mobile_number', 'user_id', 'address')
 #     # exclude = ['created_by', 'modified_by']
-
 #     # inlines = [
 #     #     AddressInline
 #     # ]
@@ -74,8 +74,7 @@ class OtpAdmin(MaterialModelAdmin):
 # admin.site.register(Address, AddressAdmin)
 # admin.site.register(UserProfile)
 # admin.site.register(UserInfo, UserInfoAdmin)
-
 # admin.site.register(Retailer, RetailerAdmin)
-site.register(UserProfile, UserProfileAdmin)
+# site.register(Otp, OtpAdmin)
 site.register(Address, AddressAdmin)
-site.register(Otp, OtpAdmin)
+site.register(UserProfile, UserProfileAdmin)

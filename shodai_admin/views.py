@@ -352,21 +352,19 @@ class OrderDetail(APIView):
         if is_valid and isinstance(products, list) and products:
             required_fields = ['product_id', 'product_quantity']
 
+            product_list = []
             for item in products:
-                is_valid = field_validation(required_fields, item)
-                if is_valid and isinstance(item['product_id'], int):
-                    if item['product_id'] in order_product_list:
-                        product_exist = Product.objects.filter(id=item['product_id'])
-                        if not product_exist:
+                if field_validation(required_fields, item) and isinstance(item['product_id'], int):
+                    if item['product_id'] in order_product_list and item['product_id'] not in product_list:
+                        product_list.append(item['product_id'])
+                        product_exist = Product.objects.filter(id=item['product_id']).first()
+                        decimal_allowed = product_exist.decimal_allowed
+                        if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                not item['product_quantity'] > 0:
                             is_valid = False
-                        if is_valid:
-                            decimal_allowed = product_exist[0].decimal_allowed
-                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
-                                    not item['product_quantity'] > 0:
-                                is_valid = False
-                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
-                                    not item['product_quantity'] > 0:
-                                is_valid = False
+                        elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                not item['product_quantity'] > 0:
+                            is_valid = False
                         if is_valid and decimal_allowed:
                             item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
                     else:
@@ -1635,15 +1633,18 @@ class PreOrderSettingList(APIView):
     def get(self, request):
         date_from = request.query_params.get('date_from')
         date_to = request.query_params.get('date_to')
-        if date_from and date_to:
+
+        try:
             date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
+        except Exception:
+            date_from = PreOrder.objects.first().delivery_date
+        try:
             date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
+        except Exception:
+            date_to = timezone.now()
 
-            queryset = PreOrderSetting.objects.filter(delivery_date__gte=date_from,
-                                                      delivery_date__lt=date_to).order_by('-created_on')
-        else:
-            queryset = PreOrderSetting.objects.all().order_by('-created_on')
-
+        queryset = PreOrderSetting.objects.filter(delivery_date__gte=date_from,
+                                                  delivery_date__lt=date_to).order_by('-created_on')
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PreOrderSettingListSerializer(result_page, many=True, context={'request': request})
@@ -2296,3 +2297,15 @@ class PlatformList(APIView):
             'Mobile App'
         ]
         return Response({'status': 'success', 'data': platform}, status=status.HTTP_200_OK)
+
+
+class Dashboard(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        today = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+        total_new_order = Order.objects.filter(placed_on__gte=today).exclude(order_status='CN').count()
+        total_new_customer = UserProfile.objects.filter(created_on__gte=today).count()
+        data = {'total_new_order': total_new_order,
+                'total_new_customer': total_new_customer}
+        return Response({'status': 'success', 'data': data}, status=status.HTTP_200_OK)
