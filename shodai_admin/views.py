@@ -354,18 +354,24 @@ class OrderDetail(APIView):
             product_list = []
             for item in products:
                 if field_validation(required_fields, item) and isinstance(item['product_id'], int):
-                    if item['product_id'] in order_product_list and item['product_id'] not in product_list:
+                    if item['product_id'] not in product_list:
                         product_list.append(item['product_id'])
-                        product_exist = Product.objects.filter(id=item['product_id']).first()
-                        decimal_allowed = product_exist.decimal_allowed
-                        if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
-                                not item['product_quantity'] > 0:
+                        if item['product_id'] in order_product_list:
+                            product_exist = Product.objects.filter(id=item['product_id']).first()
+                        else:
+                            product_exist = Product.objects.filter(id=item['product_id'], is_approved=True).first()
+                        if not product_exist:
                             is_valid = False
-                        elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
-                                not item['product_quantity'] > 0:
-                            is_valid = False
-                        if is_valid and decimal_allowed:
-                            item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
+                        if is_valid:
+                            decimal_allowed = product_exist.decimal_allowed
+                            if not decimal_allowed and not isinstance(item['product_quantity'], int) and \
+                                    not item['product_quantity'] > 0:
+                                is_valid = False
+                            elif decimal_allowed and not isinstance(item['product_quantity'], (float, int)) and \
+                                    not item['product_quantity'] > 0:
+                                is_valid = False
+                            if is_valid and decimal_allowed:
+                                item['product_quantity'] = math.floor(item['product_quantity'] * 10 ** 3) / 10 ** 3
                     else:
                         is_valid = False
                 else:
