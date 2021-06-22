@@ -1,4 +1,5 @@
 import graphene
+from decouple import config
 from django.utils import timezone
 from offer.models import OfferProduct, Offer
 from order.models import PreOrderSetting
@@ -32,7 +33,7 @@ class Count(graphene.Mutation):
                                                                          is_processed=False,
                                                                          start_date__lte=time_now,
                                                                          end_date__gte=time_now,
-                                                                         producer_product__producer__mobile_number='+8801553252575',
+                                                                         producer_product__producer__mobile_number=config("QURBANI_PRODUCT_PRODUCER"),
                                                                          qurbani_products__in=QurbaniProductCriteria.objects.all()).count()
 
         return Count(offer_product_count=offer_product_count,

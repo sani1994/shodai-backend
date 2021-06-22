@@ -357,7 +357,8 @@ class PreOrderSettingDetailSerializer(serializers.ModelSerializer):
 class PreOrderListSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField(read_only=True)
     customer_mobile_number = serializers.SerializerMethodField(read_only=True)
-    pre_order_product = serializers.SerializerMethodField(read_only=True)
+    pre_order_setting_number = serializers.SerializerMethodField(read_only=True)
+    pre_order_product = serializers.StringRelatedField(source='pre_order_setting')
     is_processed = serializers.SerializerMethodField(read_only=True)
     pre_order_status = serializers.SerializerMethodField(read_only=True)
     platform = serializers.SerializerMethodField(read_only=True)
@@ -366,7 +367,7 @@ class PreOrderListSerializer(serializers.ModelSerializer):
         model = PreOrder
         fields = ['id', 'pre_order_number', 'pre_order_status', 'created_on', 'customer_name',
                   'customer_mobile_number', 'is_processed', 'pre_order_product',
-                  'product_quantity', 'platform']
+                  'product_quantity', 'platform', 'pre_order_setting_number']
 
     def get_customer_name(self, obj):
         return obj.customer.first_name
@@ -374,7 +375,7 @@ class PreOrderListSerializer(serializers.ModelSerializer):
     def get_customer_mobile_number(self, obj):
         return obj.customer.mobile_number
 
-    def get_pre_order_product(self, obj):
+    def get_pre_order_setting_number(self, obj):
         return obj.pre_order_setting.pre_order_setting_number
 
     def get_is_processed(self, obj):

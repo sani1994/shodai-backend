@@ -18,7 +18,7 @@ from openpyxl import Workbook
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
-from base.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker
+from base.views import CustomPageNumberPagination, field_validation, type_validation, coupon_checker, render_to_pdf
 from coupon.models import CouponCode, CouponSettings, CouponUser, CouponUsageHistory
 from offer.models import Offer, CartOffer
 from order.models import Order, InvoiceInfo, OrderProduct, DeliveryCharge, TimeSlot, DiscountInfo, PreOrderSetting, \
@@ -40,7 +40,6 @@ from rest_framework.response import Response
 
 from utility.models import DeliveryZone
 from utility.notification import send_sms
-from utility.pdf import render_to_pdf
 
 all_order_status = {
     'Ordered': 'OD',
@@ -1637,11 +1636,11 @@ class PreOrderSettingList(APIView):
         try:
             date_from = timezone.make_aware(datetime.strptime(date_from, "%Y-%m-%d"))
         except Exception:
-            date_from = PreOrder.objects.first().delivery_date
+            date_from = PreOrder.objects.first().created_on
         try:
             date_to = timezone.make_aware(datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1))
         except Exception:
-            date_to = timezone.now()
+            date_to = timezone.now() + timedelta(days=100)
 
         queryset = PreOrderSetting.objects.filter(delivery_date__gte=date_from,
                                                   delivery_date__lt=date_to).order_by('-created_on')
@@ -2006,7 +2005,7 @@ class PreOrderList(APIView):
                                                    created_on__lt=date_to).order_by('-created_on')
             else:
                 queryset = PreOrder.objects.filter(platform,
-                                                   pre_order_setting__id=search,
+                                                   pre_order_setting__pre_order_setting_number=search,
                                                    pre_order_status=pre_order_status,
                                                    created_on__gte=date_from,
                                                    created_on__lt=date_to).order_by('-created_on')
@@ -2018,7 +2017,7 @@ class PreOrderList(APIView):
                                                    created_on__lt=date_to).order_by('-created_on')
             else:
                 queryset = PreOrder.objects.filter(platform,
-                                                   pre_order_setting__id=search,
+                                                   pre_order_setting__pre_order_setting_number=search,
                                                    created_on__gte=date_from,
                                                    created_on__lt=date_to).order_by('-created_on')
         elif not search and pre_order_status:

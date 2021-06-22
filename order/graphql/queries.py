@@ -1,4 +1,5 @@
 import graphene
+from decouple import config
 from django.db.models import Q, Sum
 from django.utils import timezone
 from graphene_django.types import DjangoObjectType
@@ -235,7 +236,7 @@ class Query(graphene.ObjectType):
                                               is_processed=False,
                                               start_date__lte=time_now,
                                               end_date__gte=time_now,
-                                              producer_product__producer__mobile_number='+8801553252575',
+                                              producer_product__producer__mobile_number=config("QURBANI_PRODUCT_PRODUCER"),
                                               qurbani_products__in=QurbaniProductCriteria.objects.filter(query))
 
     def resolve_pre_order_product_detail(self, info, **kwargs):

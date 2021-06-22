@@ -1,5 +1,9 @@
 from decouple import config
+from io import BytesIO
+from xhtml2pdf import pisa
 from django.db.models import Q
+from django.http import HttpResponse
+from django.template.loader import get_template
 from django.utils import timezone
 from graphql_relay.utils import unbase64
 from rest_framework.pagination import PageNumberPagination
@@ -50,6 +54,16 @@ def from_global_id(global_id):
     unbased_global_id = unbase64(global_id)
     _type, _id = unbased_global_id.split(':', 1)
     return _id
+
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
 
 
 def keyword_based_search(model, keywords, search_fields, additional_query=None):
