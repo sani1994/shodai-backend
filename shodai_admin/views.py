@@ -417,6 +417,10 @@ class OrderDetail(APIView):
                     data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
                 products_updated = False
 
+            for op in all_order_products:
+                if op.product.id not in product_list:
+                    op.remove = True
+                    op.save()
             if products_updated and len(order_products) == len(products):
                 for i in products:
                     if i not in order_products:
