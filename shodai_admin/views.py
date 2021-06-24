@@ -545,7 +545,6 @@ class OrderDetail(APIView):
             else:
                 order.order_total_price = round(order.order_total_price - invoice.delivery_charge + delivery_charge +
                                                 prev_additional_discount - additional_discount)
-                order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
                 order.delivery_date_time = delivery_date_time
                 order.contact_number = data['contact_number']
                 order.order_status = all_order_status[data['order_status']]

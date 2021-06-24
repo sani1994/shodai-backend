@@ -8,13 +8,13 @@ headers = {"Content-Type": "application/json",
 
 
 def send_customer_data(customer, created):
-    payload = {"customer_name": customer.first_name,
+    payload = {"customer_id": customer.id,
+               "customer_name": customer.first_name,
                "customer_mobile_number": customer.mobile_number,
                "customer_email": customer.email if customer.email else ""}
 
     if not settings.DEBUG:
         if created:
-            payload["customer_id"] = customer.id,
             url = settings.INTERNAL_BRICKBOX_API_URL + '/customer'
             response = requests.post(url, headers=headers, json=payload).json()
         else:

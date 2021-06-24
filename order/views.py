@@ -124,7 +124,7 @@ class OrderList(APIView):
                 billing_person_name = ""
 
             payment_method = 'SSLCOMMERZ'
-            if data.get('payment_method') and data.get('payment_method') != 'Online':
+            if data.get('payment_method') != 'Online':
                 payment_method = 'CASH_ON_DELIVERY'
 
             InvoiceInfo.objects.create(invoice_number=order_instance.invoice_number,
