@@ -421,6 +421,10 @@ class OrderDetail(APIView):
                 if op.product.id not in product_list:
                     op.remove = True
                     op.save()
+                    product_data = {'product_id': op.product.id,
+                                    'product_quantity': op.order_product_qty}
+                    products.append(product_data)
+
             if products_updated and len(order_products) == len(products):
                 for i in products:
                     if i not in order_products:
@@ -517,13 +521,21 @@ class OrderDetail(APIView):
                 for p in products:
                     product = Product.objects.get(id=p["product_id"])
                     is_op_unchanged = OrderProduct.objects.filter(product=product,
-                                                                  order=existing_order)
-                    if is_op_unchanged and is_op_unchanged[0].order_product_qty >= p["product_quantity"]:
+                                                                  order=existing_order).first()
+                    if is_op_unchanged and is_op_unchanged.remove:
                         op = OrderProduct.objects.create(product=product,
                                                          order=order,
-                                                         order_product_price=is_op_unchanged[0].order_product_price,
-                                                         product_price=is_op_unchanged[0].product_price,
+                                                         order_product_price=is_op_unchanged.order_product_price,
+                                                         product_price=is_op_unchanged.product_price,
+                                                         order_product_qty=p["product_quantity"],
+                                                         remove=True)
+                    elif is_op_unchanged and is_op_unchanged.order_product_qty >= p["product_quantity"]:
+                        op = OrderProduct.objects.create(product=product,
+                                                         order=order,
+                                                         order_product_price=is_op_unchanged.order_product_price,
+                                                         product_price=is_op_unchanged.product_price,
                                                          order_product_qty=p["product_quantity"])
+
                     else:
                         op = OrderProduct.objects.create(product=product,
                                                          order=order,
@@ -579,22 +591,22 @@ class OrderDetail(APIView):
                 payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
                 paid_status = False if products_updated else invoice.paid_status
                 paid_on = None if products_updated else invoice.paid_on
-                invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
-                                                     billing_person_name=billing_person_name,
-                                                     billing_person_email=order.user.email,
-                                                     billing_person_mobile_number=order.user.mobile_number,
-                                                     delivery_contact_number=order.contact_number,
-                                                     delivery_address=delivery_address.road,
-                                                     delivery_date_time=order.delivery_date_time,
-                                                     delivery_charge=delivery_charge,
-                                                     discount_amount=discount_amount,
-                                                     net_payable_amount=order.order_total_price,
-                                                     payment_method=payment_method,
-                                                     paid_status=paid_status,
-                                                     paid_on=paid_on,
-                                                     order_number=order,
-                                                     user=order.user,
-                                                     created_by=request.user)
+                new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                                         billing_person_name=billing_person_name,
+                                                         billing_person_email=order.user.email,
+                                                         billing_person_mobile_number=order.user.mobile_number,
+                                                         delivery_contact_number=order.contact_number,
+                                                         delivery_address=delivery_address.road,
+                                                         delivery_date_time=order.delivery_date_time,
+                                                         delivery_charge=delivery_charge,
+                                                         discount_amount=discount_amount,
+                                                         net_payable_amount=order.order_total_price,
+                                                         payment_method=payment_method,
+                                                         paid_status=paid_status,
+                                                         paid_on=paid_on,
+                                                         order_number=order,
+                                                         user=order.user,
+                                                         created_by=request.user)
             order.save()
 
             if coupon_discount:
@@ -602,13 +614,13 @@ class OrderDetail(APIView):
                                             discount_type='CP',
                                             discount_description=coupon_discount_description,
                                             coupon=is_coupon_discount[0].coupon if is_coupon_discount else coupon,
-                                            invoice=invoice)
+                                            invoice=new_invoice)
 
             if product_discount:
                 DiscountInfo.objects.create(discount_amount=product_discount,
                                             discount_type='PD',
                                             discount_description='Product Offer Discount',
-                                            invoice=invoice)
+                                            invoice=new_invoice)
 
             if delivery_charge_discount:
                 DiscountInfo.objects.create(discount_amount=delivery_charge_discount,
@@ -616,13 +628,13 @@ class OrderDetail(APIView):
                                             discount_description='Offer ID: {}'.format(offer_id)
                                             if offer_id else is_delivery_discount[0].discount_description,
                                             offer=offer[0] if offer_id else is_delivery_discount[0].offer,
-                                            invoice=invoice)
+                                            invoice=new_invoice)
 
             if additional_discount:
                 DiscountInfo.objects.create(discount_amount=additional_discount,
                                             discount_type='AD',
                                             discount_description='Additional Discount',
-                                            invoice=invoice)
+                                            invoice=new_invoice)
             return Response({
                 "status": "success",
                 "message": "Order updated.",

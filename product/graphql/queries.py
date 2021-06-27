@@ -5,6 +5,7 @@ from graphene_django.types import DjangoObjectType
 
 from base.views import keyword_based_search
 from offer.models import OfferProduct
+from order.models import PreOrderSetting
 from product.models import Product, ProductCategory, ShopCategory, ProductMeta
 from utility.models import ProductUnit
 from graphene import relay
@@ -22,6 +23,8 @@ class ProductNode(DjangoObjectType):
         return queryset.filter(is_approved=True)
 
     offer_price = graphene.Float()
+    pre_order_slug = graphene.String()
+    pre_order_price = graphene.Float()
     breadcrumb = graphene.String()
 
     def resolve_offer_price(self, info):
@@ -33,6 +36,30 @@ class ProductNode(DjangoObjectType):
                                                     offer__offer_ends_in__gte=today)
         if offer_product:
             return offer_product[0].offer_price
+        else:
+            return None
+
+    def resolve_pre_order_slug(self, info):
+        time_now = timezone.now()
+        pre_order_setting = PreOrderSetting.objects.filter(product=self,
+                                                           is_approved=True,
+                                                           is_processed=False,
+                                                           start_date__lte=time_now,
+                                                           end_date__gte=time_now).first()
+        if pre_order_setting:
+            return pre_order_setting.slug
+        else:
+            return None
+
+    def resolve_pre_order_price(self, info):
+        time_now = timezone.now()
+        pre_order_setting = PreOrderSetting.objects.filter(product=self,
+                                                           is_approved=True,
+                                                           is_processed=False,
+                                                           start_date__lte=time_now,
+                                                           end_date__gte=time_now).first()
+        if pre_order_setting:
+            return pre_order_setting.discounted_price
         else:
             return None
 
