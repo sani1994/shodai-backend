@@ -431,6 +431,12 @@ class OrderDetail(APIView):
                         break
                 else:
                     products_updated = False
+            elif products_updated and len(order_products) > len(products):
+                for i in products:
+                    if i['product_id'] not in order_product_list:
+                        break
+                else:
+                    products_updated = False
 
             data["delivery_address"] = data["delivery_address"][:500]
             if not order.address or data["delivery_address"] != order.address.road:
@@ -576,37 +582,33 @@ class OrderDetail(APIView):
                 order.order_total_price += additional_discount
                 additional_discount = 0
 
-            if invoice.net_payable_amount != order.order_total_price or \
-                    invoice.delivery_contact_number != order.contact_number or \
-                    invoice.delivery_address != delivery_address.road or \
-                    invoice.delivery_date_time != order.delivery_date_time:
-                discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
-                order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-                if order.user.first_name and order.user.last_name:
-                    billing_person_name = order.user.first_name + " " + order.user.last_name
-                elif order.user.first_name:
-                    billing_person_name = order.user.first_name
-                else:
-                    billing_person_name = ""
-                payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
-                paid_status = False if products_updated else invoice.paid_status
-                paid_on = None if products_updated else invoice.paid_on
-                new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
-                                                         billing_person_name=billing_person_name,
-                                                         billing_person_email=order.user.email,
-                                                         billing_person_mobile_number=order.user.mobile_number,
-                                                         delivery_contact_number=order.contact_number,
-                                                         delivery_address=delivery_address.road,
-                                                         delivery_date_time=order.delivery_date_time,
-                                                         delivery_charge=delivery_charge,
-                                                         discount_amount=discount_amount,
-                                                         net_payable_amount=order.order_total_price,
-                                                         payment_method=payment_method,
-                                                         paid_status=paid_status,
-                                                         paid_on=paid_on,
-                                                         order_number=order,
-                                                         user=order.user,
-                                                         created_by=request.user)
+            discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
+            order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+            if order.user.first_name and order.user.last_name:
+                billing_person_name = order.user.first_name + " " + order.user.last_name
+            elif order.user.first_name:
+                billing_person_name = order.user.first_name
+            else:
+                billing_person_name = ""
+            payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
+            paid_status = False if products_updated else invoice.paid_status
+            paid_on = None if products_updated else invoice.paid_on
+            new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                                     billing_person_name=billing_person_name,
+                                                     billing_person_email=order.user.email,
+                                                     billing_person_mobile_number=order.user.mobile_number,
+                                                     delivery_contact_number=order.contact_number,
+                                                     delivery_address=delivery_address.road,
+                                                     delivery_date_time=order.delivery_date_time,
+                                                     delivery_charge=delivery_charge,
+                                                     discount_amount=discount_amount,
+                                                     net_payable_amount=order.order_total_price,
+                                                     payment_method=payment_method,
+                                                     paid_status=paid_status,
+                                                     paid_on=paid_on,
+                                                     order_number=order,
+                                                     user=order.user,
+                                                     created_by=request.user)
             order.save()
 
             if coupon_discount:
