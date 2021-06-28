@@ -417,23 +417,22 @@ class OrderDetail(APIView):
                     data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
                 products_updated = False
 
-            for op in all_order_products:
-                if op.product.id not in product_list:
-                    op.remove = True
-                    op.save()
-                    product_data = {'product_id': op.product.id,
-                                    'product_quantity': op.order_product_qty}
-                    products.append(product_data)
+            is_product_cancelled = False
+            if products_updated:
+                for op in all_order_products:
+                    if op.product.id not in product_list:
+                        if not op.is_cancelled:
+                            op.is_cancelled = True
+                            op.cancel_reason = 'RC'
+                            op.save()
+                            is_product_cancelled = True
+                        product_data = {'product_id': op.product.id,
+                                        'product_quantity': op.order_product_qty}
+                        products.append(product_data)
 
-            if products_updated and len(order_products) == len(products):
+            if products_updated and not is_product_cancelled and len(order_products) == len(products):
                 for i in products:
                     if i not in order_products:
-                        break
-                else:
-                    products_updated = False
-            elif products_updated and len(order_products) > len(products):
-                for i in products:
-                    if i['product_id'] not in order_product_list:
                         break
                 else:
                     products_updated = False
@@ -528,13 +527,14 @@ class OrderDetail(APIView):
                     product = Product.objects.get(id=p["product_id"])
                     is_op_unchanged = OrderProduct.objects.filter(product=product,
                                                                   order=existing_order).first()
-                    if is_op_unchanged and is_op_unchanged.remove:
+                    if is_op_unchanged and is_op_unchanged.is_cancelled:
                         op = OrderProduct.objects.create(product=product,
                                                          order=order,
                                                          order_product_price=is_op_unchanged.order_product_price,
                                                          product_price=is_op_unchanged.product_price,
                                                          order_product_qty=p["product_quantity"],
-                                                         remove=True)
+                                                         is_cancelled=is_op_unchanged.is_cancelled,
+                                                         cancel_reason=is_op_unchanged.cancel_reason)
                     elif is_op_unchanged and is_op_unchanged.order_product_qty >= p["product_quantity"]:
                         op = OrderProduct.objects.create(product=product,
                                                          order=order,
@@ -1718,8 +1718,8 @@ class PreOrderSettingList(APIView):
             product = Product.objects.filter(id=data['product_id']).first()
             producer_product = ProducerProductRequest.objects.filter(id=data['producer_product_id'],
                                                                      is_approved=True).first()
-            if not product or not producer_product or not start_date < end_date < delivery_date or \
-                    not 0 < data['discounted_price'] < product.product_price or \
+            if not product or not producer_product or not start_date <= end_date < delivery_date or \
+                    not 0 < data['discounted_price'] <= product.product_price or \
                     not 0 < data['unit_quantity'] <= data['target_quantity'] or \
                     data['target_quantity'] % data['unit_quantity']:
                 is_valid = False
@@ -1799,8 +1799,8 @@ class PreOrderSettingDetail(APIView):
         if is_valid:
             pre_order_setting = PreOrderSetting.objects.filter(id=id, is_processed=False).first()
             product = Product.objects.filter(id=data['product_id']).first()
-            if not pre_order_setting or not product or not start_date < end_date < delivery_date or \
-                    not 0 < data['discounted_price'] < product.product_price or \
+            if not pre_order_setting or not product or not start_date <= end_date < delivery_date or \
+                    not 0 < data['discounted_price'] <= product.product_price or \
                     not 0 < data['unit_quantity'] <= data['target_quantity'] or \
                     not isinstance(data['is_approved'], bool):
                 is_valid = False

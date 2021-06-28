@@ -126,14 +126,14 @@ class OrderProduct(BaseModel):
                                    verbose_name='Vat Amount(%)')  # Here vat amount 15 is 15%; added to track vat
     order_product_qty = models.FloatField(default=1)
     product_price = models.FloatField(blank=False, null=False, default=0)
-    remove = models.BooleanField(default=False)
-    CANCELLED = 'CN'
+    is_cancelled = models.BooleanField(default=False)
+    REQUESTED_BY_CUSTOMER = 'RC'
     UNAVAILABLE = 'UN'
-    REMOVE_STATUS = [
-        (CANCELLED, 'Product Cancelled'),
+    REASONS_OF_CANCELLATION = [
+        (REQUESTED_BY_CUSTOMER, 'Requested by Customer'),
         (UNAVAILABLE, 'Product Unavailable')
     ]
-    removal_status = models.CharField(max_length=20, choices=REMOVE_STATUS, default=UNAVAILABLE)
+    cancel_reason = models.CharField(max_length=5, blank=True, null=True, choices=REASONS_OF_CANCELLATION)
     history = HistoricalRecords()
 
     def __str__(self):
