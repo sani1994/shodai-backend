@@ -1654,6 +1654,7 @@ class PreOrderSettingList(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
+        search = request.query_params.get('search')
         date_from = request.query_params.get('date_from')
         date_to = request.query_params.get('date_to')
 
@@ -1666,8 +1667,18 @@ class PreOrderSettingList(APIView):
         except Exception:
             date_to = timezone.now() + timedelta(days=100)
 
-        queryset = PreOrderSetting.objects.filter(delivery_date__gte=date_from,
-                                                  delivery_date__lt=date_to).order_by('-created_on')
+        if search and isinstance(search, str):
+            if len(search) == 4:
+                queryset = PreOrderSetting.objects.filter(pre_order_setting_number=search,
+                                                          delivery_date__gte=date_from,
+                                                          delivery_date__lt=date_to).order_by('-created_on')
+            else:
+                queryset = PreOrderSetting.objects.filter(product__product_name__icontains=search,
+                                                          delivery_date__gte=date_from,
+                                                          delivery_date__lt=date_to).order_by('-created_on')
+        else:
+            queryset = PreOrderSetting.objects.filter(delivery_date__gte=date_from,
+                                                      delivery_date__lt=date_to).order_by('-created_on')
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PreOrderSettingListSerializer(result_page, many=True, context={'request': request})
