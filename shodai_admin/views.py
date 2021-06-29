@@ -341,10 +341,11 @@ class OrderDetail(APIView):
             order_products = []
             order_product_list = []
             for item in all_order_products:
-                product_data = {'product_id': item.product.id,
-                                'product_quantity': item.order_product_qty}
-                order_product_list.append(item.product.id)
-                order_products.append(product_data)
+                if not item.is_cancelled:
+                    product_data = {'product_id': item.product.id,
+                                    'product_quantity': item.order_product_qty}
+                    order_products.append(product_data)
+                    order_product_list.append(item.product.id)
         else:
             is_valid = False
 
@@ -417,7 +418,6 @@ class OrderDetail(APIView):
                     data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
                 products_updated = False
 
-            is_product_cancelled = False
             if products_updated:
                 for op in all_order_products:
                     if op.product.id not in product_list:
@@ -425,17 +425,20 @@ class OrderDetail(APIView):
                             op.is_cancelled = True
                             op.cancel_reason = 'RC'
                             op.save()
-                            is_product_cancelled = True
-                        product_data = {'product_id': op.product.id,
-                                        'product_quantity': op.order_product_qty}
-                        products.append(product_data)
 
-            if products_updated and not is_product_cancelled and len(order_products) == len(products):
-                for i in products:
-                    if i not in order_products:
+            is_only_cancelled = False
+            if products_updated and len(order_products) == len(products):
+                for item in products:
+                    if item not in order_products:
                         break
                 else:
                     products_updated = False
+            elif products_updated and len(order_products) > len(products):
+                for item in products:
+                    if item not in order_products:
+                        break
+                else:
+                    is_only_cancelled = True
 
             data["delivery_address"] = data["delivery_address"][:500]
             if not order.address or data["delivery_address"] != order.address.road:
@@ -490,68 +493,65 @@ class OrderDetail(APIView):
             product_discount = is_product_discount.discount_amount if is_product_discount else 0
 
             if products_updated:
-                if "-" in order.order_number:
-                    x = order.order_number.split("-")
-                    x[1] = int(x[1]) + 1
-                    order_number = x[0] + "-" + str(x[1])
+                total_vat = total = total_price = total_op_price = 0
+                if is_only_cancelled:
+                    for op in all_order_products:
+                        if not op.is_cancelled:
+                            total_price += float(op.product_price) * op.order_product_qty
+                            total_op_price += op.order_product_price * op.order_product_qty
+                            total += float(op.order_product_price_with_vat) * op.order_product_qty
+                            total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
                 else:
-                    order_number = order.order_number + "-1"
-
-                is_used = Order.objects.filter(order_number=order_number).count()
-                if is_used:
-                    return Response({
-                        "status": "failed",
-                        "message": "Invalid request!"
-                    }, status=status.HTTP_400_BAD_REQUEST)
-
-                existing_order = order.id
-                order.order_status = 'CN'
-                order.save()
-
-                order = Order.objects.create(user=order.user,
-                                             placed_on=order.placed_on,
-                                             platform=order.platform,
-                                             order_number=order_number,
-                                             delivery_date_time=delivery_date_time,
-                                             delivery_place=order.delivery_place,
-                                             delivery_zone=zone,
-                                             lat=order.lat,
-                                             long=order.long,
-                                             order_status="OA",
-                                             address=delivery_address,
-                                             contact_number=data['contact_number'],
-                                             created_by=request.user)
-
-                total_vat = total = total_price = total_op_price = total_price_regular_product = 0
-                for p in products:
-                    product = Product.objects.get(id=p["product_id"])
-                    is_op_unchanged = OrderProduct.objects.filter(product=product,
-                                                                  order=existing_order).first()
-                    if is_op_unchanged and is_op_unchanged.is_cancelled:
-                        op = OrderProduct.objects.create(product=product,
-                                                         order=order,
-                                                         order_product_price=is_op_unchanged.order_product_price,
-                                                         product_price=is_op_unchanged.product_price,
-                                                         order_product_qty=p["product_quantity"],
-                                                         is_cancelled=is_op_unchanged.is_cancelled,
-                                                         cancel_reason=is_op_unchanged.cancel_reason)
-                    elif is_op_unchanged and is_op_unchanged.order_product_qty >= p["product_quantity"]:
-                        op = OrderProduct.objects.create(product=product,
-                                                         order=order,
-                                                         order_product_price=is_op_unchanged.order_product_price,
-                                                         product_price=is_op_unchanged.product_price,
-                                                         order_product_qty=p["product_quantity"])
-
+                    if "-" in order.order_number:
+                        x = order.order_number.split("-")
+                        x[1] = int(x[1]) + 1
+                        order_number = x[0] + "-" + str(x[1])
                     else:
-                        op = OrderProduct.objects.create(product=product,
-                                                         order=order,
-                                                         order_product_qty=p["product_quantity"])
-                    total_price += float(op.product_price) * op.order_product_qty
-                    total_op_price += op.order_product_price * op.order_product_qty
-                    total += float(op.order_product_price_with_vat) * op.order_product_qty
-                    total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
-                    if op.product_price == op.order_product_price:
-                        total_price_regular_product += float(op.product_price) * op.order_product_qty
+                        order_number = order.order_number + "-1"
+
+                    is_used = Order.objects.filter(order_number=order_number).count()
+                    if is_used:
+                        return Response({
+                            "status": "failed",
+                            "message": "Invalid request!"
+                        }, status=status.HTTP_400_BAD_REQUEST)
+
+                    existing_order = order.id
+                    order.order_status = 'CN'
+                    order.save()
+
+                    order = Order.objects.create(user=order.user,
+                                                 placed_on=order.placed_on,
+                                                 platform=order.platform,
+                                                 order_number=order_number,
+                                                 delivery_date_time=delivery_date_time,
+                                                 delivery_place=order.delivery_place,
+                                                 delivery_zone=zone,
+                                                 lat=order.lat,
+                                                 long=order.long,
+                                                 order_status="OA",
+                                                 address=delivery_address,
+                                                 contact_number=data['contact_number'],
+                                                 created_by=request.user)
+
+                    for p in products:
+                        product = Product.objects.get(id=p["product_id"])
+                        is_op_unchanged = OrderProduct.objects.filter(product=product,
+                                                                      order=existing_order).first()
+                        if is_op_unchanged and is_op_unchanged.order_product_qty >= p["product_quantity"]:
+                            op = OrderProduct.objects.create(product=product,
+                                                             order=order,
+                                                             order_product_price=is_op_unchanged.order_product_price,
+                                                             product_price=is_op_unchanged.product_price,
+                                                             order_product_qty=p["product_quantity"])
+                        else:
+                            op = OrderProduct.objects.create(product=product,
+                                                             order=order,
+                                                             order_product_qty=p["product_quantity"])
+                        total_price += float(op.product_price) * op.order_product_qty
+                        total_op_price += op.order_product_price * op.order_product_qty
+                        total += float(op.order_product_price_with_vat) * op.order_product_qty
+                        total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
 
                 if is_coupon_discount:
                     discount_amount, _, _, _ = coupon_checker(is_coupon_discount[0].coupon.coupon_code,
