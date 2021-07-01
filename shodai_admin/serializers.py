@@ -140,7 +140,7 @@ class OrderProductReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderProduct
-        fields = ['order_product_price', 'product_price', 'order_product_unit', 'order_product_qty',
+        fields = ['order_product_price', 'product_price', 'order_product_unit', 'order_product_qty', 'is_cancelled',
                   'decimal_allowed', 'product_id', 'product_name', 'product_image', 'product_price_total']
 
     def get_decimal_allowed(self, obj):

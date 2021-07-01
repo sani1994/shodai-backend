@@ -418,14 +418,6 @@ class OrderDetail(APIView):
                     data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
                 products_updated = False
 
-            if products_updated:
-                for op in all_order_products:
-                    if op.product.id not in product_list:
-                        if not op.is_cancelled:
-                            op.is_cancelled = True
-                            op.cancel_reason = 'RC'
-                            op.save()
-
             is_only_cancelled = False
             if products_updated and len(order_products) == len(products):
                 for item in products:
@@ -496,6 +488,11 @@ class OrderDetail(APIView):
                 total_vat = total = total_price = total_op_price = 0
                 if is_only_cancelled:
                     for op in all_order_products:
+                        if op.product.id not in product_list:
+                            if not op.is_cancelled:
+                                op.is_cancelled = True
+                                op.cancel_reason = 'RC'
+                                op.save()
                         if not op.is_cancelled:
                             total_price += float(op.product_price) * op.order_product_qty
                             total_op_price += op.order_product_price * op.order_product_qty
@@ -552,6 +549,16 @@ class OrderDetail(APIView):
                         total_op_price += op.order_product_price * op.order_product_qty
                         total += float(op.order_product_price_with_vat) * op.order_product_qty
                         total_vat += float(op.order_product_price_with_vat - op.order_product_price) * op.order_product_qty
+
+                    for op in all_order_products:
+                        if op.product.id not in product_list:
+                            OrderProduct.objects.create(product=op.product,
+                                                        order=order,
+                                                        order_product_price=op.order_product_price,
+                                                        product_price=op.product_price,
+                                                        order_product_qty=op.order_product_qty,
+                                                        is_cancelled=True,
+                                                        cancel_reason='RC')
 
                 if is_coupon_discount:
                     discount_amount, _, _, _ = coupon_checker(is_coupon_discount[0].coupon.coupon_code,
@@ -1673,7 +1680,7 @@ class PreOrderSettingList(APIView):
                                                           delivery_date__gte=date_from,
                                                           delivery_date__lt=date_to).order_by('-created_on')
             else:
-                queryset = PreOrderSetting.objects.filter(product__product_name__icontains=search,
+                queryset = PreOrderSetting.objects.filter(producer_product__product_name__icontains=search,
                                                           delivery_date__gte=date_from,
                                                           delivery_date__lt=date_to).order_by('-created_on')
         else:
