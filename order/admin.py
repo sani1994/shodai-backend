@@ -21,8 +21,9 @@ class TimeSlotAdmin(MaterialModelAdmin):
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct
-    fields = ['product', 'product_price', 'order_product_price', 'order_product_qty', 'order_product_total_price']
-    readonly_fields = ['product', 'product_price', 'order_product_price', 'order_product_qty',
+    fields = ['is_cancelled', 'product', 'product_price', 'order_product_price', 'order_product_qty',
+              'order_product_total_price']
+    readonly_fields = ['is_cancelled', 'product', 'product_price', 'order_product_price', 'order_product_qty',
                        'order_product_total_price']
 
     def order_product_total_price(self, obj):
@@ -128,7 +129,8 @@ class OrderProductAdmin(MaterialModelAdmin):
                     order_date)
     list_filter = ('order', 'order__delivery_date_time',)
     readonly_fields = ['product', 'product_price', 'order', 'order_product_price', 'order_product_price_with_vat',
-                       'vat_amount', 'order_product_qty', 'created_by', 'modified_by', 'created_on']
+                       'vat_amount', 'order_product_qty', 'is_cancelled', 'cancel_reason', 'created_by',
+                       'modified_by', 'created_on']
     actions = ["export_as_csv"]
 
     def get_actions(self, request):
