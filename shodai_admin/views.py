@@ -490,9 +490,10 @@ class OrderDetail(APIView):
                 if is_only_cancelled:
                     for op in all_order_products:
                         if op.product.id not in product_list:
-                            op.is_cancelled = True
-                            op.cancel_reason = 'RC'
-                            op.save()
+                            if not op.is_cancelled:
+                                op.is_cancelled = True
+                                op.cancel_reason = 'RC'
+                                op.save()
                         if not op.is_cancelled:
                             total_price += float(op.product_price) * op.order_product_qty
                             total_op_price += op.order_product_price * op.order_product_qty
@@ -553,13 +554,22 @@ class OrderDetail(APIView):
 
                     for op in all_order_products:
                         if op.product.id not in product_list:
-                            OrderProduct.objects.create(product=op.product,
-                                                        order=order,
-                                                        order_product_price=op.order_product_price,
-                                                        product_price=op.product_price,
-                                                        order_product_qty=op.order_product_qty,
-                                                        is_cancelled=True,
-                                                        cancel_reason='RC')
+                            if not op.is_cancelled:
+                                OrderProduct.objects.create(product=op.product,
+                                                            order=order,
+                                                            order_product_price=op.order_product_price,
+                                                            product_price=op.product_price,
+                                                            order_product_qty=op.order_product_qty,
+                                                            is_cancelled=True,
+                                                            cancel_reason='RC')
+                            else:
+                                OrderProduct.objects.create(product=op.product,
+                                                            order=order,
+                                                            order_product_price=op.order_product_price,
+                                                            product_price=op.product_price,
+                                                            order_product_qty=op.order_product_qty,
+                                                            is_cancelled=op.is_cancelled,
+                                                            cancel_reason=op.cancel_reason)
 
                 if is_coupon_discount:
                     discount_amount, _, _, _ = coupon_checker(is_coupon_discount[0].coupon.coupon_code,
@@ -591,6 +601,7 @@ class OrderDetail(APIView):
                 additional_discount = 0
 
             if products_updated or \
+                    invoice.net_payable_amount != order.order_total_price or \
                     invoice.delivery_contact_number != order.contact_number or \
                     invoice.delivery_address != delivery_address.road or \
                     invoice.delivery_date_time != order.delivery_date_time:
