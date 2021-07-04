@@ -418,19 +418,20 @@ class OrderDetail(APIView):
                     data['order_status'] == 'Order Completed' or data['order_status'] == 'Order Cancelled':
                 products_updated = False
 
-            is_only_cancelled = False
-            if products_updated and len(order_products) == len(products):
-                for item in products:
-                    if item not in order_products:
-                        break
-                else:
-                    products_updated = False
-            elif products_updated and len(order_products) > len(products):
-                for item in products:
-                    if item not in order_products:
-                        break
-                else:
-                    is_only_cancelled = True
+            if products_updated:
+                is_only_cancelled = False
+                if len(order_products) == len(products):
+                    for item in products:
+                        if item not in order_products:
+                            break
+                    else:
+                        products_updated = False
+                elif len(order_products) > len(products):
+                    for item in products:
+                        if item not in order_products:
+                            break
+                    else:
+                        is_only_cancelled = True
 
             data["delivery_address"] = data["delivery_address"][:500]
             if not order.address or data["delivery_address"] != order.address.road:
@@ -489,10 +490,9 @@ class OrderDetail(APIView):
                 if is_only_cancelled:
                     for op in all_order_products:
                         if op.product.id not in product_list:
-                            if not op.is_cancelled:
-                                op.is_cancelled = True
-                                op.cancel_reason = 'RC'
-                                op.save()
+                            op.is_cancelled = True
+                            op.cancel_reason = 'RC'
+                            op.save()
                         if not op.is_cancelled:
                             total_price += float(op.product_price) * op.order_product_qty
                             total_op_price += op.order_product_price * op.order_product_qty
@@ -534,7 +534,8 @@ class OrderDetail(APIView):
                     for p in products:
                         product = Product.objects.get(id=p["product_id"])
                         is_op_unchanged = OrderProduct.objects.filter(product=product,
-                                                                      order=existing_order).first()
+                                                                      order=existing_order,
+                                                                      is_cancelled=False).first()
                         if is_op_unchanged and is_op_unchanged.order_product_qty >= p["product_quantity"]:
                             op = OrderProduct.objects.create(product=product,
                                                              order=order,
@@ -589,61 +590,65 @@ class OrderDetail(APIView):
                 order.order_total_price += additional_discount
                 additional_discount = 0
 
-            discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
-            order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
-            if order.user.first_name and order.user.last_name:
-                billing_person_name = order.user.first_name + " " + order.user.last_name
-            elif order.user.first_name:
-                billing_person_name = order.user.first_name
-            else:
-                billing_person_name = ""
-            payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
-            paid_status = False if products_updated else invoice.paid_status
-            paid_on = None if products_updated else invoice.paid_on
-            new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
-                                                     billing_person_name=billing_person_name,
-                                                     billing_person_email=order.user.email,
-                                                     billing_person_mobile_number=order.user.mobile_number,
-                                                     delivery_contact_number=order.contact_number,
-                                                     delivery_address=delivery_address.road,
-                                                     delivery_date_time=order.delivery_date_time,
-                                                     delivery_charge=delivery_charge,
-                                                     discount_amount=discount_amount,
-                                                     net_payable_amount=order.order_total_price,
-                                                     payment_method=payment_method,
-                                                     paid_status=paid_status,
-                                                     paid_on=paid_on,
-                                                     order_number=order,
-                                                     user=order.user,
-                                                     created_by=request.user)
+            if products_updated or \
+                    invoice.delivery_contact_number != order.contact_number or \
+                    invoice.delivery_address != delivery_address.road or \
+                    invoice.delivery_date_time != order.delivery_date_time:
+                discount_amount = delivery_charge_discount + coupon_discount + product_discount + additional_discount
+                order.invoice_number = "SHD" + str(uuid.uuid4())[:8].upper()
+                if order.user.first_name and order.user.last_name:
+                    billing_person_name = order.user.first_name + " " + order.user.last_name
+                elif order.user.first_name:
+                    billing_person_name = order.user.first_name
+                else:
+                    billing_person_name = ""
+                payment_method = 'CASH_ON_DELIVERY' if products_updated else invoice.payment_method
+                paid_status = False if products_updated else invoice.paid_status
+                paid_on = None if products_updated else invoice.paid_on
+                new_invoice = InvoiceInfo.objects.create(invoice_number=order.invoice_number,
+                                                         billing_person_name=billing_person_name,
+                                                         billing_person_email=order.user.email,
+                                                         billing_person_mobile_number=order.user.mobile_number,
+                                                         delivery_contact_number=order.contact_number,
+                                                         delivery_address=delivery_address.road,
+                                                         delivery_date_time=order.delivery_date_time,
+                                                         delivery_charge=delivery_charge,
+                                                         discount_amount=discount_amount,
+                                                         net_payable_amount=order.order_total_price,
+                                                         payment_method=payment_method,
+                                                         paid_status=paid_status,
+                                                         paid_on=paid_on,
+                                                         order_number=order,
+                                                         user=order.user,
+                                                         created_by=request.user)
+
+                if coupon_discount:
+                    DiscountInfo.objects.create(discount_amount=coupon_discount,
+                                                discount_type='CP',
+                                                discount_description=coupon_discount_description,
+                                                coupon=is_coupon_discount[0].coupon if is_coupon_discount else coupon,
+                                                invoice=new_invoice)
+
+                if product_discount:
+                    DiscountInfo.objects.create(discount_amount=product_discount,
+                                                discount_type='PD',
+                                                discount_description='Product Offer Discount',
+                                                invoice=new_invoice)
+
+                if delivery_charge_discount:
+                    DiscountInfo.objects.create(discount_amount=delivery_charge_discount,
+                                                discount_type='DC',
+                                                discount_description='Offer ID: {}'.format(offer_id)
+                                                if offer_id else is_delivery_discount[0].discount_description,
+                                                offer=offer[0] if offer_id else is_delivery_discount[0].offer,
+                                                invoice=new_invoice)
+
+                if additional_discount:
+                    DiscountInfo.objects.create(discount_amount=additional_discount,
+                                                discount_type='AD',
+                                                discount_description='Additional Discount',
+                                                invoice=new_invoice)
             order.save()
-
-            if coupon_discount:
-                DiscountInfo.objects.create(discount_amount=coupon_discount,
-                                            discount_type='CP',
-                                            discount_description=coupon_discount_description,
-                                            coupon=is_coupon_discount[0].coupon if is_coupon_discount else coupon,
-                                            invoice=new_invoice)
-
-            if product_discount:
-                DiscountInfo.objects.create(discount_amount=product_discount,
-                                            discount_type='PD',
-                                            discount_description='Product Offer Discount',
-                                            invoice=new_invoice)
-
-            if delivery_charge_discount:
-                DiscountInfo.objects.create(discount_amount=delivery_charge_discount,
-                                            discount_type='DC',
-                                            discount_description='Offer ID: {}'.format(offer_id)
-                                            if offer_id else is_delivery_discount[0].discount_description,
-                                            offer=offer[0] if offer_id else is_delivery_discount[0].offer,
-                                            invoice=new_invoice)
-
-            if additional_discount:
-                DiscountInfo.objects.create(discount_amount=additional_discount,
-                                            discount_type='AD',
-                                            discount_description='Additional Discount',
-                                            invoice=new_invoice)
             return Response({
                 "status": "success",
                 "message": "Order updated.",
