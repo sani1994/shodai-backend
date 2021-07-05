@@ -11,7 +11,7 @@ def send_order_email(order, is_pre_order=False):
     user = order.user
     if user.email:
         invoice = InvoiceInfo.objects.filter(order_number=order).order_by('-created_on').first()
-        product_list = OrderProduct.objects.filter(order=order)
+        product_list = OrderProduct.objects.filter(order=order, is_cancelled=False)
         matrix = []
         is_product_discount = False
         product_total_price = 0

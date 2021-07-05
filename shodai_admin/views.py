@@ -1065,7 +1065,7 @@ class InvoiceDownloadPDF(APIView):
 
     def get(self, request, id):
         order = get_object_or_404(Order, id=id)
-        product_list = OrderProduct.objects.filter(order=order)
+        product_list = OrderProduct.objects.filter(order=order, is_cancelled=False)
         matrix = []
         is_product_offer = False
         sub_total = 0
@@ -1158,7 +1158,7 @@ class OrderNotification(APIView):
                 delivery_charge = DeliveryCharge.objects.get().delivery_charge_inside_dhaka
                 delivery_charge_discount = delivery_charge - invoice.delivery_charge
                 client_name = invoice.billing_person_name
-                product_list = OrderProduct.objects.filter(order__pk=data['order_id'])
+                product_list = OrderProduct.objects.filter(order__pk=data['order_id'], is_cancelled=False)
                 matrix = []
                 is_offer = False
                 sub_total = 0
